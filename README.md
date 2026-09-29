@@ -83,7 +83,7 @@ wrong; 1,000 products with their pages take about 20 s.
 ## Install
 
 ```bash
-cargo install --locked --git https://github.com/ianks/fast-agentic-browser fast-agentic-browser --bin fab
+cargo install --locked fast-agentic-browser
 fab doctor
 ```
 
