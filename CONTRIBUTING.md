@@ -3,8 +3,8 @@
 ## Build and test
 
 ```bash
-cargo build --release
-cargo test --workspace --locked
+cargo build --release --features bench   # fab, and fab-bench (the evals)
+cargo test --workspace --locked --all-features
 ```
 
 ## The scrape eval
@@ -15,8 +15,8 @@ The run calls an LLM, so it needs `OPENROUTER_API_KEY` (in the environment or
 in `~/.config/fab/env`):
 
 ```bash
-cargo run --release --bin fab-bench -- scrape gen
-cargo run --release --bin fab-bench -- scrape run
+cargo run --release --features bench --bin fab-bench -- scrape gen
+cargo run --release --features bench --bin fab-bench -- scrape run
 ```
 
 ## Measured changes
