@@ -271,6 +271,9 @@ async fn run_inner(
     let use_planner: std::sync::atomic::AtomicBool = Default::default();
     let use_planner = &use_planner;
     let commits0 = sess.commits;
+    // Input an earlier step typed but did not submit lives only in this page:
+    // reloading it (the fallback's clean start) would throw that work away.
+    let unsaved0 = unsaved_input(sess).await;
     // Decides what the task needs while the engine is already deciding.
     let control = async {
         let mut llm_stats: Option<(f64, fab_core::llm::ChatUsage)> = None;
@@ -429,7 +432,7 @@ async fn run_inner(
     if let Some(stop) = handoff(unconfirmed, &stats, &logs, &timings) { return stop; }
     // Nothing was committed: start the LLM from a clean page rather than the
     // engine's half-finished state (FAB_FALLBACK_RESET=0 keeps the state).
-    let reset = sess.commits == commits0 && std::env::var("FAB_FALLBACK_RESET").as_deref() != Ok("0");
+    let reset = sess.commits == commits0 && !unsaved0 && std::env::var("FAB_FALLBACK_RESET").as_deref() != Ok("0");
     let (prior, page_now) = if reset {
         emit("result", "no changes were committed: restarting from the start page".into());
         (None, sess.goto(url).await.unwrap_or_default())
@@ -445,6 +448,13 @@ async fn run_inner(
     };
     let out = planner::drive_with(ts, task, url, &page_now, model, ev, prior.as_deref(), effort, false, journal, None).await;
     finish_planner(stats, logs, timings, out)
+}
+
+/// Whether the page holds form input not yet submitted: a field whose value
+/// differs from the one the page loaded with.
+async fn unsaved_input(sess: &mut Session) -> bool {
+    const JS: &str = "[...document.querySelectorAll('input,textarea,select')].some(e => e.type === 'checkbox' || e.type === 'radio' ? e.checked !== e.defaultChecked : e.tagName === 'SELECT' ? [...e.options].some(o => o.selected !== o.defaultSelected) : e.type !== 'hidden' && e.type !== 'submit' && e.value !== e.defaultValue)";
+    sess.browser.eval(JS).await.ok().and_then(|v| v.as_bool()).unwrap_or(false)
 }
 
 /// Adds a planner loop's stats, logs and timings to agent mode's own.

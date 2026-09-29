@@ -152,13 +152,15 @@ neg_group   = _{ closer ~ (quoted_run | neg_group | !opener ~ ANY)* ~ (opener | 
 opener      = _{ "(" | "[" }
 closer      = _{ ")" | "]" }
 
-// A text in `"…"` or `'…'` (with `\"` for a quote), else the text itself.
+// A text in `"…"` or `'…'` (with `\"` for a quote, `\n` and `\t` for a line
+// break and a tab), else the text itself.
 unquoted  = ${ SOI ~ ws* ~ (dq_whole | sq_whole | raw_whole) ~ EOI }
-dq_whole  = ${ "\"" ~ (esc_quote | dq_plain)* ~ "\"" ~ ws* ~ &EOI }
-sq_whole  = ${ "'" ~ (esc_quote | sq_plain)* ~ "'" ~ ws* ~ &EOI }
+dq_whole  = ${ "\"" ~ (esc_quote | esc_ctl | dq_plain)* ~ "\"" ~ ws* ~ &EOI }
+sq_whole  = ${ "'" ~ (esc_quote | esc_ctl | sq_plain)* ~ "'" ~ ws* ~ &EOI }
 esc_quote = @{ "\\\"" ~ !(ws* ~ EOI) }
-dq_plain  = @{ (!("\"" ~ ws* ~ EOI) ~ !esc_quote ~ ANY ~ (!("\"" | "\\") ~ ANY)*)+ }
-sq_plain  = @{ (!("'" ~ ws* ~ EOI) ~ !esc_quote ~ ANY ~ (!("'" | "\\") ~ ANY)*)+ }
+esc_ctl   = @{ "\\" ~ ("n" | "t") }
+dq_plain  = @{ (!("\"" ~ ws* ~ EOI) ~ !esc_quote ~ !esc_ctl ~ ANY ~ (!("\"" | "\\") ~ ANY)*)+ }
+sq_plain  = @{ (!("'" ~ ws* ~ EOI) ~ !esc_quote ~ !esc_ctl ~ ANY ~ (!("'" | "\\") ~ ANY)*)+ }
 raw_whole = @{ (!ws ~ ANY)* ~ (!(ws* ~ EOI) ~ ANY ~ (!ws ~ ANY)*)* }
 
 // ---- expressions ----

@@ -1052,7 +1052,8 @@ fn leaf_args(rest: &str) -> (String, Option<String>) {
     (unquote(text), (!name.is_empty()).then(|| name.to_string()))
 }
 
-/// A text without the quotes around it (`\"` stands for a quote).
+/// A text without the quotes around it (`\"` stands for a quote, `\n` and
+/// `\t` for a line break and a tab).
 fn unquote(s: &str) -> String {
     let Some(whole) = read(Rule::unquoted, s).and_then(|u| parts(u).next()) else {
         return s.trim().to_string();
@@ -1062,6 +1063,8 @@ fn unquote(s: &str) -> String {
         _ => parts(whole)
             .map(|p| match p.as_rule() {
                 Rule::esc_quote => "\"",
+                Rule::esc_ctl if p.as_str() == "\\n" => "\n",
+                Rule::esc_ctl => "\t",
                 _ => p.as_str(),
             })
             .collect(),
@@ -1290,13 +1293,18 @@ fn number(t: &str) -> Result<f64, String> {
     t.parse().map_err(|_| format!("bad number {t}"))
 }
 
-/// The text of a string token, escapes applied.
+/// The text of a string token, escapes applied: `\n` and `\t` are a line
+/// break and a tab (text with paragraphs), any other `\x` is `x`.
 fn string_value(s: &Node<'_>) -> String {
     s.clone()
         .into_inner()
         .flat_map(|quoted| quoted.into_inner())
         .map(|chunk| match chunk.as_rule() {
-            Rule::str_esc => &chunk.as_str()[1..],
+            Rule::str_esc => match &chunk.as_str()[1..] {
+                "n" => "\n",
+                "t" => "\t",
+                c => c,
+            },
             _ => chunk.as_str(),
         })
         .collect()
@@ -1925,6 +1933,21 @@ mod tests {
         }
         assert!(run(format!("x = {}1{}", "(".repeat(20), ")".repeat(20))).is_ok());
         assert!(run(format!("do \"{}\"", "(".repeat(500))).is_ok(), "quoted text is not nesting");
+    }
+
+    #[test]
+    fn string_escapes_include_line_breaks_and_tabs() {
+        let step = |src: &str| match &parse(src).unwrap().ops[0] {
+            Op::Leaf { text, .. } => text.clone(),
+            op => panic!("{op:?}"),
+        };
+        assert_eq!(step(r#"do "one\n\ntwo\tthree \"q\" end""#), "one\n\ntwo\tthree \"q\" end");
+        assert_eq!(step(r#"do 'a\nb'"#), "a\nb");
+        // Other backslashes stay as written (a path, a pattern).
+        assert_eq!(step(r#"do "open C:\\data\\x""#), r#"open C:\\data\\x"#);
+        match &parse(r#"set t = "a\nb""#).unwrap().ops[0] {
+            op => assert!(format!("{op:?}").contains(r#""a\nb""#), "{op:?}"),
+        }
     }
     use super::*;
 

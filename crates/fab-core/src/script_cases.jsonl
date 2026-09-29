@@ -200,7 +200,7 @@
 {"src":"return $5","error":{"line":1,"msg":"5 is used before it is set"}}
 {"src":"return $.x","error":{"line":1,"msg":" is used before it is set"}}
 {"src":"return .","error":{"line":1,"msg":"unexpected \".\""}}
-{"src":"return \"a\\nb\", 'c\\'d', “curly”, \"unterminated","program":{"ops":[{"Return":[{"Str":"anb"},{"Str":"c'd"},{"Str":"curly"},{"Str":"unterminated"}]}],"lines":[1],"slots":0}}
+{"src":"return \"a\\nb\", 'c\\'d', “curly”, \"unterminated","program":{"ops":[{"Return":[{"Str":"a\nb"},{"Str":"c'd"},{"Str":"curly"},{"Str":"unterminated"}]}],"lines":[1],"slots":0}}
 {"src":"return \"ends with backslash\\","program":{"ops":[{"Return":[{"Str":"ends with backslash\\"}]}],"lines":[1],"slots":0}}
 {"src":"return 'a\"b'","program":{"ops":[{"Return":[{"Str":"a\"b"}]}],"lines":[1],"slots":0}}
 {"src":"return ”","error":{"line":1,"msg":"unexpected \"”\""}}
