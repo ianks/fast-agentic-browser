@@ -11,7 +11,22 @@ const EDGE_STOP: &[&str] = &[
 /// Quoted substrings: "x", “x”, 'x' (single quotes only when not an apostrophe).
 pub fn quoted(s: &str) -> Vec<String> {
     let cs: Vec<char> = s.chars().collect();
-    let mut out: Vec<String> = Vec::new();
+    let mut out: Vec<String> = quoted_ranges(s).into_iter().map(|(a, b)| cs[a..b].iter().collect()).collect();
+    // `{{card number}}`: a value from the password manager is a literal, quoted or not.
+    for (_, name) in crate::secrets::placeholders(s) {
+        let p = format!("{{{{{name}}}}}");
+        if !out.iter().any(|q| q.contains(&p)) {
+            out.push(p);
+        }
+    }
+    out
+}
+
+/// Where `quoted` finds its values: the char ranges inside the quotes. Text
+/// in these ranges is a value, never instruction words (no command splits there).
+pub fn quoted_ranges(s: &str) -> Vec<(usize, usize)> {
+    let cs: Vec<char> = s.chars().collect();
+    let mut out = Vec::new();
     let mut i = 0;
     while i < cs.len() {
         let close = match cs[i] {
@@ -32,19 +47,12 @@ pub fn quoted(s: &str) -> Vec<String> {
                 j += 1;
             }
             if j < cs.len() && j > i + 1 {
-                out.push(cs[i + 1..j].iter().collect());
+                out.push((i + 1, j));
                 i = j + 1;
                 continue;
             }
         }
         i += 1;
-    }
-    // `{{card number}}`: a value from the password manager is a literal, quoted or not.
-    for (_, name) in crate::secrets::placeholders(s) {
-        let p = format!("{{{{{name}}}}}");
-        if !out.iter().any(|q| q.contains(&p)) {
-            out.push(p);
-        }
     }
     out
 }

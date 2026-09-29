@@ -50,6 +50,9 @@ const LEXICON: &[(&str, Risk, &[&str])] = &[
     ("send", Risk::R2, &["send", "submit", "post", "message", "email", "share", "reply", "contact"]),
     ("post", Risk::R2, &["post", "publish", "submit", "send", "reply", "comment"]),
     ("publish", Risk::R2, &["publish", "post", "release", "go live", "share"]),
+    // Comments and replies publish under the user's name ("Add comment", "Reply").
+    ("comment", Risk::R2, &["comment", "post", "publish", "submit", "reply", "send"]),
+    ("reply", Risk::R2, &["reply", "respond", "answer", "post", "comment", "submit", "send"]),
     ("create", Risk::R2, &["create", "add", "new", "make", "open", "start", "set up"]),
     ("approve", Risk::R2, &["approve", "accept", "allow", "grant", "authorize", "authorise", "sign off", "okay", "ok"]),
     ("accept", Risk::R2, &["accept", "approve", "agree", "allow", "consent", "say yes", "ok"]),
@@ -172,9 +175,13 @@ pub fn licensed(instr: &str, e: &El) -> Result<(), String> {
     if r <= Risk::R1 {
         return Ok(());
     }
-    let ws = words(instr);
+    // Quoted text is data (a value to type, a message to send), not the
+    // user's words: a comment that says "submitted" doesn't ask to submit.
+    // It counts only when it names this control exactly (click "Place order").
+    let ws = words(&outside_quotes(instr));
     let name = e.n.trim();
-    if name.chars().count() >= 3 && has_phrase(&ws, name) {
+    let quoted_name = crate::spans::quoted(instr).iter().any(|q| q.trim().eq_ignore_ascii_case(name));
+    if name.chars().count() >= 3 && (has_phrase(&ws, name) || quoted_name) {
         return Ok(());
     }
     let Some((verb, _, family)) = entry else { return Ok(()) };
@@ -191,6 +198,28 @@ pub fn licensed(instr: &str, e: &El) -> Result<(), String> {
         return Ok(());
     }
     Err(format!("the instruction doesn't ask to {verb} (would click {} \"{}\")", e.r, e.n))
+}
+
+/// The instruction as a request: its quoted values blanked out, and the
+/// field a value goes "into" (the comment box, the message) dropped up to the
+/// end of its clause, since naming a field doesn't ask to commit it.
+fn outside_quotes(instr: &str) -> String {
+    let mut cs: Vec<char> = instr.chars().collect();
+    for (a, b) in crate::spans::quoted_ranges(instr) {
+        cs[a..b].iter_mut().for_each(|c| *c = ' ');
+    }
+    let s: String = cs.into_iter().collect();
+    let mut out = String::new();
+    let mut rest = s.as_str();
+    while let Some(i) = rest.to_lowercase().find(" into ") {
+        out.push_str(&rest[..i]);
+        let tail = &rest[i + " into ".len()..];
+        let lower = tail.to_lowercase();
+        let end = [",", ";", "\n", " then ", " and "].iter().filter_map(|w| lower.find(w)).min().unwrap_or(tail.len());
+        rest = &tail[end..];
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Record grounding: a commit on a per-row button that repeats across rows
@@ -290,6 +319,20 @@ mod tests {
         // Destructive and direct commits keep their class on links too.
         assert_eq!(risk(&link("Delete account")).0, Risk::R3);
         assert_eq!(risk(&link("Approve")).0, Risk::R2);
+    }
+
+    #[test]
+    fn typed_text_does_not_license_a_commit() {
+        assert_eq!(risk(&b("add comment")).0, Risk::R2);
+        assert_eq!(risk(&b("Reply")).0, Risk::R2);
+        assert!(licensed("type \"hi\" into the comment box, then post it", &b("add comment")).is_ok());
+        assert!(licensed("type \"hi\" into the comment box", &b("add comment")).is_err());
+        // The words of a value to type are data, not the user's request.
+        assert!(licensed("type \"This post was submitted by fab. Add comment below\" into the comment box", &b("add comment")).is_err());
+        assert!(licensed("type \u{201c}send it, then post it\u{201d} into the message", &b("Send")).is_err());
+        assert!(licensed("type \u{201c}send it\u{201d} into the message, then send it", &b("Send")).is_ok());
+        // A quote that names the control is still the user's word.
+        assert!(licensed("type \"hi\" into e1, then click \"add comment\"", &b("add comment")).is_ok());
     }
 
     #[test]

@@ -864,6 +864,11 @@ impl Session {
             self.live_actions(&r.actions[shown_upto..]);
             res?;
             r.timings.exec_ms += te.elapsed().as_secs_f64() * 1e3;
+            if plan.last {
+                self.browser.settle(&self.k, &snap.doc_id).await?;
+                r.ok = true;
+                return Ok(());
+            }
             if commit {
                 unsubmitted = false;
                 self.commits += 1;
@@ -2041,3 +2046,4 @@ mod tests {
         assert_eq!(typeahead_query("Porto, Portugal (Hybrid)", "location Lisbon"), "Porto, Portugal");
     }
 }
+

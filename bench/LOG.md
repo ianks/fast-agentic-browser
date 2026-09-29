@@ -1329,3 +1329,15 @@ site-specific:
 Full suite after both: 18/20 then 20/20 (1746/1746). The two misses in the
 first run are unrelated flakes: the mapper kept "By " on an author, and one
 compile returned an empty program (fell back to one step).
+
+## 2026-09-29 · Typed text is data: a "type" step no longer posts
+
+Posting a Show HN comment with fab found that `do 'type "…long message…" into the comment box'` could submit the form by itself, and could type a fragment of the message. Five causes, all general:
+
+- **"Add comment" and "Reply" weren't commits.** No lexicon verb matched them, so any step could click them. They are R2 now, like Post and Send.
+- **Typed text licensed commits.** The license read words from the whole instruction, so a message saying "submitted" permitted Submit. Quoted values are now data; a quote still counts when it names the control exactly (`click "Place order"`). The field a value goes "into" (the comment box) doesn't license either.
+- **Refused commits failed the step.** When the engine planned "type, then click" and the click was refused, nothing was typed and the step escalated to the LLM, which reloaded the page and retyped the value mangled. Now the fills run alone, and when they type every value the instruction gave, the step is done (`Plan::last`).
+- **The clause check split the message into goals.** Sentences inside a quoted value read as unmet clauses. Quoted values are one piece of data there, and in the command splitter (`,`, `;`, `then`).
+- **Curly quotes became straight ones** before values were read, so a `"` inside a “…” value ended it early. A curly pair that holds straight quotes is now left as is.
+
+Rehearsed on a local copy of HN's comment form, 4 runs each: the type-only step submits nothing (0 LLM calls), and type-then-click submits the 1,470-character message byte for byte. Held-out-3 (agent mode, `--jobs 6`, same settings for both): 32/40 before, 33/40 after (discordant 3 vs 4, McNemar p=1.0). Scrape suite 20/20, 1746/1746.

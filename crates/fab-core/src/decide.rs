@@ -52,6 +52,9 @@ pub struct Plan {
     pub final_p: f64,
     /// Top alternatives for the click, when it's not a clear call.
     pub alternatives: Vec<(String, f64)>,
+    /// Executing the plan finishes the step (its commit was refused, and its
+    /// fills type every value the instruction gave).
+    pub last: bool,
 }
 
 impl Plan {

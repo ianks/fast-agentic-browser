@@ -25,7 +25,9 @@ pub enum Cmd {
 /// only closes before a space, punctuation or the end, so apostrophes
 /// ("O'Brien", "Ada's") are left alone.
 fn normalize_quotes(s: &str) -> String {
-    let s = s.replace(['\u{201C}', '\u{201D}'], "\"");
+    // “…” becomes "…" unless it holds a straight quote itself, which would
+    // then end the value early; spans::quoted reads curly quotes as they are.
+    let s = curly_to_straight(s);
     if s.contains('"') {
         return s;
     }
@@ -46,6 +48,26 @@ fn normalize_quotes(s: &str) -> String {
         i += 1;
     }
     out.into_iter().collect()
+}
+
+fn curly_to_straight(s: &str) -> String {
+    let straight = |t: &str| t.replace(['\u{201C}', '\u{201D}'], "\"");
+    let mut out = String::new();
+    let mut rest = s;
+    while let Some(a) = rest.find('\u{201C}') {
+        let after = &rest[a + '\u{201C}'.len_utf8()..];
+        let Some(b) = after.find('\u{201D}') else { break };
+        let inner = &after[..b];
+        out.push_str(&straight(&rest[..a]));
+        if inner.contains('"') {
+            out.push_str(&format!("\u{201C}{inner}\u{201D}"));
+        } else {
+            out.push_str(&format!("\"{inner}\""));
+        }
+        rest = &after[b + '\u{201D}'.len_utf8()..];
+    }
+    out.push_str(&straight(rest));
+    out
 }
 
 /// Removes wrappers LLMs add (`act("…")`, `run("…", "…")`) and escaped quotes.
@@ -80,14 +102,13 @@ const VERBS: &[&str] = &[
 fn split(s: &str) -> Vec<String> {
     let mut parts = vec![];
     let mut cur = String::new();
-    let mut in_q = false;
+    // Inside a quoted value (any quote style) nothing separates commands.
+    let values = crate::spans::quoted_ranges(s);
     let cs: Vec<char> = s.chars().collect();
     let mut i = 0;
     while i < cs.len() {
         let c = cs[i];
-        if c == '"' {
-            in_q = !in_q;
-        }
+        let in_q = values.iter().any(|&(a, b)| a <= i && i < b);
         if !in_q && (c == ';' || c == '\n' || c == ',') {
             let rest: String = cs[i + 1..].iter().collect();
             let rest_l = rest.trim_start().to_lowercase();
@@ -105,13 +126,34 @@ fn split(s: &str) -> Vec<String> {
     let mut out = vec![];
     for p in parts {
         // " then " / " and then " also separate commands.
-        for q in p.split(" and then ").flat_map(|x| x.split(" then ")) {
+        for q in split_then(&p) {
             let q = q.trim().trim_start_matches("and ").trim().trim_end_matches('.').trim();
             if !q.is_empty() {
                 out.push(q.to_string());
             }
         }
     }
+    out
+}
+
+/// `p` cut at " then " and " and then " outside its quoted values.
+fn split_then(p: &str) -> Vec<String> {
+    let values = crate::spans::quoted_ranges(p);
+    let cs: Vec<char> = p.chars().collect();
+    let (mut out, mut start, mut i) = (vec![], 0, 0);
+    while i < cs.len() {
+        let rest: String = cs[i..].iter().take(10).collect();
+        let sep = [" and then ", " then "].into_iter().find(|w| rest.starts_with(w));
+        match sep {
+            Some(w) if !values.iter().any(|&(a, b)| a <= i && i < b) => {
+                out.push(cs[start..i].iter().collect());
+                i += w.chars().count();
+                start = i;
+            }
+            _ => i += 1,
+        }
+    }
+    out.push(cs[start..].iter().collect());
     out
 }
 
@@ -383,6 +425,24 @@ pub fn describe_ids(instr: &str, prev: Option<&Snapshot>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_quoted_value_is_never_split_into_commands() {
+        let v = "one, two; three\n\nsee \"the docs\" and then run it, then stop";
+        for q in [('\u{201c}', '\u{201d}'), ('\'', '\'')] {
+            let s = format!("type {}{v}{} into e1, then click e2", q.0, q.1);
+            assert_eq!(split(&s), vec![format!("type {}{v}{} into e1", q.0, q.1), "click e2".to_string()], "{s}");
+        }
+        assert_eq!(split("type \"a, b\" into e1 then click e2"), vec!["type \"a, b\" into e1", "click e2"]);
+    }
+
+    #[test]
+    fn curly_quotes_keep_the_straight_quotes_inside_them() {
+        let v = "for job in items \"job listings\"\n  emit x";
+        let s = sanitize(&format!("type \u{201c}{v}\u{201d} into the text box"));
+        assert_eq!(crate::spans::quoted(&s)[0], v);
+        assert_eq!(sanitize("click \u{201c}Save\u{201d}"), "click \"Save\"");
+    }
 
     #[test]
     fn parses_precise_commands() {

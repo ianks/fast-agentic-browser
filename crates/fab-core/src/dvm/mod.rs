@@ -206,6 +206,14 @@ pub async fn decide_with<O: Oracle>(
     Ok(d)
 }
 
+/// Whether the plan's fills type every quoted value of the instruction.
+fn types_every_value(instr: &str, plan: &Plan) -> bool {
+    let norm = |s: &str| s.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase();
+    let typed: Vec<String> = plan.fills.iter().filter_map(|f| match &f.value { decide::FillValue::Text(v) => Some(norm(v)), _ => None }).collect();
+    let values = crate::spans::quoted(&crate::direct::sanitize(instr));
+    !values.is_empty() && values.iter().all(|v| typed.contains(&norm(v)))
+}
+
 /// Applies the license and risk-tiered commit rule to the chosen click; may run
 /// one refine round.
 #[allow(clippy::too_many_arguments)]
@@ -232,6 +240,14 @@ async fn judge_click<O: Oracle>(
             && verify_p(a1, c).is_some_and(|v| v >= k.sem_license)
             && !lexicon_points_elsewhere(snap, &licence, c);
         if !semantic {
+            // Typing was asked, committing wasn't ("type … into the comment
+            // box"): when the fills type every value the instruction gave,
+            // they are the whole step, and the commit is left to the user.
+            if types_every_value(instr, &d.plan) {
+                (d.plan.click, d.plan.enter, d.plan.last) = (None, false, true);
+                trace.push(json!({"commit_left": format!("e{c}"), "why": why}));
+                return Ok(());
+            }
             d.outcome = Outcome::Escalate(format!("not permitted: {why}. Ask for it explicitly if that's intended"));
             return Ok(());
         }

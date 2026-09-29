@@ -9,7 +9,30 @@ use crate::snapshot::Snapshot;
 
 /// Splits a goal into clauses that can be checked one by one. Conditionals
 /// ("if X, do Y") stay whole; sentences and "and then"/"then" separate.
+/// A quoted value is one piece of data, never split: the sentences of a
+/// message to type are not parts of the goal.
 pub fn clauses(goal: &str) -> Vec<String> {
+    let cs: Vec<char> = goal.chars().collect();
+    let values: Vec<String> = crate::spans::quoted_ranges(goal).into_iter().map(|(a, b)| cs[a..b].iter().collect()).collect();
+    let mut masked = String::new();
+    let mut at = 0;
+    for (k, (a, b)) in crate::spans::quoted_ranges(goal).into_iter().enumerate() {
+        masked.extend(&cs[at..a]);
+        masked.push_str(&format!("\u{E000}{k}\u{E001}"));
+        at = b;
+    }
+    masked.extend(&cs[at..]);
+    let unmask = |c: String| {
+        let mut c = c;
+        for (k, v) in values.iter().enumerate() {
+            c = c.replace(&format!("\u{E000}{k}\u{E001}"), v);
+        }
+        c
+    };
+    clauses_of(&masked).into_iter().map(unmask).collect()
+}
+
+fn clauses_of(goal: &str) -> Vec<String> {
     // Sentence ends: . ; ! ? followed by whitespace or the end ("v2.14.0" stays whole).
     let cs: Vec<char> = goal.chars().collect();
     let mut sents: Vec<String> = Vec::new();
@@ -71,6 +94,13 @@ pub async fn check(jev: &Jev, goal: &str, cl: &[String], actions: &[String], sna
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_quoted_message_is_one_clause() {
+        let g = "type \u{201c}First. Then second; and then third!\u{201d} into the comment box";
+        assert_eq!(clauses(g), vec![g.to_string()]);
+        assert_eq!(clauses("type \"a. b\" into e1. Then click Save"), vec!["type \"a. b\" into e1", "Then click Save"]);
+    }
 
     #[test]
     fn splits_clauses() {
