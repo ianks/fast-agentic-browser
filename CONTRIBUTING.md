@@ -24,3 +24,9 @@ cargo run --release --features bench --bin fab-bench -- scrape run
 `bench/LOG.md` records every change that was measured, with its result. If
 your change affects speed, accuracy or cost, run the relevant suite and add an
 entry.
+
+## Publishing
+
+Bump the version of each changed crate, commit, push, then `just publish`. It
+runs the tests and publishes every crate whose version is not on crates.io
+yet, `fab-core` first.
