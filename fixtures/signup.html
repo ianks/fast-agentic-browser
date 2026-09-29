@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Create account · Brinelog</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+main{max-width:460px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;list-style:none;padding:0;margin:6px 0}
+.chips button{border-radius:14px;padding:3px 12px;background:#eef2ff;border-color:#c7d2fe}
+.err{color:#b91c1c;font-size:13px;margin:4px 0}
+.hint{color:#666;font-size:12px}
+</style></head>
+<body><header><strong>Brinelog</strong><a href="#">Product</a><a href="#">Pricing</a><a href="#" style="margin-left:auto">Sign in</a></header>
+<main><h1>Create your account</h1><p class="muted">Start a 14-day trial. No credit card required.</p>
+<form id="f" novalidate>
+  <label for="user">Username</label><input id="user" type="text" autocomplete="username">
+  <div id="uerr" role="alert"></div>
+  <label for="email">Work email</label><input id="email" type="email" autocomplete="email">
+  <label for="pw">Password</label><input id="pw" type="password" autocomplete="new-password">
+  <div class="hint">At least 10 characters, including a number and a symbol.</div>
+  <label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password">
+  <div class="row" style="margin-top:10px"><input type="checkbox" id="updates"><label for="updates" style="display:inline;font-weight:400;margin:0">Send me product updates</label></div>
+  <div class="row"><input type="checkbox" id="terms"><label for="terms" style="display:inline;font-weight:400;margin:0">I agree to the Terms of Service and Privacy Policy</label></div>
+  <p id="err" class="err" role="alert"></p>
+  <button class="primary" id="submit">Create account</button>
+</form>
+</main>
+<script>
+const TAKEN = { mira: ['mira_k', 'mira2026', 'mirafjord'] };
+const v = (id) => q('#' + id).value.trim();
+function setErr(msg) { q('#err').textContent = msg; }
+q('#uerr').onclick = (e) => { const b = e.target.closest('button[data-u]'); if (b) { q('#user').value = b.dataset.u; q('#uerr').innerHTML = ''; } };
+q('#f').addEventListener('submit', async (e) => {
+  e.preventDefault(); setErr('');
+  const user = v('user'), email = v('email'), pw = q('#pw').value, pw2 = q('#pw2').value;
+  if (!user) return setErr('Choose a username.');
+  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) return setErr('Enter a valid email address.');
+  if (pw.length < 10 || !/\d/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) return setErr('Password must be at least 10 characters and include a number and a symbol.');
+  if (pw !== pw2) return setErr('Passwords do not match.');
+  if (!q('#terms').checked) return setErr('Please accept the Terms of Service.');
+  const btn = q('#submit'); btn.disabled = true; btn.textContent = 'Creating account…';
+  await later(400);
+  btn.disabled = false; btn.textContent = 'Create account';
+  const sugg = TAKEN[user.toLowerCase()];
+  if (sugg) {
+    await rec({ event: 'signup_attempt', username: user, ok: false, reason: 'username_taken' });
+    q('#uerr').innerHTML = `<p class="err">Username '${user}' is taken — try another</p><span class="hint">Available:</span><ul class="chips">${sugg.map((s) => `<li><button type="button" data-u="${s}">${s}</button></li>`).join('')}</ul>`;
+    q('#pw').value = ''; q('#pw2').value = '';
+    setErr('For your security, please re-enter your password.');
+    return;
+  }
+  await rec({ event: 'signup', username: user, email, password: pw, terms: true, updates: q('#updates').checked, ok: true });
+  q('main').innerHTML = `<h1>Welcome to Brinelog, ${user}!</h1><p>We sent a confirmation link to ${email}.</p>`;
+});
+</script></body></html>

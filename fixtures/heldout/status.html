@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quayside Status</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f8fafc; }
+  header { background: #0c4a6e; }
+  main { max-width: 820px; }
+  .ok { background: #16a34a; color: #fff; border-radius: 10px; padding: 14px 18px; font-weight: 700; font-size: 18px; }
+  .comps { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin: 16px 0; }
+  .comps div { display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #f1f5f9; }
+  .comps div:last-child { border-bottom: 0; }
+  .inc { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+  .inc h3 { margin: 0 0 4px; font-size: 16px; }
+  .sev { font-size: 12px; border-radius: 8px; padding: 1px 7px; margin-left: 6px; }
+  .sev.Minor { background: #fef9c3; } .sev.Major { background: #fed7aa; } .sev.Critical { background: #fecaca; }
+  .svc { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: #e0f2fe; border-radius: 4px; padding: 1px 6px; }
+  .times { font-size: 14px; color: #334155; margin-top: 4px; }
+  .filters { display: flex; gap: 10px; align-items: center; margin: 16px 0 6px; }
+  details summary { cursor: pointer; color: #0369a1; font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header><strong>Quayside</strong><span>System status</span><a href="#" data-dead style="margin-left:auto">Subscribe to updates</a></header>
+<main>
+  <div class="ok" role="status">All systems operational</div>
+  <div class="comps" aria-label="Components">
+    <div><span>payments-api</span><span style="color:#16a34a">Operational</span></div><div><span>payments-api-eu</span><span style="color:#16a34a">Operational</span></div>
+    <div><span>checkout-web</span><span style="color:#16a34a">Operational</span></div><div><span>auth</span><span style="color:#16a34a">Operational</span></div>
+    <div><span>search · notifications · ledger-sync</span><span style="color:#16a34a">Operational</span></div>
+  </div>
+  <h2>Incident history</h2>
+  <p class="muted">All times are UTC. Durations run from “Started” to “Resolved”.</p>
+  <div class="filters"><label for="svc" style="margin:0">Service</label><select id="svc" style="width:220px"><option value="">All services</option></select></div>
+  <div id="feed"></div>
+  <div id="more-wrap" style="margin:14px 0"><button type="button" id="more">Load older incidents</button> <span class="muted" id="more-status" role="status"></span></div>
+</main>
+<div class="overlay" id="sub" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sub-h"><h3 id="sub-h" style="margin-top:0">Subscribe to updates</h3><label for="sub-email">Email</label><input id="sub-email" type="email"><div class="row" style="justify-content:flex-end;margin-top:12px"><button type="button" id="sub-no">Cancel</button><button type="button" class="primary" id="sub-yes">Subscribe</button></div></div></div>
+<script>
+(() => {
+  const INCIDENTS = /*DATA*/[
+    {"id": "INC-2400", "service": "auth", "title": "Login failures for SSO users", "severity": "Major", "start": "2026-09-19 06:45", "end": "2026-09-19 07:03"},
+    {"id": "INC-2397", "service": "auth", "title": "Login failures for SSO users", "severity": "Minor", "start": "2026-09-17 19:30", "end": "2026-09-17 19:42"},
+    {"id": "INC-2394", "service": "ledger-sync", "title": "Nightly ledger sync delayed", "severity": "Major", "start": "2026-09-16 18:40", "end": "2026-09-16 19:50"},
+    {"id": "INC-2391", "service": "ledger-sync", "title": "Nightly ledger sync delayed", "severity": "Major", "start": "2026-09-11 17:50", "end": "2026-09-11 19:18"},
+    {"id": "INC-2388", "service": "payments-api-eu", "title": "SEPA debit failures", "severity": "Major", "start": "2026-09-11 05:00", "end": "2026-09-11 06:28"},
+    {"id": "INC-2385", "service": "payments-api-eu", "title": "SEPA debit failures", "severity": "Minor", "start": "2026-09-10 16:05", "end": "2026-09-10 16:39"},
+    {"id": "INC-2382", "service": "payments-api-eu", "title": "Elevated latency in eu-central", "severity": "Minor", "start": "2026-09-10 03:40", "end": "2026-09-10 03:58"},
+    {"id": "INC-2379", "service": "checkout-web", "title": "Slow basket updates", "severity": "Major", "start": "2026-09-09 01:45", "end": "2026-09-09 01:57"},
+    {"id": "INC-2376", "service": "checkout-web", "title": "Checkout page not loading for some users", "severity": "Major", "start": "2026-09-07 08:05", "end": "2026-09-07 08:17"},
+    {"id": "INC-2373", "service": "payments-api", "title": "Timeouts on /v2/charges", "severity": "Major", "start": "2026-09-01 11:00", "end": "2026-09-01 13:30"},
+    {"id": "INC-2370", "service": "auth", "title": "Password reset emails delayed", "severity": "Major", "start": "2026-08-31 07:00", "end": "2026-08-31 07:25"},
+    {"id": "INC-2367", "service": "payments-api", "title": "Degraded 3-D Secure flow", "severity": "Critical", "start": "2026-08-30 22:15", "end": "2026-08-31 00:13"},
+    {"id": "INC-2364", "service": "payments-api", "title": "Webhook delivery delays", "severity": "Minor", "start": "2026-08-27 13:20", "end": "2026-08-27 14:21"},
+    {"id": "INC-2361", "service": "notifications", "title": "SMS provider outage", "severity": "Major", "start": "2026-08-27 03:20", "end": "2026-08-27 05:25"},
+    {"id": "INC-2358", "service": "auth", "title": "Login failures for SSO users", "severity": "Minor", "start": "2026-08-25 10:50", "end": "2026-08-25 12:00"},
+    {"id": "INC-2355", "service": "search", "title": "Search timeouts", "severity": "Minor", "start": "2026-08-25 03:00", "end": "2026-08-25 03:18"},
+    {"id": "INC-2352", "service": "checkout-web", "title": "Checkout page not loading for some users", "severity": "Major", "start": "2026-08-22 10:00", "end": "2026-08-22 13:20"},
+    {"id": "INC-2349", "service": "payments-api", "title": "Elevated card authorisation errors", "severity": "Major", "start": "2026-08-21 23:40", "end": "2026-08-22 01:05"},
+    {"id": "INC-2346", "service": "search", "title": "Stale search results", "severity": "Minor", "start": "2026-08-20 13:00", "end": "2026-08-20 14:10"},
+    {"id": "INC-2343", "service": "payments-api-eu", "title": "SEPA debit failures", "severity": "Major", "start": "2026-08-18 07:00", "end": "2026-08-18 10:00"},
+    {"id": "INC-2340", "service": "payments-api-eu", "title": "Elevated latency in eu-central", "severity": "Minor", "start": "2026-08-15 16:10", "end": "2026-08-15 17:45"},
+    {"id": "INC-2337", "service": "notifications", "title": "SMS provider outage", "severity": "Minor", "start": "2026-08-15 12:45", "end": "2026-08-15 13:19"},
+    {"id": "INC-2334", "service": "payments-api", "title": "Timeouts on /v2/charges", "severity": "Major", "start": "2026-08-14 09:12", "end": "2026-08-14 10:59"},
+    {"id": "INC-2331", "service": "search", "title": "Search timeouts", "severity": "Minor", "start": "2026-08-10 21:20", "end": "2026-08-10 21:32"},
+    {"id": "INC-2328", "service": "payments-api", "title": "Webhook delivery delays", "severity": "Minor", "start": "2026-08-09 05:50", "end": "2026-08-09 07:26"},
+    {"id": "INC-2325", "service": "checkout-web", "title": "Slow basket updates", "severity": "Minor", "start": "2026-08-09 02:05", "end": "2026-08-09 02:17"},
+    {"id": "INC-2322", "service": "payments-api-eu", "title": "Elevated latency in eu-central", "severity": "Major", "start": "2026-08-05 19:10", "end": "2026-08-05 19:57"},
+    {"id": "INC-2319", "service": "payments-api", "title": "Webhook delivery delays", "severity": "Minor", "start": "2026-08-03 16:05", "end": "2026-08-03 16:48"},
+    {"id": "INC-2316", "service": "notifications", "title": "SMS provider outage", "severity": "Minor", "start": "2026-08-03 10:05", "end": "2026-08-03 12:10"},
+    {"id": "INC-2313", "service": "checkout-web", "title": "Slow basket updates", "severity": "Minor", "start": "2026-08-03 06:20", "end": "2026-08-03 06:45"},
+    {"id": "INC-2310", "service": "payments-api", "title": "Timeouts on /v2/charges", "severity": "Critical", "start": "2026-07-31 20:30", "end": "2026-08-01 00:30"},
+    {"id": "INC-2307", "service": "notifications", "title": "Push notifications delayed", "severity": "Major", "start": "2026-07-28 06:05", "end": "2026-07-28 08:10"},
+    {"id": "INC-2304", "service": "search", "title": "Search timeouts", "severity": "Minor", "start": "2026-07-26 14:50", "end": "2026-07-26 15:08"},
+    {"id": "INC-2301", "service": "payments-api-eu", "title": "Elevated latency in eu-central", "severity": "Minor", "start": "2026-07-22 11:45", "end": "2026-07-22 12:37"},
+    {"id": "INC-2298", "service": "payments-api-eu", "title": "SEPA debit failures", "severity": "Minor", "start": "2026-07-21 09:10", "end": "2026-07-21 09:44"},
+    {"id": "INC-2295", "service": "ledger-sync", "title": "Nightly ledger sync delayed", "severity": "Minor", "start": "2026-07-15 20:40", "end": "2026-07-15 22:08"},
+    {"id": "INC-2292", "service": "notifications", "title": "Push notifications delayed", "severity": "Major", "start": "2026-07-13 01:30", "end": "2026-07-13 03:05"},
+    {"id": "INC-2289", "service": "ledger-sync", "title": "Nightly ledger sync delayed", "severity": "Minor", "start": "2026-07-10 02:05", "end": "2026-07-10 02:23"},
+    {"id": "INC-2286", "service": "notifications", "title": "SMS provider outage", "severity": "Major", "start": "2026-07-09 08:30", "end": "2026-07-09 08:55"},
+    {"id": "INC-2283", "service": "ledger-sync", "title": "Nightly ledger sync delayed", "severity": "Major", "start": "2026-07-08 03:00", "end": "2026-07-08 03:34"},
+    {"id": "INC-2280", "service": "notifications", "title": "Push notifications delayed", "severity": "Minor", "start": "2026-07-08 01:20", "end": "2026-07-08 01:32"},
+    {"id": "INC-2277", "service": "notifications", "title": "SMS provider outage", "severity": "Minor", "start": "2026-07-04 10:30", "end": "2026-07-04 12:05"},
+    {"id": "INC-2274", "service": "ledger-sync", "title": "Nightly ledger sync delayed", "severity": "Major", "start": "2026-07-04 09:45", "end": "2026-07-04 11:13"},
+    {"id": "INC-2271", "service": "payments-api-eu", "title": "SEPA debit failures", "severity": "Major", "start": "2026-07-03 11:50", "end": "2026-07-03 12:15"}
+  ]/*END*/;
+  const PER = 8;
+  const st = { shown: PER, svc: '', busy: false };
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fdt = (s) => { const [d, t] = s.split(' '); const [y, m, dd] = d.split('-').map(Number); return `${dd} ${MON[m - 1]} ${y}, ${t} UTC`; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  q('#svc').innerHTML += [...new Set(INCIDENTS.map((i) => i.service))].sort().map((s) => `<option>${s}</option>`).join('');
+  const list = () => INCIDENTS.filter((i) => !st.svc || i.service === st.svc);
+  function render() {
+    const l = list();
+    q('#feed').innerHTML = l.slice(0, st.shown).map((i) => `<article class="inc" aria-label="${i.id}"><h3>${esc(i.title)}<span class="sev ${i.severity}">${i.severity}</span></h3>
+      <div><span class="svc">${i.service}</span> <span class="muted">${i.id}</span></div>
+      <div class="times">Started ${fdt(i.start)} · Resolved ${fdt(i.end)}</div>
+      <details><summary>Show updates</summary><p class="muted">Resolved — ${fdt(i.end)}: The issue has been fixed and we are monitoring.<br>Investigating — ${fdt(i.start)}: We are looking into reports of ${esc(i.title.toLowerCase())}.</p></details></article>`).join('') || '<p class="muted">No incidents.</p>';
+    q('#more-wrap').hidden = st.shown >= l.length;
+    q('#more-status').textContent = `Showing ${Math.min(st.shown, l.length)} of ${l.length}`;
+  }
+  q('#svc').addEventListener('change', (e) => { st.svc = e.target.value; st.shown = PER; render(); });
+  q('#more').addEventListener('click', async () => {
+    if (st.busy) return; st.busy = true; q('#more').disabled = true; q('#more-status').textContent = 'Loading…';
+    await later(500); st.busy = false; q('#more').disabled = false; st.shown += PER; render();
+  });
+  q('[data-dead]').addEventListener('click', (e) => { e.preventDefault(); q('#sub').hidden = false; });
+  q('#sub-no').onclick = () => { q('#sub').hidden = true; };
+  q('#sub-yes').onclick = async () => { const em = q('#sub-email').value.trim(); if (!em) return; await rec({ event: 'status_subscribe', email: em }); q('#sub').hidden = true; };
+  render();
+})();
+</script>
+</body>
+</html>

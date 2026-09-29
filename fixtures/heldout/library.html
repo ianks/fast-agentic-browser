@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quarrybank Libraries · Catalogue</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fafaf9; }
+  header { background: #312e81; }
+  main { max-width: 920px; }
+  .res { display: grid; grid-template-columns: 70px 1fr; gap: 14px; background: #fff; border: 1px solid #e7e5e4; border-radius: 10px; padding: 12px; margin: 10px 0; }
+  .cover { height: 96px; border-radius: 4px; background: linear-gradient(160deg, #a5b4fc, #312e81); }
+  .fmt { font-size: 12px; background: #eef2ff; color: #3730a3; border-radius: 8px; padding: 1px 7px; }
+  .avail { font-size: 13px; }
+  .acts { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+  .holdbox { background: #fff; border: 2px solid #312e81; border-radius: 10px; padding: 14px 16px; margin-top: 10px; }
+  .opt { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+  .survey { position: fixed; right: 20px; bottom: 20px; width: 360px; background: #fff; border: 1px solid #c7d2fe; border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.2); padding: 16px 18px; z-index: 40; }
+  .scrim { position: fixed; inset: 0; background: rgba(15,15,40,.35); z-index: 39; }
+</style>
+</head>
+<body>
+<header><strong>Quarrybank Libraries</strong><a href="#/">Catalogue</a><a href="#/account">My account</a><span style="margin-left:auto">Card ••4471 · Idunn Castellanos-Reyes</span></header>
+<main id="view"></main>
+<div class="scrim" id="scrim" hidden></div>
+<div class="survey" id="survey" role="dialog" aria-modal="true" aria-labelledby="sv-h" hidden>
+  <h3 id="sv-h" style="margin-top:0">Help us improve our catalogue</h3>
+  <p>Would you take a 2-minute survey about finding books online?</p>
+  <div class="row" id="sv-actions"></div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const ITEMS = [
+    { id: 'b1', title: 'The Salt Road Almanac', author: 'Imogen Vey', format: 'Book', year: 2025, avail: 'All copies on loan · 3 holds' },
+    { id: 'b2', title: 'The Salt Road Almanac', author: 'Imogen Vey', format: 'Large print', year: 2025, avail: '1 of 1 copies available at Harbourside' },
+    { id: 'b3', title: 'The Salt Road Almanac', author: 'Imogen Vey', format: 'eBook', year: 2025, avail: 'Borrow now on Libby' },
+    { id: 'b4', title: 'The Salt Road', author: 'Imogen Vey', format: 'Book', year: 2021, avail: '2 of 4 copies available' },
+    { id: 'b5', title: 'Salt Road Almanac: A Walker\'s Companion', author: 'Tamsin Roe', format: 'Book', year: 2019, avail: '1 of 2 copies available' },
+    { id: 'b6', title: 'The Salt Road Almanac', author: 'Imogen Vey', format: 'Audiobook CD', year: 2025, avail: 'On order' },
+  ];
+  const BRANCHES = ['Central', 'Harbourside', 'Mill Lane', 'Mill Lane Mobile Library (Tue & Thu)', 'Millbrook', 'Quarrybank Green'];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const view = q('#view');
+  const st = { term: '', holdOpen: false, surveyDone: false };
+  // Button wording and order vary per visit.
+  const L = { hold: pick(['Place hold', 'Request this item', 'Reserve a copy']), list: pick(['Add to list', 'Save to a list']), share: pick(['Share', 'Copy link']), confirm: pick(['Confirm hold', 'Submit request']) };
+  const blocked = () => !q('#survey').hidden;
+  function showSurvey() {
+    if (st.surveyDone) return;
+    q('#sv-actions').innerHTML = shuffle(['<button type="button" class="primary" id="sv-yes">Take the survey</button>', '<button type="button" id="sv-no">Not now</button>']).join('');
+    q('#survey').hidden = false; q('#scrim').hidden = false; view.setAttribute('inert', '');
+  }
+  q('#sv-actions').addEventListener('click', async (e) => {
+    const id = e.target.id;
+    if (id === 'sv-yes') { await rec({ event: 'survey_start' }); toast('Thanks! The survey opened in a new tab.'); }
+    if (id === 'sv-yes' || id === 'sv-no') { st.surveyDone = true; q('#survey').hidden = true; q('#scrim').hidden = true; view.removeAttribute('inert'); }
+  });
+  function route() {
+    const p = (location.hash || '#/').slice(2).split('/'); st.holdOpen = false; view.onclick = null;
+    if (p[0] === 'item') return renderItem(p[1]);
+    if (p[0] === 'account') { view.innerHTML = '<h1>My account</h1><p>0 loans · 0 holds · no fines</p>'; return; }
+    const t = st.term.toLowerCase();
+    const res = t ? ITEMS.filter((i) => (i.title + ' ' + i.author).toLowerCase().includes(t)) : [];
+    view.innerHTML = `<h1>Search the catalogue</h1><div class="row"><input type="search" id="s" aria-label="Search the catalogue" placeholder="Title, author or keyword" value="${esc(st.term)}" style="width:360px"><button type="button" id="s-go">Search</button></div>
+      ${t ? `<p class="muted">${res.length} results for “${esc(st.term)}”</p>` + shuffle(res).map((i) => `<article class="res"><div class="cover" role="img" aria-label="Cover of ${esc(i.title)}"></div><div><a href="#/item/${i.id}"><strong>${esc(i.title)}</strong></a> <span class="fmt">${i.format}</span><div>${esc(i.author)} · ${i.year}</div><div class="avail muted">${i.avail}</div></div></article>`).join('') : ''}`;
+    const go = () => { if (blocked()) return; st.term = q('#s').value.trim(); route(); };
+    q('#s-go').onclick = go; q('#s').onkeydown = (e) => { if (e.key === 'Enter') go(); };
+  }
+  function renderItem(id) {
+    const i = ITEMS.find((x) => x.id === id); if (!i) { view.innerHTML = '<p>Item not found.</p>'; return; }
+    const acts = shuffle([`<button type="button" class="primary" id="a-hold">${L.hold}</button>`, `<button type="button" id="a-list">${L.list}</button>`, `<button type="button" id="a-share">${L.share}</button>`]);
+    view.innerHTML = `<p><a href="#/">← Back to results</a></p><div class="res" style="grid-template-columns:120px 1fr"><div class="cover" style="height:170px"></div><div><h1 style="margin:0">${esc(i.title)}</h1><div>${esc(i.author)} · ${i.year} · <span class="fmt">${i.format}</span></div><p class="avail">${i.avail}</p><div class="acts">${acts.join('')}</div>
+      ${st.holdOpen ? `<section class="holdbox" aria-labelledby="hb-h"><h2 id="hb-h" style="margin-top:0;font-size:18px">Pickup details</h2>
+        <label for="h-branch">Pickup location</label><select id="h-branch" style="width:340px"><option value="">Choose a branch…</option>${shuffle(BRANCHES).map((b) => `<option>${b}</option>`).join('')}</select>
+        <div role="radiogroup" aria-label="How should we tell you it's ready?" style="margin-top:10px"><span style="font-weight:600">Notify me by</span>${shuffle(['Email', 'Text message', 'Phone call']).map((n) => `<label class="opt"><input type="radio" name="notify" value="${n}"> ${n}</label>`).join('')}</div>
+        <div class="err" id="h-err" role="alert" hidden style="color:#b91c1c;font-size:13px"></div>
+        <div class="row" style="margin-top:10px">${shuffle([`<button type="button" class="primary" id="h-go">${L.confirm}</button>`, '<button type="button" id="h-cancel">Cancel</button>']).join('')}</div></section>` : ''}</div></div>`;
+    view.onclick = async (e) => {
+      if (blocked()) return;
+      const id2 = e.target.id;
+      if (id2 === 'a-hold') { st.holdOpen = true; renderItem(i.id); }
+      if (id2 === 'a-list') { await rec({ event: 'list_add', title: i.title, format: i.format }); toast('Added to your reading list.'); }
+      if (id2 === 'a-share') toast('Link copied.');
+      if (id2 === 'h-cancel') { st.holdOpen = false; renderItem(i.id); }
+      if (id2 === 'h-go') {
+        const goBtn = e.target;
+        const br = q('#h-branch').value; const nt = (qa('input[name=notify]').find((r) => r.checked) || {}).value;
+        const err = (m) => { q('#h-err').textContent = m; q('#h-err').hidden = !m; };
+        if (!br) return err('Choose where to pick it up.');
+        if (!nt) return err('Choose how we should notify you.');
+        goBtn.disabled = true; await later(400);
+        await rec({ event: 'hold_place', title: i.title, author: i.author, format: i.format, branch: br, notify: nt });
+        st.holdOpen = false; view.onclick = null;
+        view.innerHTML = `<div class="holdbox"><h2 style="margin-top:0">Hold placed</h2><p>${esc(i.title)} (${i.format}) — you're number 4 in the queue. We'll contact you by ${nt.toLowerCase()} when it's ready at ${br}.</p><p><a href="#/">Back to the catalogue</a></p></div>`;
+      }
+    };
+  }
+  window.addEventListener('hashchange', route);
+  route();
+  setTimeout(showSurvey, 2200);
+})();
+</script>
+</body>
+</html>

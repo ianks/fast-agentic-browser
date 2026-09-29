@@ -1,0 +1,61 @@
+#!/bin/bash
+# A manual QA workspace: a visible browser on the `demo` session and a
+# terminal wired to it. If the Glide window manager is installed (macOS), the
+# two tile on a Glide-activated space (Alt+Z); otherwise just the terminal
+# opens. `scripts/demo shell` is the terminal half.
+# Needs OPENROUTER_API_KEY, from the environment or ~/.config/fab/env.
+set -euo pipefail
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+FAB="$REPO/target/release/fab"
+SESSION="${FAB_SESSION:-demo}"
+
+# The key: the environment, else the file fab reads it from.
+ENV_FILE="${FAB_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/fab}/env"
+if [ -z "${OPENROUTER_API_KEY:-}" ] && [ -f "$ENV_FILE" ]; then
+  set -a; . "$ENV_FILE"; set +a
+fi
+: "${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY, or put it in $ENV_FILE}"
+export OPENROUTER_API_KEY
+
+if [ "${1:-}" = shell ]; then
+  export FAB_SESSION="$SESSION" PATH="$REPO/target/release:$PATH"
+  cd "$REPO"
+  cat <<MSG
+fab demo · session "$SESSION" · the browser window beside this one is live
+
+  fab do "open news.ycombinator.com and tell me the top story's points"
+  fab do "the first 5 stories with points and author" -v   # -v: decisions as they happen
+  fab do "..." --url fixture:scrape/recipes/index.html     # a local fixture
+  fab do "..." --print > q.fab && fab run q.fab            # see / edit the program
+  fab close                                                # closes the browser too
+
+MSG
+  exec bash --norc -i
+fi
+
+echo "building…"
+(cd "$REPO" && cargo build --release --locked --offline -q -p fast-agentic-browser)
+# The browser: a visible window on the session, started once and kept (no idle timeout).
+"$FAB" -s "$SESSION" --idle 0 do "open about:blank" >/dev/null
+if ! command -v glide >/dev/null 2>&1; then
+  open -na Ghostty --args -e "$REPO/scripts/demo" shell 2>/dev/null || echo "run: $REPO/scripts/demo shell"
+  exit 0
+fi
+# The browser's own process (the session's pid is fab's daemon): the one on its profile.
+PID=$(pgrep -f "profiles/[a-z]*/$SESSION( |$)" | head -1)
+# The terminal goes below the browser: focus the browser and split its
+# node vertically (Glide's Alt+=), so the next window opens underneath.
+osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $PID) to true" \
+  -e 'delay 0.4' -e 'tell application "System Events" to key code 24 using option down'
+sleep 0.4
+open -na Ghostty --args -e "$REPO/scripts/demo" shell
+# Glide may still file the new window beside the split rather than in it:
+# then move it (Alt+Shift+H) into the browser's column, below the browser.
+sleep 1.5
+TERM_PID=$(pgrep -nf "ghostty -e $REPO/scripts/demo shell")
+y() { osascript -e "tell application \"System Events\" to item 2 of (position of first window of (first process whose unix id is $1))"; }
+osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $TERM_PID) to true" -e 'delay 0.4'
+if [ "$(y "$TERM_PID")" -le "$(y "$PID")" ]; then
+  osascript -e 'tell application "System Events" to key code 4 using {option down, shift down}'
+fi
+echo "ready: browser above, terminal below (Alt+Z first if Glide isn't tiling this space)"

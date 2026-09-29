@@ -1,0 +1,388 @@
+# Scenario suite. Each scenario has scripted steps (what an LLM would send to
+# `act`/`run`/`extract`) and a goal for planner mode. Checks use the events the
+# fixture page posts to /__record.
+
+[[scenario]]
+name = "login"
+fixture = "login.html"
+tags = ["form", "nav", "core"]
+goal = "Sign in as alice with the password hunter2."
+paraphrases = [
+  "log in as alice, password hunter2",
+  "Hi! Could you sign me in? My username is alice and my password is hunter2. Thanks!",
+  "Using the password hunter2, sign in as alice.",
+  "Log into the account alice with hunter2 as the password.",
+]
+steps = [{ act = 'log in as "alice" with password "hunter2"' }]
+expect_records = [{ event = "login", user = "alice", pass = "hunter2" }]
+allow_records = []
+
+[[scenario]]
+name = "login_noquote"
+fixture = "login.html"
+tags = ["form", "nav", "spans"]
+goal = "Sign in as bob with password s3cret-pw, and keep me signed in."
+paraphrases = [
+  "log in as bob, pw s3cret-pw, keep me signed in",
+  "Hey, can you sign me in as bob? The password is s3cret-pw. Oh, and please make sure I stay signed in afterwards so I don't have to log in again.",
+  "Keep me signed in: sign in as bob using the password s3cret-pw.",
+  "Log on as bob with the password s3cret-pw and choose to stay logged in.",
+]
+steps = [{ act = "sign in as bob with password s3cret-pw and keep me signed in" }]
+expect_records = [{ event = "login", user = "bob", pass = "s3cret-pw", remember = "on" }]
+allow_records = [{ event = "login", user = "bob", pass = "s3cret-pw" }]
+
+[[scenario]]
+name = "search_open"
+fixture = "search.html"
+tags = ["fetch", "nav", "core"]
+goal = "Search for a wireless mouse and open the product page for the Logitech MX Master 3S."
+paraphrases = [
+  "search wireless mouse, then open the Logitech MX Master 3S product page",
+  "Hi! I'm shopping for a wireless mouse. Could you search for one and then pull up the product page for the Logitech MX Master 3S? Thanks!",
+  "Open the product page for the Logitech MX Master 3S, getting there by first searching for a wireless mouse.",
+  "Look up a wireless mouse using the search, then go to the Logitech MX Master 3S product page.",
+]
+steps = [
+  { act = 'search for "wireless mouse"' },
+  { act = 'open the result "Logitech MX Master 3S"' },
+]
+expect_records = [{ event = "search", q = "wireless mouse" }, { event = "view", id = "mx3s" }]
+forbid_records = [{ event = "view", id = "mx3" }]
+allow_records = [{ event = "search" }, { event = "view" }]
+
+[[scenario]]
+name = "search_open_one"
+fixture = "search.html"
+tags = ["fetch", "nav", "multistep"]
+goal = "Search for a wireless mouse and open the product page for the Logitech MX Master 3S."
+paraphrases = [
+  "Search: wireless mouse. Open: Logitech MX Master 3S product page.",
+  "Hey there! Can you run a search for a wireless mouse and then open up the product page of the Logitech MX Master 3S for me? Much appreciated.",
+  "I need the product page for the Logitech MX Master 3S open; start by searching for a wireless mouse.",
+  "Do a search for a wireless mouse, then navigate to the product page for the Logitech MX Master 3S.",
+]
+steps = [{ act = 'search for "wireless mouse" and open the result "Logitech MX Master 3S"' }]
+expect_records = [{ event = "search", q = "wireless mouse" }, { event = "view", id = "mx3s" }]
+forbid_records = [{ event = "view", id = "mx3" }]
+allow_records = [{ event = "search" }, { event = "view" }]
+
+[[scenario]]
+name = "product_variant"
+fixture = "product.html"
+tags = ["form", "radio", "select", "core"]
+goal = "Add two blue Oxford Shirts in size M to the cart."
+paraphrases = [
+  "cart: two blue Oxford Shirts, size M",
+  "Could you please put two blue Oxford Shirts in size M into my cart? I need them for work. Thanks so much!",
+  "In size M, add two blue Oxford Shirts to the cart.",
+  "Put two Oxford Shirts in blue, size M, into the shopping cart.",
+]
+steps = [{ act = "add 2 blue Oxford Shirts in size M to the cart" }]
+expect_records = [{ event = "cart", product = "Oxford Shirt", color = "Blue", size = "M", qty = "2" }]
+forbid_records = [{ event = "cart", product = "Blue Denim Shirt" }]
+allow_records = []
+
+[[scenario]]
+name = "checkout"
+fixture = "checkout.html"
+tags = ["form", "bigform", "select", "radio", "core"]
+goal = "Check out: name Ada Lovelace, email ada@example.com, address 12 Analytical St, London, postcode NW1 6XE, United Kingdom, Express shipping, accept the terms, and place the order. No gift wrap."
+paraphrases = [
+  "Checkout: Ada Lovelace, ada@example.com, 12 Analytical St, London, postcode NW1 6XE, United Kingdom. Express shipping, accept terms, place order. No gift wrap.",
+  "Hi! I'm ready to check out. Please use the name Ada Lovelace and the email ada@example.com, and ship to 12 Analytical St, London, postcode NW1 6XE, United Kingdom. I'd like Express shipping. Go ahead and accept the terms and place the order, and please don't add any gift wrap. Thanks!",
+  "Place the order with Express shipping and no gift wrap after accepting the terms. Use email ada@example.com, name Ada Lovelace, and address 12 Analytical St, London, postcode NW1 6XE, United Kingdom.",
+  "Complete the purchase for Ada Lovelace (ada@example.com), shipping to 12 Analytical St, London, postcode NW1 6XE, United Kingdom. Choose Express shipping, agree to the terms, and submit the order. Skip the gift wrap.",
+]
+steps = [{ act = 'check out with name "Ada Lovelace", email "ada@example.com", street "12 Analytical St", city "London", postal code "NW1 6XE", country United Kingdom, Express shipping, agree to the terms, and place the order' }]
+expect_records = [{ event = "order", name = "Ada Lovelace", email = "ada@example.com", addr = "12 Analytical St", city = "London", zip = "NW1 6XE", country = "United Kingdom", ship = "express", gift = false }]
+allow_records = [{ event = "back" }]
+
+[[scenario]]
+name = "cookie_banner"
+fixture = "cookies.html"
+tags = ["modal", "core"]
+goal = "Reject all cookies, then subscribe ada@example.com to the newsletter."
+paraphrases = [
+  "Reject all cookies first, then newsletter signup for ada@example.com.",
+  "First, please reject all the cookies, I don't want any tracking. After that, could you sign ada@example.com up for the newsletter? Thanks!",
+  "Subscribe ada@example.com to the newsletter, but reject all cookies before you do that.",
+  "Decline all cookies, and afterwards sign ada@example.com up for the newsletter.",
+]
+steps = [
+  { act = "reject all cookies" },
+  { act = 'subscribe to the newsletter with "ada@example.com"' },
+]
+expect_records = [{ event = "consent", choice = "reject" }, { event = "subscribe", email = "ada@example.com" }]
+allow_records = []
+
+[[scenario]]
+name = "confirm_delete"
+fixture = "files.html"
+tags = ["modal", "table", "core"]
+goal = "Delete the file report-2024.pdf (confirm the deletion)."
+paraphrases = [
+  "delete report-2024.pdf, confirm it",
+  "Hey, I need to get rid of the file report-2024.pdf. Could you delete it for me and confirm the deletion? Thanks!",
+  "Confirm the deletion when you delete the file report-2024.pdf.",
+  "Remove the file report-2024.pdf and confirm that it should be deleted.",
+]
+steps = [{ act = 'delete the file "report-2024.pdf" and confirm' }]
+expect_records = [{ event = "deleted", file = "report-2024.pdf" }]
+forbid_records = [{ event = "deleted", file = "report-2024-draft.pdf" }, { event = "deleted", file = "report-2023.pdf" }]
+allow_records = [{ event = "cancel" }]
+
+[[scenario]]
+name = "invoice_row"
+fixture = "invoices.html"
+tags = ["table", "prune", "core"]
+goal = "Mark invoice #1042 as paid."
+paraphrases = [
+  "invoice #1042: mark paid",
+  "Hi, could you do me a quick favor and mark invoice #1042 as paid? Thanks a lot!",
+  "The invoice to mark as paid is #1042.",
+  "Record invoice #1042 as paid.",
+]
+steps = [{ act = "mark invoice #1042 as paid" }]
+expect_records = [{ event = "paid", id = "1042" }]
+forbid_records = [{ event = "delete" }, { event = "paid", id = "1041" }, { event = "paid", id = "1043" }]
+allow_records = [{ event = "view" }]
+
+[[scenario]]
+name = "biglist"
+fixture = "biglist.html"
+tags = ["prune", "big"]
+goal = "Send a message to Zelda Fitzgerald."
+paraphrases = [
+  "message Zelda Fitzgerald",
+  "Hi! Could you please send Zelda Fitzgerald a message for me? Thanks a lot!",
+  "Zelda Fitzgerald is who I want to send a message to.",
+  "Reach out to Zelda Fitzgerald with a message.",
+]
+steps = [{ act = 'message "Zelda Fitzgerald"' }]
+expect_records = [{ event = "message", to = "Zelda Fitzgerald" }]
+forbid_records = [{ event = "message", to = "Zelda Fitzroy" }, { event = "call" }]
+allow_records = []
+
+[[scenario]]
+name = "spa_tabs"
+fixture = "spa.html"
+tags = ["fetch", "settle", "multistep"]
+goal = "Leave a 4-star review of the kettle with the exact text \"Great kettle, boils fast\"."
+paraphrases = [
+  "4-star review of the kettle, exact text \"Great kettle, boils fast\"",
+  "I love this kettle! Could you leave a 4-star review of it for me with exactly this text: \"Great kettle, boils fast\"? Thanks!",
+  "Using the exact text \"Great kettle, boils fast\", leave a 4-star review of the kettle.",
+  "Post a review of the kettle rating it 4 stars, with precisely the text \"Great kettle, boils fast\".",
+]
+steps = [
+  { act = "open the Reviews tab" },
+  { act = 'write a review with a rating of 4 stars and the text "Great kettle, boils fast", then submit it' },
+]
+expect_records = [{ event = "review", rating = "4", text = "Great kettle, boils fast" }]
+allow_records = []
+
+[[scenario]]
+name = "combobox"
+fixture = "combobox.html"
+tags = ["aria", "multistep"]
+goal = "Change the time zone to Europe/Berlin and save the settings."
+paraphrases = [
+  "time zone: Europe/Berlin, then save",
+  "I just moved, so could you switch my time zone to Europe/Berlin and then save the settings? Thanks!",
+  "Save the settings after changing the time zone to Europe/Berlin.",
+  "Set the time zone to Europe/Berlin and save your settings.",
+]
+steps = [{ act = "set the time zone to Europe/Berlin and save the settings" }]
+expect_records = [{ event = "settings", tz = "Europe/Berlin", lang = "English" }]
+allow_records = [{ event = "cancel" }]
+
+[[scenario]]
+name = "shadow_dom"
+fixture = "shadow.html"
+tags = ["shadow"]
+goal = "Follow Grace Hopper."
+paraphrases = [
+  "follow Grace Hopper",
+  "Hey, I'm a huge fan of Grace Hopper. Could you follow her for me?",
+  "Grace Hopper is the one I want to follow.",
+  "Start following Grace Hopper.",
+]
+steps = [{ act = "follow Grace Hopper" }]
+expect_records = [{ event = "follow", who = "Grace Hopper" }]
+forbid_records = [{ event = "follow", who = "Ada Lovelace" }, { event = "follow", who = "Alan Turing" }]
+allow_records = [{ event = "view" }]
+
+[[scenario]]
+name = "iframe_form"
+fixture = "iframe.html"
+tags = ["iframe", "form"]
+goal = "Subscribe grace@example.com to the newsletter."
+paraphrases = [
+  "newsletter signup: grace@example.com",
+  "Hi! Could you sign grace@example.com up for the newsletter, please? She really wants to get it.",
+  "For the newsletter, add grace@example.com as a subscriber.",
+  "Register grace@example.com for the newsletter.",
+]
+steps = [{ act = 'subscribe "grace@example.com" to the newsletter' }]
+expect_records = [{ event = "subscribe", email = "grace@example.com" }]
+forbid_records = [{ event = "contact" }]
+allow_records = []
+
+[[scenario]]
+name = "table_extract"
+fixture = "pricing.html"
+tags = ["extract", "table", "core"]
+goal = "What is the monthly price of the Pro plan, and how much storage does Starter include? Answer like: Pro <price>, Starter <storage>."
+paraphrases = [
+  "Pro plan monthly price + Starter storage? Answer like: Pro <price>, Starter <storage>.",
+  "Hey! I'm comparing plans. Could you tell me how much the Pro plan costs per month, and how much storage the Starter plan includes? Please answer like: Pro <price>, Starter <storage>.",
+  "How much storage does Starter include, and what is the monthly price of the Pro plan? Answer like: Pro <price>, Starter <storage>.",
+  "Find the Pro plan's cost per month and the storage allowance of Starter. Reply in this format: Pro <price>, Starter <storage>.",
+]
+steps = [
+  { extract = "What is the monthly price of the Pro plan?", expect = "$29" },
+  { extract = "How much storage does the Starter plan include?", expect = "50 GB" },
+  { extract = "Do students get a discount?", expect = "Starter plan free" },
+]
+allow_records = []
+expect_answer = "$29"
+
+[[scenario]]
+name = "pagination"
+fixture = "blog.html"
+tags = ["fetch", "multistep"]
+goal = "Open the blog post titled 'Borrow Checker Blues' (it is on one of the later pages)."
+paraphrases = [
+  "open the post 'Borrow Checker Blues' (on one of the later pages)",
+  "Hey, there's a blog post called 'Borrow Checker Blues' that I've been meaning to read. It's on one of the later pages. Could you open it for me?",
+  "On one of the later pages there is a blog post titled 'Borrow Checker Blues'; open it.",
+  "Find and view the blog article titled 'Borrow Checker Blues', which is listed on one of the later pages.",
+]
+steps = [
+  { act = "go to page 3" },
+  { act = 'open the post "Borrow Checker Blues"' },
+]
+expect_records = [{ event = "view", slug = "borrow-checker-blues" }]
+allow_records = [{ event = "view" }]
+
+[[scenario]]
+name = "accordion_form"
+fixture = "faq.html"
+tags = ["hidden", "multistep", "form"]
+goal = "Contact support about shipping with the exact message \"My order is late\"."
+paraphrases = [
+  "contact support re: shipping, exact message \"My order is late\"",
+  "Ugh, my package still hasn't shown up. Could you contact support about shipping for me and send exactly this message: \"My order is late\"? Thanks.",
+  "Send the exact message \"My order is late\" to support, about shipping.",
+  "Reach out to support regarding shipping, using precisely the message \"My order is late\".",
+]
+steps = [{ act = 'open "Still need help?" and send a Shipping message saying "My order is late"' }]
+expect_records = [{ event = "contact", topic = "Shipping", msg = "My order is late" }]
+allow_records = []
+
+[[scenario]]
+name = "editor"
+fixture = "editor.html"
+tags = ["form", "contenteditable"]
+goal = "Publish a post titled 'Hello world' whose body is 'First post!'."
+paraphrases = [
+  "publish post: title 'Hello world', body 'First post!'",
+  "I'm finally starting my blog! Could you publish a post for me titled 'Hello world', with the body 'First post!'? Thanks!",
+  "With the body 'First post!' and the title 'Hello world', publish a post.",
+  "Create and publish a post named 'Hello world' that has 'First post!' as its body.",
+]
+steps = [{ act = 'publish a post titled "Hello world" with the body "First post!"' }]
+expect_records = [{ event = "publish", title = "Hello world", body = "First post!" }]
+allow_records = [{ event = "draft", title = "Hello world", body = "First post!" }]
+
+[[scenario]]
+name = "load_more"
+fixture = "loadmore.html"
+tags = ["fetch", "multistep", "search"]
+goal = "Open the details page of the Quantum Kettle."
+paraphrases = [
+  "open Quantum Kettle details",
+  "I'm curious about the Quantum Kettle. Could you open its details page for me?",
+  "The Quantum Kettle: please open its details page.",
+  "Go to the details page for the Quantum Kettle.",
+]
+steps = [{ act = 'open the details of "Quantum Kettle"' }]
+expect_records = [{ event = "view", id = "quantum-kettle" }]
+allow_records = [{ event = "view" }]
+
+[[scenario]]
+name = "datepicker"
+fixture = "datepicker.html"
+tags = ["picker", "multistep", "hard"]
+goal = "Search hotels checking in on October 14, 2026, for 2 guests (1 night)."
+paraphrases = [
+  "hotel search: check-in October 14, 2026, 2 guests, 1 night",
+  "Hi! I'm planning a trip. Could you search for hotels with check-in on October 14, 2026, for 2 guests? It's just for 1 night. Thanks!",
+  "For 2 guests and 1 night, search hotels with check-in on October 14, 2026.",
+  "Look for hotels for 2 guests arriving October 14, 2026 and staying 1 night.",
+]
+steps = [{ act = "choose check-in October 14, 2026 and 2 guests, then search hotels" }]
+expect_records = [{ event = "search", checkin = "2026-10-14", guests = "2", nights = "1 night" }]
+allow_records = [{ event = "search" }]
+
+[[scenario]]
+name = "wizard_distractor"
+fixture = "wizard.html"
+tags = ["distractor", "radio"]
+goal = "Choose the Basic plan and continue to the next step."
+paraphrases = [
+  "Basic plan, then continue",
+  "I don't need anything fancy. Could you pick the Basic plan and continue to the next step? Thanks!",
+  "Continue to the next step once you've chosen the Basic plan.",
+  "Select the Basic plan and proceed to the next step.",
+]
+steps = [{ act = "choose the Basic plan and continue" }]
+expect_records = [{ event = "step", step = 2, plan = "Basic" }]
+forbid_records = [{ event = "upgrade" }, { event = "cancel" }]
+allow_records = []
+
+[[scenario]]
+name = "toggles"
+fixture = "toggles.html"
+tags = ["aria", "switch"]
+goal = "Turn off email notifications, turn on dark mode, and save."
+paraphrases = [
+  "email notifications off, dark mode on, save",
+  "My inbox is flooded and my eyes hurt at night. Please turn off email notifications and turn on dark mode, then save. Thanks!",
+  "Turn on dark mode and turn off email notifications, then save.",
+  "Disable email notifications, enable dark mode, and save the changes.",
+]
+steps = [{ act = "turn off email notifications, turn on dark mode, and save the changes" }]
+expect_records = [{ event = "save", email = "false", sms = "false", push = "true", dark = "true", digest = "true" }]
+allow_records = []
+
+[[scenario]]
+name = "enter_submit"
+fixture = "docsearch.html"
+tags = ["enter"]
+goal = "Search the documentation for 'rate limits'."
+paraphrases = [
+  "docs search: 'rate limits'",
+  "I keep running into limits on the API. Could you search the documentation for 'rate limits' for me?",
+  "For 'rate limits', search the documentation.",
+  "Look up 'rate limits' in the documentation.",
+]
+steps = [{ act = 'search the documentation for "rate limits"' }]
+expect_records = [{ event = "docsearch", q = "rate limits" }]
+allow_records = [{ event = "docsearch" }]
+
+[[scenario]]
+name = "run_batch"
+fixture = "cookies.html"
+tags = ["run"]
+goal = "Accept cookies and subscribe ada@example.com to the newsletter."
+paraphrases = [
+  "accept cookies, subscribe ada@example.com to the newsletter",
+  "Cookies are fine with me, so please accept them. Then could you sign ada@example.com up for the newsletter? Thanks!",
+  "Subscribe ada@example.com to the newsletter and accept cookies.",
+  "Allow cookies and sign ada@example.com up for the newsletter.",
+]
+steps = [{ run = ["accept all cookies", 'subscribe to the newsletter with "ada@example.com"'] }]
+expect_records = [{ event = "consent", choice = "accept" }, { event = "subscribe", email = "ada@example.com" }]
+allow_records = []

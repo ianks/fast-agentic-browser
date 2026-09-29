@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><title>New post · Scribe</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>#body{min-height:120px;border:1px solid #bbb;border-radius:4px;padding:8px;width:520px}</style></head>
+<body><header><strong>Scribe</strong><a href="#">Posts</a><a href="#">Drafts</a></header>
+<main><h1>New post</h1>
+<label for="title">Title</label><input id="title" type="text" style="width:520px">
+<label id="bl">Body</label><div id="body" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="bl"></div>
+<label for="tags">Tags</label><input id="tags" type="text" placeholder="comma separated">
+<div class="row" style="margin-top:14px"><button id="draft">Save draft</button><button class="primary" id="pub">Publish</button><button id="disc">Discard</button></div>
+<p id="st" role="status"></p></main>
+<script>
+const val = () => ({ title: q('#title').value.trim(), body: q('#body').innerText.trim(), tags: q('#tags').value.trim() });
+q('#draft').onclick = () => rec({ event: 'draft', ...val() });
+q('#disc').onclick = () => rec({ event: 'discard' });
+q('#pub').onclick = async () => { const v = val(); if (!v.title || !v.body) { q('#st').textContent = 'Title and body are required.'; return; } await rec({ event: 'publish', ...v }); q('#st').textContent = 'Published!'; };
+</script></body></html>

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deskwright · Room booking</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  header { background: #3b2f63; }
+  .wrap { display: grid; grid-template-columns: 230px 1fr; gap: 20px; padding: 18px 24px; }
+  .wrap.drawer-open { grid-template-columns: 230px 1fr 320px; }
+  .filters label { margin-top: 12px; }
+  .filters select { width: 200px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #ddd; margin-bottom: 12px; }
+  .tabs button { border: 0; border-bottom: 3px solid transparent; background: none; border-radius: 0; }
+  .tabs button[aria-selected=true] { border-bottom-color: #6d28d9; font-weight: 600; }
+  .datebar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .grid { overflow-x: auto; }
+  .grid table { font-size: 12px; }
+  .grid th { font-weight: 500; color: #555; white-space: nowrap; }
+  .grid td { padding: 2px; border: 1px solid #eee; }
+  .grid td.room { white-space: nowrap; font-size: 14px; padding: 4px 8px; }
+  .slot { padding: 3px 4px; font-size: 11px; border-radius: 3px; border: 1px solid #c4b5fd; background: #f5f3ff; }
+  .slot[disabled] { background: #e5e7eb; border-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+  .slot.sel { background: #6d28d9; color: #fff; }
+  .drawer { border-left: 1px solid #ddd; padding-left: 18px; }
+  .drawer input[type=text] { width: 260px; }
+  .banner { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px; border-radius: 6px; margin: 10px 0; }
+  .err { color: #b91c1c; font-size: 13px; }
+  .bk { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+  .cap { color: #6b7280; font-size: 12px; }
+</style>
+</head>
+<body>
+<header><strong>Deskwright</strong><span>Workplace</span><span style="margin-left:auto">Priyanka Valdés</span></header>
+<div class="wrap" id="wrap">
+  <aside class="filters" aria-label="Filters">
+    <label for="bld">Building</label>
+    <select id="bld">
+      <option value="Foundry">Foundry</option>
+      <option value="Harbour">Harbour</option>
+      <option value="Quay" selected>Quay (your building)</option>
+    </select>
+    <label for="cap">Seats</label>
+    <select id="cap">
+      <option value="0">Any size</option>
+      <option value="4">4 or more</option>
+      <option value="8">8 or more</option>
+      <option value="12">12 or more</option>
+    </select>
+    <fieldset style="border:0;padding:0;margin-top:12px"><legend style="font-weight:600">Equipment</legend>
+      <label style="font-weight:400"><input type="checkbox" class="feat" value="display"> Display screen</label>
+      <label style="font-weight:400"><input type="checkbox" class="feat" value="video"> Video bar</label>
+      <label style="font-weight:400"><input type="checkbox" class="feat" value="whiteboard"> Whiteboard</label>
+    </fieldset>
+  </aside>
+
+  <section>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-find" aria-selected="true" aria-controls="p-find">Find a room</button>
+      <button role="tab" id="tab-mine" aria-selected="false" aria-controls="p-mine">My bookings</button>
+    </div>
+    <div id="p-find" role="tabpanel" aria-labelledby="tab-find">
+      <div class="datebar">
+        <button type="button" id="prev" aria-label="Previous day">◀</button>
+        <select id="day" aria-label="Date"></select>
+        <button type="button" id="next" aria-label="Next day">▶</button>
+        <span class="muted" id="day-label"></span>
+      </div>
+      <div class="grid"><table id="grid"></table></div>
+      <p class="muted">Grey slots are already booked. Pick a start time to book.</p>
+    </div>
+    <div id="p-mine" role="tabpanel" aria-labelledby="tab-mine" hidden></div>
+  </section>
+
+  <aside class="drawer" id="drawer" hidden aria-label="New booking">
+    <h3 id="d-title" style="margin-top:0">New booking</h3>
+    <div id="d-when" class="muted"></div>
+    <label for="dur">Duration</label>
+    <select id="dur">
+      <option value="30">30 minutes</option>
+      <option value="60">1 hour</option>
+      <option value="90">1 hour 30 minutes</option>
+      <option value="120">2 hours</option>
+    </select>
+    <label for="mtitle">Meeting title</label>
+    <input id="mtitle" type="text">
+    <label for="att">Attendees</label>
+    <input id="att" type="text" inputmode="numeric" style="width:80px">
+    <label style="font-weight:400;display:flex;gap:6px;align-items:center;margin-top:12px"><input type="checkbox" id="cater"> Add coffee &amp; pastries ($4 per person)</label>
+    <label for="notes">Notes for reception (optional)</label>
+    <textarea id="notes" style="width:260px;height:50px"></textarea>
+    <div class="err" id="d-err" role="alert" hidden></div>
+    <div class="banner" id="d-fail" role="alert" hidden>We couldn't reach the booking service (error 503). Nothing was booked. <button type="button" id="retry">Try again</button></div>
+    <div class="row" style="margin-top:14px"><button type="button" id="d-cancel">Cancel</button><button type="button" class="primary" id="book">Book room</button></div>
+  </aside>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const ROOMS = [
+    { b: 'Harbour', name: 'Breakwater', cap: 12, feat: ['display', 'video', 'whiteboard'] },
+    { b: 'Harbour', name: 'Lantern', cap: 6, feat: ['display'] },
+    { b: 'Harbour', name: 'Tidepool', cap: 8, feat: ['display', 'video'] },
+    { b: 'Harbour', name: 'Tidepool Annex', cap: 4, feat: ['whiteboard'] },
+    { b: 'Quay', name: 'Chandlery', cap: 6, feat: ['display', 'whiteboard'] },
+    { b: 'Quay', name: 'Slipway', cap: 4, feat: [] },
+    { b: 'Quay', name: 'Tidepool', cap: 10, feat: ['display', 'video'] },
+    { b: 'Foundry', name: 'Anvil', cap: 6, feat: ['display'] },
+    { b: 'Foundry', name: 'Bellows', cap: 4, feat: ['whiteboard'] },
+    { b: 'Foundry', name: 'Crucible', cap: 14, feat: ['display', 'video', 'whiteboard'] },
+  ];
+  const DAYS = [['2026-04-13', 'Mon 13 Apr'], ['2026-04-14', 'Tue 14 Apr'], ['2026-04-15', 'Wed 15 Apr'], ['2026-04-16', 'Thu 16 Apr'], ['2026-04-17', 'Fri 17 Apr']];
+  // busy intervals "HH:MM-HH:MM" keyed by building/room/date
+  const BUSY = {
+    'Harbour/Tidepool/2026-04-13': ['09:00-10:00', '14:00-15:30'], 'Harbour/Tidepool/2026-04-14': ['10:00-11:00', '13:30-14:30'],
+    'Harbour/Tidepool/2026-04-15': ['08:30-09:30', '14:00-15:00', '16:00-17:00'], 'Harbour/Tidepool/2026-04-16': ['09:00-10:30', '13:00-14:00', '15:00-16:00'],
+    'Harbour/Tidepool/2026-04-17': ['11:00-12:00'], 'Harbour/Tidepool Annex/2026-04-16': ['10:00-11:00'], 'Harbour/Breakwater/2026-04-16': ['14:00-16:00'],
+    'Harbour/Lantern/2026-04-16': ['13:30-15:00'], 'Quay/Tidepool/2026-04-16': ['09:00-12:00'], 'Quay/Tidepool/2026-04-13': ['13:00-14:30'],
+    'Quay/Chandlery/2026-04-13': ['09:00-09:30', '15:00-16:00'], 'Foundry/Crucible/2026-04-16': ['08:00-12:00'],
+  };
+  const SLOTS = []; for (let m = 8 * 60; m < 18 * 60; m += 30) SLOTS.push(m);
+  const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const toM = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  const st = { day: 0, sel: null, attempts: 0, busy: false, mine: [
+    { id: 'BK-3310', b: 'Quay', room: 'Chandlery', date: '2026-04-14', start: '10:00', end: '10:30', title: 'Design crit' },
+    { id: 'BK-3328', b: 'Harbour', room: 'Tidepool', date: '2026-04-16', start: '13:00', end: '14:00', title: 'Freight onboarding sync' },
+  ] };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 4000); };
+  const key = (r, date) => `${r.b}/${r.name}/${date}`;
+  const isBusy = (r, date, m) => {
+    const ivs = (BUSY[key(r, date)] || []).concat(st.mine.filter((x) => x.b === r.b && x.room === r.name && x.date === date).map((x) => x.start + '-' + x.end));
+    return ivs.some((iv) => { const [a, z] = iv.split('-').map(toM); return m >= a && m < z; });
+  };
+
+  q('#day').innerHTML = DAYS.map(([v, l], i) => `<option value="${i}">${l}</option>`).join('');
+  function render() {
+    const b = q('#bld').value; const cap = +q('#cap').value; const feats = qa('.feat').filter((c) => c.checked).map((c) => c.value);
+    const date = DAYS[st.day][0];
+    q('#day').value = String(st.day);
+    q('#day-label').textContent = st.day === 0 ? 'Today' : '';
+    const rooms = ROOMS.filter((r) => r.b === b && r.cap >= cap && feats.every((f) => r.feat.includes(f)));
+    let h = '<thead><tr><th>Room</th>' + SLOTS.map((m) => `<th>${m % 60 === 0 ? hm(m) : ''}</th>`).join('') + '</tr></thead><tbody>';
+    if (!rooms.length) h += `<tr><td colspan="${SLOTS.length + 1}" class="muted">No rooms match these filters.</td></tr>`;
+    for (const r of rooms) {
+      h += `<tr><td class="room"><strong>${esc(r.name)}</strong><div class="cap">${r.cap} seats${r.feat.length ? ' · ' + r.feat.join(', ') : ''}</div></td>`;
+      for (const m of SLOTS) {
+        const busy = isBusy(r, date, m);
+        const sel = st.sel && st.sel.r === r && st.sel.date === date && st.sel.m === m;
+        h += `<td><button type="button" class="slot${sel ? ' sel' : ''}" data-room="${esc(r.name)}" data-m="${m}" ${busy ? 'disabled' : ''} aria-label="${esc(r.name)} ${hm(m)} ${busy ? 'unavailable' : 'available'}">${busy ? '—' : hm(m)}</button></td>`;
+      }
+      h += '</tr>';
+    }
+    q('#grid').innerHTML = h + '</tbody>';
+  }
+  function renderMine() {
+    q('#tab-mine').textContent = `My bookings (${st.mine.length})`;
+    q('#p-mine').innerHTML = st.mine.length ? st.mine.map((x) => `<div class="bk"><div><strong>${esc(x.title)}</strong><div class="muted">${esc(x.b)} · ${esc(x.room)} · ${esc(DAYS.find((d) => d[0] === x.date)[1])}, ${x.start}–${x.end}</div></div><div class="row"><button type="button" data-cancel="${x.id}">Cancel booking</button></div></div>`).join('') : '<p class="muted">You have no upcoming bookings.</p>';
+  }
+  q('#p-mine').addEventListener('click', async (e) => {
+    const bt = e.target.closest('[data-cancel]'); if (!bt) return;
+    const x = st.mine.find((m) => m.id === bt.dataset.cancel);
+    bt.disabled = true; await later(300);
+    await rec({ event: 'booking_cancel', booking: x.id, room: x.room, building: x.b, date: x.date, start: x.start });
+    st.mine = st.mine.filter((m) => m !== x); renderMine(); render(); toast('Booking cancelled.');
+  });
+  qa('[role=tab]').forEach((t) => t.addEventListener('click', () => {
+    qa('[role=tab]').forEach((o) => o.setAttribute('aria-selected', String(o === t)));
+    q('#p-find').hidden = t.id !== 'tab-find'; q('#p-mine').hidden = t.id !== 'tab-mine';
+  }));
+  ['#bld', '#cap'].forEach((s) => q(s).addEventListener('change', () => { closeDrawer(); render(); }));
+  qa('.feat').forEach((c) => c.addEventListener('change', render));
+  q('#day').addEventListener('change', () => { st.day = +q('#day').value; closeDrawer(); render(); });
+  q('#prev').addEventListener('click', () => { if (st.day > 0) { st.day--; closeDrawer(); render(); } });
+  q('#next').addEventListener('click', () => { if (st.day < DAYS.length - 1) { st.day++; closeDrawer(); render(); } });
+
+  function openDrawer() {
+    const s = st.sel;
+    q('#drawer').hidden = false; q('#wrap').classList.add('drawer-open');
+    q('#d-title').textContent = `Book ${s.r.name}`;
+    q('#d-when').textContent = `${s.r.b} building · ${DAYS[st.day][1]} 2026 · starts ${hm(s.m)} · up to ${s.r.cap} people`;
+    q('#d-err').hidden = true; q('#d-fail').hidden = true;
+  }
+  function closeDrawer() { st.sel = null; q('#drawer').hidden = true; q('#wrap').classList.remove('drawer-open'); }
+  q('#grid').addEventListener('click', (e) => {
+    const bt = e.target.closest('.slot'); if (!bt || bt.disabled) return;
+    const r = ROOMS.find((x) => x.b === q('#bld').value && x.name === bt.dataset.room);
+    st.sel = { r, date: DAYS[st.day][0], m: +bt.dataset.m };
+    render(); openDrawer();
+  });
+  q('#d-cancel').addEventListener('click', () => { closeDrawer(); render(); });
+
+  async function book() {
+    if (st.busy || !st.sel) return;
+    const s = st.sel; const dur = +q('#dur').value; const err = (m) => { q('#d-err').textContent = m; q('#d-err').hidden = !m; };
+    const title = q('#mtitle').value.trim().replace(/\s+/g, ' ');
+    const att = q('#att').value.trim();
+    q('#d-fail').hidden = true;
+    if (!title) return err('Give the meeting a title.');
+    if (!/^\d+$/.test(att) || +att < 1) return err('Enter the number of attendees.');
+    if (+att > s.r.cap) return err(`${s.r.name} seats up to ${s.r.cap} people.`);
+    const end = s.m + dur;
+    if (end > 18 * 60) return err('Bookings must end by 18:00.');
+    for (let m = s.m; m < end; m += 30) if (isBusy(s.r, s.date, m)) return err(`${s.r.name} isn't free for the whole time. Pick a shorter duration or another start time.`);
+    err('');
+    st.busy = true; q('#book').disabled = true; q('#book').textContent = 'Booking…';
+    await later(700);
+    st.busy = false; q('#book').disabled = false; q('#book').textContent = 'Book room';
+    if (st.attempts++ === 0) { q('#d-fail').hidden = false; return; }
+    const catering = q('#cater').checked ? 'yes' : 'no';
+    const b = { id: 'BK-' + (3400 + st.attempts), b: s.r.b, room: s.r.name, date: s.date, start: hm(s.m), end: hm(end), title };
+    await rec({ event: 'room_booked', building: b.b, room: b.room, date: b.date, start: b.start, end: b.end, title, attendees: String(+att), catering });
+    st.mine.push(b); renderMine();
+    q('#mtitle').value = ''; q('#att').value = ''; q('#cater').checked = false; q('#dur').value = '30'; q('#notes').value = '';
+    closeDrawer(); render();
+    toast(`${b.room} (${b.b}) booked for ${DAYS.find((d) => d[0] === b.date)[1]}, ${b.start}–${b.end}.`);
+  }
+  q('#book').addEventListener('click', book);
+  q('#retry').addEventListener('click', book);
+  render(); renderMine();
+})();
+</script>
+</body>
+</html>

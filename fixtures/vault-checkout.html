@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Checkout</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<h1>Checkout</h1>
+<form id="f">
+  <h2>Shipping</h2>
+  <label>Full name <input name="name" autocomplete="name"></label>
+  <label>Address <input name="address" autocomplete="address-line1"></label>
+  <label>City <input name="city" autocomplete="address-level2"></label>
+  <label>ZIP code <input name="zip" autocomplete="postal-code"></label>
+  <label>Country <select name="country"><option></option><option>Norway</option><option>United Kingdom</option><option>United States</option></select></label>
+  <h2>Payment</h2>
+  <label>Card number <input name="cc" autocomplete="cc-number"></label>
+  <label>Expiry <input name="exp" autocomplete="cc-exp" placeholder="MM/YY"></label>
+  <label>CVC <input name="cvc" autocomplete="cc-csc"></label>
+  <button type="submit">Place order</button>
+</form>
+<p id="out" role="status"></p>
+<script>
+  f.onsubmit = (e) => {
+    e.preventDefault();
+    out.textContent = `Order placed for ${f.name.value}, ${f.city.value} ${f.zip.value}, ${f.country.value}, card ${f.cc.value} exp ${f.exp.value}`;
+  };
+</script>
+</main></body></html>

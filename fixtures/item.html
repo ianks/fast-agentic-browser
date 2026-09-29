@@ -1,0 +1,4 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Product</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body><header><strong>GadgetHub</strong></header><main><h1 id="h">Product</h1><p>In stock. Ships tomorrow.</p><button class="primary">Add to cart</button></main>
+<script>const id = new URLSearchParams(location.search).get('id'); q('#h').textContent = 'Product ' + id; document.title = 'Product ' + id; rec({ event: 'view', id }); q('main button').onclick = () => rec({ event: 'cart', id });</script>
+</body></html>

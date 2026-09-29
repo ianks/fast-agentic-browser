@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plumbline Boards</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #0e7490; }
+  .top { display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: rgba(0,0,0,.25); color: #fff; }
+  .top select { width: 260px; }
+  .board { display: flex; gap: 12px; padding: 16px; align-items: flex-start; overflow-x: auto; }
+  .col { background: #ecfeff; border-radius: 10px; width: 270px; flex: 0 0 270px; padding: 8px; }
+  .col h2 { font-size: 15px; margin: 4px 6px 8px; display: flex; justify-content: space-between; }
+  .card2 { background: #fff; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.15); padding: 8px 10px; margin-bottom: 8px; position: relative; }
+  .card2 .ttl { font-weight: 600; display: block; margin-right: 26px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; font-size: 14px; }
+  .lbl { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; margin: 4px 3px 0 0; background: #e0e7ff; }
+  .av { display: inline-flex; width: 24px; height: 24px; border-radius: 50%; background: #0e7490; color: #fff; font-size: 11px; align-items: center; justify-content: center; float: right; margin-top: 4px; }
+  .kebab { position: absolute; top: 4px; right: 4px; padding: 0 7px; border: 0; background: none; font-size: 18px; }
+  [role=menu] { position: absolute; right: 4px; top: 30px; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 20; min-width: 190px; padding: 4px 0; }
+  [role=menuitem] { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 0; padding: 6px 12px; }
+  [role=menuitem]:hover { background: #f1f5f9; }
+  [role=menu] hr { border: 0; border-top: 1px solid #e2e8f0; margin: 4px 0; }
+  .picker { position: absolute; right: 4px; top: 30px; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 21; width: 230px; padding: 8px; }
+  .picker input { width: 100%; box-sizing: border-box; }
+  .picker [role=listbox] { list-style: none; margin: 6px 0 0; padding: 0; max-height: 200px; overflow: auto; }
+  .picker [role=option] { padding: 5px 8px; border-radius: 4px; cursor: pointer; }
+  .picker [role=option]:hover { background: #ecfeff; }
+  .archived { background: #fef3c7; color: #92400e; padding: 8px 16px; }
+</style>
+</head>
+<body>
+<div class="top"><strong>📐 Plumbline</strong><label for="board-sel" style="margin:0;font-weight:400">Board</label><select id="board-sel"></select><span style="margin-left:auto">Wilhelmina Achterop</span></div>
+<div id="banner"></div>
+<div class="board" id="board"></div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const PEOPLE = ['Juniper Osei', 'Juniper Ossai', 'June Osei-Bonsu', 'Marek Havel', 'Wilhelmina Achterop', 'Tariq Haddad'];
+  const C = (id, title, labels, who) => ({ id, title, labels, who });
+  const BOARDS = {
+    q3: { name: 'Q3 Website Refresh', cols: {
+      'Backlog': [C('c1', 'Audit footer links', ['content'], ''), C('c2', 'Migrate pricing page copy', ['content'], 'Marek Havel'), C('c3', 'Cookie banner redesign', ['design', 'legal'], '')],
+      'In progress': [C('c4', 'Migrate pricing page to new CMS', ['cms', 'pricing'], 'Tariq Haddad'), C('c5', 'New hero illustrations', ['design'], 'Juniper Ossai'), C('c6', 'Set up redirects for /plans', ['cms'], 'Marek Havel')],
+      'Review': [C('c7', 'Accessibility pass on nav', ['a11y'], 'Juniper Osei')],
+      'Done': [C('c8', 'Choose CMS vendor', ['cms'], 'Wilhelmina Achterop')] } },
+    q3old: { name: 'Q3 Website Refresh (2025 archive)', archived: true, cols: {
+      'Backlog': [], 'In progress': [C('o1', 'Migrate pricing page to new CMS', ['cms'], 'Marek Havel')], 'Review': [], 'Done': [C('o2', 'Pricing experiment', ['pricing'], 'Tariq Haddad')] } },
+    brand: { name: 'Brand Guidelines 2026', cols: {
+      'Backlog': [C('b1', 'Logo lockups', ['design'], '')], 'In progress': [C('b2', 'Tone of voice doc', ['content'], 'Juniper Osei')], 'Review': [], 'Done': [] } },
+  };
+  const COLS = ['Backlog', 'In progress', 'Review', 'Done'];
+  const st = { board: 'brand', menu: null, picker: null };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const initials = (n) => n.split(/[\s-]+/).map((x) => x[0]).join('').slice(0, 2);
+  q('#board-sel').innerHTML = Object.entries(BOARDS).map(([k, b]) => `<option value="${k}">${b.name}</option>`).join('');
+  q('#board-sel').value = st.board;
+  q('#board-sel').addEventListener('change', (e) => { st.board = e.target.value; st.menu = st.picker = null; render(); });
+  const find = (id) => { const B = BOARDS[st.board]; for (const c of COLS) { const i = B.cols[c].findIndex((x) => x.id === id); if (i >= 0) return { col: c, i, card: B.cols[c][i] }; } };
+  function render() {
+    const B = BOARDS[st.board];
+    q('#banner').innerHTML = B.archived ? '<div class="archived">This board is archived. Changes are still saved but won\'t notify anyone.</div>' : '';
+    q('#board').innerHTML = COLS.map((c) => `<section class="col" aria-label="${c}"><h2><span>${c}</span><span class="muted">${B.cols[c].length}</span></h2>${B.cols[c].map((k, i) => `<article class="card2" aria-label="${esc(k.title)}">
+      <span class="ttl">${esc(k.title)}</span><div>${k.labels.map((l) => `<span class="lbl">${l}</span>`).join('')}${k.who ? `<span class="av" title="${esc(k.who)}" aria-label="Assigned to ${esc(k.who)}">${initials(k.who)}</span>` : ''}</div><div style="clear:both"></div>
+      <button type="button" class="kebab" aria-haspopup="menu" aria-expanded="${st.menu === k.id}" aria-label="Card actions for ${esc(k.title)}" data-menu="${k.id}">⋯</button>
+      ${st.menu === k.id ? `<div role="menu" aria-label="Card actions for ${esc(k.title)}">${COLS.filter((x) => x !== c).map((x) => `<button type="button" role="menuitem" data-move="${k.id}" data-to="${x}">Move to ${x}</button>`).join('')}<hr><button type="button" role="menuitem" data-up="${k.id}" ${i === 0 ? 'disabled' : ''}>Move card up</button><button type="button" role="menuitem" data-down="${k.id}" ${i === B.cols[c].length - 1 ? 'disabled' : ''}>Move card down</button><hr><button type="button" role="menuitem" data-assign="${k.id}">Assign…</button><button type="button" role="menuitem" data-archive="${k.id}">Archive card</button></div>` : ''}
+      ${st.picker === k.id ? `<div class="picker" role="dialog" aria-label="Assign ${esc(k.title)}"><input type="text" id="pk-q" aria-label="Search people" placeholder="Search people"><ul role="listbox" aria-label="People" id="pk-list">${PEOPLE.map((p) => `<li role="option" aria-selected="${k.who === p}" data-pick="${esc(p)}">${esc(p)}</li>`).join('')}<li role="option" data-pick="">Unassigned</li></ul></div>` : ''}
+      </article>`).join('')}</section>`).join('');
+    const pq = q('#pk-q'); if (pq) { pq.focus(); pq.oninput = () => { const t = pq.value.toLowerCase(); qa('#pk-list [role=option]').forEach((li) => { li.hidden = !!t && !li.textContent.toLowerCase().includes(t); }); }; }
+  }
+  document.addEventListener('click', async (e) => {
+    const B = BOARDS[st.board];
+    const m = e.target.closest('[data-menu]');
+    if (m) { st.menu = st.menu === m.dataset.menu ? null : m.dataset.menu; st.picker = null; render(); return; }
+    const mv = e.target.closest('[data-move]');
+    if (mv) { const f = find(mv.dataset.move); st.menu = null; await later(200); await rec({ event: 'card_move', board: B.name, card: f.card.title, from: f.col, to: mv.dataset.to }); B.cols[f.col].splice(f.i, 1); B.cols[mv.dataset.to].unshift(f.card); render(); toast(`Moved to ${mv.dataset.to}.`); return; }
+    const up = e.target.closest('[data-up]'); const dn = e.target.closest('[data-down]');
+    if (up || dn) { const f = find((up || dn).dataset[up ? 'up' : 'down']); const j = f.i + (up ? -1 : 1); const arr = B.cols[f.col]; [arr[f.i], arr[j]] = [arr[j], arr[f.i]]; st.menu = null; await rec({ event: 'card_reorder', board: B.name, card: f.card.title, column: f.col, position: String(j + 1) }); render(); return; }
+    const as = e.target.closest('[data-assign]');
+    if (as) { st.picker = as.dataset.assign; st.menu = null; render(); return; }
+    const ar = e.target.closest('[data-archive]');
+    if (ar) { const f = find(ar.dataset.archive); st.menu = null; await rec({ event: 'card_archive', board: B.name, card: f.card.title }); B.cols[f.col].splice(f.i, 1); render(); toast('Card archived.'); return; }
+    const pk = e.target.closest('[data-pick]');
+    if (pk) { const f = find(st.picker); const who = pk.dataset.pick; st.picker = null; await later(200); await rec({ event: 'card_assign', board: B.name, card: f.card.title, column: f.col, assignee: who || 'unassigned' }); f.card.who = who; render(); toast(who ? `Assigned to ${who}.` : 'Unassigned.'); return; }
+    if (!e.target.closest('[role=menu]') && !e.target.closest('.picker') && (st.menu || st.picker)) { st.menu = st.picker = null; render(); }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && (st.menu || st.picker)) { st.menu = st.picker = null; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

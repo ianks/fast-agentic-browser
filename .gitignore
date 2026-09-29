@@ -1,0 +1,15 @@
+/target
+/target-*
+.env
+.env.*
+# Raw benchmark runs are large; bench/LOG.md records every result.
+/bench/results/
+/bench/scenarios/
+.DS_Store
+__pycache__/
+# Generated fixtures: fab-bench scrape gen
+/fixtures/scrape/
+# Agent worktrees (Claude Code).
+/.claude/worktrees/
+# Agent worktrees (pi-subagents).
+/.wt/

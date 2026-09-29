@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atlas Fleet · Northway Logistics</title>
+<script src="../common.js"></script>
+<style>
+  :root { --navy: #14213d; --navy2: #1c2c50; --navy3: #273a62; --orange: #f97316; --orange-d: #c2570c; --line: #e2e8f0; --muted: #64748b; --bg: #f3f5f9; --ok: #15803d; --warn: #b45309; --bad: #b91c1c; --ink: #0f172a; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 13.5px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: #1d4ed8; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .app { display: grid; grid-template-columns: 224px 1fr; min-height: 100vh; }
+  .side { background: var(--navy); color: #cbd5e1; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 16px 18px 12px; color: #fff; font-weight: 700; font-size: 17px; letter-spacing: .3px; }
+  .org { margin: 0 12px 12px; padding: 8px 10px; background: var(--navy2); border-radius: 6px; font-size: 11.5px; color: #93a3c0; }
+  .org b { display: block; color: #fff; font-size: 13px; }
+  .side nav a { display: flex; align-items: center; gap: 10px; padding: 9px 18px; color: #cbd5e1; border-left: 3px solid transparent; }
+  .side nav a:hover { background: var(--navy2); text-decoration: none; }
+  .side nav a.on { background: var(--navy3); color: #fff; border-left-color: var(--orange); font-weight: 600; }
+  .side nav .ic { width: 18px; text-align: center; }
+  .side nav .sec { padding: 14px 18px 4px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: #7384a3; }
+  .side .sfoot { margin-top: auto; padding: 12px 18px; font-size: 11px; color: #7384a3; }
+  .top { display: flex; align-items: center; gap: 14px; padding: 9px 24px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 6; }
+  .search { position: relative; }
+  .search input { width: 340px; padding: 7px 10px 7px 30px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; background: #f8fafc; }
+  .search .mag { position: absolute; left: 9px; top: 7px; color: #94a3b8; }
+  .sres { position: absolute; top: 36px; left: 0; width: 420px; background: #fff; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 10px 30px rgba(15,23,42,.14); z-index: 20; max-height: 380px; overflow: auto; }
+  .sres a { display: block; padding: 7px 12px; color: var(--ink); border-bottom: 1px solid #f1f5f9; }
+  .sres a:hover { background: #fff7ed; text-decoration: none; }
+  .sres .grp { padding: 6px 12px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; background: #f8fafc; }
+  .today { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+  .today b { color: var(--ink); }
+  .iconbtn { position: relative; background: none; border: 0; font-size: 17px; cursor: pointer; padding: 4px 6px; color: #334155; }
+  .iconbtn .dot { position: absolute; top: -2px; right: -4px; background: var(--orange); color: #fff; font-size: 10px; border-radius: 9px; padding: 0 5px; font-weight: 700; }
+  .avatar { display: flex; align-items: center; gap: 8px; background: none; border: 0; cursor: pointer; font: inherit; color: var(--ink); }
+  .avatar span.av { width: 30px; height: 30px; border-radius: 50%; background: var(--orange); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+  .menu { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 10px 30px rgba(15,23,42,.16); z-index: 30; min-width: 190px; padding: 4px 0; }
+  .menu a, .menu button { display: block; width: 100%; text-align: left; padding: 7px 14px; background: none; border: 0; font: inherit; color: var(--ink); cursor: pointer; }
+  .menu a:hover, .menu button:hover { background: #fff7ed; text-decoration: none; }
+  .menu .sep { border-top: 1px solid var(--line); margin: 4px 0; }
+  main { padding: 20px 26px 30px; min-height: calc(100vh - 110px); }
+  h1 { font-size: 21px; margin: 0; }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .sub { color: var(--muted); margin: 3px 0 16px; }
+  .crumbs { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+  .crumbs a { color: var(--muted); }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; color: var(--ink); display: block; }
+  .kpi:hover { border-color: var(--orange); text-decoration: none; }
+  .kpi .n { font-size: 24px; font-weight: 700; }
+  .kpi .l { color: var(--muted); font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #edf1f6; vertical-align: top; }
+  th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; background: #f8fafc; }
+  tr:hover td { background: #fcfdff; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  .reg { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; background: #fde047; color: #111; border-radius: 3px; padding: 1px 6px; font-size: 12.5px; letter-spacing: .5px; display: inline-block; }
+  a .reg:hover { outline: 2px solid var(--orange); }
+  .pill { display: inline-block; border-radius: 10px; padding: 1px 9px; font-size: 11.5px; font-weight: 600; background: #e2e8f0; color: #334155; white-space: nowrap; }
+  .pill.ok { background: #dcfce7; color: var(--ok); }
+  .pill.warn { background: #fef3c7; color: var(--warn); }
+  .pill.bad { background: #fee2e2; color: var(--bad); }
+  .pill.info { background: #dbeafe; color: #1d4ed8; }
+  .muted { color: var(--muted); font-size: 12.5px; }
+  .btn { font: inherit; padding: 6px 13px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; color: var(--ink); }
+  .btn:hover { border-color: #94a3b8; }
+  .btn.pri { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 600; }
+  .btn.pri:hover { background: var(--orange-d); }
+  .btn.danger { color: var(--bad); border-color: #fecaca; }
+  .btn.sm { padding: 3px 10px; font-size: 12.5px; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .dots { background: none; border: 1px solid transparent; border-radius: 4px; cursor: pointer; padding: 0 7px; font-size: 16px; color: #475569; }
+  .dots:hover { border-color: var(--line); background: #fff; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .spacer { flex: 1; }
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  input[type=text], input[type=date], input[type=search], input[type=number], select, textarea { font: inherit; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: var(--ink); }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #fed7aa; border-color: var(--orange); }
+  .vlayout { display: grid; grid-template-columns: 230px 1fr; gap: 16px; align-items: start; }
+  .tree { list-style: none; margin: 0; padding: 0; }
+  .tree ul { list-style: none; margin: 0; padding: 0 0 0 18px; }
+  .tree .tw { display: flex; align-items: center; gap: 6px; width: 100%; background: none; border: 0; font: inherit; font-weight: 600; padding: 6px 4px; cursor: pointer; color: var(--ink); text-align: left; border-radius: 4px; }
+  .tree .tw:hover { background: #f1f5f9; }
+  .tree .chev { display: inline-block; width: 12px; color: #64748b; transition: transform .12s; }
+  .tree [aria-expanded=true] > .tw .chev { transform: rotate(90deg); }
+  .tree a { display: flex; padding: 5px 6px; border-radius: 4px; color: #1e293b; }
+  .tree a:hover { background: #fff7ed; text-decoration: none; }
+  .tree a.on { background: #ffedd5; font-weight: 600; }
+  .cnt { margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 400; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin: 14px 0 16px; }
+  .tabs a { padding: 9px 16px; color: #475569; border-bottom: 3px solid transparent; font-weight: 500; }
+  .tabs a:hover { text-decoration: none; color: var(--ink); }
+  .tabs a[aria-selected=true] { color: var(--ink); border-bottom-color: var(--orange); font-weight: 700; }
+  .subtabs { display: inline-flex; background: #e9eef5; border-radius: 7px; padding: 3px; margin-bottom: 14px; }
+  .subtabs a { padding: 5px 14px; border-radius: 5px; color: #334155; font-weight: 500; }
+  .subtabs a:hover { text-decoration: none; }
+  .subtabs a[aria-selected=true] { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .badge { background: var(--orange); color: #fff; font-size: 10.5px; border-radius: 8px; padding: 0 6px; font-weight: 700; margin-left: 3px; }
+  dl.kv { display: grid; grid-template-columns: 150px 1fr; gap: 6px 12px; margin: 0; }
+  dl.kv dt { color: var(--muted); }
+  dl.kv dd { margin: 0; }
+  .vhead { display: flex; align-items: center; gap: 14px; }
+  .vhead .reg { font-size: 18px; padding: 3px 10px; }
+  .chips { display: flex; gap: 6px; margin-bottom: 10px; }
+  .chip { border: 1px solid #cbd5e1; background: #fff; border-radius: 14px; padding: 3px 11px; cursor: pointer; font: inherit; font-size: 12.5px; }
+  .chip[aria-pressed=true] { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .atype { font-weight: 600; }
+  .atype.harsh_braking::before { content: "⚠ "; color: var(--bad); }
+  .atype.speeding::before { content: "⏱ "; color: var(--warn); }
+  .atype.idling::before { content: "⏸ "; color: #0369a1; }
+  .ackrow td { background: #fffbeb !important; }
+  .ackbox { display: grid; gap: 6px; max-width: 520px; }
+  .ackbox textarea { width: 100%; }
+  .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.5); display: flex; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 40; }
+  .modal { background: #fff; border-radius: 10px; width: 520px; max-height: calc(100vh - 120px); overflow: auto; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .modal .mh { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .modal .mh h3 { margin: 0; font-size: 16px; }
+  .modal .x { margin-left: auto; background: none; border: 0; font-size: 16px; cursor: pointer; color: #64748b; }
+  .modal .mb { padding: 14px 20px; }
+  .modal .mb label { display: block; font-weight: 600; margin: 12px 0 5px; }
+  .modal .mb label.chk { font-weight: 400; display: flex; gap: 8px; align-items: center; }
+  .modal .mb input[type=text], .modal .mb input[type=date], .modal .mb select, .modal .mb textarea { width: 100%; }
+  .modal .mf { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--line); background: #f8fafc; border-radius: 0 0 10px 10px; }
+  .combo { position: relative; }
+  .combo ul { position: absolute; left: 0; right: 0; top: 100%; margin: 2px 0 0; padding: 4px 0; list-style: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 10px 24px rgba(15,23,42,.15); max-height: 230px; overflow: auto; z-index: 5; }
+  .combo li { padding: 6px 10px; cursor: pointer; }
+  .combo li .od { display: block; color: var(--muted); font-size: 11.5px; }
+  .combo li:hover, .combo li.active { background: #fff7ed; }
+  .combo li[aria-selected=true] { background: #ffedd5; }
+  .hint { font-size: 12.5px; color: var(--muted); margin-top: 5px; }
+  .hint.warn { color: var(--warn); }
+  .banner { border-radius: 6px; padding: 10px 12px; margin-top: 12px; }
+  .banner.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .err { color: var(--bad); font-size: 12.5px; margin-top: 8px; }
+  .toast { position: fixed; right: 24px; bottom: 24px; background: var(--navy); color: #fff; padding: 11px 16px; border-radius: 8px; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,.25); border-left: 4px solid var(--orange); }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .bar { height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--orange); }
+  .feed li { margin-bottom: 8px; }
+  .map { position: relative; height: 460px; background: linear-gradient(135deg, #e8f0e3 0%, #dfeadb 45%, #d9e6ef 100%); border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+  .map .pin { position: absolute; transform: translate(-50%, -100%); background: var(--navy); color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .map .pin.depot { background: var(--orange); }
+  .map .road { position: absolute; background: #f8fafc; height: 5px; border-radius: 3px; transform-origin: left center; opacity: .8; }
+  .pager { display: flex; gap: 6px; align-items: center; justify-content: flex-end; margin-top: 10px; }
+  .pager button { min-width: 30px; }
+  .pager button[aria-current=page] { background: var(--navy); color: #fff; border-color: var(--navy); }
+  footer.foot { padding: 14px 26px; color: #7b8aa3; font-size: 12px; border-top: 1px solid var(--line); display: flex; gap: 18px; background: #fff; }
+  footer.foot a { color: #7b8aa3; }
+  .score { font-weight: 700; }
+  .score.lo { color: var(--bad); }
+  .empty { color: var(--muted); padding: 20px; text-align: center; }
+  .rel { position: relative; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="#f97316"/><path d="M6 16 L13 6 L20 16 Z" fill="#14213d"/><circle cx="13" cy="17.5" r="2.3" fill="#fff"/></svg>
+      Atlas Fleet
+    </div>
+    <div class="org"><b>Northway Logistics</b>Company ID NW-20418 · 6 depots</div>
+    <nav aria-label="Main">
+      <a href="#/dashboard" data-nav="dashboard"><span class="ic">▦</span>Dashboard</a>
+      <a href="#/map" data-nav="map"><span class="ic">⌖</span>Live map</a>
+      <a href="#/vehicles" data-nav="vehicles"><span class="ic">🚚</span>Vehicles</a>
+      <a href="#/drivers" data-nav="drivers"><span class="ic">👤</span>Drivers</a>
+      <a href="#/maintenance" data-nav="maintenance"><span class="ic">🔧</span>Maintenance</a>
+      <a href="#/fuel" data-nav="fuel"><span class="ic">⛽</span>Fuel</a>
+      <div class="sec">Insights</div>
+      <a href="#/reports" data-nav="reports"><span class="ic">📈</span>Reports</a>
+      <a href="#/settings/company" data-nav="settings"><span class="ic">⚙</span>Settings</a>
+    </nav>
+    <div class="sfoot">Atlas Fleet 5.18.2<br>Data refreshed 24 Sep 2026, 08:57</div>
+  </aside>
+  <div>
+    <header class="top">
+      <div class="search">
+        <span class="mag">⌕</span>
+        <input type="search" id="gsearch" placeholder="Search vehicles, drivers, alerts…" aria-label="Search vehicles, drivers, alerts" autocomplete="off">
+        <div class="sres" id="gres" hidden></div>
+      </div>
+      <div class="today">Today: <b>Thu 24 Sep 2026</b></div>
+      <div class="rel">
+        <button type="button" class="iconbtn" id="bell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">🔔<span class="dot" id="bell-n">7</span></button>
+        <div class="menu" id="bell-menu" style="right:0;top:34px;width:340px" hidden></div>
+      </div>
+      <button type="button" class="iconbtn" id="helpbtn" aria-label="Help">?</button>
+      <div class="rel">
+        <button type="button" class="avatar" id="me" aria-haspopup="true" aria-expanded="false"><span class="av">RD</span>Rosa Delgado-Pike ▾</button>
+        <div class="menu" id="me-menu" style="right:0;top:38px" hidden>
+          <a href="#/settings/users">My profile</a>
+          <a href="#/settings/company">Company settings</a>
+          <div class="sep"></div>
+          <button type="button" data-toast="Switching companies is only available to group administrators.">Switch company</button>
+          <button type="button" data-toast="You're signed in on a trusted device. Close the tab to end your session.">Sign out</button>
+        </div>
+      </div>
+    </header>
+    <main id="main"></main>
+    <footer class="foot">
+      <span>© 2026 Atlas Telematics Ltd</span>
+      <a href="#/reports">Reports</a>
+      <a href="#/settings/integrations">Integrations</a>
+      <span>Support: 0800 118 4420</span>
+      <span style="margin-left:auto">Service status: all systems normal</span>
+    </footer>
+  </div>
+</div>
+<div id="modal-root"></div>
+<div class="menu" id="rowmenu" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const fold = (s) => norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 4200); };
+  const TODAY = '2026-09-24';
+  const USER = 'Rosa Delgado-Pike';
+
+  // ------------------------------------------------------------------ dates
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dt = (iso) => { const [y, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+  const fD = (iso) => (iso ? `${dt(iso).getUTCDate()} ${MON[dt(iso).getUTCMonth()]} ${dt(iso).getUTCFullYear()}` : '—');
+  const fDW = (iso) => `${DOW[dt(iso).getUTCDay()]} ${fD(iso)}`;
+  const fAt = (s) => `${fDW(s.slice(0, 10))}, ${s.slice(11, 16)}`;
+  const addDays = (iso, n) => { const x = dt(iso); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+  const hnum = (s, mod) => { let h = 2166136261; for (const c of String(s)) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return mod ? h % mod : h; };
+  const slug = (reg) => reg.toLowerCase().replace(/\s+/g, '-');
+  const mi = (n) => n.toLocaleString('en-GB') + ' mi';
+
+  // ------------------------------------------------------------------ data
+  const REGIONS = [
+    { id: 'north', name: 'North', depots: ['leeds', 'york'] },
+    { id: 'midlands', name: 'Midlands', depots: ['derby', 'coventry'] },
+    { id: 'south', name: 'South', depots: ['reading', 'southampton'] },
+  ];
+  const DEPOTS = {
+    leeds: { name: 'Leeds', region: 'north', addr: 'Unit 4, Stourton Link, Leeds LS10 1RW', manager: 'Priya Shah', garage: ['Stourton Commercial Services', 'Leeds Van Centre (Ford)'] },
+    york: { name: 'York', region: 'north', addr: 'Clifton Moor Industrial Estate, York YO30 4XZ', manager: 'Priya Shah', garage: ['Clifton Moor Motors', 'Minster Truck & Van'] },
+    derby: { name: 'Derby', region: 'midlands', addr: 'Raynesway Park, Derby DE21 7BE', manager: 'Gavin Holt', garage: ['Raynesway Fleet Care', 'Derwent Commercials'] },
+    coventry: { name: 'Coventry', region: 'midlands', addr: 'Whitley Business Park, Coventry CV3 4PE', manager: 'Gavin Holt', garage: ['Whitley Van Services', 'Coventry Truck Centre'] },
+    reading: { name: 'Reading', region: 'south', addr: 'Portman Road, Reading RG30 1EA', manager: 'Helen Achebe', garage: ['Portman Road Garage', 'Thames Valley Commercials'] },
+    southampton: { name: 'Southampton', region: 'south', addr: 'Test Lane, Nursling SO16 0YF', manager: 'Helen Achebe', garage: ['Nursling Fleet Services', 'Solent Van & Truck'] },
+  };
+  const DRIVERS = [
+    ['DRV-1042', 'Callum Rix', 'leeds', 'B, C1', '07700 900412'], ['DRV-1071', 'Hannah Oduya', 'leeds', 'B', '07700 900218'],
+    ['DRV-1090', 'Josh Whitaker', 'leeds', 'B', '07700 900577'], ['DRV-1184', 'Ngozi Adeyemi-Clarke', 'leeds', 'B, C1', '07700 900963'],
+    ['DRV-1056', 'Martin Byrne', 'leeds', 'B, C1', '07700 900134'], ['DRV-1112', 'Farhan Qureshi', 'leeds', 'B', '07700 900781'],
+    ['DRV-1147', 'Leanne Moss', 'leeds', 'B, C1', '07700 900326'], ['DRV-1163', 'Tadeusz Nowicki', 'leeds', 'B', '07700 900659'],
+    ['DRV-1175', 'Grace Appiah', 'leeds', 'B', '07700 900043'], ['DRV-1198', 'Owen Lister', 'leeds', 'B, C1, C', '07700 900890'],
+    ['DRV-1203', 'Kiran Dhaliwal', 'leeds', 'B', '07700 900507'], ['DRV-1133', 'Aled Hughes', 'york', 'B, C1', '07700 900265'],
+    ['DRV-1027', 'Ngozi Adeyemi', 'york', 'B', '07700 900718'], ['DRV-1019', 'Sophie Harland', 'york', 'B, C1', '07700 900452'],
+    ['DRV-1066', 'Marek Zielony', 'york', 'B, C1', '07700 900399'], ['DRV-1121', 'Bethany Crowther', 'york', 'B', '07700 900624'],
+    ['DRV-1158', 'Imran Siddiqui', 'york', 'B, C1', '07700 900187'], ['DRV-1190', 'Rhys Pemberton', 'york', 'B', '07700 900836'],
+    ['DRV-1004', 'Declan Walsh', 'derby', 'B, C1', '07700 900071'], ['DRV-1033', 'Amrit Sandhu', 'derby', 'B', '07700 900345'],
+    ['DRV-1081', 'Lucy Ferreira', 'derby', 'B, C1', '07700 900592'], ['DRV-1115', 'Gareth Pryce', 'derby', 'B', '07700 900913'],
+    ['DRV-1171', 'Hollie Brandon', 'derby', 'B', '07700 900228'], ['DRV-1011', 'Nathan Okafor', 'coventry', 'B, C1', '07700 900664'],
+    ['DRV-1049', 'Jasmine Kaur', 'coventry', 'B', '07700 900119'], ['DRV-1102', 'Piotr Lewandowski', 'coventry', 'B, C1, C', '07700 900480'],
+    ['DRV-1166', 'Chloé Martin', 'coventry', 'B', '07700 900756'], ['DRV-1008', 'Tom Ashdown', 'reading', 'B, C1', '07700 900302'],
+    ['DRV-1062', 'Eilidh Fraser', 'reading', 'B', '07700 900847'], ['DRV-1094', 'Rahul Menon', 'reading', 'B, C1', '07700 900526'],
+    ['DRV-1139', 'Stacey Holt', 'reading', 'B', '07700 900693'], ['DRV-1181', 'Joe Kilbride', 'reading', 'B, C1', '07700 900154'],
+    ['DRV-1015', 'Priya Nair', 'southampton', 'B', '07700 900971'], ['DRV-1077', 'Ben Carter', 'southampton', 'B, C1', '07700 900238'],
+    ['DRV-1152', 'Aisha Mensah', 'southampton', 'B', '07700 900415'],
+  ].map(([id, name, depot, lic, phone]) => ({ id, name, depot, lic, phone, check: addDays('2026-09-28', hnum(id + 'chk', 120)) }));
+  const drv = (id) => DRIVERS.find((d) => d.id === id);
+
+  // reg, model, type, fuel, year, depot, status, primary driver, odometer, next service, MOT due
+  const VEHICLES = [
+    ['LS70 KWD', 'Ford Transit Custom 280 L1', 'Medium van', 'Diesel', 2020, 'leeds', 'Active', 'DRV-1042', 48902, '2026-11-14', '2026-12-02'],
+    ['YK71 HVX', 'Vauxhall Vivaro L2', 'Medium van', 'Diesel', 2021, 'leeds', 'Active', 'DRV-1071', 36114, '2026-10-20', '2027-03-18'],
+    ['LS69 PFE', 'Ford Transit 350 L3', 'Large van', 'Diesel', 2019, 'leeds', 'Active', 'DRV-1056', 71480, '2026-10-02', '2026-10-28'],
+    ['LS21 GHO', 'Mercedes-Benz Sprinter 314 CDI', 'Large van', 'Diesel', 2021, 'leeds', 'In workshop', 'DRV-1112', 52337, '2026-09-24', '2027-04-09'],
+    ['YD68 TRA', 'Renault Master LM35', 'Large van', 'Diesel', 2018, 'leeds', 'Active', 'DRV-1147', 88905, '2026-10-09', '2026-11-21'],
+    ['LS22 ZEV', 'Ford E-Transit 390 L3', 'Large van', 'Electric', 2022, 'leeds', 'Active', 'DRV-1163', 21760, '2027-01-15', '2027-05-30'],
+    ['LS72 NWL', 'Vauxhall Combo Cargo 2300', 'Small van', 'Diesel', 2022, 'leeds', 'Active', 'DRV-1175', 18402, '2027-02-03', '2027-09-01'],
+    ['YJ19 KCM', 'Iveco Daily 75C18 box', '7.5t truck', 'Diesel', 2019, 'leeds', 'Active', 'DRV-1198', 102318, '2026-10-12', '2027-01-07'],
+    ['LS66 BRA', 'Peugeot Partner 850', 'Small van', 'Diesel', 2016, 'leeds', 'Off road', '', 131044, '', '2026-09-30'],
+    ['LS23 FLT', 'Toyota Proace L2', 'Medium van', 'Diesel', 2023, 'leeds', 'Active', 'DRV-1203', 12776, '2027-03-08', '2027-06-14'],
+    ['YH70 OXL', 'Citroën ë-Dispatch M', 'Medium van', 'Electric', 2020, 'leeds', 'Active', '', 41980, '2026-12-01', '2027-02-11'],
+    ['LS20 UPD', 'Ford Transit Connect 220', 'Small van', 'Diesel', 2020, 'leeds', 'Reserved', '', 59210, '2026-11-30', '2027-01-22'],
+    ['YK71 HXV', 'Ford Transit 350 L3', 'Large van', 'Diesel', 2021, 'york', 'Active', 'DRV-1133', 44019, '2026-11-02', '2027-03-25'],
+    ['YO20 BDS', 'Mercedes-Benz eSprinter', 'Large van', 'Electric', 2020, 'york', 'Active', 'DRV-1019', 38640, '2026-12-09', '2027-02-02'],
+    ['YK68 LRN', 'Vauxhall Movano L3H2', 'Large van', 'Diesel', 2018, 'york', 'Active', 'DRV-1066', 96220, '2026-10-06', '2026-10-30'],
+    ['YO22 KTE', 'Ford Transit Custom 320 L2', 'Medium van', 'Diesel', 2022, 'york', 'Active', 'DRV-1027', 27315, '2027-01-20', '2027-06-02'],
+    ['YK19 PWV', 'Peugeot Expert Standard', 'Medium van', 'Diesel', 2019, 'york', 'In workshop', 'DRV-1121', 83104, '2026-09-23', '2026-12-15'],
+    ['YO21 MHC', 'Iveco Daily 35S16', 'Large van', 'Diesel', 2021, 'york', 'Active', 'DRV-1158', 55870, '2026-10-27', '2027-04-19'],
+    ['YK70 SAL', 'Renault Kangoo E-Tech', 'Small van', 'Electric', 2020, 'york', 'Active', 'DRV-1190', 30112, '2026-11-18', '2027-01-09'],
+    ['YO17 CJN', 'Ford Transit Connect 200', 'Small van', 'Diesel', 2017, 'york', 'Off road', '', 142877, '', '2026-10-04'],
+    ['FD21 KLR', 'Ford Transit Custom 300 L2', 'Medium van', 'Diesel', 2021, 'derby', 'Active', 'DRV-1004'],
+    ['FE70 TOM', 'Mercedes-Benz Vito 114', 'Medium van', 'Diesel', 2020, 'derby', 'Active', 'DRV-1033'],
+    ['FN69 ARD', 'Vauxhall Movano L2H2', 'Large van', 'Diesel', 2019, 'derby', 'Active', 'DRV-1081'],
+    ['FY22 CBX', 'Ford E-Transit 350 L2', 'Large van', 'Electric', 2022, 'derby', 'Active', 'DRV-1115'],
+    ['FJ68 PPE', 'Renault Trafic LL30', 'Medium van', 'Diesel', 2018, 'derby', 'In workshop', 'DRV-1171'],
+    ['FL19 WBE', 'Iveco Daily 72C18 box', '7.5t truck', 'Diesel', 2019, 'derby', 'Active', ''],
+    ['FD72 NHS', 'Toyota Proace City', 'Small van', 'Diesel', 2022, 'derby', 'Active', ''],
+    ['FE20 VRD', 'Peugeot Boxer 335 L3H2', 'Large van', 'Diesel', 2020, 'derby', 'Active', ''],
+    ['FG23 MKT', 'Maxus eDeliver 3', 'Small van', 'Electric', 2023, 'derby', 'Reserved', ''],
+    ['OV21 CTY', 'Ford Transit 350 L3', 'Large van', 'Diesel', 2021, 'coventry', 'Active', 'DRV-1011'],
+    ['OU70 RMP', 'Vauxhall Vivaro L1', 'Medium van', 'Diesel', 2020, 'coventry', 'Active', 'DRV-1049'],
+    ['OE69 DKS', 'Mercedes-Benz Sprinter 316', 'Large van', 'Diesel', 2019, 'coventry', 'Active', 'DRV-1102'],
+    ['OY22 BWL', 'Citroën ë-Berlingo', 'Small van', 'Electric', 2022, 'coventry', 'Active', 'DRV-1166'],
+    ['OA19 FRE', 'Iveco Daily 75C16 tail-lift', '7.5t truck', 'Diesel', 2019, 'coventry', 'Off road', ''],
+    ['OK72 HTR', 'Ford Transit Custom 280 L1', 'Medium van', 'Diesel', 2022, 'coventry', 'Active', ''],
+    ['OX20 LMN', 'Renault Master LL35', 'Large van', 'Diesel', 2020, 'coventry', 'Active', ''],
+    ['RX71 GLE', 'Ford Transit 350 L3', 'Large van', 'Diesel', 2021, 'reading', 'Active', 'DRV-1008'],
+    ['RV20 KPA', 'Mercedes-Benz eVito', 'Medium van', 'Electric', 2020, 'reading', 'Active', 'DRV-1062'],
+    ['RJ69 SND', 'Vauxhall Movano L3H2', 'Large van', 'Diesel', 2019, 'reading', 'Active', 'DRV-1094'],
+    ['RK22 WTH', 'Ford E-Transit 390 L3', 'Large van', 'Electric', 2022, 'reading', 'Active', 'DRV-1139'],
+    ['RY68 BFN', 'Peugeot Expert Long', 'Medium van', 'Diesel', 2018, 'reading', 'In workshop', 'DRV-1181'],
+    ['RE21 OLS', 'Toyota Proace L1', 'Medium van', 'Diesel', 2021, 'reading', 'Active', ''],
+    ['RO70 DWN', 'Iveco Daily 72C18 box', '7.5t truck', 'Diesel', 2020, 'reading', 'Active', ''],
+    ['RX19 MLR', 'Ford Transit Connect 240', 'Small van', 'Diesel', 2019, 'reading', 'Active', ''],
+    ['RV23 CLT', 'Vauxhall Combo-e Cargo', 'Small van', 'Electric', 2023, 'reading', 'Active', ''],
+    ['RJ66 PAX', 'Renault Trafic SL27', 'Medium van', 'Diesel', 2016, 'reading', 'Off road', ''],
+    ['HW71 SNV', 'Ford Transit Custom 320 L2', 'Medium van', 'Diesel', 2021, 'southampton', 'Active', 'DRV-1015'],
+    ['HN70 KEY', 'Mercedes-Benz Sprinter 314', 'Large van', 'Diesel', 2020, 'southampton', 'Active', 'DRV-1077'],
+    ['HF22 TDL', 'Ford E-Transit 350 L2', 'Large van', 'Electric', 2022, 'southampton', 'Active', 'DRV-1152'],
+    ['HX69 WRF', 'Vauxhall Vivaro L2', 'Medium van', 'Diesel', 2019, 'southampton', 'Active', ''],
+    ['HV19 MAR', 'Iveco Daily 35S14', 'Large van', 'Diesel', 2019, 'southampton', 'In workshop', ''],
+    ['HK23 PRT', 'Citroën ë-Dispatch XL', 'Medium van', 'Electric', 2023, 'southampton', 'Reserved', ''],
+  ].map(([reg, model, type, fuel, year, depot, status, driver, odo, service, mot]) => {
+    const age = 2026 - year;
+    return {
+      reg, model, type, fuel, year, depot, status, driver,
+      odo: odo ?? 9000 + age * 14500 + hnum(reg + 'odo', 9000),
+      service: service ?? (status === 'Off road' ? '' : addDays('2026-09-27', hnum(reg + 'svc', 170))),
+      mot: mot ?? addDays('2026-10-05', hnum(reg + 'mot', 300)),
+      vin: 'WF0' + (hnum(reg + 'vin') % 1e8).toString(36).toUpperCase().padStart(6, 'X') + String(hnum(reg + 'v2', 900000) + 100000),
+      tracker: 'AT-' + String(400000 + hnum(reg + 'trk', 99999)),
+      card: 'Allstar •••• ' + String(1000 + hnum(reg + 'card', 8999)),
+    };
+  });
+  const bySlug = (s) => VEHICLES.find((v) => slug(v.reg) === s);
+  const byReg = (r) => VEHICLES.find((v) => v.reg === r);
+  const depotVehicles = (d) => VEHICLES.filter((v) => v.depot === d);
+
+  // assignments
+  const ASSIGN = {};
+  for (const v of VEHICLES) {
+    const since = addDays('2024-01-08', hnum(v.reg + 'since', 900));
+    ASSIGN[v.reg] = { primary: v.driver ? { id: v.driver, since } : null, secondary: [], history: v.driver ? [{ name: drv(v.driver).name, id: v.driver, role: 'Primary', from: since, to: '' }] : [], next: null };
+  }
+  ASSIGN['LS70 KWD'] = {
+    primary: { id: 'DRV-1042', since: '2025-03-03' },
+    secondary: [{ id: 'DRV-1090', since: '2026-01-12' }],
+    history: [
+      { name: 'Callum Rix', id: 'DRV-1042', role: 'Primary', from: '2025-03-03', to: '' },
+      { name: 'Josh Whitaker', id: 'DRV-1090', role: 'Secondary', from: '2026-01-12', to: '' },
+      { name: 'Deborah Salt', id: 'DRV-0977', role: 'Primary', from: '2022-06-18', to: '2025-03-02' },
+      { name: 'Callum Rix', id: 'DRV-1042', role: 'Secondary', from: '2023-09-04', to: '2025-03-02' },
+      { name: 'Martin Byrne', id: 'DRV-1056', role: 'Primary', from: '2020-11-09', to: '2022-06-17' },
+    ],
+    next: null,
+  };
+  ASSIGN['YK71 HXV'].secondary = [{ id: 'DRV-1158', since: '2026-04-20' }];
+  ASSIGN['YK71 HXV'].primary.since = '2024-08-12';
+  ASSIGN['YK71 HXV'].history = [
+    { name: 'Aled Hughes', id: 'DRV-1133', role: 'Primary', from: '2024-08-12', to: '' },
+    { name: 'Imran Siddiqui', id: 'DRV-1158', role: 'Secondary', from: '2026-04-20', to: '' },
+    { name: 'Marek Zielony', id: 'DRV-1066', role: 'Primary', from: '2021-10-04', to: '2024-08-11' },
+  ];
+
+  const ALERTS = [
+    { id: 'AL-88215', reg: 'YK71 HVX', at: '2026-09-23 17:55', type: 'harsh_braking', label: 'Harsh braking', detail: '0.49 g at 31 mph', loc: 'Kirkstall Road, Leeds', ack: null },
+    { id: 'AL-88213', reg: 'YK71 HXV', at: '2026-09-23 17:42', type: 'harsh_braking', label: 'Harsh braking', detail: '0.52 g at 47 mph', loc: 'A64 near Tadcaster', ack: null },
+    { id: 'AL-88210', reg: 'LS69 PFE', at: '2026-09-23 12:31', type: 'speeding', label: 'Speeding', detail: '41 mph in a 30 zone', loc: 'Armley Road, Leeds', ack: null },
+    { id: 'AL-88207', reg: 'YK71 HXV', at: '2026-09-23 08:15', type: 'speeding', label: 'Speeding', detail: '58 mph in a 50 zone', loc: 'A1237, York', ack: null },
+    { id: 'AL-88202', reg: 'FD21 KLR', at: '2026-09-22 18:09', type: 'tracker', label: 'Tracker power loss', detail: 'Unit running on backup battery', loc: 'Raynesway Park, Derby', ack: null },
+    { id: 'AL-88196', reg: 'RX71 GLE', at: '2026-09-22 17:22', type: 'idling', label: 'Excessive idling', detail: '31 min', loc: 'Oxford Road, Reading', ack: null },
+    { id: 'AL-88190', reg: 'YK71 HXV', at: '2026-09-22 16:03', type: 'harsh_braking', label: 'Harsh braking', detail: '0.47 g at 28 mph', loc: 'Clifton Moor, York', ack: null },
+    { id: 'AL-88150', reg: 'YK71 HVX', at: '2026-09-20 09:41', type: 'harsh_cornering', label: 'Harsh cornering', detail: '0.44 g lateral', loc: 'Stourton Link, Leeds', ack: { by: 'Priya Shah', when: '21 Sep 2026, 08:02' } },
+    { id: 'AL-88121', reg: 'YK71 HXV', at: '2026-09-19 11:20', type: 'idling', label: 'Excessive idling', detail: '24 min', loc: 'Monks Cross, York', ack: { by: 'Priya Shah', when: '19 Sep 2026, 14:37' } },
+    { id: 'AL-88098', reg: 'LS70 KWD', at: '2026-09-18 07:12', type: 'speeding', label: 'Speeding', detail: '36 mph in a 30 zone', loc: 'Dewsbury Road, Leeds', ack: { by: 'Rosa Delgado-Pike', when: '18 Sep 2026, 09:30' } },
+    { id: 'AL-88061', reg: 'HN70 KEY', at: '2026-09-16 14:48', type: 'speeding', label: 'Speeding', detail: '64 mph in a 50 zone', loc: 'M271, Southampton', ack: { by: 'Helen Achebe', when: '16 Sep 2026, 16:10' } },
+  ];
+
+  const TRIPS = {
+    'YK71 HXV': [
+      ['2026-09-23', '16:55', '18:31', 'Wetherby, Sandbeck Lane', 'York depot, Clifton Moor', 21.6, 'DRV-1133', 72],
+      ['2026-09-23', '13:05', '14:10', 'Leeds, Kirkstall Retail Park', 'Wetherby, Sandbeck Lane', 14.2, 'DRV-1133', 90],
+      ['2026-09-23', '09:40', '10:55', 'Harrogate, Hookstone Road', 'Leeds, Kirkstall Retail Park', 17.9, 'DRV-1133', 88],
+      ['2026-09-23', '07:48', '09:12', 'York depot, Clifton Moor', 'Harrogate, Hookstone Road', 22.4, 'DRV-1133', 79],
+      ['2026-09-22', '15:20', '16:10', 'Malton, Showfield Lane', 'York depot, Clifton Moor', 19.3, 'DRV-1133', 81],
+      ['2026-09-22', '08:02', '09:15', 'York depot, Clifton Moor', 'Malton, Showfield Lane', 18.8, 'DRV-1133', 94],
+      ['2026-09-21', '10:14', '12:40', 'York depot, Clifton Moor', 'Scarborough, Eastfield', 41.7, 'DRV-1158', 92],
+    ],
+  };
+  function tripsFor(v) {
+    if (TRIPS[v.reg]) return TRIPS[v.reg];
+    if (v.status !== 'Active') return [];
+    const places = ['depot', 'Retail park', 'Customer site', 'Distribution hub', 'Trade counter'];
+    const out = [];
+    for (let i = 0; i < 5; i++) {
+      const d = addDays('2026-09-23', -Math.floor(i / 2));
+      const sh = 7 + ((hnum(v.reg + i) % 9)); const dur = 35 + (hnum(v.reg + 'd' + i) % 80);
+      const start = String(sh).padStart(2, '0') + ':' + String(hnum(v.reg + 'm' + i) % 60).padStart(2, '0');
+      const endM = sh * 60 + (hnum(v.reg + 'm' + i) % 60) + dur;
+      out.push([d, start, String(Math.floor(endM / 60)).padStart(2, '0') + ':' + String(endM % 60).padStart(2, '0'), DEPOTS[v.depot].name + ' ' + places[i % 5].toLowerCase(), DEPOTS[v.depot].name + ' ' + places[(i + 2) % 5].toLowerCase(), +(8 + (hnum(v.reg + 'mi' + i) % 300) / 10).toFixed(1), v.driver, 80 + (hnum(v.reg + 's' + i) % 19)]);
+    }
+    return out;
+  }
+  const FUEL = [
+    ['2026-09-23', '06:58', 'YK71 HXV', 'Shell, Clifton Moor', 58.2, 1.479], ['2026-09-23', '07:31', 'LS69 PFE', 'BP, Stourton', 64.0, 1.469],
+    ['2026-09-22', '17:44', 'RX71 GLE', 'Esso, Oxford Road', 51.7, 1.492], ['2026-09-22', '12:10', 'FD21 KLR', 'Texaco, Raynesway', 38.4, 1.459],
+    ['2026-09-22', '07:02', 'YJ19 KCM', 'Moto, Ferrybridge', 96.3, 1.529], ['2026-09-21', '16:20', 'OV21 CTY', 'Shell, London Road', 61.9, 1.479],
+    ['2026-09-21', '08:15', 'HN70 KEY', 'BP, Nursling', 55.0, 1.489], ['2026-09-20', '13:37', 'YK71 HXV', 'Esso, Tadcaster', 44.6, 1.472],
+    ['2026-09-20', '09:05', 'LS70 KWD', 'Tesco, Dewsbury Road', 49.1, 1.439], ['2026-09-19', '18:22', 'YD68 TRA', 'Sainsbury’s, Kirkstall', 67.8, 1.449],
+    ['2026-09-19', '07:48', 'OE69 DKS', 'Shell, Whitley', 59.3, 1.485], ['2026-09-18', '15:11', 'RJ69 SND', 'BP, Reading West', 62.5, 1.495],
+    ['2026-09-18', '06:40', 'YK68 LRN', 'Jet, Clifton', 71.2, 1.459], ['2026-09-17', '12:02', 'FN69 ARD', 'Morrisons, Derby', 57.9, 1.444],
+    ['2026-09-17', '07:25', 'YK71 HXV', 'Shell, Clifton Moor', 60.4, 1.489], ['2026-09-16', '16:49', 'LS70 KWD', 'Esso, Hunslet', 46.2, 1.465],
+  ];
+  const SVC_HISTORY = {
+    'LS70 KWD': [['2025-11-12', 'Annual service', 'Leeds Van Centre (Ford)', '£312.40', 41880], ['2025-12-01', 'MOT — pass', 'Stourton Commercial Services', '£54.85', 42310], ['2025-05-20', 'Tyres (2 × front)', 'Stourton Commercial Services', '£228.00', 37015]],
+    'YK71 HXV': [['2025-11-04', 'Annual service', 'Minster Truck & Van', '£389.10', 30112], ['2026-03-19', 'Brake pads (front)', 'Clifton Moor Motors', '£176.50', 36940]],
+  };
+
+  const st = { vf: { q: '', status: '', type: '', page: 1, key: '' }, alertFilter: 'all', ackOpen: null, openRegions: new Set(), driverQ: '', driverDepot: '', flakyUsed: false, busy: false, repPreview: null };
+
+  // ------------------------------------------------------------------ shell
+  const main = q('#main');
+  function statusPill(s) { const c = { Active: 'ok', 'In workshop': 'warn', 'Off road': 'bad', Reserved: 'info' }[s] || ''; return `<span class="pill ${c}">${esc(s)}</span>`; }
+  function regLink(v, tab) { return `<a href="#/vehicle/${slug(v.reg)}/${tab || 'overview'}"><span class="reg">${esc(v.reg)}</span></a>`; }
+  function drvLink(id) { const d = drv(id); return d ? `<a href="#/driver/${d.id}">${esc(d.name)}</a>` : '<span class="muted">Unassigned</span>'; }
+  function setNav(r) { qa('.side nav a').forEach((a) => a.classList.toggle('on', a.dataset.nav === (r === 'vehicle' ? 'vehicles' : r === 'driver' ? 'drivers' : r))); }
+  function unacked() { return ALERTS.filter((a) => !a.ack); }
+  function bell() {
+    const n = unacked().length; q('#bell-n').textContent = n; q('#bell-n').hidden = !n;
+    q('#bell-menu').innerHTML = `<div class="muted" style="padding:6px 14px">Unacknowledged alerts</div>` + unacked().map((a) => { const v = byReg(a.reg); return `<a href="#/vehicle/${slug(v.reg)}/telematics/alerts">${esc(a.label)} · <b>${esc(v.reg)}</b> (${esc(DEPOTS[v.depot].name)})<br><span class="muted">${fAt(a.at)}</span></a>`; }).join('') + `<div class="sep"></div><a href="#/settings/alerts">Alert settings</a>`;
+  }
+
+  // ------------------------------------------------------------------ dashboard
+  function viewDashboard() {
+    const active = VEHICLES.filter((v) => v.status === 'Active');
+    const shop = VEHICLES.filter((v) => v.status === 'In workshop');
+    const off = VEHICLES.filter((v) => v.status === 'Off road');
+    const due = VEHICLES.filter((v) => v.service && v.service > TODAY && v.service <= addDays(TODAY, 30) && v.status !== 'In workshop').sort((a, b) => a.service.localeCompare(b.service));
+    const checks = DRIVERS.filter((d) => d.check <= addDays(TODAY, 21)).sort((a, b) => a.check.localeCompare(b.check));
+    const primaryId = (v) => (ASSIGN[v.reg].primary ? ASSIGN[v.reg].primary.id : '');
+    const road = active.filter((v) => primaryId(v)).slice(0, 16);
+    const ua = unacked();
+    return `<h1>Dashboard</h1><p class="sub">Northway Logistics · all depots · live data</p>
+      <div class="kpis">
+        <a class="kpi" href="#/vehicles"><div class="n">${VEHICLES.length}</div><div class="l">Vehicles</div></a>
+        <a class="kpi" href="#/map"><div class="n">${active.length}</div><div class="l">Active today</div></a>
+        <a class="kpi" href="#/maintenance"><div class="n">${shop.length}</div><div class="l">In workshop</div></a>
+        <a class="kpi" href="#/vehicles"><div class="n">${off.length}</div><div class="l">Off road</div></a>
+        <a class="kpi" href="#dash-alerts"><div class="n">${ua.length}</div><div class="l">Unacknowledged alerts</div></a>
+        <a class="kpi" href="#/maintenance"><div class="n">${due.length}</div><div class="l">Services due (30 days)</div></a>
+      </div>
+      <div class="grid3">
+        <div>
+          <div class="card" id="dash-alerts"><h2>Unacknowledged alerts</h2>
+            <table><thead><tr><th>Vehicle</th><th>Depot</th><th>Alert</th><th>When</th><th></th></tr></thead><tbody>
+            ${ua.map((a) => { const v = byReg(a.reg); return `<tr><td>${regLink(v)}</td><td>${esc(DEPOTS[v.depot].name)}</td><td><span class="atype ${a.type}">${esc(a.label)}</span><div class="muted">${esc(a.detail)}</div></td><td>${fAt(a.at)}</td><td><a href="#/vehicle/${slug(v.reg)}/telematics/alerts">View</a></td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">No open alerts.</td></tr>'}
+            </tbody></table>
+            <p class="muted">Alerts are acknowledged from the vehicle’s Telematics › Alerts tab.</p>
+          </div>
+          <div class="card"><h2>On the road now</h2>
+            <table><thead><tr><th>Vehicle</th><th>Driver</th><th>Depot</th><th>Last position</th><th>Speed</th><th></th></tr></thead><tbody>
+            ${road.map((v) => `<tr><td>${regLink(v)}</td><td>${drvLink(primaryId(v))}</td><td>${esc(DEPOTS[v.depot].name)}</td><td class="muted">${esc(['Ring road', 'Retail park', 'Industrial estate', 'Town centre', 'Motorway services', 'Customer site'][hnum(v.reg, 6)])} · ${1 + hnum(v.reg + 't', 14)} min ago</td><td>${hnum(v.reg + 'sp', 55)} mph</td><td><a href="#/map">Track</a></td></tr>`).join('')}
+            </tbody></table>
+          </div>
+        </div>
+        <div>
+          <div class="card"><h2>Services due in the next 30 days</h2>
+            <table><tbody>${due.map((v) => `<tr><td>${regLink(v, 'maintenance')}<div class="muted">${esc(DEPOTS[v.depot].name)} · ${esc(v.model)}</div></td><td>${fD(v.service)}</td><td><button type="button" class="btn sm" data-book="${esc(v.reg)}">Book</button></td></tr>`).join('')}</tbody></table>
+          </div>
+          <div class="card"><h2>Licence checks due</h2>
+            <table><tbody>${checks.map((d) => `<tr><td>${drvLink(d.id)}<div class="muted">${esc(DEPOTS[d.depot].name)} · due ${fD(d.check)}</div></td><td><button type="button" class="btn sm" data-remind="${d.id}">Send reminder</button></td></tr>`).join('') || '<tr><td class="empty">None due.</td></tr>'}</tbody></table>
+          </div>
+          <div class="card"><h2>Depots</h2>
+            ${Object.entries(DEPOTS).map(([k, d]) => { const vs = depotVehicles(k); const a = vs.filter((v) => v.status === 'Active').length; return `<div style="margin-bottom:9px"><div class="row"><a href="#/vehicles/${k}">${esc(d.name)}</a><span class="spacer"></span><span class="muted">${a}/${vs.length} active</span></div><div class="bar"><i style="width:${Math.round((a / vs.length) * 100)}%"></i></div></div>`; }).join('')}
+          </div>
+          <div class="card"><h2>Recent activity</h2><ul class="feed" style="padding-left:18px;margin:0">
+            <li><b>Priya Shah</b> acknowledged AL-88150 on <a href="#/vehicle/yk71-hvx/telematics/alerts">YK71 HVX</a><div class="muted">21 Sep, 08:02</div></li>
+            <li><b>Gavin Holt</b> booked a service for <a href="#/vehicle/fj68-ppe/maintenance">FJ68 PPE</a><div class="muted">20 Sep, 15:40</div></li>
+            <li><b>Helen Achebe</b> marked <a href="#/vehicle/rj66-pax/overview">RJ66 PAX</a> off road<div class="muted">19 Sep, 11:12</div></li>
+            <li><b>Rosa Delgado-Pike</b> acknowledged AL-88098 on <a href="#/vehicle/ls70-kwd/telematics/alerts">LS70 KWD</a><div class="muted">18 Sep, 09:30</div></li>
+          </ul></div>
+        </div>
+      </div>`;
+  }
+
+  // ------------------------------------------------------------------ vehicles list
+  function treeHtml(cur) {
+    return `<div class="card" style="padding:12px"><h2 style="margin:0 0 6px">Depots</h2>
+      <a href="#/vehicles" class="${cur ? '' : 'on'}" style="display:flex;padding:5px 6px;border-radius:4px;${cur ? '' : 'background:#ffedd5;font-weight:600'}">All depots <span class="cnt">${VEHICLES.length}</span></a>
+      <ul class="tree" role="tree" aria-label="Regions and depots">
+      ${REGIONS.map((r) => { const open = st.openRegions.has(r.id); const n = r.depots.reduce((s, d) => s + depotVehicles(d).length, 0); return `<li role="treeitem" aria-expanded="${open}" aria-level="1">
+        <button type="button" class="tw" data-region="${r.id}"><span class="chev">▸</span> ${esc(r.name)} <span class="cnt">${n}</span></button>
+        <ul role="group" ${open ? '' : 'hidden'}>${r.depots.map((d) => `<li role="treeitem" aria-level="2" aria-selected="${cur === d}"><a href="#/vehicles/${d}" class="${cur === d ? 'on' : ''}">${esc(DEPOTS[d].name)} <span class="cnt">${depotVehicles(d).length}</span></a></li>`).join('')}</ul></li>`; }).join('')}
+      </ul></div>`;
+  }
+  function vehicleRows(list, withDepot) {
+    return list.map((v) => `<tr><td><input type="checkbox" aria-label="Select ${esc(v.reg)}" data-sel="${esc(v.reg)}"></td><td>${regLink(v)}</td><td>${esc(v.model)}<div class="muted">${esc(v.fuel)} · ${v.year}</div></td><td>${esc(v.type)}</td>${withDepot ? `<td>${esc(DEPOTS[v.depot].name)}</td>` : ''}<td>${statusPill(v.status)}</td><td>${drvLink(ASSIGN[v.reg].primary ? ASSIGN[v.reg].primary.id : '')}</td><td>${mi(v.odo)}</td><td>${v.service ? fD(v.service) : '—'}</td><td><button type="button" class="dots" data-rowmenu="${esc(v.reg)}" aria-label="More actions for ${esc(v.reg)}">⋯</button></td></tr>`).join('');
+  }
+  function filtered(depot) {
+    const f = st.vf; const qq = fold(f.q);
+    return VEHICLES.filter((v) => (!depot || v.depot === depot) && (!f.status || v.status === f.status) && (!f.type || v.type === f.type)
+      && (!qq || fold(v.reg).replace(/\s/g, '').includes(qq.replace(/\s/g, '')) || fold(v.model).includes(qq) || (ASSIGN[v.reg].primary && fold(drv(ASSIGN[v.reg].primary.id).name).includes(qq))));
+  }
+  function tableHtml(depot) {
+    const list = filtered(depot);
+    const per = 15; const pages = Math.max(1, Math.ceil(list.length / per));
+    if (st.vf.page > pages) st.vf.page = pages;
+    const shown = depot ? list : list.slice((st.vf.page - 1) * per, st.vf.page * per);
+    return `<table><thead><tr><th style="width:28px"></th><th>Registration</th><th>Make &amp; model</th><th>Type</th>${depot ? '' : '<th>Depot</th>'}<th>Status</th><th>Primary driver</th><th>Odometer</th><th>Next service</th><th></th></tr></thead>
+      <tbody>${vehicleRows(shown, !depot) || `<tr><td colspan="10" class="empty">No vehicles match these filters.</td></tr>`}</tbody></table>
+      ${depot ? `<p class="muted" style="margin-top:10px">${list.length} of ${depotVehicles(depot).length} vehicles</p>` : `<div class="pager"><span class="muted">${list.length ? (st.vf.page - 1) * per + 1 : 0}–${Math.min(st.vf.page * per, list.length)} of ${list.length}</span>
+        <button type="button" class="btn sm" data-page="${st.vf.page - 1}" ${st.vf.page <= 1 ? 'disabled' : ''} aria-label="Previous page">‹</button>
+        ${Array.from({ length: pages }, (_, i) => `<button type="button" class="btn sm" data-page="${i + 1}" ${i + 1 === st.vf.page ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}
+        <button type="button" class="btn sm" data-page="${st.vf.page + 1}" ${st.vf.page >= pages ? 'disabled' : ''} aria-label="Next page">›</button></div>`}`;
+  }
+  function viewVehicles(depot) {
+    if (depot && !DEPOTS[depot]) return notFound();
+    const key = depot || 'all';
+    if (st.vf.key !== key) st.vf = { q: '', status: '', type: '', page: 1, key };
+    if (depot) st.openRegions.add(DEPOTS[depot].region);
+    const d = depot && DEPOTS[depot];
+    const types = ['Small van', 'Medium van', 'Large van', '7.5t truck'];
+    return `<div class="crumbs"><a href="#/vehicles">Vehicles</a>${d ? ` › ${esc(REGIONS.find((r) => r.id === d.region).name)} › ${esc(d.name)}` : ''}</div>
+      <div class="row"><h1>${d ? esc(d.name) + ' depot' : 'All vehicles'}</h1><span class="spacer"></span><button type="button" class="btn" data-toast="Export started — you'll get an email when the CSV is ready.">Export CSV</button><button type="button" class="btn pri" id="add-vehicle">＋ Add vehicle</button></div>
+      <p class="sub">${d ? `${esc(d.addr)} · Depot manager ${esc(d.manager)}` : 'Every vehicle across all six depots. Pick a depot on the left to narrow the list.'}</p>
+      <div class="vlayout">${treeHtml(depot)}
+        <div class="card">
+          <div class="filters">
+            <input type="search" id="vf-q" placeholder="Filter by registration, model or driver" aria-label="Filter vehicles" value="${esc(st.vf.q)}" style="width:280px">
+            <select id="vf-status" aria-label="Status"><option value="">All statuses</option>${['Active', 'In workshop', 'Off road', 'Reserved'].map((s) => `<option ${st.vf.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+            <select id="vf-type" aria-label="Vehicle type"><option value="">All types</option>${types.map((s) => `<option ${st.vf.type === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+          </div>
+          <div id="vtable">${tableHtml(depot)}</div>
+        </div>
+      </div>`;
+  }
+
+  // ------------------------------------------------------------------ vehicle
+  function viewVehicle(s, tab, sub) {
+    const v = bySlug(s || '');
+    if (!v) return notFound();
+    const T = [['overview', 'Overview'], ['assignments', 'Assignments'], ['maintenance', 'Maintenance'], ['documents', 'Documents'], ['telematics', 'Telematics']];
+    if (!T.some((t) => t[0] === tab)) return notFound();
+    const d = DEPOTS[v.depot]; const reg = REGIONS.find((r) => r.id === d.region);
+    const open = ALERTS.filter((a) => a.reg === v.reg && !a.ack).length;
+    let body = '';
+    if (tab === 'overview') body = tabOverview(v);
+    if (tab === 'assignments') body = tabAssignments(v);
+    if (tab === 'maintenance') body = tabMaintenance(v);
+    if (tab === 'documents') body = tabDocuments(v);
+    if (tab === 'telematics') body = tabTelematics(v, sub || 'trips');
+    return `<div class="crumbs"><a href="#/vehicles">Vehicles</a> › ${esc(reg.name)} › <a href="#/vehicles/${v.depot}">${esc(d.name)}</a> › ${esc(v.reg)}</div>
+      <div class="vhead"><span class="reg">${esc(v.reg)}</span><div><h1 style="font-size:18px">${esc(v.model)}</h1><div class="muted">${esc(v.type)} · ${esc(v.fuel)} · ${v.year} · ${esc(d.name)} depot</div></div>${statusPill(v.status)}<span class="spacer"></span>
+        <button type="button" class="btn" data-edit="${esc(v.reg)}">Edit details</button>${v.status === 'Off road' ? `<button type="button" class="btn" data-status="${esc(v.reg)}" data-to="Active">Return to service</button>` : `<button type="button" class="btn danger" data-status="${esc(v.reg)}" data-to="Off road">Mark off road</button>`}</div>
+      <nav class="tabs" role="tablist" aria-label="Vehicle sections">${T.map(([k, l]) => `<a role="tab" href="#/vehicle/${slug(v.reg)}/${k}" aria-selected="${k === tab}">${l}${k === 'telematics' && open ? ` <span class="badge">${open}</span>` : ''}</a>`).join('')}</nav>
+      ${body}`;
+  }
+  function tabOverview(v) {
+    const a = ASSIGN[v.reg]; const d = DEPOTS[v.depot];
+    const last = TRIPS[v.reg] ? TRIPS[v.reg][0] : tripsFor(v)[0];
+    return `<div class="grid2"><div class="card"><h2>Vehicle details</h2><dl class="kv">
+        <dt>Registration</dt><dd>${esc(v.reg)}</dd><dt>Make &amp; model</dt><dd>${esc(v.model)}</dd><dt>Type</dt><dd>${esc(v.type)}</dd><dt>Fuel</dt><dd>${esc(v.fuel)}</dd>
+        <dt>Year</dt><dd>${v.year}</dd><dt>VIN</dt><dd class="mono">${esc(v.vin)}</dd><dt>Depot</dt><dd><a href="#/vehicles/${v.depot}">${esc(d.name)}</a></dd>
+        <dt>Odometer</dt><dd>${mi(v.odo)}</dd><dt>Tracker</dt><dd class="mono">${esc(v.tracker)}</dd><dt>Fuel card</dt><dd>${esc(v.card)}</dd></dl></div>
+      <div><div class="card"><h2>Compliance</h2><dl class="kv"><dt>Next service</dt><dd>${v.service ? fD(v.service) : '—'}</dd><dt>MOT due</dt><dd>${fD(v.mot)}</dd>
+        <dt>Insurance</dt><dd>Fleet policy NW-FL-2026 · renews 1 Apr 2027</dd><dt>Road tax</dt><dd>Paid to ${fD(addDays('2027-01-31', hnum(v.reg, 150)))}</dd>${v.type === '7.5t truck' ? '<dt>Tachograph</dt><dd>Calibrated · next due 14 Feb 2027</dd>' : ''}</dl></div>
+      <div class="card"><h2>Driver</h2>${a.primary ? `<p style="margin:0">Primary: ${drvLink(a.primary.id)} <span class="muted">since ${fD(a.primary.since)}</span></p>` : '<p class="muted" style="margin:0">No primary driver — pool vehicle.</p>'}
+        <p class="muted"><a href="#/vehicle/${slug(v.reg)}/assignments">Manage assignments</a></p></div>
+      <div class="card"><h2>Last known position</h2><p style="margin:0">${last ? `${esc(last[4])} · ${fD(last[0])}, ${last[2]}` : `${esc(d.name)} depot`}</p><p class="muted"><a href="#/vehicle/${slug(v.reg)}/telematics/trips">View trips</a></p></div></div></div>`;
+  }
+  function tabAssignments(v) {
+    const a = ASSIGN[v.reg];
+    const p = a.primary && drv(a.primary.id);
+    const endNote = a.next ? `<div class="banner" style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;margin-top:10px">Scheduled change: <b>${esc(drv(a.next.id).name)}</b> becomes primary driver from ${fD(a.next.start)}${p ? ` — ${esc(p.name)}’s assignment ends ${fD(addDays(a.next.start, -1))}` : ''}.</div>` : '';
+    return `<div class="grid2">
+      <div class="card"><h2>Primary driver</h2>${p ? `<div class="row"><div style="width:42px;height:42px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:700">${esc(p.name.split(' ').map((x) => x[0]).join('').slice(0, 2))}</div><div><b>${esc(p.name)}</b> <span class="muted">${esc(p.id)}</span><div class="muted">Since ${fD(a.primary.since)} · Licence ${esc(p.lic)} · ${esc(p.phone)}</div></div></div>` : '<p class="muted">No primary driver assigned.</p>'}
+        ${endNote}
+        <div style="margin-top:14px"><button type="button" class="btn pri" data-assign="primary">${p ? 'Change primary driver' : 'Assign primary driver'}</button></div></div>
+      <div class="card"><h2>Secondary drivers</h2>${a.secondary.length ? `<table><tbody>${a.secondary.map((s) => `<tr><td>${drvLink(s.id)} <span class="muted">${esc(s.id)}</span><div class="muted">Since ${fD(s.since)}</div></td><td style="text-align:right"><button type="button" class="btn sm danger" data-unassign="${s.id}">Remove</button></td></tr>`).join('')}</tbody></table>` : '<p class="muted">No secondary drivers.</p>'}
+        <div style="margin-top:12px"><button type="button" class="btn" data-assign="secondary">＋ Add secondary driver</button></div></div></div>
+      <div class="card"><h2>Assignment history</h2><table><thead><tr><th>Driver</th><th>Driver ID</th><th>Role</th><th>From</th><th>To</th></tr></thead><tbody>
+        ${a.history.map((h) => `<tr><td>${esc(h.name)}</td><td class="mono">${esc(h.id)}</td><td>${esc(h.role)}</td><td>${fD(h.from)}</td><td>${h.to ? fD(h.to) : '<span class="pill ok">Current</span>'}</td></tr>`).join('')}
+      </tbody></table></div>`;
+  }
+  function tabMaintenance(v) {
+    const hist = SVC_HISTORY[v.reg] || [[addDays('2025-10-01', hnum(v.reg, 200)), 'Annual service', DEPOTS[v.depot].garage[0], '£' + (280 + hnum(v.reg + 'c', 140)) + '.00', Math.max(1000, v.odo - 9000)]];
+    return `<div class="card"><div class="row"><h2 style="margin:0">Upcoming</h2><span class="spacer"></span><button type="button" class="btn pri" data-book="${esc(v.reg)}">Book service</button></div>
+        <table style="margin-top:10px"><thead><tr><th>Item</th><th>Due</th><th>Status</th></tr></thead><tbody>
+        <tr><td>Scheduled service</td><td>${v.service ? fD(v.service) : '—'}</td><td>${v.status === 'In workshop' ? '<span class="pill warn">In workshop</span>' : '<span class="pill">Not booked</span>'}</td></tr>
+        <tr><td>MOT</td><td>${fD(v.mot)}</td><td><span class="pill">Not booked</span></td></tr></tbody></table></div>
+      <div class="card"><h2>Service history</h2><table><thead><tr><th>Date</th><th>Work</th><th>Garage</th><th>Cost</th><th>Odometer</th></tr></thead><tbody>
+        ${hist.map((h) => `<tr><td>${fD(h[0])}</td><td>${esc(h[1])}</td><td>${esc(h[2])}</td><td>${esc(h[3])}</td><td>${mi(h[4])}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function tabDocuments(v) {
+    const docs = [['V5C registration certificate', 'PDF · 412 KB', '2024-02-03'], ['Insurance certificate 2026–27', 'PDF · 188 KB', '2026-04-01'], ['MOT certificate', 'PDF · 96 KB', addDays(v.mot, -365)], ['Lease agreement NW-LA-' + (4400 + hnum(v.reg, 500)), 'PDF · 1.2 MB', '2023-11-17']];
+    return `<div class="card"><div class="row"><h2 style="margin:0">Documents</h2><span class="spacer"></span><button type="button" class="btn" disabled title="Uploads are managed by head office">Upload document</button></div>
+      <table style="margin-top:10px"><thead><tr><th>Document</th><th>File</th><th>Added</th><th></th></tr></thead><tbody>
+      ${docs.map((d) => `<tr><td>${esc(d[0])}</td><td class="muted">${esc(d[1])}</td><td>${fD(d[2])}</td><td><button type="button" class="btn sm" data-toast="Downloading ${esc(d[0])}…">Download</button></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function tabTelematics(v, sub) {
+    const S = [['trips', 'Trips'], ['fuel', 'Fuel'], ['alerts', 'Alerts']];
+    if (!S.some((x) => x[0] === sub)) sub = 'trips';
+    const open = ALERTS.filter((a) => a.reg === v.reg && !a.ack).length;
+    let body = '';
+    if (sub === 'trips') {
+      const tr = tripsFor(v);
+      body = `<div class="card"><table><thead><tr><th>Date</th><th>Start</th><th>End</th><th>From</th><th>To</th><th>Distance</th><th>Driver</th><th>Driving score</th></tr></thead><tbody>
+        ${tr.map((t) => `<tr><td>${fDW(t[0])}</td><td>${t[1]}</td><td>${t[2]}</td><td>${esc(t[3])}</td><td>${esc(t[4])}</td><td>${t[5]} mi</td><td>${drvLink(t[6])}</td><td><span class="score ${t[7] < 75 ? 'lo' : ''}">${t[7]}</span>/100</td></tr>`).join('') || '<tr><td colspan="8" class="empty">No trips in the last 7 days.</td></tr>'}</tbody></table></div>`;
+    }
+    if (sub === 'fuel') {
+      const f = FUEL.filter((x) => x[2] === v.reg);
+      body = `<div class="card"><table><thead><tr><th>Date</th><th>Time</th><th>Site</th><th>Litres</th><th>Price/l</th><th>Total</th></tr></thead><tbody>
+        ${f.map((x) => `<tr><td>${fD(x[0])}</td><td>${x[1]}</td><td>${esc(x[3])}</td><td>${x[4].toFixed(1)}</td><td>£${x[5].toFixed(3)}</td><td>£${(x[4] * x[5]).toFixed(2)}</td></tr>`).join('') || `<tr><td colspan="6" class="empty">${v.fuel === 'Electric' ? 'Electric vehicle — see charging sessions in Reports.' : 'No fuel card transactions in the last 30 days.'}</td></tr>`}</tbody></table></div>`;
+    }
+    if (sub === 'alerts') body = alertsHtml(v);
+    return `<nav class="subtabs" role="tablist" aria-label="Telematics">${S.map(([k, l]) => `<a role="tab" href="#/vehicle/${slug(v.reg)}/telematics/${k}" aria-selected="${k === sub}">${l}${k === 'alerts' && open ? ` (${open})` : ''}</a>`).join('')}</nav>${body}`;
+  }
+  function alertsHtml(v) {
+    const list = ALERTS.filter((a) => a.reg === v.reg).sort((a, b) => b.at.localeCompare(a.at));
+    const f = st.alertFilter;
+    const shown = list.filter((a) => f === 'all' || (f === 'open' ? !a.ack : !!a.ack));
+    const open = list.filter((a) => !a.ack);
+    let rows = '';
+    for (const a of shown) {
+      rows += `<tr data-alert="${a.id}"><td class="mono">${a.id}</td><td>${fAt(a.at)}</td><td><span class="atype ${a.type}">${esc(a.label)}</span></td><td>${esc(a.detail)}</td><td>${esc(a.loc)}</td>
+        <td>${a.ack ? `<span class="pill ok">Acknowledged</span><div class="muted">by ${esc(a.ack.by)}, ${esc(a.ack.when)}</div>` : '<span class="pill warn">Unacknowledged</span>'}</td>
+        <td>${a.ack ? '' : `<button type="button" class="btn sm" data-ack="${a.id}">Acknowledge</button>`}</td></tr>`;
+      if (st.ackOpen === a.id) rows += `<tr class="ackrow"><td colspan="7"><div class="ackbox"><label for="ack-note"><b>Add a note (optional)</b></label><textarea id="ack-note" rows="2" placeholder="e.g. Spoke to the driver — pedestrian stepped out"></textarea><div class="row"><button type="button" class="btn pri" data-ack-go="${a.id}">Acknowledge alert</button><button type="button" class="btn" data-ack-cancel>Cancel</button><span class="muted">Acknowledging ${esc(a.id)} · ${esc(a.label)} · ${fAt(a.at)}</span></div></div></td></tr>`;
+    }
+    return `<div class="card"><div class="row" style="margin-bottom:10px"><div class="chips" role="group" aria-label="Show" style="margin:0">${[['all', 'All'], ['open', 'Unacknowledged'], ['ack', 'Acknowledged']].map(([k, l]) => `<button type="button" class="chip" data-afilter="${k}" aria-pressed="${f === k}">${l}</button>`).join('')}</div><span class="spacer"></span>
+        ${open.length ? `<button type="button" class="btn" id="ack-all">Acknowledge all (${open.length})</button>` : ''}</div>
+      <table><thead><tr><th>Alert</th><th>Date &amp; time</th><th>Type</th><th>Details</th><th>Location</th><th>Status</th><th></th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="7" class="empty">No alerts to show.</td></tr>'}</tbody></table>
+      <p class="muted" style="margin-top:10px">Thresholds: harsh braking ≥ 0.45 g · speeding ≥ 10% over the limit · idling ≥ 20 min. <a href="#/settings/alerts">Change alert rules</a></p></div>`;
+  }
+
+  // ------------------------------------------------------------------ other pages
+  function viewDrivers() {
+    const qq = fold(st.driverQ);
+    const list = DRIVERS.filter((d) => (!st.driverDepot || d.depot === st.driverDepot) && (!qq || fold(d.name).includes(qq) || d.id.toLowerCase().includes(qq))).sort((a, b) => a.name.localeCompare(b.name));
+    const primaryOf = (id) => VEHICLES.filter((v) => ASSIGN[v.reg].primary && ASSIGN[v.reg].primary.id === id);
+    return `<h1>Drivers</h1><p class="sub">${DRIVERS.length} drivers across 6 depots</p>
+      <div class="card"><div class="filters"><input type="search" id="df-q" placeholder="Search name or driver ID" aria-label="Search drivers" value="${esc(st.driverQ)}" style="width:260px">
+        <select id="df-depot" aria-label="Depot"><option value="">All depots</option>${Object.entries(DEPOTS).map(([k, d]) => `<option value="${k}" ${st.driverDepot === k ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>
+      <table><thead><tr><th>Name</th><th>Driver ID</th><th>Depot</th><th>Licence</th><th>Phone</th><th>Primary vehicle</th><th>Licence check</th></tr></thead><tbody>
+      ${list.map((d) => { const pv = primaryOf(d.id); return `<tr><td><a href="#/driver/${d.id}">${esc(d.name)}</a></td><td class="mono">${d.id}</td><td>${esc(DEPOTS[d.depot].name)}</td><td>${esc(d.lic)}</td><td>${esc(d.phone)}</td><td>${pv.length ? pv.map((v) => regLink(v)).join(' ') : '<span class="muted">Pool driver</span>'}</td><td>${fD(d.check)}</td></tr>`; }).join('') || '<tr><td colspan="7" class="empty">No drivers found.</td></tr>'}
+      </tbody></table></div>`;
+  }
+  function viewDriver(id) {
+    const d = drv(id || '');
+    if (!d) return notFound();
+    const pv = VEHICLES.filter((v) => ASSIGN[v.reg].primary && ASSIGN[v.reg].primary.id === d.id);
+    const sv = VEHICLES.filter((v) => ASSIGN[v.reg].secondary.some((s) => s.id === d.id));
+    return `<div class="crumbs"><a href="#/drivers">Drivers</a> › ${esc(d.name)}</div><h1>${esc(d.name)}</h1><p class="sub">${d.id} · ${esc(DEPOTS[d.depot].name)} depot</p>
+      <div class="grid2"><div class="card"><h2>Details</h2><dl class="kv"><dt>Licence categories</dt><dd>${esc(d.lic)}</dd><dt>Phone</dt><dd>${esc(d.phone)}</dd><dt>Licence check due</dt><dd>${fD(d.check)}</dd><dt>Depot</dt><dd><a href="#/vehicles/${d.depot}">${esc(DEPOTS[d.depot].name)}</a></dd></dl>
+        <div style="margin-top:12px"><button type="button" class="btn" data-remind="${d.id}">Send licence check reminder</button></div></div>
+      <div class="card"><h2>Vehicles</h2><p>Primary: ${pv.length ? pv.map((v) => regLink(v)).join(' ') : '<span class="muted">none (pool driver)</span>'}</p><p>Secondary: ${sv.length ? sv.map((v) => regLink(v)).join(' ') : '<span class="muted">none</span>'}</p>
+        <p class="muted">Assign drivers from a vehicle’s Assignments tab.</p></div></div>`;
+  }
+  function viewMaintenance() {
+    const shop = VEHICLES.filter((v) => v.status === 'In workshop');
+    const due = VEHICLES.filter((v) => v.service && v.service > TODAY && v.service <= addDays(TODAY, 45) && v.status !== 'In workshop').sort((a, b) => a.service.localeCompare(b.service));
+    const mot = VEHICLES.filter((v) => v.mot <= addDays(TODAY, 45)).sort((a, b) => a.mot.localeCompare(b.mot));
+    return `<h1>Maintenance</h1><p class="sub">Services, MOTs and workshop visits</p>
+      <div class="card"><h2>In the workshop</h2><table><thead><tr><th>Vehicle</th><th>Depot</th><th>Booked in</th><th>Garage</th><th>Expected back</th></tr></thead><tbody>
+        ${shop.map((v) => `<tr><td>${regLink(v, 'maintenance')}</td><td>${esc(DEPOTS[v.depot].name)}</td><td>${fD(addDays(TODAY, -1 - hnum(v.reg, 3)))}</td><td>${esc(DEPOTS[v.depot].garage[hnum(v.reg, 2)])}</td><td>${fD(addDays(TODAY, 1 + hnum(v.reg + 'b', 4)))}</td></tr>`).join('')}</tbody></table></div>
+      <div class="grid2"><div class="card"><h2>Services due (45 days)</h2><table><tbody>${due.map((v) => `<tr><td>${regLink(v, 'maintenance')} <span class="muted">${esc(DEPOTS[v.depot].name)}</span></td><td>${fD(v.service)}</td><td><button type="button" class="btn sm" data-book="${esc(v.reg)}">Book</button></td></tr>`).join('')}</tbody></table></div>
+      <div class="card"><h2>MOTs due (45 days)</h2><table><tbody>${mot.map((v) => `<tr><td>${regLink(v, 'maintenance')} <span class="muted">${esc(DEPOTS[v.depot].name)}</span></td><td>${fD(v.mot)}</td><td><button type="button" class="btn sm" data-book="${esc(v.reg)}" data-kind="MOT">Book MOT</button></td></tr>`).join('')}</tbody></table></div></div>`;
+  }
+  function viewFuel() {
+    const tot = FUEL.reduce((s, x) => s + x[4] * x[5], 0);
+    return `<h1>Fuel</h1><p class="sub">Fuel card transactions · last 7 days · £${tot.toFixed(2)} across ${FUEL.length} fills</p>
+      <div class="card"><table><thead><tr><th>Date</th><th>Time</th><th>Vehicle</th><th>Site</th><th>Litres</th><th>Price/l</th><th>Total</th></tr></thead><tbody>
+      ${FUEL.map((x) => { const v = byReg(x[2]); return `<tr><td>${fD(x[0])}</td><td>${x[1]}</td><td>${regLink(v, 'telematics/fuel')}</td><td>${esc(x[3])}</td><td>${x[4].toFixed(1)}</td><td>£${x[5].toFixed(3)}</td><td>£${(x[4] * x[5]).toFixed(2)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  }
+  function viewMap() {
+    const pts = { leeds: [52, 30], york: [66, 22], derby: [48, 55], coventry: [44, 66], reading: [50, 84], southampton: [40, 93] };
+    const pins = VEHICLES.filter((v) => v.status === 'Active').map((v) => { const [x, y] = pts[v.depot]; return `<span class="pin" style="left:${x + (hnum(v.reg, 16) - 8)}%;top:${y + (hnum(v.reg + 'y', 10) - 5)}%">${esc(v.reg)}</span>`; }).join('');
+    return `<h1>Live map</h1><p class="sub">Positions refresh every 30 seconds · ${VEHICLES.filter((v) => v.status === 'Active').length} vehicles reporting</p>
+      <div class="map">${Object.entries(pts).map(([k, [x, y]]) => `<span class="pin depot" style="left:${x}%;top:${y}%">${esc(DEPOTS[k].name)} depot</span>`).join('')}${pins}</div>`;
+  }
+  function viewReports() {
+    const R = [['utilisation', 'Vehicle utilisation', 'Days used, idle time and mileage per vehicle'], ['driving', 'Driving behaviour', 'Scores, harsh events and speeding per driver'], ['fuel', 'Fuel & charging', 'Spend, litres and kWh by depot'], ['compliance', 'Compliance', 'MOT, service, tax and licence check status'], ['co2', 'CO₂ emissions', 'Estimated emissions by vehicle and depot']];
+    return `<h1>Reports</h1><p class="sub">Run a report now or schedule it by email.</p><div class="grid2">${R.map(([k, t, d]) => `<div class="card"><h2>${t}</h2><p class="muted">${d}</p><div class="row"><button type="button" class="btn" data-run="${k}">Run now</button><button type="button" class="btn" data-schedule="${k}" data-title="${esc(t)}">Schedule…</button></div>${st.repPreview === k ? `<p class="muted" style="margin-top:10px">Preview generated for 1–23 Sep 2026 · 52 vehicles · open the full report from your email.</p>` : ''}</div>`).join('')}</div>`;
+  }
+  const SETTINGS = {
+    company: { title: 'Company', fields: [['Company name', 'text', 'Northway Logistics Ltd'], ['Registered address', 'text', '1 Aire Street, Leeds LS1 4PR'], ['VAT number', 'text', 'GB 318 4420 17'], ['Distance units', 'select', 'Miles', ['Miles', 'Kilometres']]] },
+    depots: { title: 'Depots', fields: [['Default depot for new vehicles', 'select', 'Leeds', Object.values(DEPOTS).map((d) => d.name)], ['Out-of-hours contact', 'text', '0113 496 0172']] },
+    alerts: { title: 'Alert rules', fields: [['Harsh braking threshold', 'select', '0.45 g', ['0.35 g', '0.40 g', '0.45 g', '0.50 g']], ['Speeding tolerance', 'select', '10% over the limit', ['5% over the limit', '10% over the limit', '15% over the limit']], ['Idling alert after', 'select', '20 minutes', ['10 minutes', '15 minutes', '20 minutes', '30 minutes']], ['Email a daily alert digest to', 'text', 'fleet@northwaylogistics.co.uk']] },
+    users: { title: 'Users', fields: [['Your name', 'text', USER], ['Your email', 'text', 'rosa.delgado-pike@northwaylogistics.co.uk'], ['Role', 'select', 'Fleet coordinator', ['Fleet coordinator', 'Depot manager', 'Administrator']]] },
+    integrations: { title: 'Integrations', fields: [['Fuel card provider', 'select', 'Allstar', ['Allstar', 'Shell Fleet', 'BP Fuel Cards']], ['Payroll export', 'select', 'Off', ['Off', 'Weekly', 'Monthly']]] },
+  };
+  function viewSettings(tab) {
+    if (!SETTINGS[tab]) return notFound();
+    const s = SETTINGS[tab];
+    return `<h1>Settings</h1><p class="sub">Company-wide settings for Northway Logistics</p>
+      <nav class="tabs" role="tablist" aria-label="Settings sections">${Object.entries(SETTINGS).map(([k, v]) => `<a role="tab" href="#/settings/${k}" aria-selected="${k === tab}">${v.title}</a>`).join('')}</nav>
+      <div class="card" style="max-width:640px" data-settings="${tab}">${s.fields.map(([l, t, v, opts], i) => `<div style="margin-bottom:12px"><label for="set-${i}" style="display:block;font-weight:600;margin-bottom:4px">${esc(l)}</label>${t === 'select' ? `<select id="set-${i}">${opts.map((o) => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>` : `<input type="text" id="set-${i}" value="${esc(v)}" style="width:100%">`}</div>`).join('')}
+        <div class="row" style="justify-content:flex-end"><button type="button" class="btn pri" id="set-save">Save changes</button></div></div>`;
+  }
+  function notFound() { return `<h1>Page not found</h1><p class="sub">We couldn’t find that page. <a href="#/dashboard">Back to the dashboard</a></p>`; }
+
+  // ------------------------------------------------------------------ router
+  function parts() { return location.hash.replace(/^#\/?/, '').split('/').filter(Boolean); }
+  function render() {
+    const p = parts(); const r = p[0] || 'dashboard';
+    setNav(r);
+    let h;
+    if (r === 'dashboard') h = viewDashboard();
+    else if (r === 'map') h = viewMap();
+    else if (r === 'vehicles') h = viewVehicles(p[1]);
+    else if (r === 'vehicle') h = viewVehicle(p[1], p[2] || 'overview', p[3]);
+    else if (r === 'drivers') h = viewDrivers();
+    else if (r === 'driver') h = viewDriver(p[1]);
+    else if (r === 'maintenance') h = viewMaintenance();
+    else if (r === 'fuel') h = viewFuel();
+    else if (r === 'reports') h = viewReports();
+    else if (r === 'settings') h = viewSettings(p[1] || 'company');
+    else h = notFound();
+    main.innerHTML = h;
+    bell();
+  }
+  let lastRoute = '';
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#dash-alerts') { const el = q('#dash-alerts'); history.replaceState(null, '', '#/dashboard'); if (el) el.scrollIntoView({ block: 'start' }); return; }
+    const cur = parts().slice(0, 3).join('/');
+    if (cur !== lastRoute) { st.ackOpen = null; st.alertFilter = 'all'; }
+    lastRoute = cur;
+    closeMenus(); render(); window.scrollTo(0, 0);
+  });
+
+  // ------------------------------------------------------------------ menus / popovers
+  function closeMenus() { ['#bell-menu', '#me-menu', '#rowmenu', '#gres'].forEach((s) => (q(s).hidden = true)); q('#bell').setAttribute('aria-expanded', 'false'); q('#me').setAttribute('aria-expanded', 'false'); }
+  document.addEventListener('mousedown', (e) => {
+    if (!e.target.closest('#bell-menu, #bell, #me-menu, #me, #rowmenu, [data-rowmenu], .search')) closeMenus();
+  });
+  q('#bell').addEventListener('click', () => { const m = q('#bell-menu'); const o = m.hidden; closeMenus(); m.hidden = !o; q('#bell').setAttribute('aria-expanded', String(o)); });
+  q('#me').addEventListener('click', () => { const m = q('#me-menu'); const o = m.hidden; closeMenus(); m.hidden = !o; q('#me').setAttribute('aria-expanded', String(o)); });
+  q('#helpbtn').addEventListener('click', () => toast('Help centre: help.atlasfleet.co.uk · Live chat 08:00–18:00'));
+  q('#bell-menu').addEventListener('click', (e) => { if (e.target.closest('a')) closeMenus(); });
+  q('#me-menu').addEventListener('click', (e) => { const t = e.target.closest('[data-toast]'); if (t) toast(t.dataset.toast); if (e.target.closest('a, button')) closeMenus(); });
+  q('#gsearch').addEventListener('input', () => {
+    const qq = fold(q('#gsearch').value); const box = q('#gres');
+    if (qq.length < 2) { box.hidden = true; return; }
+    const compact = qq.replace(/\s/g, '');
+    const vs = VEHICLES.filter((v) => fold(v.reg).replace(/\s/g, '').includes(compact) || fold(v.model).includes(qq)).slice(0, 8);
+    const ds = DRIVERS.filter((d) => fold(d.name).includes(qq) || d.id.toLowerCase().includes(qq)).slice(0, 6);
+    const as = ALERTS.filter((a) => a.id.toLowerCase().includes(qq)).slice(0, 4);
+    box.innerHTML = (vs.length ? '<div class="grp">Vehicles</div>' + vs.map((v) => `<a href="#/vehicle/${slug(v.reg)}/overview"><span class="reg">${esc(v.reg)}</span> ${esc(v.model)} · <span class="muted">${esc(DEPOTS[v.depot].name)}</span></a>`).join('') : '')
+      + (ds.length ? '<div class="grp">Drivers</div>' + ds.map((d) => `<a href="#/driver/${d.id}">${esc(d.name)} <span class="muted">${d.id} · ${esc(DEPOTS[d.depot].name)}</span></a>`).join('') : '')
+      + (as.length ? '<div class="grp">Alerts</div>' + as.map((a) => `<a href="#/vehicle/${slug(a.reg)}/telematics/alerts">${a.id} · ${esc(a.label)} · ${esc(a.reg)}</a>`).join('') : '')
+      || '<div class="muted" style="padding:10px 12px">No matches.</div>';
+    box.hidden = false;
+  });
+  q('#gres').addEventListener('click', (e) => { if (e.target.closest('a')) { q('#gres').hidden = true; q('#gsearch').value = ''; } });
+
+  function rowMenu(btn) {
+    const v = byReg(btn.dataset.rowmenu); const m = q('#rowmenu');
+    const r = btn.getBoundingClientRect();
+    m.style.left = Math.max(8, r.right + window.scrollX - 200) + 'px'; m.style.top = (r.bottom + window.scrollY + 4) + 'px'; m.style.width = '200px';
+    m.innerHTML = `<a href="#/vehicle/${slug(v.reg)}/overview">View details</a><a href="#/vehicle/${slug(v.reg)}/assignments">Manage drivers</a><a href="#/vehicle/${slug(v.reg)}/telematics/alerts">View alerts</a><button type="button" data-book="${esc(v.reg)}">Book service</button><div class="sep"></div>${v.status === 'Off road' ? `<button type="button" data-status="${esc(v.reg)}" data-to="Active">Return to service</button>` : `<button type="button" data-status="${esc(v.reg)}" data-to="Off road">Mark off road</button>`}`;
+    m.hidden = false;
+  }
+
+  // ------------------------------------------------------------------ modals
+  function modal(title, body, foot) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mdl-t"><div class="mh"><h3 id="mdl-t">${esc(title)}</h3><button type="button" class="x" data-close aria-label="Close">✕</button></div><div class="mb">${body}</div><div class="mf">${foot}</div></div></div>`;
+    const m = q('#modal-root .modal');
+    m.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeModal));
+    return m;
+  }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmBox(title, msg, okLabel, onOk, danger) {
+    const m = modal(title, `<p style="margin:4px 0">${msg}</p>`, `<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn ${danger ? 'danger' : 'pri'}" data-ok>${esc(okLabel)}</button>`);
+    m.querySelector('[data-ok]').addEventListener('click', async (e) => { const b = e.currentTarget; if (b.disabled) return; b.disabled = true; b.innerHTML = '<span class="spin"></span>Working…'; await onOk(); closeModal(); });
+  }
+
+  function openAssign(v, role) {
+    const a = ASSIGN[v.reg];
+    const cur = a.primary && drv(a.primary.id);
+    const excluded = new Set(role === 'primary' ? [a.primary && a.primary.id] : [a.primary && a.primary.id, ...a.secondary.map((s) => s.id)]);
+    const pool = DRIVERS.filter((d) => !excluded.has(d.id)).sort((x, y) => x.name.localeCompare(y.name));
+    const w = { sel: null, active: -1 };
+    const title = role === 'primary' ? `${cur ? 'Change' : 'Assign'} primary driver — ${v.reg}` : `Add secondary driver — ${v.reg}`;
+    const m = modal(title, `
+      <p class="muted" style="margin:0">${esc(v.model)} · ${esc(DEPOTS[v.depot].name)} depot${cur ? ` · current primary driver <b>${esc(cur.name)}</b>` : ''}</p>
+      <label for="as-driver">${role === 'primary' ? 'New primary driver' : 'Secondary driver'}</label>
+      <div class="combo" id="as-combo"><input type="text" id="as-driver" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="as-list" placeholder="Search by name or driver ID" autocomplete="off"><ul role="listbox" id="as-list" aria-label="Drivers" hidden></ul></div>
+      <div class="hint" id="as-hint"></div>
+      <label for="as-start">Start date</label>
+      <input type="date" id="as-start" value="${addDays(TODAY, 1)}" min="${TODAY}" max="${addDays(TODAY, 365)}">
+      <p class="muted" id="as-end" style="margin:6px 0 0"></p>
+      <label class="chk"><input type="checkbox" id="as-sms" checked> Notify ${role === 'primary' && cur ? 'both drivers' : 'the driver'} by SMS</label>
+      <div class="banner err" id="as-fail" role="alert" hidden>We couldn’t save this assignment — the server took too long to respond. Nothing was changed. <button type="button" class="btn sm" id="as-retry">Try again</button></div>
+      <div class="err" id="as-err" role="alert" hidden></div>`,
+      `<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="as-save">Save assignment</button>`);
+    const input = m.querySelector('#as-driver'); const list = m.querySelector('#as-list');
+    const err = (s) => { const e = m.querySelector('#as-err'); e.textContent = s; e.hidden = !s; };
+    function matches() { const qq = fold(input.value); return pool.filter((d) => !qq || fold(d.name).includes(qq) || d.id.toLowerCase().includes(qq) || fold(DEPOTS[d.depot].name).includes(qq)); }
+    function drawList() {
+      const ms = matches();
+      list.innerHTML = ms.map((d, i) => `<li role="option" id="as-opt-${d.id}" data-id="${d.id}" aria-selected="${w.sel === d.id}" class="${i === w.active ? 'active' : ''}"><span class="on">${esc(d.name)}</span> <span class="od">${d.id} · ${esc(DEPOTS[d.depot].name)} · Licence ${esc(d.lic)}</span></li>`).join('') || '<li class="muted" aria-disabled="true">No drivers match.</li>';
+      list.hidden = false; input.setAttribute('aria-expanded', 'true');
+    }
+    function closeList() { list.hidden = true; input.setAttribute('aria-expanded', 'false'); w.active = -1; }
+    function choose(id) {
+      const d = drv(id); w.sel = id; input.value = d.name; closeList();
+      const h = m.querySelector('#as-hint');
+      const pv = VEHICLES.filter((x) => ASSIGN[x.reg].primary && ASSIGN[x.reg].primary.id === d.id);
+      h.className = 'hint' + (d.depot !== v.depot ? ' warn' : '');
+      h.textContent = `${d.name} · ${d.id} · ${DEPOTS[d.depot].name} depot · ${pv.length ? 'currently primary driver of ' + pv.map((x) => x.reg).join(', ') : 'pool driver'}${d.depot !== v.depot ? ` — note: this van is based at ${DEPOTS[v.depot].name}` : ''}`;
+    }
+    input.addEventListener('focus', drawList);
+    input.addEventListener('input', () => { w.sel = null; w.active = -1; m.querySelector('#as-hint').textContent = ''; drawList(); });
+    input.addEventListener('keydown', (e) => {
+      const ms = matches();
+      if (e.key === 'ArrowDown') { e.preventDefault(); w.active = Math.min(ms.length - 1, w.active + 1); drawList(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); w.active = Math.max(0, w.active - 1); drawList(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (ms[w.active]) choose(ms[w.active].id); }
+      else if (e.key === 'Escape') closeList();
+    });
+    list.addEventListener('click', (e) => { const li = e.target.closest('[data-id]'); if (li) choose(li.dataset.id); });
+    m.addEventListener('mousedown', (e) => { if (!e.target.closest('#as-combo')) closeList(); });
+    const endTxt = () => { const s = m.querySelector('#as-start').value; m.querySelector('#as-end').textContent = role === 'primary' && cur && /^\d{4}-\d{2}-\d{2}$/.test(s) ? `${cur.name}’s assignment will end the day before (${fD(addDays(s, -1))}).` : ''; };
+    m.querySelector('#as-start').addEventListener('input', endTxt); m.querySelector('#as-start').addEventListener('change', endTxt); endTxt();
+    const saveBtn = m.querySelector('#as-save');
+    let busy = false;
+    async function save() {
+      if (busy) return;
+      err(''); m.querySelector('#as-fail').hidden = true;
+      let id = w.sel;
+      if (!id) { const exact = pool.filter((d) => fold(d.name) === fold(input.value)); if (exact.length === 1) id = exact[0].id; }
+      if (!id) return err('Choose a driver from the list.');
+      const start = m.querySelector('#as-start').value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) return err('Enter a start date.');
+      if (start < TODAY) return err('The start date can’t be in the past.');
+      if (start > addDays(TODAY, 365)) return err('Choose a start date in the next 12 months.');
+      const sms = m.querySelector('#as-sms').checked;
+      busy = true; saveBtn.disabled = true; saveBtn.innerHTML = '<span class="spin"></span>Saving…';
+      if (!st.flakyUsed) {
+        st.flakyUsed = true;
+        await sleep(1200);
+        busy = false; saveBtn.disabled = false; saveBtn.textContent = 'Save assignment';
+        m.querySelector('#as-fail').hidden = false;
+        return;
+      }
+      await sleep(700);
+      const d = drv(id);
+      await post({ event: 'driver_assign', vehicle: v.reg, driver_id: d.id, driver: d.name, role, start, notify: sms ? 'yes' : 'no' });
+      if (role === 'primary') {
+        if (start <= TODAY) {
+          if (a.primary) { const hp = a.history.find((x) => x.role === 'Primary' && !x.to); if (hp) hp.to = addDays(start, -1); }
+          a.primary = { id: d.id, since: start }; a.next = null;
+        } else a.next = { id: d.id, start };
+        a.history.unshift({ name: d.name, id: d.id, role: start <= TODAY ? 'Primary' : 'Primary (scheduled)', from: start, to: '' });
+      } else {
+        a.secondary.push({ id: d.id, since: start });
+        a.history.unshift({ name: d.name, id: d.id, role: 'Secondary', from: start, to: '' });
+      }
+      closeModal(); render();
+      toast(role === 'primary' ? `${d.name} will be the primary driver of ${v.reg} from ${fD(start)}.` : `${d.name} added as a secondary driver of ${v.reg}.`);
+    }
+    saveBtn.addEventListener('click', save);
+    m.querySelector('#as-retry').addEventListener('click', save);
+  }
+
+  function openBook(v, kind) {
+    const m = modal(`Book ${kind === 'MOT' ? 'an MOT' : 'a service'} — ${v.reg}`, `
+      <label for="bk-type">Work required</label><select id="bk-type">${['Annual service', 'Interim service', 'MOT', 'Tyres', 'Brakes', 'Other repair'].map((x) => `<option ${x === (kind === 'MOT' ? 'MOT' : 'Annual service') ? 'selected' : ''}>${x}</option>`).join('')}</select>
+      <label for="bk-date">Preferred date</label><input type="date" id="bk-date" value="${addDays(TODAY, 7)}" min="${addDays(TODAY, 1)}">
+      <label for="bk-garage">Garage</label><select id="bk-garage">${DEPOTS[v.depot].garage.map((g) => `<option>${esc(g)}</option>`).join('')}</select>
+      <label for="bk-notes">Notes for the garage (optional)</label><textarea id="bk-notes" rows="2"></textarea><div class="err" id="bk-err" hidden></div>`,
+      `<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="bk-go">Book</button>`);
+    m.querySelector('#bk-go').addEventListener('click', async (e) => {
+      const date = m.querySelector('#bk-date').value;
+      if (!date || date <= TODAY) { const x = m.querySelector('#bk-err'); x.textContent = 'Choose a date from tomorrow onwards.'; x.hidden = false; return; }
+      e.currentTarget.disabled = true; await sleep(600);
+      await post({ event: 'maintenance_book', vehicle: v.reg, service: m.querySelector('#bk-type').value, date, garage: m.querySelector('#bk-garage').value, notes: norm(m.querySelector('#bk-notes').value) });
+      closeModal(); render(); toast(`${m.querySelector('#bk-type').value} booked for ${v.reg} on ${fD(date)}.`);
+    });
+  }
+
+  // ------------------------------------------------------------------ events
+  main.addEventListener('click', async (e) => {
+    const t = e.target;
+    const reg = t.closest('[data-region]');
+    if (reg) { const id = reg.dataset.region; st.openRegions.has(id) ? st.openRegions.delete(id) : st.openRegions.add(id); render(); return; }
+    const tst = t.closest('[data-toast]'); if (tst) { toast(tst.dataset.toast); return; }
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { st.vf.page = +pg.dataset.page; q('#vtable').innerHTML = tableHtml(parts()[1]); return; }
+    const rm = t.closest('[data-rowmenu]'); if (rm) { const open = !q('#rowmenu').hidden; closeMenus(); if (!open) rowMenu(rm); return; }
+    const af = t.closest('[data-afilter]'); if (af) { st.alertFilter = af.dataset.afilter; st.ackOpen = null; render(); return; }
+    const ack = t.closest('[data-ack]'); if (ack) { st.ackOpen = ack.dataset.ack; render(); const n = q('#ack-note'); if (n) n.focus(); return; }
+    if (t.closest('[data-ack-cancel]')) { st.ackOpen = null; render(); return; }
+    const go = t.closest('[data-ack-go]');
+    if (go) {
+      if (st.busy) return;
+      const al = ALERTS.find((x) => x.id === go.dataset.ackGo);
+      const note = norm(q('#ack-note') ? q('#ack-note').value : '');
+      st.busy = true; go.disabled = true; go.innerHTML = '<span class="spin"></span>Saving…';
+      await sleep(500);
+      await post({ event: 'alert_ack', vehicle: al.reg, alert_id: al.id, type: al.type, occurred: al.at, note });
+      al.ack = { by: USER, when: 'just now' }; st.ackOpen = null; st.busy = false;
+      render(); toast(`${al.id} (${al.label.toLowerCase()}, ${fAt(al.at)}) acknowledged.`);
+      return;
+    }
+    if (t.closest('#ack-all')) {
+      const v = bySlug(parts()[1]); const open = ALERTS.filter((a) => a.reg === v.reg && !a.ack);
+      confirmBox('Acknowledge all alerts?', `This acknowledges all ${open.length} open alerts on <b>${esc(v.reg)}</b>: ${open.map((a) => esc(a.id)).join(', ')}.`, `Acknowledge ${open.length} alerts`, async () => {
+        await sleep(500);
+        for (const al of open) { await post({ event: 'alert_ack', vehicle: al.reg, alert_id: al.id, type: al.type, occurred: al.at, note: '' }); al.ack = { by: USER, when: 'just now' }; }
+        render(); toast(`${open.length} alerts acknowledged.`);
+      });
+      return;
+    }
+    const as = t.closest('[data-assign]'); if (as) { openAssign(bySlug(parts()[1]), as.dataset.assign); return; }
+    const un = t.closest('[data-unassign]');
+    if (un) {
+      const v = bySlug(parts()[1]); const d = drv(un.dataset.unassign);
+      confirmBox('Remove secondary driver?', `Remove <b>${esc(d.name)}</b> as a secondary driver of ${esc(v.reg)}?`, 'Remove', async () => {
+        await sleep(400); await post({ event: 'driver_unassign', vehicle: v.reg, driver_id: d.id, role: 'secondary' });
+        const a = ASSIGN[v.reg]; a.secondary = a.secondary.filter((s) => s.id !== d.id); const hs = a.history.find((x) => x.id === d.id && x.role === 'Secondary' && !x.to); if (hs) hs.to = TODAY; render(); toast(`${d.name} removed.`);
+      }, true);
+      return;
+    }
+    if (t.closest('#add-vehicle')) {
+      const m = modal('Add a vehicle', `<label for="nv-reg">Registration</label><input type="text" id="nv-reg"><label for="nv-model">Make &amp; model</label><input type="text" id="nv-model"><label for="nv-type">Type</label><select id="nv-type"><option>Small van</option><option>Medium van</option><option>Large van</option><option>7.5t truck</option></select><label for="nv-depot">Depot</label><select id="nv-depot">${Object.entries(DEPOTS).map(([k, d]) => `<option value="${k}">${esc(d.name)}</option>`).join('')}</select><div class="err" id="nv-err" hidden></div>`, `<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="nv-go">Add vehicle</button>`);
+      m.querySelector('#nv-go').addEventListener('click', async () => {
+        const r = norm(m.querySelector('#nv-reg').value).toUpperCase(); const mo = norm(m.querySelector('#nv-model').value);
+        if (!/^[A-Z]{2}\d{2} ?[A-Z]{3}$/.test(r) || !mo) { const x = m.querySelector('#nv-err'); x.textContent = 'Enter a valid UK registration and the make and model.'; x.hidden = false; return; }
+        await sleep(600); await post({ event: 'vehicle_add', reg: r, model: mo, type: m.querySelector('#nv-type').value, depot: m.querySelector('#nv-depot').value }); closeModal(); toast(`${r} added — it will appear once its tracker reports in.`);
+      });
+      return;
+    }
+    const ed = t.closest('[data-edit]');
+    if (ed) {
+      const v = byReg(ed.dataset.edit);
+      const m = modal(`Edit ${v.reg}`, `<label for="ev-odo">Odometer (miles)</label><input type="text" id="ev-odo" value="${v.odo}"><label for="ev-card">Fuel card</label><input type="text" id="ev-card" value="${esc(v.card)}"><label for="ev-depot">Depot</label><select id="ev-depot">${Object.entries(DEPOTS).map(([k, d]) => `<option value="${k}" ${k === v.depot ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select>`, `<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="ev-go">Save</button>`);
+      m.querySelector('#ev-go').addEventListener('click', async () => { await sleep(500); await post({ event: 'vehicle_update', vehicle: v.reg, odometer: m.querySelector('#ev-odo').value.replace(/\D/g, ''), depot: m.querySelector('#ev-depot').value }); closeModal(); toast('Vehicle details saved.'); });
+      return;
+    }
+    if (handleShared(t)) return;
+    const rem = t.closest('[data-remind]');
+    if (rem) { const d = drv(rem.dataset.remind); rem.disabled = true; await sleep(400); await post({ event: 'licence_check_reminder', driver_id: d.id, driver: d.name }); rem.textContent = 'Reminder sent'; toast(`Licence check reminder sent to ${d.name}.`); return; }
+    const run = t.closest('[data-run]'); if (run) { st.repPreview = run.dataset.run; render(); return; }
+    const sch = t.closest('[data-schedule]');
+    if (sch) {
+      const m = modal(`Schedule “${sch.dataset.title}”`, `<label for="rs-freq">Frequency</label><select id="rs-freq"><option>Weekly (Mondays)</option><option>Monthly (1st)</option></select><label for="rs-to">Email to</label><input type="text" id="rs-to" value="rosa.delgado-pike@northwaylogistics.co.uk">`, `<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="rs-go">Schedule</button>`);
+      m.querySelector('#rs-go').addEventListener('click', async () => { await sleep(500); await post({ event: 'report_schedule', report: sch.dataset.schedule, frequency: m.querySelector('#rs-freq').value, email: norm(m.querySelector('#rs-to').value).toLowerCase() }); closeModal(); toast('Report scheduled.'); });
+      return;
+    }
+    if (t.closest('#set-save')) {
+      const box = q('[data-settings]'); const b = q('#set-save'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Saving…';
+      await sleep(600);
+      await post({ event: 'settings_update', section: box.dataset.settings, values: qa('input,select', box).map((x) => x.value).join('; ') });
+      b.disabled = false; b.textContent = 'Save changes'; toast('Settings saved.');
+    }
+  });
+  function handleShared(t) {
+    const bk = t.closest('[data-book]'); if (bk) { closeMenus(); openBook(byReg(bk.dataset.book), bk.dataset.kind); return true; }
+    const sc = t.closest('[data-status]');
+    if (sc) {
+      closeMenus();
+      const v = byReg(sc.dataset.status); const to = sc.dataset.to;
+      confirmBox(to === 'Off road' ? `Mark ${v.reg} off road?` : `Return ${v.reg} to service?`, to === 'Off road' ? `${esc(v.reg)} will be hidden from dispatch and its driver won’t be able to start trips.` : `${esc(v.reg)} will be available for dispatch again.`, to === 'Off road' ? 'Mark off road' : 'Return to service', async () => {
+        await sleep(500); await post({ event: 'vehicle_status_change', vehicle: v.reg, status: to }); v.status = to; render(); toast(`${v.reg} is now ${to.toLowerCase()}.`);
+      }, to === 'Off road');
+      return true;
+    }
+    return false;
+  }
+  q('#rowmenu').addEventListener('click', (e) => { if (e.target.closest('a')) { closeMenus(); return; } handleShared(e.target); });
+  main.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'vf-q') { st.vf.q = t.value; st.vf.page = 1; q('#vtable').innerHTML = tableHtml(parts()[1]); }
+    if (t.id === 'df-q') { st.driverQ = t.value; const pos = t.selectionStart; render(); const n = q('#df-q'); n.focus(); try { n.setSelectionRange(pos, pos); } catch {} }
+  });
+  main.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'vf-status') { st.vf.status = t.value; st.vf.page = 1; q('#vtable').innerHTML = tableHtml(parts()[1]); }
+    if (t.id === 'vf-type') { st.vf.type = t.value; st.vf.page = 1; q('#vtable').innerHTML = tableHtml(parts()[1]); }
+    if (t.id === 'df-depot') { st.driverDepot = t.value; render(); }
+  });
+
+  if (!location.hash || location.hash === '#' || location.hash === '#/') history.replaceState(null, '', '#/dashboard');
+  lastRoute = parts().slice(0, 3).join('/');
+  render();
+})();
+</script>
+</body>
+</html>

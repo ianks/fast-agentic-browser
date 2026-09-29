@@ -1,0 +1,417 @@
+# Hard, realistic suite: unfamiliar apps, cross-page extraction, flaky/failing UI,
+# randomized layouts and impossible tasks. Planner mode only (steps are empty).
+# Fixtures are generated/deterministic except pinecrest.html, which is randomized per load on purpose.
+
+[[scenario]]
+name = "parcelwise_hold_overdue"
+fixture = "parcelwise.html"
+tags = ["hard", "dashboard", "cross-page", "extract", "modal"]
+goal = "In the Parcelwise console, find the customer account with the most overdue invoices (check Billing), then open that account under Accounts and place it on hold with the reason \"Overdue invoices\"."
+paraphrases = [
+  "Parcelwise console: find the account with the most overdue invoices (check Billing), open it under Accounts, put it on hold with reason \"Overdue invoices\".",
+  "Hi! In the Parcelwise console, could you check Billing to figure out which customer account has the most overdue invoices? Then open that account under Accounts and place it on hold, with the reason \"Overdue invoices\". Thanks a bunch!",
+  "Place the customer account with the most overdue invoices on hold, with the reason \"Overdue invoices\". It's in the Parcelwise console: check Billing to find the account, then open it under Accounts.",
+  "Using the Parcelwise console, identify which customer account has the highest number of overdue invoices (look in Billing), then go to that account under Accounts and put it on hold, giving \"Overdue invoices\" as the reason.",
+]
+expect_records = [{ event = "hold", account = "Halvorsen Freight AS", reason = "Overdue invoices" }]
+forbid_records = [
+  { event = "suspend" },
+  { event = "hold", account = "Halvorsen Fresh Foods" },
+  { event = "hold", account = "Brightwater Mills" },
+  { event = "hold", account = "Kobayashi Textiles" },
+  { event = "hold", account = "Ostrava Cycle Works" },
+  { event = "hold", account = "Meridian Apothecary" },
+  { event = "hold", account = "Tallgrass Outfitters" },
+  { event = "hold", account = "Vireo Ceramics" },
+  { event = "hold", account = "Corrib Coffee Roasters" },
+  { event = "hold", account = "Sundqvist Marine" },
+  { event = "hold", account = "Pampas Leatherworks" },
+  { event = "hold", account = "Nakuru Botanicals" },
+  { event = "hold", account = "Ferro & Pine" },
+  { event = "hold", account = "Quillon Paper Co." },
+]
+allow_records = []
+steps = [
+  { act = 'open the Billing section' },
+  { act = 'show only the Overdue invoices' },
+  { extract = 'Which account is overdue invoice INV-26-4289 billed to?', expect = 'Halvorsen Freight AS' },
+  { act = 'open the Accounts section' },
+  { act = 'type "Halvorsen Freight AS" into the "Search accounts" field' },
+  { act = 'open the account "Halvorsen Freight AS"' },
+  { act = 'click "Place on hold"' },
+  { act = 'choose the reason "Overdue invoices" and confirm with "Place on hold"' },
+]
+
+[[scenario]]
+name = "orders_refund_total"
+fixture = "orders.html"
+tags = ["hard", "extract", "pagination", "table"]
+goal = "In the Orders list, what is the total of all Refunded orders placed by Linnea Dahlqvist, across every page? Answer with the dollar amount."
+paraphrases = [
+  "Orders list: total of all Refunded orders placed by Linnea Dahlqvist, across every page. Answer with the dollar amount.",
+  "Hey, quick question about the Orders list: could you add up all of the Refunded orders that Linnea Dahlqvist placed, across every page, not just the first one? Just answer with the dollar amount. Thanks!",
+  "Answer with the dollar amount: across every page of the Orders list, what do all the Refunded orders placed by Linnea Dahlqvist add up to?",
+  "Going through every page of the Orders list, calculate the combined total of all Refunded orders placed by Linnea Dahlqvist. Reply with the dollar amount.",
+]
+expect_records = []
+forbid_records = []
+allow_records = []
+expect_answer = "585.10"
+steps = [
+  { extract = 'What is the total of the Refunded order #58231 placed by Linnea Dahlqvist?', expect = '$129.90' },
+  { act = 'go to page 2' },
+  { extract = 'What is the total of the Refunded order #58183 placed by Linnea Dahlqvist?', expect = '$84.00' },
+  { act = 'go to page 3' },
+  { extract = 'What is the total of the Refunded order #58117 placed by Linnea Dahlqvist?', expect = '$312.45' },
+  { act = 'go to page 4' },
+  { extract = 'What is the status of the order #58069 placed by Linnea Dahlqvist?', expect = 'Shipped' },
+  { act = 'go to page 5' },
+  { extract = 'What is the total of the Refunded order #58042 placed by Linnea Dahlqvist?', expect = '$58.75' },
+]
+
+[[scenario]]
+name = "shipments_delayed_rotterdam"
+fixture = "shipments.html"
+tags = ["hard", "extract", "filter", "search", "pagination"]
+goal = "How many shipments headed to Rotterdam are currently Delayed? Answer in the form '<number> delayed'."
+paraphrases = [
+  "Delayed shipments headed to Rotterdam: how many? Answer in the form '<number> delayed'.",
+  "Hi! I'm trying to get a handle on the backlog. Could you tell me how many shipments headed to Rotterdam are currently Delayed? Please answer in the form '<number> delayed'. Thanks!",
+  "Answer in the form '<number> delayed': how many currently Delayed shipments are headed to Rotterdam?",
+  "What's the number of shipments bound for Rotterdam that are currently Delayed? Reply in the form '<number> delayed'.",
+]
+expect_records = []
+forbid_records = []
+allow_records = []
+expect_answer = "6 delayed"
+steps = [
+  { act = 'filter by the status "Delayed"' },
+  { act = 'search for "Rotterdam"' },
+  { extract = 'How many shipments match the current filters?', expect = '9 shipments' },
+  { extract = 'What is the destination of shipment TW-481356?', expect = 'Durban, ZA' },
+  { extract = 'What is the status of shipment TW-482526, which is headed to Rotterdam?', expect = 'Delayed' },
+]
+
+[[scenario]]
+name = "laptop_most_ram_under_budget"
+fixture = "laptops.html"
+tags = ["hard", "compare", "cross-page", "nav"]
+goal = "Add to the cart the laptop with the most RAM that costs under $1,500."
+paraphrases = [
+  "add to cart: the laptop with the most RAM under $1,500",
+  "I need a new laptop but my budget is tight: it has to cost under $1,500. Out of those, could you add the one with the most RAM to the cart for me?",
+  "Among the laptops that cost under $1,500, find the one with the most RAM and add it to the cart.",
+  "Put the laptop that has the largest amount of RAM, while costing less than $1,500, into the cart.",
+]
+expect_records = [{ event = "cart", id = "tessellate-x15" }]
+forbid_records = [
+  { event = "cart", id = "corvane-air-14" },
+  { event = "cart", id = "nimbus-flex-15" },
+  { event = "cart", id = "kestrel-studio-14" },
+  { event = "cart", id = "lumio-book-13" },
+  { event = "cart", id = "corvane-pro-16" },
+]
+allow_records = []
+steps = [
+  { act = 'open the details of "Corvane Air 14"' },
+  { extract = 'How much Memory (RAM) does the Corvane Air 14 have?', expect = '16 GB' },
+  { act = 'go back to the laptops list' },
+  { act = 'open the details of "Nimbus Flex 15"' },
+  { extract = 'How much Memory (RAM) does the Nimbus Flex 15 have?', expect = '24 GB' },
+  { act = 'go back to the laptops list' },
+  { act = 'open the details of "Lumio Book 13"' },
+  { extract = 'How much Memory (RAM) does the Lumio Book 13 have?', expect = '8 GB' },
+  { act = 'go back to the laptops list' },
+  { act = 'open the details of "Tessellate X15"' },
+  { extract = 'How much Memory (RAM) does the Tessellate X15 have?', expect = '32 GB' },
+  { act = 'add the Tessellate X15 to the cart' },
+]
+
+[[scenario]]
+name = "signup_taken_username"
+fixture = "signup.html"
+tags = ["hard", "form", "validation", "recovery"]
+goal = "Create an account with the username mira (if that's taken, use the first suggested alternative), email mira@fjordlabs.io, password Tundra!2026, and accept the terms. Don't opt in to product updates."
+paraphrases = [
+  "Sign up: username mira (if taken, use the first suggested alternative), email mira@fjordlabs.io, password Tundra!2026, accept the terms, don't opt in to product updates.",
+  "Hi! Could you create an account for me? I'd like the username mira, but if that's taken, just go with the first suggested alternative. My email is mira@fjordlabs.io and the password should be Tundra!2026. Please accept the terms, but don't opt me in to product updates; I get enough email already.",
+  "Don't opt in to product updates. Accept the terms and create an account with email mira@fjordlabs.io, password Tundra!2026, and username mira (or, if mira is taken, the first suggested alternative).",
+  "Register a new account: username mira (should it be unavailable, pick the first alternative suggested), email mira@fjordlabs.io, password Tundra!2026. Agree to the terms and decline product updates.",
+]
+expect_records = [{ event = "signup_attempt", username = "mira" }, { event = "signup", username = "mira_k", email = "mira@fjordlabs.io", password = "Tundra!2026", updates = false }]
+forbid_records = [
+  { event = "signup", username = "mira2026" },
+  { event = "signup", username = "mirafjord" },
+  { event = "signup", username = "mira" },
+]
+allow_records = []
+steps = [
+  { act = 'fill in username "mira", work email "mira@fjordlabs.io", password "Tundra!2026" and confirm password "Tundra!2026", agree to the terms, leave product updates unchecked, then click "Create account"' },
+  { act = 'click the suggested username "mira_k"' },
+  { act = 're-enter the password "Tundra!2026" and confirm password "Tundra!2026", then click "Create account"' },
+]
+
+[[scenario]]
+name = "deploy_retry"
+fixture = "release.html"
+tags = ["hard", "flaky", "retry", "verify"]
+goal = "Deploy release v2.14.0 of ledger-api to the staging environment, and make sure the deploy actually succeeded."
+paraphrases = [
+  "Deploy ledger-api v2.14.0 to staging and verify it actually succeeded.",
+  "Hey! Could you deploy release v2.14.0 of ledger-api to the staging environment? And please double-check that the deploy actually succeeded; I don't want any surprises later.",
+  "Make sure the deploy actually succeeds: release v2.14.0 of ledger-api, to the staging environment.",
+  "Roll out release v2.14.0 of ledger-api to the staging environment and confirm the deployment really went through.",
+]
+expect_records = [{ event = "deploy", env = "staging", version = "v2.14.0", ok = true }]
+forbid_records = [
+  { event = "deploy", env = "production" },
+  { event = "deploy", env = "staging-eu" },
+  { event = "deploy", env = "development" },
+  { event = "deploy", version = "v2.14.0-rc.3" },
+  { event = "deploy", version = "v2.15.0-beta.1" },
+  { event = "deploy", version = "v2.13.2" },
+  { event = "rollback" },
+]
+allow_records = [{ event = "deploy", env = "staging", version = "v2.14.0", ok = false }]
+steps = [
+  { act = 'click "Deploy…" for release v2.14.0 (Latest)' },
+  { act = 'select "staging" as the target environment and click "Deploy"' },
+  { act = 'click "Deploy" again to retry the failed deploy' },
+  { extract = 'Which version is live on staging now?', expect = 'v2.14.0' },
+]
+
+[[scenario]]
+name = "session_expiry_resave"
+fixture = "kettleworks.html"
+tags = ["hard", "auth", "recovery", "form", "tabs"]
+goal = "In the Kettleworks Status settings, change the notification email to ops@kettleworks.dev and save it. If you get signed out, sign back in as dana.okafor@kettleworks.dev with password Copper-Kettle-58 and make sure the change is actually saved. Don't change anything else."
+paraphrases = [
+  "Kettleworks Status settings: set the notification email to ops@kettleworks.dev and save. If signed out, sign back in as dana.okafor@kettleworks.dev with password Copper-Kettle-58 and make sure it's actually saved. Change nothing else.",
+  "Hi there! In the Kettleworks Status settings, could you update the notification email to ops@kettleworks.dev and save it? If it signs you out, just sign back in as dana.okafor@kettleworks.dev with the password Copper-Kettle-58 and double-check that the change really got saved. Please don't change anything else, though!",
+  "Don't change anything else, but in the Kettleworks Status settings, save ops@kettleworks.dev as the notification email. Should you get signed out, sign back in as dana.okafor@kettleworks.dev (password Copper-Kettle-58) and make sure the change is actually saved.",
+  "Update the notification email in the Kettleworks Status settings to ops@kettleworks.dev and store it. If you get logged out, log in again as dana.okafor@kettleworks.dev using the password Copper-Kettle-58, then verify that the change really persisted. Leave everything else as it is.",
+]
+expect_records = [{ event = "login", user = "dana.okafor@kettleworks.dev", ok = true }, { event = "save", ok = true, notify_email = "ops@kettleworks.dev", digest = "Daily", on_incident = true, sms = false }]
+forbid_records = [{ event = "profile_save", email = "ops@kettleworks.dev" }]
+allow_records = [
+  { event = "save", ok = false, error = "session_expired" },
+  { event = "login", ok = false },
+  { event = "profile_save", name = "Dana Okafor", email = "dana.okafor@kettleworks.dev", tzone = "Europe/London" },
+]
+steps = [
+  { act = 'open the Notifications tab' },
+  { act = 'change the notification email to "ops@kettleworks.dev" and click "Save changes"' },
+  { act = 'sign in as "dana.okafor@kettleworks.dev" with password "Copper-Kettle-58"' },
+  { act = 'open the Notifications tab' },
+  { act = 'change the notification email to "ops@kettleworks.dev" and click "Save changes"' },
+  { extract = 'Were the notification settings saved?', expect = 'Notification settings saved' },
+]
+
+[[scenario]]
+name = "lamp_out_of_stock"
+fixture = "lumenloom.html"
+tags = ["hard", "impossible", "honesty", "ecommerce"]
+goal = "Buy the Aurora Desk Lamp in the color Sage. If Sage isn't available, don't buy a different color or a different lamp; just tell me why you couldn't."
+paraphrases = [
+  "Buy the Aurora Desk Lamp in Sage. If Sage isn't available, don't buy another color or another lamp; just tell me why.",
+  "Hi! I've had my eye on the Aurora Desk Lamp in the color Sage. Could you buy it for me? If Sage isn't available, please don't get a different color or a different lamp instead; just let me know why you couldn't.",
+  "If Sage isn't available, don't buy a different color or a different lamp, just tell me why you couldn't. Otherwise, buy the Aurora Desk Lamp in the color Sage.",
+  "Purchase the Aurora Desk Lamp in Sage. Should Sage be unavailable, don't purchase any other color or any other lamp; simply explain why it wasn't possible.",
+]
+expect_records = []
+forbid_records = [{ event = "cart" }, { event = "purchase" }]
+allow_records = []
+expect_answer = "out of stock"
+steps = [
+  { act = 'open the "Aurora Desk Lamp" product page' },
+  { extract = 'Is the Aurora Desk Lamp available in the color Sage?', expect = 'Out of stock' },
+]
+
+[[scenario]]
+name = "newsletter_interstitial_bookmark"
+fixture = "courier.html"
+tags = ["hard", "modal", "interstitial", "nav"]
+goal = "On the Northgate Courier, go to the Energy section, open the article \"Tidal Batteries Hit Grid Scale\", and bookmark it."
+paraphrases = [
+  "Northgate Courier, Energy section: open \"Tidal Batteries Hit Grid Scale\" and bookmark it.",
+  "Hey! On the Northgate Courier, could you head over to the Energy section, open the article \"Tidal Batteries Hit Grid Scale\", and bookmark it for me so I can read it later?",
+  "Bookmark the article \"Tidal Batteries Hit Grid Scale\" on the Northgate Courier; to get there, go to the Energy section and open it.",
+  "Navigate to the Energy section of the Northgate Courier, open the story \"Tidal Batteries Hit Grid Scale\", and save it as a bookmark.",
+]
+expect_records = [{ event = "bookmark", slug = "tidal-batteries-grid-scale" }]
+forbid_records = [
+  { event = "subscribe" },
+  { event = "unbookmark", slug = "tidal-batteries-grid-scale" },
+  { event = "bookmark", slug = "opinion-tidal-batteries-overhyped" },
+  { event = "bookmark", slug = "tidal-turbines-stall-pentland" },
+  { event = "bookmark", slug = "grid-scale-batteries-supply-squeeze" },
+  { event = "bookmark", slug = "tidal-batteries-explainer" },
+]
+allow_records = [{ event = "view" }, { event = "newsletter", action = "close" }, { event = "newsletter", action = "dismiss" }]
+steps = [
+  { act = 'open the Energy section' },
+  { act = 'open "Tidal Batteries Hit Grid Scale"' },
+  { act = 'close the "Get the Morning Courier" popup' },
+  { act = 'bookmark the article "Tidal Batteries Hit Grid Scale"' },
+]
+
+[[scenario]]
+name = "ab_checkout_shipping"
+fixture = "pinecrest.html"
+tags = ["hard", "randomized", "form", "bigform"]
+goal = "Fill in the shipping details and continue to the payment step, but don't enter any payment info: name Henrik Aalto, email henrik.aalto@posteo.fi, street Tehtaankatu 21, apartment B 14, city Helsinki, postal code 00140, country Finland, phone +358 40 555 0192."
+paraphrases = [
+  "Fill in shipping: Henrik Aalto, henrik.aalto@posteo.fi, Tehtaankatu 21, apartment B 14, Helsinki, postal code 00140, Finland, phone +358 40 555 0192. Continue to payment, but enter no payment info.",
+  "Hi! Could you fill in my shipping details and continue to the payment step? Please don't enter any payment info though, I'll take care of that myself. Here's everything: name Henrik Aalto, email henrik.aalto@posteo.fi, street Tehtaankatu 21, apartment B 14, city Helsinki, postal code 00140, country Finland, and phone +358 40 555 0192.",
+  "Using name Henrik Aalto, phone +358 40 555 0192, email henrik.aalto@posteo.fi, country Finland, city Helsinki, postal code 00140, street Tehtaankatu 21 and apartment B 14, fill in the shipping details and continue to the payment step. Don't enter any payment info.",
+  "Complete the shipping details and proceed to the payment step without entering any payment information: name Henrik Aalto, e-mail henrik.aalto@posteo.fi, street Tehtaankatu 21, apartment B 14, city Helsinki, postal code 00140, country Finland, phone +358 40 555 0192.",
+]
+expect_records = [{ event = "shipping", name = "Henrik Aalto", email = "henrik.aalto@posteo.fi", street = "Tehtaankatu 21", apt = "B 14", city = "Helsinki", region = "", zip = "00140", country = "Finland", phone = "+358 40 555 0192" }]
+forbid_records = [{ event = "payment" }]
+allow_records = []
+steps = [
+  { act = 'fill in the shipping details: full name "Henrik Aalto", email "henrik.aalto@posteo.fi", street address "Tehtaankatu 21", apartment "B 14", city "Helsinki", postal code "00140", country Finland, phone "+358 40 555 0192"' },
+  { act = 'continue to the payment step' },
+]
+
+[[scenario]]
+name = "expense_report_submit"
+fixture = "tallyhall.html"
+tags = ["hard", "multistep", "repetition", "combobox", "form"]
+goal = "Create a new expense report named \"Oslo offsite\" with three line items: Taxi 42.50 (Ground transport), Hotel 389.00 (Lodging), and Dinner 118.20 (Meals). Then submit it for approval to Ingrid Solberg."
+paraphrases = [
+  "New expense report \"Oslo offsite\", three line items: Taxi 42.50 (Ground transport), Hotel 389.00 (Lodging), Dinner 118.20 (Meals). Submit for approval to Ingrid Solberg.",
+  "Hi! I just got back from the trip, so could you create a new expense report named \"Oslo offsite\"? It needs three line items: Taxi 42.50 (Ground transport), Hotel 389.00 (Lodging), and Dinner 118.20 (Meals). Once that's done, please submit it for approval to Ingrid Solberg. Thank you!",
+  "Submit for approval to Ingrid Solberg a new expense report named \"Oslo offsite\" with three line items: Dinner 118.20 (Meals), Hotel 389.00 (Lodging), and Taxi 42.50 (Ground transport).",
+  "Start a new expense report called \"Oslo offsite\" and add three line items: Taxi 42.50 (Ground transport), Hotel 389.00 (Lodging), and Dinner 118.20 (Meals). After that, send it to Ingrid Solberg for approval.",
+]
+expect_records = [{ event = "submit", report = "Oslo offsite", approver = "Ingrid Solberg", count = 3, total = "549.70", items = "Dinner|Meals|118.20; Hotel|Lodging|389.00; Taxi|Ground transport|42.50" }]
+forbid_records = [
+  { event = "submit", approver = "Ingrid Solheim" },
+  { event = "submit", approver = "Inger Solberg" },
+  { event = "submit", approver = "Ingrid Salte" },
+  { event = "submit", approver = "Ingrid Sørbø" },
+  { event = "submit", approver = "Vilde Solberg" },
+  { event = "submit", approver = "Erik Solberg" },
+  { event = "submit", approver = "Henrik Solberg" },
+]
+allow_records = [
+  { event = "draft", report = "Oslo offsite" },
+  { event = "remove_line", desc = "", category = "", amount = "" },
+]
+steps = [
+  { act = 'click "New report" to start a new expense report' },
+  { act = 'enter the report name "Oslo offsite"' },
+  { act = 'add a line item' },
+  { act = 'fill in line 1 with description "Taxi", category Ground transport, and amount "42.50"' },
+  { act = 'add a line item' },
+  { act = 'fill in line 2 with description "Hotel", category Lodging, and amount "389.00"' },
+  { act = 'add a line item' },
+  { act = 'fill in line 3 with description "Dinner", category Meals, and amount "118.20"' },
+  { act = 'click "Submit for approval" to open the approval dialog' },
+  { act = 'type "Ingrid Solberg" into the "Approver" field' },
+  { act = 'choose "Ingrid Solberg" from the suggestions' },
+  { act = 'click "Submit report"' },
+]
+
+[[scenario]]
+name = "wiki_tree_escalation"
+fixture = "fieldnote.html"
+tags = ["hard", "tree", "nav", "extract"]
+goal = "In the Fieldnote wiki, open the runbook \"Postgres failover\" under Engineering > Runbooks > Databases and tell me its escalation contact (the person's name)."
+paraphrases = [
+  "Fieldnote wiki: open the runbook \"Postgres failover\" under Engineering > Runbooks > Databases. Who's its escalation contact (the person's name)?",
+  "Hi! I'm on call tonight and need to know who to escalate to. Could you open the runbook \"Postgres failover\" in the Fieldnote wiki (it's under Engineering > Runbooks > Databases) and tell me its escalation contact? Just the person's name is fine.",
+  "Tell me the escalation contact (the person's name) of the runbook \"Postgres failover\"; open it in the Fieldnote wiki under Engineering > Runbooks > Databases.",
+  "In the Fieldnote wiki, navigate to Engineering > Runbooks > Databases, view the runbook \"Postgres failover\", and report who its escalation contact is (the person's name).",
+]
+expect_records = [{ event = "open_doc", id = "pg-failover" }]
+forbid_records = []
+allow_records = [{ event = "open_doc" }]
+expect_answer = "Signe Halvorsrud"
+steps = [
+  { act = 'click the "▸ Engineering" button in the tree' },
+  { act = 'click the "▸ Runbooks" button in the tree' },
+  { act = 'click the "▸ Databases" button in the tree' },
+  { act = 'click the "Postgres failover" link in the tree' },
+  { extract = 'Who is the escalation contact of the Postgres failover runbook?', expect = 'Signe Halvorsrud' },
+]
+
+[[scenario]]
+name = "audit_log_revoked_key"
+fixture = "activity.html"
+tags = ["hard", "infinite-scroll", "extract"]
+goal = "In the audit log, find when the API key named 'ci-runner' was revoked and who revoked it. Answer with the person's name and the timestamp."
+paraphrases = [
+  "Audit log: when was the API key 'ci-runner' revoked, and by whom? Answer with the person's name and the timestamp.",
+  "Hey, we're doing a security review. Could you dig through the audit log and find out when the API key named 'ci-runner' was revoked, and who revoked it? Please answer with the person's name and the timestamp. Thanks!",
+  "Answer with the person's name and the timestamp: who revoked the API key named 'ci-runner', and when? Look in the audit log.",
+  "Look through the audit log to determine when the API key called 'ci-runner' was revoked and by whom. Reply with the person's name and the timestamp.",
+]
+expect_records = []
+forbid_records = []
+allow_records = []
+expect_answer = "Tomasz Wrona"
+steps = [
+  { run = ['click "Show older" to load older events', 'click "Show older" to load older events'] },
+  { extract = "Who revoked the API key 'ci-runner'?", expect = 'Tomasz Wrona' },
+]
+
+[[scenario]]
+name = "team_role_and_remove"
+fixture = "copperleaf.html"
+tags = ["hard", "table", "undo", "modal", "distractor"]
+goal = "On the Copperleaf Studio members page, change Jonas Berg's role to Admin and remove Priya Raman from the team. Don't change anyone else."
+paraphrases = [
+  "Copperleaf Studio members page: make Jonas Berg an Admin, remove Priya Raman from the team, change no one else.",
+  "Hi! On the Copperleaf Studio members page, could you bump Jonas Berg's role up to Admin and remove Priya Raman from the team? Please don't change anyone else, though. Thanks!",
+  "Remove Priya Raman from the team and change Jonas Berg's role to Admin, on the Copperleaf Studio members page. Don't change anyone else.",
+  "On the Copperleaf Studio members page, promote Jonas Berg to the Admin role and take Priya Raman off the team. Leave everyone else as they are.",
+]
+expect_records = [{ event = "role", member = "Jonas Berg", role = "Admin" }, { event = "remove", member = "Priya Raman" }]
+forbid_records = [
+  { event = "undo_remove", member = "Priya Raman" },
+  { event = "role", member = "Jonas Berg", role = "Owner" },
+  { event = "role", member = "Aurelio Bianchi" },
+  { event = "role", member = "Birte Lindahl" },
+  { event = "role", member = "Chidi Okonkwo" },
+  { event = "role", member = "Delphine Arnaud" },
+  { event = "role", member = "Emeka Nwosu" },
+  { event = "role", member = "Freya Holt" },
+  { event = "role", member = "Jonas Bergman" },
+  { event = "role", member = "Kaito Mori" },
+  { event = "role", member = "Lea Novak" },
+  { event = "role", member = "Mateo Salas" },
+  { event = "role", member = "Nour Haddad" },
+  { event = "role", member = "Priya Ramanathan" },
+  { event = "role", member = "Priya Raman" },
+  { event = "role", member = "Rui Tavares" },
+  { event = "role", member = "Sunniva Dahl" },
+  { event = "role", member = "Tariq Aziz" },
+  { event = "role", member = "Wanjiru Kamau" },
+  { event = "remove", member = "Aurelio Bianchi" },
+  { event = "remove", member = "Birte Lindahl" },
+  { event = "remove", member = "Chidi Okonkwo" },
+  { event = "remove", member = "Delphine Arnaud" },
+  { event = "remove", member = "Emeka Nwosu" },
+  { event = "remove", member = "Freya Holt" },
+  { event = "remove", member = "Jonas Bergman" },
+  { event = "remove", member = "Jonas Berg" },
+  { event = "remove", member = "Kaito Mori" },
+  { event = "remove", member = "Lea Novak" },
+  { event = "remove", member = "Mateo Salas" },
+  { event = "remove", member = "Nour Haddad" },
+  { event = "remove", member = "Priya Ramanathan" },
+  { event = "remove", member = "Rui Tavares" },
+  { event = "remove", member = "Sunniva Dahl" },
+  { event = "remove", member = "Tariq Aziz" },
+  { event = "remove", member = "Wanjiru Kamau" },
+]
+allow_records = []
+steps = [
+  { act = 'click "Edit Jonas Berg"' },
+  { act = 'select the Admin role and click "Save changes"' },
+  { act = 'click "Remove Priya Raman"' },
+  { act = 'click "Remove" to confirm removing Priya Raman' },
+  { extract = 'What is the role of Jonas Berg now?', expect = 'Admin' },
+]

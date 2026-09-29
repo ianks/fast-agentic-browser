@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Files · Drive</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>dialog::backdrop{background:rgba(0,0,0,.4)}</style></head>
+<body><header><strong>Drive</strong><a href="#">My files</a><a href="#">Shared</a></header>
+<main><h1>My files</h1><button>Upload</button>
+<table><thead><tr><th>Name</th><th>Size</th><th>Modified</th><th></th></tr></thead><tbody id="tb"></tbody></table>
+</main>
+<dialog id="dlg"><h2 id="dt">Delete file?</h2><p id="dm"></p><div class="row"><button id="no">Cancel</button><button class="primary" id="yes">Delete</button></div></dialog>
+<script>
+const FILES = [['budget-2025.xlsx','84 KB','Aug 2'],['report-2023.pdf','1.2 MB','Jan 9'],['report-2024.pdf','1.4 MB','Feb 1'],['report-2024-draft.pdf','1.1 MB','Jan 28'],['team-photo.jpg','3.2 MB','Mar 14'],['notes.txt','2 KB','Sep 3']];
+let pending = null;
+const render = () => q('#tb').innerHTML = FILES.map(([n, s, m], i) => `<tr><td>${n}</td><td>${s}</td><td>${m}</td><td><button onclick="share(${i})">Share</button> <button onclick="ask(${i})">Delete</button></td></tr>`).join('');
+window.share = (i) => rec({ event: 'share', file: FILES[i][0] });
+window.ask = (i) => { pending = i; q('#dm').textContent = `"${FILES[i][0]}" will be permanently deleted. This cannot be undone.`; q('#dlg').showModal(); };
+q('#no').onclick = () => { q('#dlg').close(); rec({ event: 'cancel' }); };
+q('#yes').onclick = async () => { const f = FILES[pending][0]; q('#dlg').close(); await rec({ event: 'deleted', file: f }); FILES.splice(pending, 1); render(); };
+render();
+</script></body></html>

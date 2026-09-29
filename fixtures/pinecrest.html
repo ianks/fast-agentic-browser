@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Checkout · Pinecrest Supply</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+.steps{display:flex;gap:18px;margin:6px 0 16px;color:#94a3b8}.steps .on{color:#111;font-weight:700}
+.grid{display:flex;gap:40px;align-items:flex-start}
+.promo{background:#ecfeff;border:1px solid #a5f3fc;padding:8px 12px;border-radius:6px;margin-bottom:10px}
+</style></head>
+<body><header><strong>Pinecrest Supply</strong><a href="#">Shop</a><a href="#">Bag (3)</a></header>
+<main><div class="steps" id="steps"><span data-s="1">1. Shipping</span><span data-s="2">2. Payment</span><span data-s="3">3. Review</span></div>
+<div id="stage"></div></main>
+<script>
+// A/B test: button copy, field order and field ids vary on every load (unseeded on purpose).
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rid = () => 'f' + Math.random().toString(36).slice(2, 8);
+const CTA = pick(['Continue to payment', 'Proceed', 'Next step']);
+const COUNTRIES = ['United States', 'Canada', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Iceland', 'Netherlands', 'Norway', 'Sweden', 'United Kingdom'];
+const FIELDS = [
+  { k: 'name', label: 'Full name', req: true },
+  { k: 'email', label: 'Email for order updates', type: 'email', req: true },
+  { k: 'street', label: 'Street address', req: true },
+  { k: 'apt', label: 'Apartment, suite, etc. (optional)' },
+  { k: 'city', label: 'City', req: true },
+  { k: 'region', label: 'State / province / region (optional)' },
+  { k: 'zip', label: 'Postal code', req: true },
+  { k: 'country', label: 'Country / region', select: COUNTRIES, req: true },
+  { k: 'phone', label: 'Phone', type: 'tel', req: true },
+];
+const order = shuffle(FIELDS).map((f) => ({ ...f, id: rid() }));
+const setStep = (n) => qa('#steps span').forEach((s) => s.classList.toggle('on', +s.dataset.s === n));
+function shipping() {
+  setStep(1);
+  const promo = Math.random() < 0.5 ? '<p class="promo">Free shipping on orders over $75 — you qualify!</p>' : '';
+  q('#stage').innerHTML = `<div class="grid"><form id="f" novalidate>${promo}<h1>Shipping details</h1>${order.map((f) => `<label for="${f.id}">${f.label}</label>${f.select ? `<select id="${f.id}" name="${f.id}">${f.select.map((c) => `<option>${c}</option>`).join('')}</select>` : `<input id="${f.id}" name="${f.id}" type="${f.type || 'text'}">`}`).join('')}
+    <p id="err" role="alert" style="color:#b91c1c"></p><div class="row"><a href="#" class="muted">← Return to bag</a><button class="primary" id="cta">${CTA}</button></div></form>
+    <aside class="card" style="width:230px"><h3>Summary</h3><p>Trail thermos × 1 — $38.00</p><p>Wool socks × 2 — $36.00</p><p>Tax — $12.40</p><p><strong>Total $86.40</strong></p></aside></div>`;
+  q('#f').onsubmit = async (e) => {
+    e.preventDefault();
+    const val = Object.fromEntries(order.map((f) => [f.k, q('#' + f.id).value.trim()]));
+    const missing = order.filter((f) => f.req && !val[f.k]).map((f) => f.label);
+    if (missing.length) { q('#err').textContent = 'Required: ' + missing.join(', '); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(val.email)) { q('#err').textContent = 'Enter a valid email.'; return; }
+    q('#cta').disabled = true; q('#err').textContent = '';
+    await later(400);
+    await rec({ event: 'shipping', ...val, cta: CTA });
+    payment();
+  };
+}
+function payment() {
+  setStep(2);
+  q('#stage').innerHTML = `<h1>Payment</h1><p class="muted">All transactions are secure and encrypted.</p>
+    <label for="cc">Card number</label><input id="cc" type="text" inputmode="numeric"><label for="exp">Expiry (MM/YY)</label><input id="exp" type="text"><label for="cvc">Security code</label><input id="cvc" type="text">
+    <p id="perr" role="alert" style="color:#b91c1c"></p><button class="primary" id="pay">Pay $86.40</button>`;
+  q('#pay').onclick = async () => { await rec({ event: 'payment' }); q('#perr').textContent = 'Card declined.'; };
+}
+shipping();
+</script></body></html>

@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Help Center · Parcelo</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body><header><strong>Parcelo</strong><a href="#">Track</a><a href="#">Help</a></header>
+<main><h1>Help Center</h1>
+<details><summary>Where is my package?</summary><p>Use the tracking link in your confirmation email.</p></details>
+<details><summary>How do I return an item?</summary><p>Start a return from Orders within 30 days.</p></details>
+<details><summary>Do you ship internationally?</summary><p>Yes, to 40+ countries.</p></details>
+<details id="help"><summary>Still need help?</summary>
+  <form id="f" aria-label="Contact support">
+    <label for="topic">Topic</label><select id="topic"><option value="">Select a topic</option><option>Billing</option><option>Shipping</option><option>Returns</option><option>Technical</option></select>
+    <label for="msg">Message</label><textarea id="msg" rows="3"></textarea>
+    <div><button class="primary">Send message</button></div>
+  </form><p id="ok" role="status"></p></details>
+<section class="card" aria-label="Feedback"><h2>Was this page helpful?</h2><button onclick="rec({event:'feedback',v:'yes'})">Yes</button> <button onclick="rec({event:'feedback',v:'no'})">No</button></section>
+</main>
+<script>q('#f').onsubmit = async (e) => { e.preventDefault(); await rec({ event: 'contact', topic: q('#topic').value, msg: q('#msg').value.trim() }); q('#ok').textContent = 'Message sent. We reply within 24h.'; };</script>
+</body></html>

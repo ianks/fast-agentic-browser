@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Skerry Stays · Property</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<script src="stays_data.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f3f6f9; }
+  header { background: #0b3954; }
+  main { max-width: 960px; }
+  .score { display: inline-block; background: #0b3954; color: #fff; font-weight: 700; border-radius: 6px 6px 6px 0; padding: 2px 6px; }
+  .dates { background: #fff; border: 1px solid #dde3ea; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  table { background: #fff; margin-top: 14px; }
+  .good { color: #15803d; } .bad { color: #b91c1c; }
+  .book { background: #fff; border: 2px solid #0b3954; border-radius: 10px; padding: 14px 16px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<header><a href="stays.html" style="color:#fff;font-weight:700">Skerry Stays</a><span>Hotels · Cabins · Guesthouses</span><span style="margin-left:auto">Signed in as Keziah Moreau-Lindqvist</span></header>
+<main id="main"></main>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const S = window.SKERRY;
+  const h = S.hotels.find((x) => x.id === new URLSearchParams(location.search).get('id'));
+  const main = q('#main');
+  if (!h) { main.innerHTML = '<p>Property not found. <a href="stays.html">Back to results</a></p>'; return; }
+  document.title = `Skerry Stays · ${h.name}`;
+  const s = S.load(); const n = S.nights(s);
+  let pick = null, done = false;
+  function render() {
+    main.innerHTML = `<p><a href="stays.html">← Back to all stays</a></p><h1 style="margin-bottom:4px">${h.name}</h1><div class="muted">${h.area} · <span class="score">${h.rating.toFixed(1)}</span> ${h.reviews} reviews</div>
+      <div class="dates" style="margin-top:12px"><div><strong>${S.label(s.checkin)} – ${S.label(s.checkout)} 2026</strong> · ${n} night${n === 1 ? '' : 's'} · ${s.adults} adult${s.adults > 1 ? 's' : ''}</div><a href="stays.html">Change search</a></div>
+      <table><thead><tr><th>Room type</th><th>Cancellation</th><th>Breakfast</th><th>Price per night</th><th>Total for ${n} night${n === 1 ? '' : 's'}</th><th></th></tr></thead><tbody>
+      ${h.rooms.map((r) => `<tr><td><strong>${r.name}</strong></td><td class="${r.cancel.startsWith('Free') ? 'good' : 'bad'}">${r.cancel}</td><td class="${r.breakfast ? 'good' : ''}">${r.breakfast ? 'Breakfast included' : 'Breakfast €18 per person, pay at property'}</td><td>€${r.price}</td><td>€${r.price * n}</td><td><button type="button" data-room="${r.id}" aria-label="Reserve ${r.name}">Reserve</button></td></tr>`).join('')}</tbody></table>
+      ${pick ? `<section class="book" aria-labelledby="bk-h"><h2 id="bk-h" style="margin-top:0">Confirm your reservation</h2><p>${pick.name} · ${S.label(s.checkin)} – ${S.label(s.checkout)} 2026 · ${s.adults} adult${s.adults > 1 ? 's' : ''}<br><strong>Total €${pick.price * n}</strong> · ${pick.cancel} · ${pick.breakfast ? 'breakfast included' : 'room only'}</p>
+        <p class="muted">Booking for Keziah Moreau-Lindqvist · keziah.ml@postfjord.no. You'll pay at the property.</p>
+        <label style="font-weight:400;display:flex;gap:8px;align-items:center"><input type="checkbox" id="bk-trip"> Add airport transfer (+€45)</label>
+        <div class="row" style="margin-top:12px"><button type="button" id="bk-cancel">Choose a different room</button><button type="button" class="primary" id="bk-go">Complete reservation</button></div></section>` : ''}
+      ${done ? `<div class="book" role="status"><h2 style="margin-top:0">Reservation confirmed</h2><p>${done}</p></div>` : ''}`;
+  }
+  main.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-room]'); if (b && !done) { pick = h.rooms.find((r) => r.id === b.dataset.room); render(); return; }
+    if (e.target.id === 'bk-cancel') { pick = null; render(); return; }
+    if (e.target.id === 'bk-go' && pick && !done) {
+      const transfer = q('#bk-trip').checked; e.target.disabled = true; await later(500);
+      await rec({ event: 'hotel_reserve', hotel: h.name, room: pick.name, checkin: s.checkin, checkout: s.checkout, adults: String(s.adults), nights: String(n), total: String(pick.price * n + (transfer ? 45 : 0)), transfer: transfer ? 'yes' : 'no' });
+      done = `Booking SK-${h.id.toUpperCase()}${pick.id.toUpperCase()}-2026 at ${h.name}: ${pick.name}, ${S.label(s.checkin)} – ${S.label(s.checkout)}, total €${pick.price * n + (transfer ? 45 : 0)}.`; pick = null; render();
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

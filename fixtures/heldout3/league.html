@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pitchside Stockholm · 5-a-side leagues</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Trebuchet MS", "Segoe UI", sans-serif; color: #10231a; background: #f2f6f3; }
+  a { color: #0f7a3d; }
+  button, input, select { font: inherit; }
+  header { background: #0f3d24; color: #fff; }
+  header .in { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 12px 24px; }
+  .logo { font-weight: 800; font-size: 21px; letter-spacing: .02em; }
+  .logo span { color: #a3e635; }
+  header nav a { color: #cfe8d8; text-decoration: none; margin-right: 12px; padding: 4px 0; }
+  header nav a.on { color: #fff; border-bottom: 3px solid #a3e635; }
+  header .sp { flex: 1; }
+  main { max-width: 1140px; margin: 0 auto; padding: 22px 24px 60px; }
+  h1 { margin: 0 0 6px; font-size: 26px; }
+  .sub { color: #5b6e63; margin: 0 0 16px; }
+  .card { background: #fff; border: 1px solid #d9e5dd; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .btn { border: 1px solid #b8cdbf; background: #fff; border-radius: 8px; padding: 8px 16px; cursor: pointer; color: #10231a; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #0f7a3d; border-color: #0f7a3d; color: #fff; font-weight: 700; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .hero { background: linear-gradient(120deg, #0f3d24, #166534 60%, #65a30d); color: #fff; border-radius: 14px; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .rcard { display: block; border: 2px solid #d9e5dd; border-radius: 10px; padding: 12px; background: #fff; cursor: pointer; }
+  .rcard.sel { border-color: #0f7a3d; background: #f0faf3; }
+  .rcard input { margin-right: 6px; }
+  .rcard small { display: block; color: #5b6e63; }
+  .steps { display: flex; gap: 8px; margin-bottom: 16px; }
+  .steps span { flex: 1; padding: 8px; border-radius: 8px; background: #e3ece6; color: #5b6e63; font-size: 13px; text-align: center; }
+  .steps span.on { background: #0f7a3d; color: #fff; font-weight: 700; }
+  .f { margin: 14px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .f input[type=text], .f input[type=email], .f input[type=tel], .f select { width: 100%; max-width: 420px; padding: 8px 10px; border: 1px solid #b8cdbf; border-radius: 8px; background: #fff; }
+  .avail { font-size: 13px; margin-top: 4px; }
+  .avail.ok { color: #0f7a3d; }
+  .avail.bad { color: #b91c1c; }
+  .avail.wait { color: #5b6e63; }
+  .kits { display: flex; gap: 8px; }
+  .kit { width: 40px; height: 40px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 0 0 1px #b8cdbf; cursor: pointer; }
+  .kit[aria-pressed=true] { box-shadow: 0 0 0 3px #0f7a3d; }
+  .opt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid #d9e5dd; border-radius: 10px; padding: 10px 12px; margin: 8px 0; background: #fff; }
+  .err { color: #b91c1c; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid #e6eee9; font-size: 14px; }
+  th { background: #f5f9f6; color: #5b6e63; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  td.c, th.c { text-align: center; }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: end; }
+  .filters label { display: flex; flex-direction: column; font-size: 12px; color: #5b6e63; gap: 3px; }
+  .filters select { padding: 6px 8px; border: 1px solid #b8cdbf; border-radius: 8px; background: #fff; min-width: 180px; }
+  .pager { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
+  .pager button[aria-current=page] { background: #0f3d24; color: #fff; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tabs button { border: 1px solid #b8cdbf; background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .tabs button[aria-selected=true] { background: #0f3d24; color: #fff; border-color: #0f3d24; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #0f3d24; color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 60; }
+  footer { background: #0f3d24; color: #cfe8d8; font-size: 13px; padding: 22px 24px; text-align: center; }
+</style>
+</head>
+<body>
+<header><div class="in"><span class="logo">pitchside<span>.</span>sthlm</span><nav aria-label="Main"><a href="#/home" data-nav="home">Home</a><a href="#/register" data-nav="register">Register a team</a><a href="#/results" data-nav="results">Results</a><a href="#/standings" data-nav="standings">Standings</a><a href="#/rules" data-nav="rules">Rules</a><a href="#/venues" data-nav="venues">Venues</a></nav><span class="sp"></span><span style="font-size:13px;color:#cfe8d8">Signed in as Maja L.</span></div></header>
+<main id="view"></main>
+<footer>Pitchside Stockholm · Friday 25 September 2026 · info@pitchside.se · Results are entered by referees within 24 hours.</footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const LEAGUES = [
+    { id: 'mon-men', name: "Monday Men's", venue: 'Hammarby Sjöstad IP', day: 1, divs: { 'Division 1': ['Södermalm Sharks', 'Hammarby Hawks', 'Årsta Athletic', 'Nacka Nomads', 'Liljeholmen Lions', 'Skanstull Strikers'], 'Division 2': ['Gullmarsplan Giants', 'Enskede Eagles', 'Tanto Tigers', 'Hornstull Hotshots', 'Sofo Social', 'Björkhagen Bears'] } },
+    { id: 'wed-mixed', name: 'Wednesday Mixed', venue: 'Tantolunden', day: 3, divs: { 'Division 1': ['Nordlys United', 'Zinken Zebras', 'Mariatorget Magpies', 'Hornsberg Harriers', 'Rålis Rovers', 'Kungsholmen Kites'] } },
+    { id: 'thu-women', name: "Thursday Women's", venue: 'Zinkensdamms IP', day: 4, divs: { 'Division 1': ['Fjordside FC', 'Vasastan Vipers', 'Östermalm Orcas', 'Slussen Swifts', 'Djurgården Doves', 'Norrmalm Nova'], 'Division 2': ['Midsommar Misfits', 'Hjorthagen Herons', 'Bagarmossen Bees', 'Solna Sirens', 'Farsta Foxes', 'Kista Comets'] } },
+    { id: 'sun-vets', name: 'Sunday Veterans 35+', venue: 'Östermalms IP', day: 0, divs: { 'Division 1': ['Old Boys Östermalm', 'Lidingö Legends', 'Bromma Badgers', 'Täby Titans'] } },
+  ];
+  // Referee assignment per league (Autumn 2026, in match order) and for the Spring 2026 Thursday season.
+  const expand = (spec) => { const out = []; const q = spec.map(([n, c]) => ({ n, c })); while (q.some((x) => x.c)) for (const x of q) if (x.c) { out.push(x.n); x.c--; } return out; };
+  const REFS = {
+    'mon-men': expand([['Mikael Strand', 14], ['Johan Ek', 8], ['Kari Nordahl', 5], ['Oskar Lind', 5], ['Signe Aas', 4]]),
+    'wed-mixed': expand([['Mikael Strand', 6], ['Elif Demir', 4], ['Jonna Sjöberg', 4], ['Johan Ek', 4]]),
+    'thu-women': expand([['Signe Aas', 9], ['Kari Nordahl', 7], ['Linnea Berg', 6], ['Kari Nordal', 5], ['Elif Demir', 5], ['Jonna Sjöberg', 4]]),
+    'sun-vets': expand([['Oskar Lind', 6], ['Johan Ek', 6]]),
+    'thu-women-spring': expand([['Kari Nordahl', 6], ['Linnea Berg', 6], ['Jonna Sjöberg', 4], ['Signe Aas', 2]]),
+  };
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const rnd = mulberry32(2026);
+  const pairings = (teams, rounds) => { const n = teams.length; const arr = teams.slice(); const out = []; for (let r = 0; r < rounds; r++) { const rd = []; for (let i = 0; i < n / 2; i++) rd.push([arr[i], arr[n - 1 - i]]); out.push(rd); arr.splice(1, 0, arr.pop()); } return out; };
+  const MATCHES = [];
+  function season(key, lg, season, startIso, rounds, refKey) {
+    const refs = REFS[refKey]; let k = 0;
+    const start = new Date(startIso + 'T12:00:00Z');
+    for (let r = 0; r < rounds; r++) for (const [div, teams] of Object.entries(lg.divs)) {
+      const prs = pairings(teams, rounds)[r];
+      prs.forEach(([h, a], i) => {
+        if (k >= refs.length) return;
+        const d = new Date(start.getTime() + r * 7 * 864e5);
+        MATCHES.push({ date: d.toISOString().slice(0, 10), league: lg.id, season, div, home: h, away: a, hs: Math.floor(rnd() * 7), as: Math.floor(rnd() * 7), pitch: 'Pitch ' + (1 + (i % 3)), ref: refs[k++], time: ['18:30', '19:20', '20:10'][i % 3] });
+      });
+    }
+  }
+  season('a', LEAGUES[0], 'Autumn 2026', '2026-08-17', 6, 'mon-men');
+  season('b', LEAGUES[1], 'Autumn 2026', '2026-08-19', 6, 'wed-mixed');
+  season('c', LEAGUES[2], 'Autumn 2026', '2026-08-20', 6, 'thu-women');
+  season('d', LEAGUES[3], 'Autumn 2026', '2026-08-16', 6, 'sun-vets');
+  season('e', LEAGUES[2], 'Spring 2026', '2026-04-16', 3, 'thu-women-spring');
+  MATCHES.sort((a, b) => b.date.localeCompare(a.date) || a.league.localeCompare(b.league) || a.time.localeCompare(b.time));
+  const TAKEN = ['nordlys united', 'nordlys fc', 'tanto tigers', 'zinken zebras', 'rålis rovers', 'hornsberg harriers', 'mariatorget magpies', 'kungsholmen kites', 'sofo social'];
+  const KITS = [['green', '#16a34a'], ['blue', '#2563eb'], ['red', '#dc2626'], ['black', '#111827'], ['white', '#f8fafc'], ['orange', '#f97316'], ['yellow', '#facc15'], ['purple', '#7c3aed']];
+  const st = { season: 'Autumn 2026', league: '', div: '', page: 1, stLeague: 'thu-women', reg: null, busy: false };
+  const newReg = () => ({ step: 1, league: '', season: 'autumn-2026', division: '', team: '', avail: '', kit: '', captain: '', email: '', phone: '', playing: true, pay: 'card', insurance: true, balls: false, rules: false, err: '', done: null });
+
+  function home() { return `<div class="hero"><div><h1 style="color:#fff">Autumn 2026 leagues are on</h1><p style="margin:0">Four leagues, eleven divisions, 60+ teams. Late registrations open for Wednesday Mixed and Thursday Women's.</p></div><a class="btn" href="#/register">Register a team</a></div>
+    <div class="grid4" style="margin-top:18px">${LEAGUES.map((l) => `<div class="card"><strong>${esc(l.name)}</strong><div class="sub" style="margin:4px 0">${esc(l.venue)}</div><a href="#/standings" data-lg="${l.id}">Standings</a> · <a href="#/results">Results</a></div>`).join('')}</div>`; }
+  function register() {
+    const r = st.reg || (st.reg = newReg());
+    if (r.done) return `<h1>You're in!</h1><div class="card"><p><strong>${esc(r.done.team)}</strong> is registered in ${esc(r.done.league)} (Autumn 2026). ${r.done.pay === 'invoice' ? 'An invoice has been emailed to ' + esc(r.done.email) + '.' : 'Payment received.'}</p><a class="btn" href="#/home">Back to home</a></div>`;
+    const L = ['League', 'Team', 'Captain', 'Payment'];
+    let body = '';
+    if (r.step === 1) body = `<div class="lab" style="font-weight:700;margin-bottom:6px">Choose a league</div><div class="grid4" role="radiogroup" aria-label="League">${LEAGUES.map((l) => `<label class="rcard ${r.league === l.id ? 'sel' : ''}"><input type="radio" name="league" value="${l.id}" ${r.league === l.id ? 'checked' : ''}><strong>${esc(l.name)}</strong><small>${esc(l.venue)}</small><small>${l.id === 'mon-men' || l.id === 'sun-vets' ? 'Waitlist only' : 'Places available'}</small></label>`).join('')}</div>
+      <div class="f"><label for="season">Season</label><select id="season"><option value="autumn-2026" ${r.season === 'autumn-2026' ? 'selected' : ''}>Autumn 2026 (late entry, 7 matchdays left)</option><option value="winter-2027" ${r.season === 'winter-2027' ? 'selected' : ''}>Winter indoor 2026–27</option></select></div>
+      <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:700">Division</legend><label><input type="radio" name="division" value="recreational" ${r.division === 'recreational' ? 'checked' : ''}> Recreational</label> <label style="margin-left:14px"><input type="radio" name="division" value="competitive" ${r.division === 'competitive' ? 'checked' : ''}> Competitive</label></fieldset>`;
+    else if (r.step === 2) body = `<div class="f"><label for="team">Team name</label><input type="text" id="team" value="${esc(r.team)}" autocomplete="off"><div class="avail ${r.avail === 'ok' ? 'ok' : r.avail === 'taken' ? 'bad' : 'wait'}" id="avail" role="status">${r.avail === 'ok' ? '✓ Available' : r.avail === 'taken' ? '✗ That name is already taken in this league — try another' : r.avail === 'checking' ? 'Checking availability…' : 'Names must be unique within a league.'}</div></div>
+      <div class="f"><span class="lab">Kit colour</span><div class="kits" role="group" aria-label="Kit colour">${KITS.map(([n, c]) => `<button type="button" class="kit" style="background:${c}" data-kit="${n}" aria-pressed="${r.kit === n}" aria-label="${n[0].toUpperCase() + n.slice(1)}"></button>`).join('')}</div><div class="sub" style="margin-top:4px">${r.kit ? 'Selected: ' + r.kit : 'Bibs are provided if two teams clash.'}</div></div>`;
+    else if (r.step === 3) body = `<div class="f"><label for="cap-name">Captain's name</label><input type="text" id="cap-name" value="${esc(r.captain)}"></div><div class="f"><label for="cap-email">Email</label><input type="email" id="cap-email" value="${esc(r.email)}"></div><div class="f"><label for="cap-phone">Mobile</label><input type="tel" id="cap-phone" value="${esc(r.phone)}"></div><label><input type="checkbox" id="playing" ${r.playing ? 'checked' : ''}> The captain also plays</label>`;
+    else body = `<p>Team fee: <strong>SEK 4,200</strong> for the rest of the Autumn 2026 season.</p><fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:700">How would you like to pay?</legend><label style="display:block"><input type="radio" name="pay" value="card" ${r.pay === 'card' ? 'checked' : ''}> Pay now by card</label><label style="display:block"><input type="radio" name="pay" value="invoice" ${r.pay === 'invoice' ? 'checked' : ''}> Invoice (due in 14 days)</label></fieldset>
+      <label class="opt"><input type="checkbox" id="ins" ${r.insurance ? 'checked' : ''}><span><strong>Team insurance upgrade (+SEK 450)</strong><br><span class="sub">Covers physio and dental for every registered player · Recommended</span></span></label>
+      <label class="opt"><input type="checkbox" id="balls" ${r.balls ? 'checked' : ''}><span><strong>Match ball pack (+SEK 300)</strong><br><span class="sub">Three size-4 futsal balls</span></span></label>
+      <label style="display:block;margin-top:10px"><input type="checkbox" id="rules" ${r.rules ? 'checked' : ''}> I accept the Pitchside league rules and code of conduct</label>
+      <p>Total: <strong>SEK ${(4200 + (r.insurance ? 450 : 0) + (r.balls ? 300 : 0)).toLocaleString('en-US')}</strong></p>`;
+    return `<h1>Register a team</h1><p class="sub">Late entries join from matchday 7.</p><div class="steps">${L.map((l, i) => `<span class="${r.step === i + 1 ? 'on' : ''}">${i + 1}. ${l}</span>`).join('')}</div><div class="card">${body}<p class="err" role="alert">${esc(r.err)}</p><p>${r.step > 1 ? '<button class="btn" type="button" id="r-back">Back</button> ' : ''}${r.step < 4 ? '<button class="btn primary" type="button" id="r-next">Continue</button>' : `<button class="btn primary" type="button" id="r-submit" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Registering…' : 'Register team'}</button>`}</p></div>`;
+  }
+  const lgName = (id) => LEAGUES.find((l) => l.id === id).name;
+  const slug = (n) => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
+  function teamPage(sl) {
+    const lg = LEAGUES.find((l) => Object.values(l.divs).some((ts) => ts.some((t) => slug(t) === sl))); if (!lg) return '<h1>Team not found</h1>';
+    const [div, teams] = Object.entries(lg.divs).find(([, ts]) => ts.some((t) => slug(t) === sl)); const name = teams.find((t) => slug(t) === sl);
+    const ms = MATCHES.filter((m) => m.season === 'Autumn 2026' && (m.home === name || m.away === name));
+    return `<p class="sub"><a href="#/results">Results</a> › ${esc(name)}</p><h1>${esc(name)}</h1><p class="sub">${esc(lg.name)} · ${div} · ${esc(lg.venue)}</p><div class="card"><table><thead><tr><th>Date</th><th>Opponent</th><th class="c">Score</th></tr></thead><tbody>${ms.map((m) => `<tr><td>${m.date}</td><td>${esc(m.home === name ? m.away : m.home)}</td><td class="c">${m.hs}–${m.as}</td></tr>`).join('')}</tbody></table><p><button class="btn" type="button" id="follow-team">Follow team</button> <button class="btn" type="button" id="msg-captain">Message captain</button></p></div>`;
+  }
+  function results() {
+    const list = MATCHES.filter((m) => (!st.season || m.season === st.season) && (!st.league || m.league === st.league) && (!st.div || m.div === st.div));
+    const per = 10, pages = Math.max(1, Math.ceil(list.length / per)); if (st.page > pages) st.page = pages;
+    const fmt = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+    return `<h1>Results</h1><p class="sub">Every completed match. Referees enter scores after the final whistle.</p><div class="card"><div class="filters">
+      <label>Season<select id="f-season"><option value="">All seasons</option>${['Autumn 2026', 'Spring 2026'].map((s) => `<option ${st.season === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+      <label>League<select id="f-league"><option value="">All leagues</option>${LEAGUES.map((l) => `<option value="${l.id}" ${st.league === l.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label>
+      <label>Division<select id="f-div"><option value="">All divisions</option>${['Division 1', 'Division 2'].map((d) => `<option ${st.div === d ? 'selected' : ''}>${d}</option>`).join('')}</select></label><span class="sub" style="margin:0 0 6px auto">${list.length} matches</span><button class="btn" type="button" id="dl-csv">Download CSV</button><button class="btn" type="button" id="cal-sub">Add fixtures to calendar</button></div>
+      <table><thead><tr><th>Date</th><th>League</th><th>Div.</th><th>Home</th><th class="c">Score</th><th>Away</th><th>Pitch</th><th>Referee</th><th></th></tr></thead><tbody>${list.slice((st.page - 1) * per, st.page * per).map((m) => `<tr><td>${fmt(m.date)} ${m.time}</td><td>${esc(lgName(m.league))}</td><td>${m.div.replace('Division ', 'D')}</td><td><a href="#/teams/${slug(m.home)}">${esc(m.home)}</a></td><td class="c">${m.hs}–${m.as}</td><td><a href="#/teams/${slug(m.away)}">${esc(m.away)}</a></td><td>${m.pitch}</td><td>${esc(m.ref)}</td><td><button class="btn" type="button" data-report="1" style="padding:2px 8px;font-size:12px">Match report</button></td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-page="${st.page - 1}" ${st.page === 1 ? 'disabled' : ''}>Previous</button><span>Page ${st.page} of ${pages}</span><button class="btn" type="button" data-page="${st.page + 1}" ${st.page === pages ? 'disabled' : ''}>Next</button></div></div>`;
+  }
+  function standings() {
+    const lg = LEAGUES.find((l) => l.id === st.stLeague);
+    const tables = Object.entries(lg.divs).map(([div, teams]) => {
+      const T = Object.fromEntries(teams.map((t) => [t, { t, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }]));
+      for (const m of MATCHES.filter((x) => x.league === lg.id && x.season === 'Autumn 2026' && x.div === div)) { const h = T[m.home], a = T[m.away]; h.p++; a.p++; h.gf += m.hs; h.ga += m.as; a.gf += m.as; a.ga += m.hs; if (m.hs > m.as) { h.w++; a.l++; h.pts += 3; } else if (m.hs < m.as) { a.w++; h.l++; a.pts += 3; } else { h.d++; a.d++; h.pts++; a.pts++; } }
+      const rows = Object.values(T).sort((x, y) => y.pts - x.pts || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf);
+      return `<h3>${div}</h3><table><thead><tr><th>#</th><th>Team</th><th class="c">P</th><th class="c">W</th><th class="c">D</th><th class="c">L</th><th class="c">GF</th><th class="c">GA</th><th class="c">Pts</th></tr></thead><tbody>${rows.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.t)}</td><td class="c">${r.p}</td><td class="c">${r.w}</td><td class="c">${r.d}</td><td class="c">${r.l}</td><td class="c">${r.gf}</td><td class="c">${r.ga}</td><td class="c"><strong>${r.pts}</strong></td></tr>`).join('')}</tbody></table>`;
+    }).join('');
+    return `<h1>Standings</h1><p class="sub">Autumn 2026</p><div class="tabs" role="tablist">${LEAGUES.map((l) => `<button type="button" role="tab" data-stl="${l.id}" aria-selected="${st.stLeague === l.id}">${esc(l.name)}</button>`).join('')}</div><div class="card">${tables}</div>`;
+  }
+  function route() {
+    const p = (location.hash || '#/home').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] === 'register') v.innerHTML = register();
+    else if (p[0] === 'results') v.innerHTML = results();
+    else if (p[0] === 'standings') v.innerHTML = standings();
+    else if (p[0] === 'teams' && p[1]) v.innerHTML = teamPage(p[1]);
+    else if (p[0] === 'rules') v.innerHTML = `<h1>Rules</h1><div class="card"><ol><li>5 players on the pitch, rolling substitutions.</li><li>Two halves of 20 minutes.</li><li>No slide tackles.</li><li>Referee decisions are final.</li></ol></div>`;
+    else if (p[0] === 'venues') v.innerHTML = `<h1>Venues</h1><div class="card">${LEAGUES.map((l) => `<p><strong>${esc(l.venue)}</strong> · ${esc(l.name)}</p>`).join('')}</div>`;
+    else { document.querySelector('[data-nav=home]').classList.add('on'); v.innerHTML = home(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  let checkTimer, checkSeq = 0;
+  function checkName() {
+    const r = st.reg; const name = r.team.trim(); clearTimeout(checkTimer); const my = ++checkSeq;
+    if (!name) { r.avail = ''; paintAvail(); return; }
+    r.avail = 'checking'; paintAvail();
+    checkTimer = setTimeout(() => { if (my !== checkSeq) return; r.avail = TAKEN.includes(name.toLowerCase().replace(/\s+/g, ' ')) ? 'taken' : 'ok'; paintAvail(); }, 600);
+  }
+  function paintAvail() { const el = $('#avail'); if (!el) return; const r = st.reg; el.className = 'avail ' + (r.avail === 'ok' ? 'ok' : r.avail === 'taken' ? 'bad' : 'wait'); el.textContent = r.avail === 'ok' ? '✓ Available' : r.avail === 'taken' ? '✗ That name is already taken in this league — try another' : r.avail === 'checking' ? 'Checking availability…' : 'Names must be unique within a league.'; }
+  const normPhone = (s) => { let d = String(s).replace(/[^\d+]/g, ''); if (/^00/.test(d)) d = '+' + d.slice(2); if (/^0\d{8,9}$/.test(d)) d = '+46' + d.slice(1); return d; };
+  const view = $('#view');
+  view.addEventListener('input', (e) => {
+    const t = e.target; const r = st.reg; if (!r) return;
+    if (t.id === 'team') { r.team = t.value; checkName(); }
+    if (t.id === 'cap-name') r.captain = t.value; if (t.id === 'cap-email') r.email = t.value; if (t.id === 'cap-phone') r.phone = t.value;
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target; const r = st.reg;
+    if (t.id === 'f-season') { st.season = t.value; st.page = 1; rerender(); return; }
+    if (t.id === 'f-league') { st.league = t.value; st.page = 1; rerender(); return; }
+    if (t.id === 'f-div') { st.div = t.value; st.page = 1; rerender(); return; }
+    if (!r) return;
+    if (t.name === 'league') { r.league = t.value; r.err = ''; rerender(); }
+    if (t.id === 'season') r.season = t.value;
+    if (t.name === 'division') r.division = t.value;
+    if (t.id === 'playing') r.playing = t.checked;
+    if (t.name === 'pay') r.pay = t.value;
+    if (t.id === 'ins') { r.insurance = t.checked; rerender(); }
+    if (t.id === 'balls') { r.balls = t.checked; rerender(); }
+    if (t.id === 'rules') r.rules = t.checked;
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target; const r = st.reg;
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { st.page = +pg.dataset.page; rerender(); return; }
+    const sl = t.closest('[data-stl]'); if (sl) { st.stLeague = sl.dataset.stl; rerender(); return; }
+    const lg = t.closest('[data-lg]'); if (lg) { st.stLeague = lg.dataset.lg; return; }
+    if (t.closest('[data-report]')) { toast('Match reports are available to team captains.'); return; }
+    if (t.closest('#dl-csv')) { toast('CSV downloaded'); return; }
+    if (t.closest('#cal-sub')) { toast('Calendar link copied'); return; }
+    if (t.closest('#follow-team')) { await later(300); await rec({ event: 'team_follow', team: location.hash.split('/')[2] }); toast('Following'); return; }
+    if (t.closest('#msg-captain')) { toast('Messages are available in the Pitchside app.'); return; }
+    if (!r) return;
+    const kit = t.closest('[data-kit]'); if (kit) { r.kit = kit.dataset.kit; rerender(); return; }
+    if (t.closest('#r-back')) { r.err = ''; r.step--; rerender(); return; }
+    if (t.closest('#r-next')) {
+      r.err = '';
+      if (r.step === 1) { if (!r.league) r.err = 'Choose a league.'; else if (r.league === 'mon-men' || r.league === 'sun-vets') r.err = 'This league is full. Join the waitlist from the league page.'; else if (!r.division) r.err = 'Choose a division.'; }
+      if (r.step === 2) { if (!r.team.trim()) r.err = 'Enter a team name.'; else if (r.avail === 'checking') r.err = 'Still checking the name — one moment.'; else if (r.avail === 'taken') r.err = 'That team name is taken. Choose another name.'; else if (!r.kit) r.err = 'Pick a kit colour.'; }
+      if (r.step === 3) { if (r.captain.trim().split(/\s+/).length < 2) r.err = "Enter the captain's full name."; else if (!/^\S+@\S+\.\S+$/.test(r.email.trim())) r.err = 'Enter a valid email.'; else if (normPhone(r.phone).replace(/\D/g, '').length < 9) r.err = 'Enter a mobile number.'; }
+      if (!r.err) r.step++;
+      rerender(); return;
+    }
+    if (t.closest('#r-submit')) {
+      if (!r.rules) { r.err = 'You need to accept the league rules.'; rerender(); return; }
+      if (st.busy) return; st.busy = true; r.err = ''; rerender(); await later(900); st.busy = false;
+      if (TAKEN.includes(r.team.trim().toLowerCase().replace(/\s+/g, ' '))) { r.err = `“${r.team.trim()}” is already registered in this league. Go back and pick another name.`; rerender(); return; }
+      const clean = (s) => s.trim().replace(/\s+/g, ' ');
+      await rec({ event: 'team_register', league: r.league, season: r.season, division: r.division, team: clean(r.team), kit: r.kit, captain: clean(r.captain), email: r.email.trim().toLowerCase(), phone: normPhone(r.phone), captain_plays: r.playing ? 'yes' : 'no', payment: r.pay, insurance: r.insurance ? 'yes' : 'no', ball_pack: r.balls ? 'yes' : 'no', total: String(4200 + (r.insurance ? 450 : 0) + (r.balls ? 300 : 0)) });
+      TAKEN.push(clean(r.team).toLowerCase());
+      r.done = { team: clean(r.team), league: lgName(r.league), pay: r.pay, email: r.email.trim() }; rerender(); toast('Team registered');
+    }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

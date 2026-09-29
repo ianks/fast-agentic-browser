@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pagewell · Tessera Payments</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 "Roboto", -apple-system, "Segoe UI", sans-serif; color: #1b1f24; background: #f4f5f7; }
+  a { color: #0b62c4; }
+  button, input, select { font: inherit; }
+  .top { background: #0d1b2a; color: #fff; display: flex; align-items: center; height: 50px; padding: 0 20px; gap: 22px; }
+  .top .logo { font-weight: 800; letter-spacing: .02em; color: #34d399; }
+  .top nav a { color: #c7d2de; text-decoration: none; padding: 15px 10px; display: inline-block; }
+  .top nav a.on { color: #fff; box-shadow: inset 0 -3px 0 #34d399; }
+  .top .sp { flex: 1; }
+  .top .me { font-size: 13px; color: #c7d2de; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 24px 50px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #69717c; margin: 0 0 14px; }
+  .crumb { font-size: 13px; color: #69717c; margin-bottom: 6px; }
+  .card { background: #fff; border: 1px solid #dfe3e8; border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #edf0f3; vertical-align: top; }
+  th { font-size: 12px; color: #69717c; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .btn { border: 1px solid #c6ccd4; background: #fff; border-radius: 4px; padding: 6px 12px; cursor: pointer; color: #1b1f24; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #0b62c4; border-color: #0b62c4; color: #fff; }
+  .btn.danger { color: #b42318; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #dfe3e8; margin: 10px 0 14px; }
+  .tabs a { padding: 8px 14px; color: #69717c; text-decoration: none; border-bottom: 2px solid transparent; }
+  .tabs a.on { color: #1b1f24; border-bottom-color: #0b62c4; font-weight: 600; }
+  .pill { font-size: 12px; border-radius: 10px; padding: 1px 8px; background: #edf0f3; }
+  .pill.crit { background: #fde2e1; color: #b42318; }
+  .pill.ok { background: #dcfae6; color: #067647; }
+  .pill.warn { background: #fef0c7; color: #93370d; }
+  .lvl { display: grid; grid-template-columns: 70px 1fr; gap: 12px; border: 1px solid #dfe3e8; border-radius: 6px; padding: 12px; margin-bottom: 8px; background: #fbfcfd; }
+  .lvl .n { font-weight: 700; color: #0b62c4; }
+  .loading { color: #69717c; padding: 40px 0; text-align: center; }
+  .layer { border-left: 4px solid #34d399; padding-left: 10px; margin-bottom: 10px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(13, 27, 42, .5); display: flex; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 40; }
+  .modal { background: #fff; border-radius: 8px; width: 540px; padding: 18px 22px; box-shadow: 0 24px 60px rgba(0,0,0,.3); }
+  .f { margin: 12px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .f select { padding: 6px 8px; border: 1px solid #c6ccd4; border-radius: 4px; background: #fff; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .dd { position: relative; }
+  .dd-btn { width: 100%; text-align: left; border: 1px solid #c6ccd4; background: #fff; border-radius: 4px; padding: 7px 10px; cursor: pointer; }
+  .dd-btn::after { content: "▾"; float: right; color: #69717c; }
+  .dd-pop { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #c6ccd4; border-radius: 4px; box-shadow: 0 10px 24px rgba(0,0,0,.12); z-index: 5; padding: 6px; }
+  .dd-pop input { width: 100%; padding: 6px 8px; border: 1px solid #dfe3e8; border-radius: 4px; margin-bottom: 4px; }
+  .dd-pop ul { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; }
+  .dd-pop li { padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+  .dd-pop li:hover, .dd-pop li[aria-selected=true] { background: #e8f1fc; }
+  .dd-pop li small { color: #69717c; margin-left: 6px; }
+  .preview { background: #f0f7ff; border: 1px solid #cfe3fb; border-radius: 4px; padding: 8px 10px; font-size: 13px; }
+  .err { color: #b42318; font-size: 13px; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #0d1b2a; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 60; }
+  .ovr { background: #fff7e6; }
+</style>
+</head>
+<body>
+<div class="top"><span class="logo">pagewell</span><nav aria-label="Main"><a href="#/incidents" data-nav="incidents">Incidents</a><a href="#/services" data-nav="services">Services</a><a href="#/schedules" data-nav="schedules">Schedules</a><a href="#/policies" data-nav="policies">Escalation policies</a><a href="#/people" data-nav="people">People</a><a href="#/analytics" data-nav="analytics">Analytics</a></nav><span class="sp"></span><span class="me">Tessera Payments · Kerstin Albers (admin) · Europe/Berlin</span></div>
+<div class="wrap" id="view"></div>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const PEOPLE = [
+    ['u-aigerim', 'Aigerim Nurlanovna', 'SRE'], ['u-chiara', 'Chiara Benedetti', 'Frontend'], ['u-dmitri', 'Dmitri Ostrovsky', 'Frontend'], ['u-hannah', 'Hannah Kowalczyk', 'Engineering manager'],
+    ['u-lukas', 'Lukas Brandt', 'Payments'], ['u-meilin', 'Mei-Lin Castellanos', 'Frontend'], ['u-olamide', 'Olamide Adeyemi', 'Payments'], ['u-pedro', 'Pedro Viana', 'Frontend'],
+    ['u-ruairi', 'Ruairí Ó Briain', 'Frontend'], ['u-sigrid', 'Sigrid Halvorsen', 'Payments'], ['u-sigrun', 'Sigrún Halldórsdóttir', 'SRE'], ['u-tomasz', 'Tomasz Wieczorek', 'Payments'],
+    ['u-noor', 'Noor Haddad', 'Data'], ['u-emeka', 'Emeka Obi', 'Data'],
+  ].map(([id, name, team]) => ({ id, name, team }));
+  const P = Object.fromEntries(PEOPLE.map((p) => [p.id, p]));
+  // weekly rotations, handoff Mondays at 10:00 (Europe/Berlin); anchor = start of first member's shift
+  const SCHEDULES = [
+    { id: 'SCH-PAY-P', name: 'Payments – Primary', members: ['u-sigrid', 'u-tomasz', 'u-olamide', 'u-lukas'], anchor: '2026-09-07T10:00', overrides: [] },
+    { id: 'SCH-PAY-S', name: 'Payments – Secondary', members: ['u-lukas', 'u-sigrid', 'u-tomasz', 'u-olamide'], anchor: '2026-09-07T10:00', overrides: [] },
+    { id: 'SCH-PAYAPI', name: 'Payments API – Primary (legacy)', members: ['u-tomasz', 'u-lukas'], anchor: '2026-08-31T10:00', overrides: [] },
+    { id: 'SCH-WEB-P', name: 'Web Platform – Primary', members: ['u-dmitri', 'u-meilin', 'u-chiara', 'u-pedro'], anchor: '2026-09-07T10:00', overrides: [] },
+    { id: 'SCH-WEB-S', name: 'Web Platform – Secondary', members: ['u-pedro', 'u-chiara', 'u-ruairi', 'u-meilin'], anchor: '2026-09-07T10:00', overrides: [{ id: 'OV-771', user: 'u-olamide', start: '2026-09-29T18:00', end: '2026-10-01T09:00', note: 'Covering for Mei-Lin (conference)' }] },
+    { id: 'SCH-SRE', name: 'SRE – Infrastructure', members: ['u-aigerim', 'u-sigrun'], anchor: '2026-09-14T10:00', overrides: [] },
+    { id: 'SCH-DATA', name: 'Data Platform', members: ['u-noor', 'u-emeka'], anchor: '2026-09-07T10:00', overrides: [] },
+  ];
+  const S = Object.fromEntries(SCHEDULES.map((s) => [s.id, s]));
+  const POLICIES = [
+    { id: 'EP-PAY', name: 'Payments – Critical', levels: [[{ t: 'schedule', id: 'SCH-PAY-P' }], [{ t: 'schedule', id: 'SCH-PAY-S' }], [{ t: 'user', id: 'u-hannah' }]], delay: [10, 15] },
+    { id: 'EP-WEB', name: 'Web – Standard', levels: [[{ t: 'schedule', id: 'SCH-WEB-P' }], [{ t: 'schedule', id: 'SCH-WEB-S' }], [{ t: 'user', id: 'u-hannah' }]], delay: [15, 30] },
+    { id: 'EP-API', name: 'Checkout API – Critical', levels: [[{ t: 'schedule', id: 'SCH-PAYAPI' }], [{ t: 'schedule', id: 'SCH-SRE' }]], delay: [10] },
+    { id: 'EP-DATA', name: 'Data – Business hours', levels: [[{ t: 'schedule', id: 'SCH-DATA' }]], delay: [] },
+  ];
+  const SERVICES = [
+    { id: 'SV-101', name: 'Checkout API', policy: 'EP-API', status: 'Active', integ: ['Datadog', 'Sentry'] },
+    { id: 'SV-102', name: 'Checkout Web', policy: 'EP-WEB', status: 'Active', integ: ['Sentry', 'Checkly'] },
+    { id: 'SV-103', name: 'Card Authorisation', policy: 'EP-PAY', status: 'Active', integ: ['Datadog'] },
+    { id: 'SV-104', name: 'Payouts', policy: 'EP-PAY', status: 'Active', integ: ['Datadog', 'Email'] },
+    { id: 'SV-105', name: 'Merchant Dashboard', policy: 'EP-WEB', status: 'Maintenance', integ: ['Sentry'] },
+    { id: 'SV-106', name: 'Ledger Sync', policy: 'EP-DATA', status: 'Active', integ: ['Airflow'] },
+  ];
+  const INCIDENTS = [['#4821', 'Elevated 5xx on Checkout API', 'SV-101', 'Triggered', 'P1', '09:41'], ['#4820', 'Payout batch delayed', 'SV-104', 'Acknowledged', 'P2', '08:12'], ['#4819', 'Card Authorisation latency p99 > 800 ms', 'SV-103', 'Acknowledged', 'P2', '07:55'], ['#4818', 'Ledger Sync lag above 15 min', 'SV-106', 'Triggered', 'P3', '07:02'],
+    ['#4817', 'Sentry error spike: Merchant Dashboard', 'SV-105', 'Resolved', 'P3', 'Yesterday'], ['#4815', 'Checkly: checkout flow failing in eu-west', 'SV-102', 'Resolved', 'P2', 'Yesterday'], ['#4812', 'Disk usage 90% on payouts-db-2', 'SV-104', 'Resolved', 'P3', 'Tue'], ['#4809', 'Webhook retries piling up', 'SV-101', 'Resolved', 'P3', 'Tue'],
+    ['#4806', '3DS provider timeouts', 'SV-103', 'Resolved', 'P1', 'Mon'], ['#4801', 'Airflow DAG ledger_nightly failed', 'SV-106', 'Resolved', 'P4', 'Mon'], ['#4797', 'Merchant Dashboard login errors', 'SV-105', 'Resolved', 'P2', 'Sun'], ['#4790', 'Checkout Web bundle size alert', 'SV-102', 'Resolved', 'P4', 'Sat']];
+  // naive local-time helpers (Europe/Berlin wall clock; no DST change inside the ranges shown)
+  const toMs = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10), +s.slice(11, 13) || 0, +s.slice(14, 16) || 0);
+  const fromMs = (ms) => new Date(ms).toISOString().slice(0, 16);
+  const nice = (s) => new Date(toMs(s)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }) + ' ' + s.slice(11, 16);
+  const NOW = '2026-09-24T11:05';
+  function finalShifts(sch, from, to) {
+    const W = 7 * 864e5; const a = toMs(sch.anchor); const out = [];
+    let k = Math.floor((toMs(from) - a) / W);
+    for (let t = a + k * W; t < toMs(to); t += W, k++) out.push({ start: t, end: t + W, user: sch.members[((k % sch.members.length) + sch.members.length) % sch.members.length], ovr: false });
+    for (const o of sch.overrides) {
+      const os = toMs(o.start), oe = toMs(o.end); const next = [];
+      for (const sh of out) {
+        if (sh.ovr || oe <= sh.start || os >= sh.end) { next.push(sh); continue; }
+        if (os > sh.start) next.push({ ...sh, end: os });
+        if (oe < sh.end) next.push({ ...sh, start: oe });
+      }
+      next.push({ start: os, end: oe, user: o.user, ovr: true, note: o.note });
+      out.splice(0, out.length, ...next.sort((x, y) => x.start - y.start));
+    }
+    return out.filter((s) => s.end > toMs(from) && s.start < toMs(to));
+  }
+  const st = { dd: false, ddq: '', ovr: null, busy: false };
+
+  function incidents() { const F = st.ifilter || 'All'; const list = INCIDENTS.filter((x) => F === 'All' || (F === 'Open' ? x[3] !== 'Resolved' : x[3] === F)); return `<h1>Incidents</h1><p class="sub">Open and recent incidents across Tessera Payments.</p><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">${['All', 'Open', 'Triggered', 'Acknowledged', 'Resolved'].map((f) => `<button class="btn ${F === f ? 'primary' : ''}" type="button" data-ifilter="${f}">${f}</button>`).join('')}<span style="flex:1"></span><button class="btn" type="button" id="new-incident">New incident</button><button class="btn" type="button" id="export-inc">Export</button></div><div class="card"><table><thead><tr><th><input type="checkbox" aria-label="Select all incidents"></th><th>#</th><th>Title</th><th>Service</th><th>Status</th><th>Priority</th><th>Opened</th><th></th></tr></thead><tbody>${list.map(([n, t, sv, s, pr, at]) => `<tr><td><input type="checkbox" aria-label="Select incident ${n}"></td><td>${n}</td><td>${esc(t)}</td><td><a href="#/services/${sv}">${esc(SERVICES.find((x) => x.id === sv).name)}</a></td><td><span class="pill ${s === 'Triggered' ? 'crit' : s === 'Resolved' ? 'ok' : 'warn'}">${s}</span></td><td>${pr}</td><td>${at}</td><td>${s !== 'Resolved' ? `<button class="btn" type="button" data-ack="${n}">${s === 'Triggered' ? 'Acknowledge' : 'Resolve'}</button> <button class="btn" type="button" data-reassign="${n}">Reassign</button>` : `<button class="btn" type="button" data-postmortem="${n}">Postmortem</button>`} <button class="btn" type="button" data-note="${n}">Add note</button></td></tr>`).join('')}</tbody></table></div>`; }
+  function services() { return `<h1>Services</h1><p class="sub">${SERVICES.length} services</p><div class="card"><table><thead><tr><th>Service</th><th>Escalation policy</th><th>Status</th></tr></thead><tbody>${SERVICES.map((s) => `<tr><td><a href="#/services/${s.id}">${esc(s.name)}</a></td><td>${esc(POLICIES.find((p) => p.id === s.policy).name)}</td><td><span class="pill ${s.status === 'Active' ? 'ok' : 'warn'}">${s.status}</span></td></tr>`).join('')}</tbody></table></div>`; }
+  function levelTargets(lv) { return lv.map((x) => (x.t === 'schedule' ? `Schedule: <a href="#/schedules/${x.id}">${esc(S[x.id].name)}</a>` : `User: ${esc(P[x.id].name)}`)).join('<br>'); }
+  function policyBlock(pol) { return pol.levels.map((lv, i) => `<div class="lvl"><div class="n">Level ${i + 1}</div><div>${levelTargets(lv)}${i < pol.levels.length - 1 ? `<div class="sub" style="margin:6px 0 0">Escalates after ${pol.delay[i]} minutes if not acknowledged</div>` : ''}</div></div>`).join('') + `<p class="sub">If no one acknowledges, repeat this policy 2 times.</p>`; }
+  function service(id, tab) {
+    const s = SERVICES.find((x) => x.id === id); if (!s) return '<p>Not found</p>';
+    const pol = POLICIES.find((p) => p.id === s.policy);
+    const T = [['overview', 'Overview'], ['escalation', 'Escalation policy'], ['integrations', 'Integrations'], ['settings', 'Settings']];
+    let inner = '';
+    if (tab === 'escalation') inner = `<div class="card"><h3 style="margin-top:0">${esc(pol.name)}</h3>${policyBlock(pol)}<a class="btn" href="#/policies/${pol.id}">Open policy</a></div>`;
+    else if (tab === 'integrations') inner = `<div class="card"><table><tbody>${s.integ.map((i) => `<tr><td>${i}</td><td><span class="pill ok">Receiving events</span></td></tr>`).join('')}</tbody></table><button class="btn" type="button" id="add-integ">Add integration</button></div>`;
+    else if (tab === 'settings') inner = `<div class="card"><p>Urgency: High (page immediately)</p><p>Auto-resolve after 4 hours</p><button class="btn danger" type="button" id="svc-disable">Disable service</button></div>`;
+    else inner = `<div class="card"><p>Status: <span class="pill ${s.status === 'Active' ? 'ok' : 'warn'}">${s.status}</span></p><p>Escalation policy: <a href="#/services/${s.id}/escalation">${esc(pol.name)}</a></p><p>Open incidents: ${INCIDENTS.filter((x) => x[2] === s.id && x[3] !== 'Resolved').length}</p></div>`;
+    return `<div class="crumb"><a href="#/services">Services</a> › ${esc(s.name)}</div><h1>${esc(s.name)}</h1><nav class="tabs" aria-label="Service sections">${T.map(([k, l]) => `<a href="#/services/${s.id}/${k}" class="${tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav>${inner}`;
+  }
+  function policies(id) {
+    if (id) { const pol = POLICIES.find((p) => p.id === id); return `<div class="crumb"><a href="#/policies">Escalation policies</a> › ${esc(pol.name)}</div><h1>${esc(pol.name)}</h1><div class="card">${policyBlock(pol)}</div><div class="card"><strong>Used by</strong><p>${SERVICES.filter((s) => s.policy === id).map((s) => `<a href="#/services/${s.id}">${esc(s.name)}</a>`).join(', ')}</p></div>`; }
+    return `<h1>Escalation policies</h1><div class="card"><table><thead><tr><th>Policy</th><th>Levels</th></tr></thead><tbody>${POLICIES.map((p) => `<tr><td><a href="#/policies/${p.id}">${esc(p.name)}</a></td><td>${p.levels.length}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function schedules() { return `<h1>Schedules</h1><p class="sub">Who's on call, and when. All times Europe/Berlin.</p><div class="card"><table><thead><tr><th>Schedule</th><th>On call now</th><th>Members</th></tr></thead><tbody>${SCHEDULES.map((s) => { const cur = finalShifts(s, NOW, fromMs(toMs(NOW) + 60000))[0]; return `<tr><td><a href="#/schedules/${s.id}">${esc(s.name)}</a></td><td>${cur ? esc(P[cur.user].name) : '—'}</td><td>${s.members.length}</td></tr>`; }).join('')}</tbody></table></div>`; }
+  function schedule(id, tab) {
+    const s = S[id]; if (!s) return '<p>Not found</p>';
+    const T = [['final', 'Final schedule'], ['layers', 'Layers'], ['overrides', 'Overrides'], ['settings', 'Settings']];
+    let inner = '';
+    if (tab === 'layers') inner = `<div class="card"><div class="layer"><strong>Layer 1 · Weekly rotation</strong><div class="sub" style="margin:2px 0 6px">Hands off every Monday at 10:00 · started ${nice(s.anchor)}</div><ol>${s.members.map((m) => `<li>${esc(P[m].name)}</li>`).join('')}</ol></div><p class="sub">Layers show the rotation before overrides are applied. See Final schedule for who is actually on call.</p></div>`;
+    else if (tab === 'overrides') inner = `<div class="card"><p><button class="btn primary" type="button" data-addovr="${s.id}">+ Add override</button></p><table><thead><tr><th>Who</th><th>Starts</th><th>Ends</th><th>Note</th><th></th></tr></thead><tbody>${s.overrides.map((o) => `<tr><td>${esc(P[o.user].name)}</td><td>${nice(o.start)}</td><td>${nice(o.end)}</td><td>${esc(o.note || '')}</td><td><button class="btn danger" type="button" data-delovr="${o.id}">Delete</button></td></tr>`).join('') || '<tr><td colspan="5" class="sub">No overrides.</td></tr>'}</tbody></table></div>`;
+    else if (tab === 'settings') inner = `<div class="card"><p>Time zone: Europe/Berlin</p><p>Handoff notifications: 1 hour before</p><button class="btn danger" type="button" id="sch-delete">Delete schedule</button></div>`;
+    else { const sh = finalShifts(s, '2026-09-21T00:00', '2026-10-12T12:00'); inner = `<div class="card"><div class="row" style="justify-content:space-between"><strong>Upcoming shifts (overrides applied)</strong><button class="btn primary" type="button" data-addovr="${s.id}">+ Add override</button></div><table style="margin-top:8px"><thead><tr><th>Starts</th><th>Ends</th><th>On call</th></tr></thead><tbody>${sh.map((x) => `<tr class="${x.ovr ? 'ovr' : ''}"><td>${nice(fromMs(x.start))}</td><td>${nice(fromMs(x.end))}</td><td>${esc(P[x.user].name)}${x.ovr ? ' <span class="pill warn">override</span>' : ''}</td></tr>`).join('')}</tbody></table></div>`; }
+    return `<div class="crumb"><a href="#/schedules">Schedules</a> › ${esc(s.name)}</div><h1>${esc(s.name)}</h1><p class="sub">Europe/Berlin · ${s.members.length} people in rotation</p><nav class="tabs" aria-label="Schedule sections">${T.map(([k, l]) => `<a href="#/schedules/${s.id}/${k}" class="${tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav>${inner}`;
+  }
+  function people() { return `<h1>People</h1><div class="card"><table><thead><tr><th>Name</th><th>Team</th><th>Schedules</th></tr></thead><tbody>${PEOPLE.map((p) => `<tr><td>${esc(p.name)}</td><td>${esc(p.team)}</td><td>${SCHEDULES.filter((s) => s.members.includes(p.id)).map((s) => esc(s.name)).join(', ') || '—'}</td></tr>`).join('')}</tbody></table></div>`; }
+
+  // ---------- override modal ----------
+  const DATES = []; for (let i = 0; i < 45; i++) DATES.push(fromMs(toMs('2026-09-24T00:00') + i * 864e5).slice(0, 10));
+  const TIMES = []; for (let m = 0; m < 1440; m += 30) TIMES.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
+  function ovrHtml() {
+    const o = st.ovr; const s = S[o.sch];
+    const mins = o.d * 1440 + o.h * 60 + o.m; const end = mins > 0 ? fromMs(toMs(o.date + 'T' + o.time) + mins * 60000) : null;
+    return `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ovr-title"><h2 id="ovr-title" style="margin-top:0">Add override</h2><p class="sub">${esc(s.name)} · times are Europe/Berlin</p>
+      <div class="f"><span class="lab">Who's on call</span><div class="dd"><button type="button" class="dd-btn" id="who-btn" aria-haspopup="listbox" aria-expanded="${st.dd}">${o.user ? esc(P[o.user].name) : 'Select a person…'}</button>${st.dd ? `<div class="dd-pop"><input type="text" id="who-q" placeholder="Search people" aria-label="Search people" value="${esc(st.ddq)}" autocomplete="off"><ul role="listbox" aria-label="People" id="who-list">${peopleOptions()}</ul></div>` : ''}</div></div>
+      <div class="f"><span class="lab">Starts</span><div class="row"><select id="ov-date" aria-label="Start date">${DATES.map((d) => `<option value="${d}" ${o.date === d ? 'selected' : ''}>${new Date(toMs(d)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}</option>`).join('')}</select><select id="ov-time" aria-label="Start time">${TIMES.map((t) => `<option ${o.time === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+      <div class="f"><span class="lab">Length</span><div class="row"><select id="ov-d" aria-label="Days">${Array.from({ length: 15 }, (_, i) => `<option value="${i}" ${o.d === i ? 'selected' : ''}>${i} days</option>`).join('')}</select><select id="ov-h" aria-label="Hours">${Array.from({ length: 24 }, (_, i) => `<option value="${i}" ${o.h === i ? 'selected' : ''}>${i} hours</option>`).join('')}</select><select id="ov-m" aria-label="Minutes">${[0, 15, 30, 45].map((i) => `<option value="${i}" ${o.m === i ? 'selected' : ''}>${i} min</option>`).join('')}</select></div></div>
+      <div class="preview" id="ov-preview">${end ? `Ends ${nice(end)} (${Math.floor(mins / 60)} h${mins % 60 ? ' ' + (mins % 60) + ' min' : ''})` : 'Choose a length.'}</div>
+      <p class="err" role="alert">${esc(o.err || '')}</p><p style="text-align:right"><button class="btn" type="button" id="ov-cancel">Cancel</button> <button class="btn primary" type="button" id="ov-save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Create override'}</button></p></div></div>`;
+  }
+  const fold = (x) => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  function peopleOptions() { const o = st.ovr; const list = PEOPLE.filter((p) => !st.ddq || fold(p.name).includes(fold(st.ddq))); return list.map((p) => `<li role="option" data-user="${p.id}" aria-selected="${o.user === p.id}">${esc(p.name)}<small>${esc(p.team)}</small></li>`).join('') || '<li class="sub">No matches</li>'; }
+  const renderOvr = () => { $('#modal-root').innerHTML = st.ovr ? ovrHtml() : ''; const q = $('#who-q'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } };
+
+  let token = 0;
+  async function route() {
+    const p = (location.hash || '#/incidents').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view'); const my = ++token;
+    if (p[0] === 'services' && p[1]) v.innerHTML = service(p[1], p[2] || 'overview');
+    else if (p[0] === 'services') v.innerHTML = services();
+    else if (p[0] === 'schedules' && p[1]) { v.innerHTML = '<div class="loading">Loading schedule…</div>'; await new Promise((r) => setTimeout(r, 420)); if (my !== token) return; v.innerHTML = schedule(p[1], p[2] || 'final'); }
+    else if (p[0] === 'schedules') v.innerHTML = schedules();
+    else if (p[0] === 'policies') v.innerHTML = policies(p[1]);
+    else if (p[0] === 'people') v.innerHTML = people();
+    else if (p[0] === 'analytics') v.innerHTML = `<h1>Analytics</h1><div class="card"><p>Mean time to acknowledge (30 days): 3 min 41 s</p><p>Incidents (30 days): 27</p></div>`;
+    else { document.querySelector('[data-nav=incidents]').classList.add('on'); v.innerHTML = incidents(); }
+  }
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  $('#view').addEventListener('click', async (e) => {
+    const t = e.target;
+    const ao = t.closest('[data-addovr]'); if (ao) { st.ovr = { sch: ao.dataset.addovr, user: '', date: '2026-09-24', time: '12:00', d: 0, h: 1, m: 0, err: '' }; st.dd = false; st.ddq = ''; renderOvr(); return; }
+    const dl = t.closest('[data-delovr]'); if (dl) { const s = S[location.hash.split('/')[2]]; await later(300); await rec({ event: 'override_delete', schedule: s.id, override: dl.dataset.delovr }); s.overrides = s.overrides.filter((o) => o.id !== dl.dataset.delovr); route(); return; }
+    const inf = t.closest('[data-ifilter]'); if (inf) { st.ifilter = inf.dataset.ifilter; route(); return; }
+    if (t.closest('[data-reassign]') || t.closest('[data-postmortem]') || t.closest('[data-note]') || t.closest('#new-incident') || t.closest('#export-inc')) { toast('Opens in the incident workspace.'); return; }
+    const ak = t.closest('[data-ack]'); if (ak) { await later(300); await rec({ event: 'incident_update', incident: ak.dataset.ack, action: ak.textContent.trim().toLowerCase() }); toast('Incident updated'); return; }
+    if (t.closest('#sch-delete') || t.closest('#svc-disable') || t.closest('#add-integ')) { toast('You need the Owner role for this.'); return; }
+  });
+  const mr = $('#modal-root');
+  mr.addEventListener('click', async (e) => {
+    const t = e.target; const o = st.ovr; if (!o) return;
+    if (t.closest('#who-btn')) { st.dd = !st.dd; st.ddq = ''; renderOvr(); return; }
+    const li = t.closest('[data-user]'); if (li) { o.user = li.dataset.user; st.dd = false; o.err = ''; renderOvr(); return; }
+    if (t.closest('#ov-cancel')) { st.ovr = null; renderOvr(); return; }
+    if (t.closest('#ov-save')) {
+      const mins = o.d * 1440 + o.h * 60 + o.m;
+      if (!o.user) { o.err = 'Choose who will be on call.'; renderOvr(); return; }
+      if (!mins) { o.err = 'The override needs a length.'; renderOvr(); return; }
+      const start = o.date + 'T' + o.time; if (start < NOW) { o.err = 'Overrides can\'t start in the past.'; renderOvr(); return; }
+      st.busy = true; renderOvr(); await later(700);
+      const s = S[o.sch]; const end = fromMs(toMs(start) + mins * 60000);
+      await rec({ event: 'override_create', schedule: s.id, schedule_name: s.name, user: P[o.user].name, user_id: o.user, start, end, minutes: String(mins) });
+      s.overrides.push({ id: 'OV-' + (800 + s.overrides.length), user: o.user, start, end, note: '' });
+      st.busy = false; st.ovr = null; renderOvr(); route(); toast('Override created');
+    }
+  });
+  mr.addEventListener('change', (e) => {
+    const t = e.target; const o = st.ovr; if (!o || t.tagName !== 'SELECT') return;
+    if (t.id === 'ov-date') o.date = t.value; if (t.id === 'ov-time') o.time = t.value;
+    if (t.id === 'ov-d') o.d = +t.value; if (t.id === 'ov-h') o.h = +t.value; if (t.id === 'ov-m') o.m = +t.value;
+    o.err = ''; renderOvr();
+  });
+  mr.addEventListener('input', (e) => { if (e.target.id === 'who-q') { st.ddq = e.target.value; $('#who-list').innerHTML = peopleOptions(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && st.dd) { st.dd = false; renderOvr(); } });
+  route();
+})();
+</script>
+</body>
+</html>

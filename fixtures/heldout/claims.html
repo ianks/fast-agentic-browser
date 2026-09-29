@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>File a claim · Quillmark Mutual</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  header { background: #0f3d3e; }
+  .brand { font-weight: 700; letter-spacing: .3px; }
+  .shell { display: grid; grid-template-columns: 220px 1fr 240px; gap: 24px; max-width: 1180px; margin: 24px auto; padding: 0 24px; }
+  .steps { list-style: none; padding: 0; margin: 0; }
+  .steps li { padding: 10px 12px; border-left: 3px solid #d1d5db; color: #6b7280; }
+  .steps li.cur { border-color: #0f766e; color: #0f3d3e; font-weight: 600; background: #f0fdfa; }
+  .steps li.done { border-color: #5eead4; color: #115e59; }
+  .panel { border: 1px solid #d1d5db; border-radius: 10px; padding: 20px 24px; }
+  .panel h2 { margin-top: 0; }
+  .err { color: #b91c1c; font-size: 14px; margin: 6px 0; }
+  .field-err { color: #b91c1c; font-size: 13px; }
+  .hint { color: #6b7280; font-size: 13px; }
+  .policy-card { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .radios label { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .actions { display: flex; gap: 10px; margin-top: 18px; }
+  textarea { width: 460px; height: 80px; }
+  .promo { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px; }
+  .items td input { width: auto; }
+  dl.summary { display: grid; grid-template-columns: 170px 1fr; gap: 6px 12px; }
+  dl.summary dt { color: #6b7280; }
+  dl.summary dd { margin: 0; }
+</style>
+</head>
+<body>
+<header><span class="brand">Quillmark Mutual</span><a href="#" data-nav>My policies</a><a href="#" data-nav>Claims</a><a href="#" data-nav>Documents</a><a href="#" data-nav>Help</a><span style="margin-left:auto" class="muted">Signed in · Customer portal</span></header>
+<div class="shell">
+  <nav aria-label="Claim steps">
+    <ol class="steps" id="steps">
+      <li data-step="1">1. Your policy</li>
+      <li data-step="2">2. What happened</li>
+      <li data-step="3">3. Damaged property</li>
+      <li data-step="4">4. Review &amp; submit</li>
+    </ol>
+    <p class="hint" style="margin-top:16px">Today is Thursday, 12 March 2026.</p>
+  </nav>
+
+  <main style="margin:0;padding:0;max-width:none">
+    <section class="panel" id="s1">
+      <h2>Find your policy</h2>
+      <p class="hint">You'll find the policy number on your declarations page or insurance card.</p>
+      <label for="pol">Policy number</label>
+      <input id="pol" type="text" placeholder="e.g. QM-1234567" autocomplete="off">
+      <label for="lname">Policyholder last name</label>
+      <input id="lname" type="text" autocomplete="off">
+      <p class="err" id="pol-err" role="alert" hidden></p>
+      <div class="actions"><button id="find" class="primary" type="button">Find my policy</button><span id="find-status" class="hint"></span></div>
+      <div class="policy-card" id="pol-card" hidden></div>
+      <div class="actions"><button id="to2" type="button" disabled>Continue</button></div>
+    </section>
+
+    <section class="panel" id="s2" hidden>
+      <h2>What happened?</h2>
+      <label for="loss-date">Date of loss</label>
+      <input id="loss-date" type="text" placeholder="YYYY-MM-DD" autocomplete="off">
+      <div class="hint">Format: YYYY-MM-DD. Claims can be filed for losses up to today.</div>
+      <div class="field-err" id="e-date" hidden></div>
+      <fieldset style="border:0;padding:0;margin:14px 0 0">
+        <legend style="font-weight:600">Cause of loss</legend>
+        <div class="radios" id="causes">
+          <label><input type="radio" name="cause" value="fire"> Fire or smoke</label>
+          <label><input type="radio" name="cause" value="theft"> Theft or break-in</label>
+          <label><input type="radio" name="cause" value="water"> Water damage</label>
+          <label><input type="radio" name="cause" value="storm"> Wind, hail or storm</label>
+          <label><input type="radio" name="cause" value="other"> Something else</label>
+        </div>
+        <div class="field-err" id="e-cause" hidden></div>
+      </fieldset>
+      <div id="water-box" hidden>
+        <label for="water-src">Where did the water come from?</label>
+        <select id="water-src">
+          <option value="">Choose one…</option>
+          <option value="storm">Rain or surface water</option>
+          <option value="appliance">Plumbing or appliance leak</option>
+          <option value="sewer">Sewer or drain backup</option>
+          <option value="unknown">Not sure yet</option>
+        </select>
+        <div class="field-err" id="e-water" hidden></div>
+      </div>
+      <div id="theft-box" hidden>
+        <label for="police">Police report number</label>
+        <input id="police" type="text">
+        <div class="field-err" id="e-police" hidden></div>
+      </div>
+      <label for="desc">Describe what happened</label>
+      <textarea id="desc"></textarea>
+      <div class="field-err" id="e-desc" hidden></div>
+      <div class="actions"><button type="button" data-back="1">Back</button><button id="to3" class="primary" type="button">Continue</button></div>
+    </section>
+
+    <section class="panel" id="s3" hidden>
+      <h2>Damaged property</h2>
+      <p class="hint">List each damaged item with your best estimate of its replacement value.</p>
+      <table class="items">
+        <thead><tr><th>Item</th><th>Estimated value</th><th></th></tr></thead>
+        <tbody id="item-rows"><tr><td colspan="3" class="muted">No items yet.</td></tr></tbody>
+      </table>
+      <div class="row" style="margin-top:14px;align-items:flex-end;flex-wrap:wrap">
+        <div><label for="item-name">Item description</label><input id="item-name" type="text"></div>
+        <div><label for="item-val">Estimated value (USD)</label><input id="item-val" type="text" style="width:140px"></div>
+        <button id="add-item" type="button">Add item</button>
+      </div>
+      <div class="field-err" id="e-item" hidden></div>
+      <div class="actions"><button type="button" data-back="2">Back</button><button id="to4" class="primary" type="button">Continue</button></div>
+    </section>
+
+    <section class="panel" id="s4" hidden>
+      <h2>Review &amp; submit</h2>
+      <dl class="summary" id="summary"></dl>
+      <fieldset style="border:0;padding:0;margin:16px 0 0">
+        <legend style="font-weight:600">How should we pay you?</legend>
+        <div class="radios">
+          <label><input type="radio" name="payout" value="direct_deposit" checked> Direct deposit to checking ••3381</label>
+          <label><input type="radio" name="payout" value="check"> Mailed check</label>
+        </div>
+      </fieldset>
+      <label style="font-weight:400;display:flex;gap:8px;align-items:center;margin-top:16px"><input type="checkbox" id="declare"> I confirm the information in this claim is true and complete.</label>
+      <p class="err" id="submit-err" role="alert" hidden></p>
+      <div class="actions"><button type="button" data-back="3">Back</button><button type="button" id="draft">Save and finish later</button><button type="button" id="submit" class="primary">Submit claim</button></div>
+    </section>
+
+    <section class="panel" id="s5" hidden>
+      <h2>Claim submitted</h2>
+      <p id="done-msg"></p>
+    </section>
+  </main>
+
+  <aside>
+    <div class="promo">
+      <strong>Protect against accidents</strong>
+      <p class="hint">Add Accidental Damage cover to your home policy for $4.20/month. Covers spills, drops and DIY mishaps.</p>
+      <button type="button" id="addon">Add cover</button>
+    </div>
+    <div class="card"><strong>Need help?</strong><p class="hint">Call 1-800-555-0199, 8am–8pm.</p></div>
+  </aside>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const POLICIES = {
+    'QM-4471902': { kind: 'Homeowners', last: 'Nwachukwu-Ferreira', holder: 'Chidi Nwachukwu-Ferreira', address: '18 Tamsin Row, Port Aldery', deductible: 500, start: '2025-06-01' },
+    'QM-4471920': { kind: 'Auto', last: 'Nwachukwu', holder: 'Obi Nwachukwu', address: '2019 Kia Niro · plate 7KPD 214', deductible: 250, start: '2024-02-15' },
+    'QM-4417902': { kind: 'Renters', last: 'Ferreira', holder: 'Lucia Ferreira', address: '401 Gantry Court, Apt 6', deductible: 250, start: '2025-09-01' },
+  };
+  const TODAY = '2026-03-12';
+  const CAUSES = { fire: 'Fire or smoke', theft: 'Theft or break-in', water: 'Water damage', storm: 'Wind, hail or storm', other: 'Something else' };
+  const WATER = { storm: 'Rain or surface water', appliance: 'Plumbing or appliance leak', sewer: 'Sewer or drain backup', unknown: 'Not sure yet' };
+  const st = { step: 1, policy: null, items: [], submitted: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const money = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const showErr = (id, msg) => { const e = q(id); e.textContent = msg || ''; e.hidden = !msg; };
+
+  function go(n) {
+    st.step = n;
+    for (let i = 1; i <= 5; i++) q('#s' + i).hidden = i !== n;
+    qa('#steps li').forEach((li) => { const s = +li.dataset.step; li.className = s === n ? 'cur' : (s < n ? 'done' : ''); if (s === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
+    if (n === 4) renderSummary();
+  }
+  qa('[data-back]').forEach((b) => b.addEventListener('click', () => go(+b.dataset.back)));
+  qa('[data-nav]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); toast('Finish or save your claim first.'); }));
+
+  // Step 1
+  q('#find').addEventListener('click', async () => {
+    showErr('#pol-err', '');
+    q('#pol-card').hidden = true; q('#to2').disabled = true; st.policy = null;
+    const raw = q('#pol').value.trim().toUpperCase();
+    if (!/^QM-\d{7}$/.test(raw)) { showErr('#pol-err', 'Policy numbers look like QM-1234567: the letters QM, a hyphen, then 7 digits. Please re-enter it in that format.'); return; }
+    const last = q('#lname').value.trim().toLowerCase();
+    if (!last) { showErr('#pol-err', 'Enter the policyholder\'s last name.'); return; }
+    q('#find').disabled = true; q('#find-status').textContent = 'Looking up your policy…';
+    await later(450);
+    q('#find').disabled = false; q('#find-status').textContent = '';
+    const p = POLICIES[raw];
+    if (!p) { showErr('#pol-err', `We couldn't find policy ${raw}. Check the number and try again.`); return; }
+    if (p.last.toLowerCase() !== last) { showErr('#pol-err', `That last name doesn't match our records for policy ${raw}.`); return; }
+    st.policy = raw;
+    const c = q('#pol-card');
+    c.innerHTML = `<strong>${esc(p.kind)} policy ${esc(raw)}</strong><br>${esc(p.holder)} · ${esc(p.address)}<br><span class="hint">Deductible ${money(p.deductible)} · active since ${esc(p.start)}</span>`;
+    c.hidden = false; q('#to2').disabled = false;
+  });
+  q('#to2').addEventListener('click', () => { if (st.policy) go(2); });
+
+  // Step 2
+  const syncCause = () => {
+    const c = (qa('input[name=cause]').find((r) => r.checked) || {}).value;
+    q('#water-box').hidden = c !== 'water';
+    q('#theft-box').hidden = c !== 'theft';
+  };
+  q('#causes').addEventListener('change', syncCause);
+  const validDate = (s) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return 'Enter the date as YYYY-MM-DD.';
+    const [y, m, d] = s.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return 'That date doesn\'t exist.';
+    if (s > TODAY) return 'The date of loss can\'t be in the future.';
+    if (s < POLICIES[st.policy].start) return 'That date is before your policy started.';
+    return '';
+  };
+  q('#to3').addEventListener('click', () => {
+    let ok = true;
+    const dErr = validDate(q('#loss-date').value.trim());
+    showErr('#e-date', dErr); if (dErr) ok = false;
+    const c = (qa('input[name=cause]').find((r) => r.checked) || {}).value;
+    showErr('#e-cause', c ? '' : 'Choose what caused the loss.'); if (!c) ok = false;
+    if (c === 'water' && !q('#water-src').value) { showErr('#e-water', 'Tell us where the water came from.'); ok = false; } else showErr('#e-water', '');
+    if (c === 'theft' && !q('#police').value.trim()) { showErr('#e-police', 'Theft claims need a police report number.'); ok = false; } else showErr('#e-police', '');
+    const d = q('#desc').value.trim();
+    if (d.length < 15) { showErr('#e-desc', 'Please describe what happened (at least 15 characters).'); ok = false; } else showErr('#e-desc', '');
+    if (ok) go(3);
+  });
+
+  // Step 3
+  const renderItems = () => {
+    const tb = q('#item-rows');
+    if (!st.items.length) { tb.innerHTML = '<tr><td colspan="3" class="muted">No items yet.</td></tr>'; return; }
+    tb.innerHTML = st.items.map((it, i) => `<tr><td>${esc(it.name)}</td><td>${money(it.value)}</td><td><button type="button" data-rm="${i}" aria-label="Remove ${esc(it.name)}">Remove</button></td></tr>`).join('');
+  };
+  q('#item-rows').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (!b) return; st.items.splice(+b.dataset.rm, 1); renderItems(); });
+  q('#add-item').addEventListener('click', () => {
+    const name = q('#item-name').value.trim().replace(/\s+/g, ' ');
+    const rawV = q('#item-val').value.replace(/[$,\s]/g, '');
+    if (!name) { showErr('#e-item', 'Describe the item.'); return; }
+    if (!/^\d+(\.\d{1,2})?$/.test(rawV) || Number(rawV) <= 0) { showErr('#e-item', 'Enter a value in dollars, like 250 or 1,250.00.'); return; }
+    showErr('#e-item', '');
+    st.items.push({ name, value: Number(rawV) });
+    q('#item-name').value = ''; q('#item-val').value = '';
+    renderItems();
+  });
+  q('#to4').addEventListener('click', () => { if (!st.items.length) { showErr('#e-item', 'Add at least one damaged item.'); return; } go(4); });
+
+  // Step 4
+  const total = () => st.items.reduce((a, b) => a + b.value, 0);
+  function renderSummary() {
+    const p = POLICIES[st.policy];
+    const c = (qa('input[name=cause]').find((r) => r.checked) || {}).value;
+    const rows = [
+      ['Policy', `${st.policy} (${p.kind})`], ['Date of loss', q('#loss-date').value.trim()], ['Cause', CAUSES[c] + (c === 'water' ? ' — ' + WATER[q('#water-src').value] : '')],
+      ['Description', q('#desc').value.trim()], ['Items', st.items.map((i) => `${i.name} (${money(i.value)})`).join(', ')], ['Total claimed', money(total())],
+      ['Deductible', `${money(p.deductible)} will be subtracted from any payout`],
+    ];
+    q('#summary').innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+  }
+  q('#draft').addEventListener('click', async () => {
+    await rec({ event: 'claim_draft_save', policy: st.policy || '', items: String(st.items.length) });
+    toast('Draft saved. You can finish this claim within 30 days.');
+  });
+  q('#submit').addEventListener('click', async () => {
+    if (st.submitted) return;
+    showErr('#submit-err', '');
+    if (!q('#declare').checked) { showErr('#submit-err', 'Please confirm the declaration before you submit.'); return; }
+    q('#submit').disabled = true; q('#submit').textContent = 'Submitting…';
+    await later(500);
+    const c = (qa('input[name=cause]').find((r) => r.checked) || {}).value;
+    const payout = (qa('input[name=payout]').find((r) => r.checked) || {}).value;
+    st.submitted = true;
+    await rec({
+      event: 'claim_submit', policy: st.policy, loss_date: q('#loss-date').value.trim(), cause: c,
+      water_source: c === 'water' ? q('#water-src').value : '', police_report: c === 'theft' ? q('#police').value.trim() : '',
+      description: q('#desc').value.trim().replace(/\s+/g, ' '),
+      items: st.items.map((i) => i.name.toLowerCase() + ':' + i.value.toFixed(2)).sort().join('; '),
+      item_count: String(st.items.length), total: total().toFixed(2), payout,
+    });
+    q('#done-msg').textContent = `Claim QMC-58213 was submitted for ${money(total())}. An adjuster will contact you within 2 business days.`;
+    go(5);
+  });
+
+  q('#addon').addEventListener('click', async () => {
+    await rec({ event: 'addon_add', addon: 'accidental_damage', policy: st.policy || '' });
+    q('#addon').disabled = true; q('#addon').textContent = 'Cover added';
+    toast('Accidental Damage cover added from your next bill.');
+  });
+
+  go(1);
+})();
+</script>
+</body>
+</html>

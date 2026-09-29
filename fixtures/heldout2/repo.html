@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stackhaven</title>
+<script src="../common.js"></script>
+<style>
+  :root { --hdr: #2b2540; --hdr2: #3a3257; --acc: #6d5bd0; --acc-l: #efecfc; --ink: #1f2330; --muted: #616a7a; --line: #d9dde5; --bg: #fff; --soft: #f6f7f9; --green: #22794a; --red: #c0362c; --amber: #9a6700; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: #4f3fc0; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; }
+  header.gh { background: var(--hdr); color: #fff; display: flex; align-items: center; gap: 16px; padding: 10px 24px; }
+  header.gh .logo { color: #fff; font-weight: 700; font-size: 17px; display: flex; gap: 8px; align-items: center; }
+  header.gh .logo i { font-style: normal; color: #b9aefc; font-size: 20px; }
+  header.gh input[type=search] { background: var(--hdr2); border: 1px solid #564d78; color: #fff; border-radius: 6px; padding: 5px 10px; width: 280px; font: inherit; }
+  header.gh input::placeholder { color: #b8b2cf; }
+  header.gh nav a { color: #e7e3f5; font-weight: 600; margin-right: 14px; }
+  header.gh .right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+  header.gh .right button, header.gh .right a { background: none; border: 1px solid #564d78; color: #e7e3f5; border-radius: 6px; padding: 3px 9px; cursor: pointer; font: inherit; }
+  .av { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; background: #8b7fd6; vertical-align: middle; }
+  .av.lg { width: 64px; height: 64px; border-radius: 12px; font-size: 22px; background: linear-gradient(135deg, #2d6f8f, #6d5bd0); }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+  .orghead { display: flex; gap: 16px; align-items: center; padding: 22px 0 10px; }
+  .orghead h1 { margin: 0; font-size: 24px; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+  .tabs a { padding: 9px 14px; color: var(--ink); border-bottom: 2px solid transparent; white-space: nowrap; }
+  .tabs a:hover { text-decoration: none; background: var(--soft); border-radius: 6px 6px 0 0; }
+  .tabs a.on { border-bottom-color: #f08a5d; font-weight: 600; }
+  .tabs .ct { background: #e8eaef; border-radius: 10px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
+  .grid { display: grid; grid-template-columns: 1fr 296px; gap: 26px; }
+  .box { border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .box > .hd { background: var(--soft); border-bottom: 1px solid var(--line); padding: 10px 14px; border-radius: 8px 8px 0 0; display: flex; gap: 10px; align-items: center; }
+  .rowi { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .rowi:last-child { border-bottom: 0; }
+  .pins { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .pin { border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+  .pin p { color: var(--muted); margin: 6px 0 10px; font-size: 13px; }
+  .badge { border: 1px solid var(--line); border-radius: 12px; padding: 0 7px; font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .topic { background: var(--acc-l); color: #4f3fc0; border: 0; border-radius: 12px; padding: 1px 9px; font-size: 12px; cursor: pointer; margin: 2px 4px 2px 0; font-family: inherit; }
+  .meta { color: var(--muted); font-size: 12.5px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: -1px; margin-right: 4px; }
+  .btn { font: inherit; font-weight: 500; padding: 5px 13px; border-radius: 6px; border: 1px solid #c6cbd6; background: #f6f7f9; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: #eef0f4; }
+  .btn.primary { background: var(--green); border-color: #1d6a40; color: #fff; }
+  .btn.primary:hover { background: #1f6d43; }
+  .btn.danger { color: var(--red); }
+  .btn.danger:hover { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn.sm { padding: 2px 9px; font-size: 12.5px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  input[type=text], input[type=search], input[type=url], input[type=password], select, textarea { font: inherit; padding: 5px 10px; border: 1px solid #c6cbd6; border-radius: 6px; background: #fff; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #a99df0; border-color: var(--acc); }
+  .filters { display: flex; gap: 8px; margin-bottom: 12px; }
+  .filters input { flex: 1; }
+  .side h3 { font-size: 15px; margin: 0 0 10px; }
+  .side section { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .people { display: flex; flex-wrap: wrap; gap: 6px; }
+  .people a .av { width: 32px; height: 32px; font-size: 11px; }
+  .repohead { display: flex; align-items: center; gap: 10px; padding: 18px 0 12px; }
+  .repohead h1 { margin: 0; font-size: 20px; font-weight: 400; }
+  .repohead h1 b { font-weight: 600; }
+  .repohead .acts { margin-left: auto; display: flex; gap: 8px; }
+  .cnt { background: #e8eaef; border-radius: 10px; padding: 0 6px; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { text-align: left; padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  tr:last-child td { border-bottom: 0; }
+  .files td.msg { color: var(--muted); }
+  .files td.when { color: var(--muted); text-align: right; white-space: nowrap; }
+  .readme { padding: 18px 26px; }
+  .readme h2 { border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  pre { background: var(--soft); border-radius: 6px; padding: 12px 14px; overflow: auto; }
+  .langbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .issue { display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .issue:last-child { border-bottom: 0; }
+  .issue .t { font-weight: 600; color: var(--ink); }
+  .lbl { border-radius: 12px; padding: 0 8px; font-size: 12px; font-weight: 600; margin-left: 4px; }
+  .ok { color: var(--green); } .bad { color: var(--red); } .warn { color: var(--amber); }
+  .settings { display: grid; grid-template-columns: 250px 1fr; gap: 28px; }
+  .snav a { display: block; padding: 6px 10px; color: var(--ink); border-radius: 6px; }
+  .snav a:hover { background: var(--soft); text-decoration: none; }
+  .snav a.on { background: var(--acc-l); font-weight: 600; box-shadow: inset 3px 0 var(--acc); }
+  .snav .grp { color: var(--muted); font-size: 12px; font-weight: 600; margin: 14px 10px 4px; }
+  .sbody h2 { font-size: 22px; font-weight: 400; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .sbody h3 { font-size: 16px; font-weight: 600; margin: 24px 0 8px; }
+  .opt { margin: 12px 0; }
+  .opt > label { font-weight: 600; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+  .opt .desc { color: var(--muted); font-size: 12.5px; margin: 2px 0 0 24px; }
+  .nested { margin: 8px 0 4px 24px; padding-left: 14px; border-left: 2px solid var(--line); }
+  .field { margin: 12px 0; }
+  .field > label { display: block; font-weight: 600; margin-bottom: 5px; }
+  .hint { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+  .flash { border: 1px solid #b3d8c1; background: #e8f6ee; color: #185c36; padding: 10px 14px; border-radius: 6px; margin: 14px 0; }
+  .flash.err { border-color: #efbdb8; background: #fdf0ee; color: #8e2219; }
+  .danger { border: 1px solid #efbdb8; border-radius: 8px; }
+  .danger .rowi { display: flex; align-items: center; gap: 12px; }
+  .danger .rowi div { flex: 1; }
+  .combo { position: relative; max-width: 440px; }
+  .combo input { width: 100%; }
+  [role=listbox] { list-style: none; margin: 4px 0 0; padding: 4px 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; box-shadow: 0 8px 24px rgba(30,30,60,.12); max-height: 220px; overflow: auto; }
+  [role=option] { padding: 6px 12px; cursor: pointer; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
+  [role=option]::after { content: attr(data-src); float: right; color: var(--muted); font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; }
+  [role=option][aria-selected=true], [role=option]:hover { background: var(--acc-l); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 14px; padding: 2px 4px 2px 10px; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; background: var(--soft); }
+  .chip button { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 12px; border-radius: 50%; width: 20px; height: 20px; }
+  .overlay { position: fixed; inset: 0; background: rgba(20, 18, 35, .5); display: flex; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 50; }
+  .modal { background: #fff; border-radius: 10px; width: 520px; max-width: calc(100vw - 30px); box-shadow: 0 16px 50px rgba(0,0,0,.3); }
+  .modal header { display: flex; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .modal header h3 { margin: 0; font-size: 15px; }
+  .modal header button { margin-left: auto; border: 0; background: none; font-size: 16px; cursor: pointer; }
+  .modal .body { padding: 16px 18px; }
+  .modal footer { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+  .menu { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(30,30,60,.15); z-index: 40; min-width: 240px; padding: 4px 0; }
+  .menu button, .menu a { display: block; width: 100%; text-align: left; padding: 7px 14px; border: 0; background: none; font: inherit; color: var(--ink); cursor: pointer; }
+  .menu button:hover, .menu a:hover { background: var(--acc-l); text-decoration: none; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 26px; background: #2b2540; color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 60; }
+  footer.site { border-top: 1px solid var(--line); margin-top: 40px; padding: 22px 24px 36px; color: var(--muted); font-size: 12.5px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+  footer.site a { color: #4f3fc0; }
+  .code-lines { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
+  .code-lines div { white-space: pre; padding: 0 14px; }
+  .code-lines div span { display: inline-block; width: 36px; color: #9aa1ad; user-select: none; }
+  .bars { display: flex; align-items: flex-end; gap: 4px; height: 90px; }
+  .bars i { flex: 1; background: #b9aefc; border-radius: 2px 2px 0 0; }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header class="gh">
+  <a class="logo" href="#/tidewater-labs"><i>◆</i> Stackhaven</a>
+  <input type="search" id="gsearch" placeholder="Search or jump to…" aria-label="Search or jump to">
+  <nav aria-label="Global"><a href="#/pulls">Pull requests</a><a href="#/issues">Issues</a><a href="#/explore">Explore</a><a href="#/marketplace">Marketplace</a></nav>
+  <div class="right">
+    <button type="button" id="newmenu-btn" aria-haspopup="menu" aria-label="Create new…">+ ▾</button>
+    <a href="#/notifications" aria-label="Notifications">🔔 3</a>
+    <span class="av" title="rkapoor" style="width:28px;height:28px;background:#d5714f">RK</span>
+  </div>
+</header>
+<div id="app"></div>
+<footer class="site">
+  <span>© 2026 Stackhaven, Inc.</span><a href="#/about/terms">Terms</a><a href="#/about/privacy">Privacy</a><a href="#/about/security">Security</a><a href="#/about/status">Status</a><a href="#/about/docs">Docs</a><a href="#/about/contact">Contact</a><a href="#/about/pricing">Pricing</a><a href="#/about/api">API</a>
+</footer>
+<div id="modal-root"></div>
+<div id="menu-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3200); };
+  const yn = (b) => (b ? 'yes' : 'no');
+
+  const ORG = 'tidewater-labs';
+  const PEOPLE = [['rkapoor', 'Riya Kapoor', '#d5714f'], ['mhalvorsen', 'Magnus Halvorsen', '#3f7fbf'], ['deepa-r', 'Deepa Raman', '#9a5fc0'], ['lucas-ferro', 'Lucas Ferro', '#3c9a6c'], ['tmbuyi', 'Thandiwe Mbuyi', '#c0892f'], ['jfalk', 'Johanna Falk', '#5d6bd8'], ['sagarwal', 'Sameer Agarwal', '#b24a6c'], ['nora-q', 'Nora Quinlan', '#2f8f9d'], ['ekowalski', 'Ewa Kowalski', '#7a8c34'], ['ahmed-s', 'Ahmed Saleh', '#bd5b3b'], ['pmoreau', 'Pauline Moreau', '#6a58b8'], ['ybarros', 'Yara Barros', '#338a57']];
+  const person = (l) => PEOPLE.find((p) => p[0] === l) || [l, l, '#8b7fd6'];
+  const avatar = (l, cls = '') => { const p = person(l); return `<span class="av ${cls}" style="background:${p[2]}" aria-hidden="true">${esc(p[1].split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase())}</span>`; };
+  const LANGC = { TypeScript: '#3178c6', Go: '#00add8', Python: '#3572a5', HCL: '#844fba', Rust: '#dea584', MDX: '#fcb32c', 'Go Template': '#00a693', Shell: '#89e051', JavaScript: '#f1e05a', CSS: '#663399', Dockerfile: '#384d54' };
+
+  const REPOS = [
+    { id: 'R-5518', name: 'aurora', desc: 'Aurora client SDK — core', lang: 'TypeScript', langs: [['TypeScript', 78.4], ['JavaScript', 12.1], ['Shell', 5.2], ['Dockerfile', 4.3]], vis: 'Public', stars: 1284, forks: 143, watch: 61, license: 'Apache-2.0', topics: ['sdk', 'typescript', 'websockets', 'realtime'], updated: '2 hours ago', pinned: true, homepage: 'aurora.tidewaterlabs.dev',
+      branches: ['main', 'develop', 'release/2.3', 'release/2.4', 'feat/streaming-retry', 'fix/token-refresh', 'docs/api-examples'], tags: ['v2.4.1', 'v2.4.0', 'v2.3.7', 'v2.3.6', 'v2.3.5'],
+      checks: ['ci/build', 'ci/build-docs', 'ci/lint', 'ci/test-e2e', 'ci/test-unit', 'security/codeql'], issues: 37, pulls: 9 },
+    { id: 'R-5519', name: 'aurora-docs', desc: 'Documentation site for the Aurora SDK and CLI', lang: 'MDX', langs: [['MDX', 71.2], ['TypeScript', 19.6], ['CSS', 9.2]], vis: 'Public', stars: 212, forks: 88, watch: 19, license: 'CC-BY-4.0', topics: ['docs', 'docusaurus'], updated: 'yesterday', pinned: true, homepage: 'docs.aurora.tidewaterlabs.dev',
+      branches: ['main', 'preview/v3-docs', 'fix/broken-links', 'release/2.4'], tags: [], checks: ['ci/build', 'ci/build-docs', 'ci/link-check', 'ci/lint'], issues: 14, pulls: 3 },
+    { id: 'R-5521', name: 'aurora-cli', desc: 'Command-line interface for Aurora', lang: 'Go', langs: [['Go', 91.8], ['Shell', 5.9], ['Dockerfile', 2.3]], vis: 'Public', stars: 406, forks: 31, watch: 22, license: 'Apache-2.0', topics: ['cli', 'go', 'aurora'], updated: '3 days ago', pinned: true, homepage: '',
+      branches: ['main', 'release/1.8', 'feat/profiles'], tags: ['v1.8.2', 'v1.8.1', 'v1.8.0'], checks: ['ci/build', 'ci/lint', 'ci/test', 'goreleaser/snapshot'], issues: 12, pulls: 4 },
+    { id: 'R-5530', name: 'aurora-tools', desc: 'Internal tooling scripts', lang: 'Python', langs: [['Python', 88.0], ['Shell', 12.0]], vis: 'Private', stars: 9, forks: 2, watch: 6, license: '', topics: ['internal', 'tooling'], updated: 'last month', homepage: '',
+      branches: ['main'], tags: [], checks: ['ci/lint'], issues: 3, pulls: 1 },
+    { id: 'R-5402', name: 'harbor-infra', desc: 'Terraform modules and environments for the Harbor platform', lang: 'HCL', langs: [['HCL', 83.5], ['Shell', 10.1], ['Python', 6.4]], vis: 'Private', stars: 27, forks: 4, watch: 15, license: '', topics: ['terraform', 'infrastructure', 'aws'], updated: '5 hours ago', pinned: true, homepage: '',
+      branches: ['main', 'env/staging', 'env/production'], tags: [], checks: ['checkov', 'terraform/plan', 'tflint'], issues: 8, pulls: 5 },
+    { id: 'R-5377', name: 'pelican-api', desc: 'Pelican public REST API for tide and buoy observations', lang: 'Rust', langs: [['Rust', 94.2], ['Dockerfile', 3.1], ['Shell', 2.7]], vis: 'Public', stars: 598, forks: 47, watch: 33, license: 'MIT', topics: ['api', 'rust', 'oceanography'], updated: '6 hours ago', pinned: true, homepage: 'api.pelican.tidewaterlabs.dev',
+      branches: ['main', 'develop', 'feat/tide-predictions-v2'], tags: ['v0.19.0', 'v0.18.3'], checks: ['ci/build', 'ci/clippy', 'ci/test', 'security/codeql'], issues: 21, pulls: 6 },
+    { id: 'R-5610', name: 'tide-charts', desc: 'Helm charts for Tidewater services', lang: 'Go Template', langs: [['Go Template', 76.0], ['Shell', 24.0]], vis: 'Public', stars: 44, forks: 12, watch: 9, license: 'Apache-2.0', topics: ['helm', 'kubernetes'], updated: '2 weeks ago', homepage: '',
+      branches: ['main', 'gh-pages'], tags: ['pelican-api-0.19.0', 'aurora-relay-1.4.2'], checks: ['chart-testing', 'ci/lint'], issues: 2, pulls: 1 },
+    { id: 'R-5588', name: 'lighthouse-ui', desc: 'Design system and React component library', lang: 'TypeScript', langs: [['TypeScript', 70.4], ['CSS', 24.8], ['JavaScript', 4.8]], vis: 'Public', stars: 731, forks: 66, watch: 40, license: 'MIT', topics: ['react', 'design-system', 'storybook'], updated: '4 hours ago', pinned: true, homepage: 'lighthouse.tidewaterlabs.dev',
+      branches: ['main', 'next', 'feat/tokens-v2'], tags: ['v5.2.0', 'v5.1.4'], checks: ['ci/build', 'ci/test', 'ci/visual-regression', 'storybook/deploy'], issues: 18, pulls: 7 },
+    { id: 'R-5299', name: 'ops-runbooks', desc: 'On-call runbooks and incident templates', lang: 'Shell', langs: [['Shell', 100]], vis: 'Internal', stars: 12, forks: 1, watch: 21, license: '', topics: ['sre', 'runbooks'], updated: '9 days ago', homepage: '',
+      branches: ['main'], tags: [], checks: ['ci/markdownlint'], issues: 4, pulls: 0 },
+  ];
+  const RENAMED = {};
+  const byName = (n) => REPOS.find((r) => r.name === n);
+  const blankRule = () => ({ pattern: '', require_pr: false, approvals: 1, dismiss_stale: false, code_owners: false, require_sc: false, strict: false, checks: [], conversation_resolution: false, signed_commits: false, linear_history: false, restrict_push: false, force_push: false, deletions: false });
+  const RULES = {
+    'R-5518': [Object.assign(blankRule(), { pattern: 'main', require_pr: true, approvals: 1, require_sc: true, checks: ['ci/test-unit'] })],
+    'R-5377': [Object.assign(blankRule(), { pattern: 'main', require_pr: true, approvals: 1, dismiss_stale: true, require_sc: true, checks: ['ci/build', 'ci/test'], linear_history: true })],
+    'R-5402': [Object.assign(blankRule(), { pattern: 'main', require_pr: true, approvals: 2, code_owners: true, require_sc: true, checks: ['terraform/plan'], restrict_push: true }), Object.assign(blankRule(), { pattern: 'env/*', require_pr: true, approvals: 1 })],
+    'R-5588': [Object.assign(blankRule(), { pattern: 'main', require_pr: true, approvals: 1, require_sc: true, checks: ['ci/build', 'ci/test'] })],
+  };
+  const FEAT_DEFAULT = { template: false, signoff: false, wikis: true, restrict_wiki: false, issues: true, sponsorships: false, discussions: false, projects: true, merge_commit: true, squash: true, rebase: false, suggest_update: false, auto_merge: false, delete_branch: true, lfs: false };
+  const FEAT = {};
+  REPOS.forEach((r) => (FEAT[r.id] = Object.assign({}, FEAT_DEFAULT, r.name === 'aurora' ? { discussions: true, auto_merge: true } : {}, r.vis === 'Private' ? { wikis: false } : {})));
+  const DEFAULT_BRANCH = {};
+  const HOOKS = { 'R-5518': [{ url: 'https://hooks.tidewaterlabs.dev/aurora', events: 'push, pull_request', ok: true }, { url: 'https://ci.tidewaterlabs.dev/stackhaven/webhook', events: 'All events', ok: false }], 'R-5521': [{ url: 'https://hooks.tidewaterlabs.dev/aurora-cli', events: 'push, release', ok: true }] };
+  const SECRETS = { 'R-5518': [['NPM_TOKEN', 'Updated 3 months ago'], ['SENTRY_AUTH_TOKEN', 'Updated last month'], ['CODECOV_TOKEN', 'Updated last year']], 'R-5521': [['GORELEASER_TOKEN', 'Updated 2 months ago'], ['HOMEBREW_TAP_TOKEN', 'Updated 2 months ago']] };
+  const DKEYS = { 'R-5518': [['docs-deploy', 'SHA256:q8Jk3vT0e9wR2mYpZx7LbN4cQ1aD5sF6gH8jK0l9Pw', 'Read-only · added 14 Mar 2025']], 'R-5519': [['netlify-preview', 'SHA256:Zt4rE8yU2iO0pA6sD3fG7hJ1kL5zX9cV2bN8mQ4wE', 'Read-only · added 2 Feb 2026']] };
+  const COLLABS = { 'R-5518': [['@tidewater-labs/sdk-core', 'team', 'Maintain'], ['@tidewater-labs/docs', 'team', 'Write'], ['mhalvorsen', 'person', 'Admin'], ['lucas-ferro', 'person', 'Triage'], ['tmbuyi', 'person', 'Write']] };
+  const TAGRULES = { 'R-5518': ['v*'] };
+  const starred = new Set(['R-5377']);
+  const watching = {};
+
+  const AURORA_ISSUES = [
+    [412, 'Reconnect loop after token refresh on Safari 18', [['bug', '#d73a4a'], ['p1', '#b60205']], 'mhalvorsen', '3 hours ago', 7],
+    [409, 'Expose backoff jitter in RealtimeClient options', [['enhancement', '#a2eeef']], 'deepa-r', 'yesterday', 3],
+    [405, 'Docs: streaming example uses the deprecated subscribe() signature', [['docs', '#0075ca'], ['good first issue', '#7057ff']], 'lucas-ferro', '2 days ago', 2],
+    [401, 'Flaky test: presence sync under packet loss', [['ci', '#fbca04'], ['flaky-test', '#e99695']], 'rkapoor', '3 days ago', 11],
+    [398, 'Support AbortSignal in query()', [['enhancement', '#a2eeef']], 'tmbuyi', '4 days ago', 5],
+    [396, 'Type error with exactOptionalPropertyTypes enabled', [['bug', '#d73a4a'], ['types', '#c5def5']], 'jfalk', '5 days ago', 4],
+    [390, 'Release 2.4.2 checklist', [['release', '#0e8a16']], 'rkapoor', 'last week', 9],
+    [388, 'Memory growth when many channels are opened and closed', [['bug', '#d73a4a'], ['performance', '#f9d0c4']], 'sagarwal', 'last week', 6],
+    [381, 'Add a Deno example', [['examples', '#bfdadc']], 'nora-q', '2 weeks ago', 1],
+    [377, 'Bundle size regression in 2.4.0 (+14 kB)', [['performance', '#f9d0c4']], 'mhalvorsen', '2 weeks ago', 8],
+    [372, 'CLI and SDK disagree on the default region', [['bug', '#d73a4a'], ['cli', '#5319e7']], 'deepa-r', '3 weeks ago', 3],
+    [366, 'Proposal: move to ESM-only in 3.0', [['discussion', '#cc317c'], ['breaking', '#b60205']], 'rkapoor', 'last month', 22],
+  ];
+  const GENERIC_ISSUES = [
+    ['Update dependencies for Q4', [['chore', '#ededed']], 'stackbot', '2 days ago', 0],
+    ['Improve error message when credentials are missing', [['enhancement', '#a2eeef']], 'ekowalski', 'last week', 2],
+    ['README install instructions are out of date', [['docs', '#0075ca']], 'ybarros', '2 weeks ago', 1],
+    ['Intermittent timeout in CI on macOS runners', [['ci', '#fbca04']], 'ahmed-s', '3 weeks ago', 4],
+  ];
+  const AURORA_PRS = [
+    [415, 'fix: re-arm heartbeat after token refresh', 'mhalvorsen', 'fix/token-refresh', 'main', 'pending'],
+    [414, 'chore(deps): bump ws from 8.17.1 to 8.18.0', 'stackbot', 'deps/ws-8.18.0', 'main', 'success'],
+    [411, 'feat: configurable reconnect jitter', 'deepa-r', 'feat/streaming-retry', 'develop', 'failure'],
+    [407, 'docs: refresh streaming examples', 'lucas-ferro', 'docs/api-examples', 'main', 'success'],
+    [403, 'test: stabilise presence sync test', 'rkapoor', 'test/presence-sync', 'main', 'success'],
+    [399, 'feat(query): AbortSignal support', 'tmbuyi', 'feat/abort-signal', 'develop', 'success'],
+    [397, 'release: 2.4.1', 'rkapoor', 'release/2.4', 'main', 'success'],
+  ];
+  const issuesFor = (r) => r.name === 'aurora' ? AURORA_ISSUES : GENERIC_ISSUES.slice(0, Math.max(1, Math.min(4, r.issues))).map((x, i) => [r.issues * 7 + 40 - i * 3, ...x]);
+  const prsFor = (r) => r.name === 'aurora' ? AURORA_PRS : r.pulls ? [[r.pulls * 11 + 30, 'chore(deps): weekly dependency updates', 'stackbot', 'deps/weekly', 'main', 'success'], [r.pulls * 11 + 27, 'feat: add structured logging', 'ekowalski', 'feat/logging', 'main', 'pending']].slice(0, r.pulls) : [];
+  const RUNS = [
+    ['CI', 'fix: re-arm heartbeat after token refresh', 'fix/token-refresh', 'pull_request', 'in_progress', '2m 41s', ['ci/build', 'ci/lint', 'ci/test-unit', 'ci/test-e2e']],
+    ['CI', 'chore(deps): bump ws from 8.17.1 to 8.18.0', 'deps/ws-8.18.0', 'pull_request', 'success', '6m 12s', ['ci/build', 'ci/lint', 'ci/test-unit', 'ci/test-e2e']],
+    ['Docs', 'docs: refresh streaming examples', 'docs/api-examples', 'pull_request', 'success', '3m 05s', ['ci/build-docs']],
+    ['CI', 'feat: configurable reconnect jitter', 'feat/streaming-retry', 'pull_request', 'failure', '5m 48s', ['ci/build', 'ci/lint', 'ci/test-unit', 'ci/test-e2e']],
+    ['CodeQL', 'Scheduled analysis', 'main', 'schedule', 'success', '9m 30s', ['security/codeql']],
+    ['CI', 'release: 2.4.1', 'main', 'push', 'success', '6m 55s', ['ci/build', 'ci/lint', 'ci/test-unit', 'ci/test-e2e']],
+    ['Release', 'v2.4.1', 'v2.4.1', 'release', 'success', '4m 10s', ['release/publish']],
+  ];
+  function filesFor(r) {
+    const common = [['.github', 'dir', 'ci: pin runner images', '3 weeks ago']];
+    const L = {
+      TypeScript: [['docs', 'dir', 'docs: add reconnect guide', 'last week'], ['examples', 'dir', 'examples: node 22 streaming', '2 weeks ago'], ['packages', 'dir', 'refactor: split transport package', 'last month'], ['scripts', 'dir', 'build: faster type bundling', 'last month'], ['src', 'dir', 'fix: guard against double subscribe', 'yesterday'], ['test', 'dir', 'test: stabilise presence sync', '3 days ago'], ['.editorconfig', 'file', 'chore: editorconfig', 'last year'], ['.gitignore', 'file', 'chore: ignore coverage output', '5 months ago'], ['CHANGELOG.md', 'file', 'release: 2.4.1', 'last week'], ['CODEOWNERS', 'file', 'chore: add sdk-core as owners', '4 months ago'], ['LICENSE', 'file', 'Initial commit', '3 years ago'], ['README.md', 'file', 'docs: badges', '2 weeks ago'], ['package.json', 'file', 'release: 2.4.1', 'last week'], ['pnpm-lock.yaml', 'file', 'chore(deps): bump vitest', '4 days ago'], ['tsconfig.json', 'file', 'build: target es2022', '3 months ago']],
+      Go: [['cmd', 'dir', 'feat: aurora login --profile', '3 days ago'], ['internal', 'dir', 'fix: respect AURORA_REGION', 'last week'], ['pkg', 'dir', 'refactor: config loader', '2 weeks ago'], ['scripts', 'dir', 'build: completion scripts', 'last month'], ['.goreleaser.yaml', 'file', 'release: sign checksums', 'last month'], ['go.mod', 'file', 'chore(deps): bump cobra', '2 weeks ago'], ['go.sum', 'file', 'chore(deps): bump cobra', '2 weeks ago'], ['LICENSE', 'file', 'Initial commit', '2 years ago'], ['Makefile', 'file', 'build: add lint target', '3 months ago'], ['README.md', 'file', 'docs: install via Homebrew', 'last month']],
+    };
+    return common.concat(L[r.lang] || [['src', 'dir', 'Initial structure', 'last month'], ['docs', 'dir', 'docs: overview', 'last month'], ['.gitignore', 'file', 'chore: gitignore', '2 months ago'], ['README.md', 'file', 'docs: readme', 'last month']]);
+  }
+
+  // ------------------------------------------------------------------------------------ helpers
+  function route() { const h = location.hash.replace(/^#\/?/, ''); const [p, qs] = h.split('?'); return { parts: p.split('/').filter(Boolean).map(decodeURIComponent), qs: new URLSearchParams(qs || '') }; }
+  const go = (h) => { location.hash = h; };
+  let flash = null;
+  const takeFlash = () => { const f = flash; flash = null; return f ? `<div class="flash ${f.err ? 'err' : ''}" role="status">${esc(f.msg)}</div>` : ''; };
+  const globToRe = (p) => new RegExp('^' + p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*\*/g, '\u0000').replace(/\*/g, '[^/]*').replace(/\?/g, '[^/]').replace(/\u0000/g, '.*') + '$');
+  const matches = (r, pat) => { try { const re = globToRe(pat); return r.branches.filter((b) => re.test(b)); } catch { return []; } };
+
+  // ------------------------------------------------------------------------------------ org
+  function orgHead(tab) {
+    const T = [['', 'Overview'], ['repositories', 'Repositories', REPOS.length], ['projects', 'Projects', 3], ['packages', 'Packages', 4], ['teams', 'Teams', 6], ['people', 'People', PEOPLE.length], ['insights', 'Insights'], ['settings', 'Settings']];
+    return `<div class="wrap"><div class="orghead"><span class="av lg" aria-hidden="true">TL</span><div><h1>Tidewater Labs</h1><div class="meta">Real-time data tooling for coastal and marine science · <span>📍 Plymouth, UK</span> <a href="#/about/tidewater">tidewaterlabs.dev</a> <span class="badge">Verified</span></div></div></div>
+      <nav class="tabs" aria-label="Organization">${T.map(([k, l, n]) => `<a href="${k ? `#/orgs/${ORG}/${k}` : `#/${ORG}`}" class="${tab === k ? 'on' : ''}">${l}${n != null ? ` <span class="ct">${n}</span>` : ''}</a>`).join('')}</nav>`;
+  }
+  let repoFilter = { q: '', type: 'all', lang: 'all', sort: 'updated' };
+  function repoList() {
+    const f = repoFilter;
+    const upd = ['2 hours ago', '4 hours ago', '5 hours ago', '6 hours ago', 'yesterday', '3 days ago', '9 days ago', '2 weeks ago', 'last month'];
+    let list = REPOS.filter((r) => {
+      const qq = f.q.toLowerCase();
+      if (qq.startsWith('topic:')) { if (!r.topics.includes(qq.slice(6))) return false; }
+      else if (qq && !(r.name.includes(qq) || r.desc.toLowerCase().includes(qq))) return false;
+      if (f.type === 'public' && r.vis !== 'Public') return false;
+      if (f.type === 'private' && r.vis === 'Public') return false;
+      if (f.lang !== 'all' && r.lang !== f.lang) return false;
+      return true;
+    });
+    if (f.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (f.sort === 'stars') list.sort((a, b) => b.stars - a.stars);
+    else list.sort((a, b) => upd.indexOf(a.updated) - upd.indexOf(b.updated));
+    return `<div class="filters" role="search"><input type="search" id="rf-q" placeholder="Find a repository…" aria-label="Find a repository" value="${esc(f.q)}">
+      <select id="rf-type" aria-label="Type">${[['all', 'Type: All'], ['public', 'Public'], ['private', 'Private and internal']].map(([v, l]) => `<option value="${v}" ${f.type === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select id="rf-lang" aria-label="Language"><option value="all">Language: All</option>${[...new Set(REPOS.map((r) => r.lang))].sort().map((l) => `<option ${f.lang === l ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select id="rf-sort" aria-label="Sort">${[['updated', 'Sort: Last updated'], ['name', 'Name'], ['stars', 'Stars']].map(([v, l]) => `<option value="${v}" ${f.sort === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <button type="button" class="btn primary" data-go="#/new">New repository</button></div>
+      <div class="box">${list.length ? list.map((r) => `<div class="rowi"><div style="display:flex;gap:10px;align-items:center"><a href="#/${ORG}/${r.name}" style="font-size:16px;font-weight:600">${esc(r.name)}</a><span class="badge">${r.vis}</span>
+        <button type="button" class="btn sm" data-star="${r.id}" style="margin-left:auto" aria-label="${starred.has(r.id) ? 'Unstar' : 'Star'} ${esc(r.name)}">${starred.has(r.id) ? '★ Starred' : '☆ Star'}</button></div>
+        <p style="margin:4px 0 6px;color:var(--muted)">${esc(r.desc)}</p><div>${r.topics.map((t) => `<button type="button" class="topic" data-topic="${t}">${t}</button>`).join('')}</div>
+        <div class="meta" style="margin-top:6px"><span><i class="dot" style="background:${LANGC[r.lang] || '#999'}"></i>${r.lang}</span><span>☆ ${r.stars.toLocaleString('en-US')}</span><span>⑂ ${r.forks}</span>${r.license ? `<span>⚖ ${r.license}</span>` : ''}<span>${r.issues} issues</span><span>${r.pulls} pull requests</span><span>Updated ${r.updated}</span></div></div>`).join('') : '<div class="rowi">No repositories match your search.</div>'}</div>`;
+  }
+  function orgOverview() {
+    const pins = REPOS.filter((r) => r.pinned);
+    return orgHead('') + `<div class="grid"><div><h3 style="margin:0 0 10px">Pinned</h3><div class="pins">${pins.map((r) => `<div class="pin"><a href="#/${ORG}/${r.name}" style="font-weight:600">${esc(r.name)}</a> <span class="badge">${r.vis}</span><p>${esc(r.desc)}</p><div class="meta"><span><i class="dot" style="background:${LANGC[r.lang] || '#999'}"></i>${r.lang}</span><span>☆ ${r.stars.toLocaleString('en-US')}</span><span>⑂ ${r.forks}</span></div></div>`).join('')}</div>
+      <h3 style="margin:0 0 10px">Repositories</h3><div id="repo-list">${repoList()}</div></div>
+      <aside class="side"><section><h3>People</h3><div class="people">${PEOPLE.map(([l, n]) => `<a href="#/u/${l}" title="${esc(n)}" aria-label="${esc(n)}">${avatar(l)}</a>`).join('')}</div><p><a href="#/orgs/${ORG}/people">View all</a></p></section>
+      <section><h3>Top languages</h3>${['TypeScript', 'Go', 'Rust', 'HCL', 'Python'].map((l) => `<button type="button" class="topic" data-lang="${l}"><i class="dot" style="background:${LANGC[l]}"></i>${l}</button>`).join('')}</section>
+      <section><h3>Most used topics</h3>${['sdk', 'typescript', 'go', 'api', 'terraform', 'react'].map((t) => `<button type="button" class="topic" data-topic="${t}">${t}</button>`).join('')}</section>
+      <section><h3>Sponsors</h3><p class="meta">Tidewater Labs is supported by the Marine Data Commons fund.</p></section></aside></div></div>`;
+  }
+  function orgTab(tab) {
+    let body = '';
+    if (tab === 'repositories') body = `<div id="repo-list">${repoList()}</div>`;
+    else if (tab === 'people') body = `<div class="box">${PEOPLE.map(([l, n], i) => `<div class="rowi" style="display:flex;gap:12px;align-items:center">${avatar(l)}<a href="#/u/${l}"><b>${esc(n)}</b></a><span class="meta">${l}</span><span class="badge" style="margin-left:auto">${i < 2 ? 'Owner' : 'Member'}</span></div>`).join('')}</div>`;
+    else if (tab === 'teams') body = `<div class="box">${[['sdk-core', 7, 'Maintainers of the Aurora SDK'], ['cli', 4, 'Aurora CLI'], ['docs', 5, 'Documentation writers'], ['platform', 6, 'Harbor platform and infrastructure'], ['design', 3, 'Lighthouse design system'], ['sre', 4, 'On-call rotation']].map(([t, n, d]) => `<div class="rowi"><b>@${ORG}/${t}</b> <span class="meta">${n} members · ${d}</span></div>`).join('')}</div>`;
+    else if (tab === 'projects') body = `<div class="box">${['Aurora 3.0 roadmap', 'Docs refresh Q4', 'Harbor migration'].map((p, i) => `<div class="rowi"><b>${p}</b> <span class="meta">#${i + 4} · updated ${['yesterday', 'last week', '2 weeks ago'][i]}</span></div>`).join('')}</div>`;
+    else if (tab === 'packages') body = `<div class="box">${['@tidewater/aurora', '@tidewater/aurora-transport', 'aurora-cli (container)', '@tidewater/lighthouse-ui'].map((p) => `<div class="rowi"><b>${p}</b></div>`).join('')}</div>`;
+    else if (tab === 'insights') body = `<div class="box rowi"><h3 style="margin-top:0">Activity in the last 30 days</h3><div class="bars">${[4, 7, 5, 9, 12, 8, 6, 10, 14, 11, 7, 9, 13, 15, 8].map((v) => `<i style="height:${v * 6}px"></i>`).join('')}</div><p class="meta">412 commits · 96 pull requests merged · 71 issues closed</p></div>`;
+    else if (tab === 'settings') body = `<div class="box rowi"><h3 style="margin-top:0">Organization settings</h3><p class="meta">You need to be an organization owner with billing permissions to change these settings. Contact mhalvorsen.</p></div>`;
+    else body = `<p>Page not found.</p>`;
+    return orgHead(tab) + body + '</div>';
+  }
+
+  // ------------------------------------------------------------------------------------ repo
+  function repoHead(r, tab) {
+    const nIss = issuesFor(r).length ? r.issues : 0;
+    const T = [['', 'Code'], ['issues', 'Issues', nIss], ['pulls', 'Pull requests', r.pulls], ['actions', 'Actions'], ['projects', 'Projects'], ['wiki', 'Wiki'], ['security', 'Security'], ['insights', 'Insights'], ['settings', 'Settings']];
+    const w = watching[r.id] || 'Participating and @mentions';
+    return `<div class="wrap"><div class="repohead"><span aria-hidden="true">▣</span><h1><a href="#/${ORG}">${ORG}</a> / <b><a href="#/${ORG}/${r.name}">${esc(r.name)}</a></b></h1><span class="badge">${r.vis}</span>
+      <div class="acts"><button type="button" class="btn sm" id="watch-btn" aria-haspopup="menu" title="${esc(w)}">👁 Watch <span class="cnt">${r.watch}</span></button><button type="button" class="btn sm" id="fork-btn">⑂ Fork <span class="cnt">${r.forks}</span></button><button type="button" class="btn sm" data-star="${r.id}" aria-label="${starred.has(r.id) ? 'Unstar' : 'Star'} this repository">${starred.has(r.id) ? '★ Starred' : '☆ Star'} <span class="cnt">${r.stars + (starred.has(r.id) ? 1 : 0)}</span></button></div></div>
+      <nav class="tabs" aria-label="Repository">${T.map(([k, l, n]) => `<a href="#/${ORG}/${r.name}${k ? '/' + k : ''}" class="${tab === k ? 'on' : ''}">${l}${n ? ` <span class="ct">${n}</span>` : ''}</a>`).join('')}</nav>`;
+  }
+  let curBranch = {};
+  function codeTab(r) {
+    const br = curBranch[r.id] || DEFAULT_BRANCH[r.id] || 'main';
+    const files = filesFor(r);
+    return repoHead(r, '') + `<div class="grid"><div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><button type="button" class="btn" id="branch-btn" aria-haspopup="listbox">⎇ ${esc(br)} ▾</button><a href="#/${ORG}/${r.name}/branches">${r.branches.length} branches</a><a href="#/${ORG}/${r.name}/tags">${r.tags.length} tags</a>
+        <span style="margin-left:auto"></span><button type="button" class="btn" id="gotofile">Go to file</button><button type="button" class="btn" id="addfile">Add file ▾</button><button type="button" class="btn primary" id="clone-btn">&lt;&gt; Code ▾</button></div>
+      <div class="box"><div class="hd">${avatar('mhalvorsen')}<b>mhalvorsen</b><span class="meta">fix: guard against double subscribe</span><span class="meta" style="margin-left:auto">a41c9e2 · yesterday · <a href="#/${ORG}/${r.name}/commits">1,872 commits</a></span></div>
+        <table class="files"><tbody>${files.map(([n, t, m, w]) => `<tr><td>${t === 'dir' ? '📁' : '📄'} <a href="#/${ORG}/${r.name}/${t === 'dir' ? 'tree' : 'blob'}/${esc(br)}/${n}">${esc(n)}</a></td><td class="msg">${esc(m)}</td><td class="when">${w}</td></tr>`).join('')}</tbody></table></div>
+      <div class="box" style="margin-top:18px"><div class="hd"><b>README.md</b></div><div class="readme">${readme(r)}</div></div></div>
+      <aside class="side"><section><h3>About</h3><p>${esc(r.desc)}</p>${r.homepage ? `<p>🔗 <a href="#/about/site">${r.homepage}</a></p>` : ''}<div>${r.topics.map((t) => `<button type="button" class="topic" data-topic="${t}" data-go="#/${ORG}">${t}</button>`).join('')}</div>
+        <p class="meta" style="display:block;margin-top:10px">📖 Readme${r.license ? ` · ⚖ ${r.license} license` : ''}<br>☆ ${r.stars.toLocaleString('en-US')} stars · 👁 ${r.watch} watching · ⑂ ${r.forks} forks</p></section>
+      <section><h3>Releases <span class="cnt">${r.tags.length}</span></h3>${r.tags.length ? `<p>🏷 <a href="#/${ORG}/${r.name}/tags"><b>${r.tags[0]}</b></a> <span class="badge ok">Latest</span></p>` : '<p class="meta">No releases published</p>'}</section>
+      <section><h3>Contributors</h3><div class="people">${PEOPLE.slice(0, 8).map(([l, n]) => `<a href="#/u/${l}" aria-label="${esc(n)}">${avatar(l)}</a>`).join('')}</div></section>
+      <section><h3>Languages</h3><div class="langbar">${r.langs.map(([l, p]) => `<i style="width:${p}%;background:${LANGC[l] || '#999'}"></i>`).join('')}</div><div class="meta">${r.langs.map(([l, p]) => `<span><i class="dot" style="background:${LANGC[l] || '#999'}"></i>${l} ${p}%</span>`).join('')}</div></section></aside></div></div>`;
+  }
+  function readme(r) {
+    if (r.name === 'aurora') return `<h2>Aurora SDK</h2><p>Realtime channels, presence and queries for Aurora, the Tidewater Labs streaming backend. Works in browsers, Node.js 18+ and Deno.</p><pre><code>pnpm add @tidewater/aurora</code></pre><h3>Quick start</h3><pre><code>import { RealtimeClient } from '@tidewater/aurora';\nconst client = new RealtimeClient({ region: 'eu-west' });\nconst ch = client.channel('buoys:plymouth');\nch.on('reading', (r) =&gt; console.log(r.waveHeight));</code></pre><h3>Branches</h3><p><code>main</code> is the next patch release. Maintenance branches follow <code>release/&lt;major.minor&gt;</code>.</p><h3>Contributing</h3><p>See <a href="#/${ORG}/aurora/wiki">the wiki</a> for the release process. All changes go through pull requests with passing CI.</p>`;
+    if (r.name === 'aurora-cli') return `<h2>aurora-cli</h2><p>The <code>aurora</code> command-line tool: manage projects, stream channels to your terminal and replay recorded sessions.</p><pre><code>brew install tidewater-labs/tap/aurora</code></pre><pre><code>aurora login --profile staging\naurora tail buoys:plymouth --since 10m</code></pre>`;
+    return `<h2>${esc(r.name)}</h2><p>${esc(r.desc)}.</p><h3>Getting started</h3><p>See the <a href="#/${ORG}/${r.name}/wiki">wiki</a> for setup instructions and conventions.</p>`;
+  }
+  function issuesTab(r, qs) {
+    const state = qs.get('state') || 'open';
+    const list = issuesFor(r);
+    return repoHead(r, 'issues') + `<div style="display:flex;gap:8px;margin-bottom:12px"><input type="search" id="iss-q" aria-label="Search all issues" placeholder="is:issue is:${state}" style="flex:1"><button type="button" class="btn" id="labels-btn">🏷 Labels</button><button type="button" class="btn" id="miles-btn">Milestones</button><button type="button" class="btn primary" data-go="#/${ORG}/${r.name}/issues/new">New issue</button></div>
+      <div class="box"><div class="hd"><a href="#/${ORG}/${r.name}/issues?state=open" style="${state === 'open' ? 'font-weight:600;color:var(--ink)' : 'color:var(--muted)'}">◯ ${r.issues} Open</a><a href="#/${ORG}/${r.name}/issues?state=closed" style="${state === 'closed' ? 'font-weight:600;color:var(--ink)' : 'color:var(--muted)'}">✓ ${r.issues * 4 + 11} Closed</a>
+        <span style="margin-left:auto"></span><select aria-label="Author"><option>Author</option>${PEOPLE.slice(0, 6).map((p) => `<option>${p[0]}</option>`).join('')}</select><select aria-label="Label"><option>Label</option><option>bug</option><option>enhancement</option><option>docs</option></select><select aria-label="Sort issues"><option>Newest</option><option>Oldest</option><option>Most commented</option></select></div>
+      ${state === 'closed' ? '<div class="rowi meta">Closed issues are archived after 90 days. Showing none from the last 90 days.</div>' : list.map(([n, t, labels, by, when, c]) => `<div class="issue"><span class="ok">◯</span><div><a class="t" href="#/${ORG}/${r.name}/issues/${n}">${esc(t)}</a>${labels.map(([l, col]) => `<span class="lbl" style="background:${col}33;color:#333;border:1px solid ${col}">${l}</span>`).join('')}<div class="meta">#${n} opened ${when} by ${by}</div></div><span class="meta" style="margin-left:auto">💬 ${c}</span></div>`).join('')}</div></div>`;
+  }
+  function issueDetail(r, n) {
+    const it = issuesFor(r).find((x) => x[0] === +n);
+    if (!it) return repoHead(r, 'issues') + '<p>Issue not found.</p></div>';
+    const [num, t, labels, by, when] = it;
+    return repoHead(r, 'issues') + `<h2 style="font-weight:400">${esc(t)} <span class="meta">#${num}</span></h2><p><span class="badge ok">◯ Open</span> <b>${by}</b> opened this issue ${when}</p>
+      <div class="grid"><div><div class="box"><div class="hd"><b>${by}</b> <span class="meta">commented ${when}</span></div><div class="rowi"><p>Steps to reproduce, expected behaviour and logs are attached below. This affects the current release; see the linked discussion for context.</p></div></div>
+      <div class="box" style="margin-top:14px"><div class="hd"><b>Add a comment</b></div><div class="rowi"><textarea id="cmt" aria-label="Comment body" style="width:100%;min-height:90px" placeholder="Leave a comment"></textarea><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button type="button" class="btn" id="close-issue" data-n="${num}">Close issue</button><button type="button" class="btn primary" id="post-cmt" data-n="${num}">Comment</button></div></div></div></div>
+      <aside class="side"><section><h3>Labels</h3>${labels.map(([l, col]) => `<span class="lbl" style="background:${col}33;border:1px solid ${col}">${l}</span>`).join('')}</section><section><h3>Assignees</h3><p class="meta">No one assigned</p></section></aside></div></div>`;
+  }
+  function newIssue(r) {
+    return repoHead(r, 'issues') + `<div style="max-width:760px"><div class="field"><label for="ni-title">Add a title</label><input type="text" id="ni-title" style="width:100%"></div><div class="field"><label for="ni-body">Add a description</label><textarea id="ni-body" style="width:100%;min-height:140px"></textarea></div><div style="text-align:right"><button type="button" class="btn primary" id="ni-submit">Submit new issue</button></div></div></div>`;
+  }
+  function pullsTab(r) {
+    const list = prsFor(r);
+    const ic = { success: '<span class="ok">✓</span>', failure: '<span class="bad">✕</span>', pending: '<span class="warn">●</span>' };
+    return repoHead(r, 'pulls') + `<div style="display:flex;gap:8px;margin-bottom:12px"><input type="search" aria-label="Search all pull requests" placeholder="is:pr is:open" style="flex:1"><button type="button" class="btn primary" id="new-pr">New pull request</button></div>
+      <div class="box"><div class="hd"><b>⇅ ${list.length} Open</b><span class="meta">✓ ${r.pulls * 9 + 20} Closed</span></div>${list.length ? list.map(([n, t, by, head, base, st]) => `<div class="issue"><span class="ok">⇅</span><div><a class="t" href="#/${ORG}/${r.name}/pull/${n}">${esc(t)}</a> ${ic[st]}<div class="meta">#${n} opened by ${by} · <code>${esc(head)}</code> → <code>${esc(base)}</code></div></div></div>`).join('') : '<div class="rowi meta">There aren’t any open pull requests.</div>'}</div></div>`;
+  }
+  function pullDetail(r, n) {
+    const p = prsFor(r).find((x) => x[0] === +n);
+    if (!p) return repoHead(r, 'pulls') + '<p>Pull request not found.</p></div>';
+    const run = RUNS.find((x) => x[1] === p[1]) || RUNS[1];
+    return repoHead(r, 'pulls') + `<h2 style="font-weight:400">${esc(p[1])} <span class="meta">#${p[0]}</span></h2><p><span class="badge ok">⇅ Open</span> <b>${p[2]}</b> wants to merge into <code>${esc(p[4])}</code> from <code>${esc(p[3])}</code></p>
+      <div class="box"><div class="hd"><b>Checks</b></div>${run[6].map((c) => `<div class="rowi"><span class="${p[5] === 'failure' && c === 'ci/test-e2e' ? 'bad' : p[5] === 'pending' && c.includes('test') ? 'warn' : 'ok'}">${p[5] === 'failure' && c === 'ci/test-e2e' ? '✕' : p[5] === 'pending' && c.includes('test') ? '●' : '✓'}</span> <code>${c}</code> <span class="meta">${run[0]} / ${c.split('/')[1] || c}</span></div>`).join('')}</div>
+      <p class="meta">Merging is blocked until required checks pass and the pull request has an approving review.</p></div>`;
+  }
+  function actionsTab(r) {
+    const runs = r.name === 'aurora' ? RUNS : RUNS.slice(1, 4).map((x) => [x[0], x[1], 'main', 'push', x[4], x[5], r.checks.slice(0, 3)]);
+    const ic = { success: '<span class="ok">✓</span>', failure: '<span class="bad">✕</span>', in_progress: '<span class="warn">●</span>' };
+    return repoHead(r, 'actions') + `<div class="settings"><nav class="snav" aria-label="Workflows"><div class="grp">Actions</div><a href="#/${ORG}/${r.name}/actions" class="on">All workflows</a>${[...new Set(runs.map((x) => x[0]))].map((w) => `<a href="#/${ORG}/${r.name}/actions">${w}</a>`).join('')}<div class="grp">Management</div><a href="#/${ORG}/${r.name}/settings/actions">Actions settings</a></nav>
+      <div><h2 style="font-weight:400;margin-top:0">All workflows</h2><div class="box"><div class="hd"><b>${runs.length * 187} workflow runs</b></div>${runs.map(([w, t, b, ev, st, d, jobs]) => `<div class="issue">${ic[st]}<div><b>${esc(t)}</b><div class="meta">${w} · ${ev} · <code>${esc(b)}</code> · jobs: ${jobs.map((j) => `<code>${j}</code>`).join(', ')}</div></div><span class="meta" style="margin-left:auto">⏱ ${d}</span></div>`).join('')}</div></div></div></div>`;
+  }
+  function simpleTab(r, tab) {
+    const B = {
+      projects: `<div class="box rowi">Projects linked to this repository: <a href="#/orgs/${ORG}/projects">Aurora 3.0 roadmap</a></div>`,
+      wiki: `<div class="settings"><nav class="snav" aria-label="Wiki pages"><div class="grp">Pages</div><a href="#/${ORG}/${r.name}/wiki" class="on">Home</a><a href="#/${ORG}/${r.name}/wiki">Release process</a><a href="#/${ORG}/${r.name}/wiki">Branching model</a><a href="#/${ORG}/${r.name}/wiki">On-call</a></nav><div><h2 style="font-weight:400;margin-top:0">Home</h2><p>Welcome to the ${esc(r.name)} wiki. Release branches are cut as <code>release/&lt;major.minor&gt;</code> from <code>main</code> one week before a release.</p><p>Maintainers: @${ORG}/sdk-core.</p></div></div>`,
+      security: `<div class="box"><div class="rowi"><b>Security policy</b> <span class="meta">· SECURITY.md</span></div><div class="rowi"><b>Code scanning</b> <span class="meta">· 0 open alerts</span></div><div class="rowi"><b>Dependabot alerts</b> <span class="meta">· 2 open (moderate)</span></div></div>`,
+      insights: `<div class="settings"><nav class="snav" aria-label="Insights"><a href="#/${ORG}/${r.name}/insights" class="on">Pulse</a><a href="#/${ORG}/${r.name}/insights">Contributors</a><a href="#/${ORG}/${r.name}/insights">Traffic</a><a href="#/${ORG}/${r.name}/insights">Code frequency</a></nav><div><h2 style="font-weight:400;margin-top:0">Pulse · last 7 days</h2><div class="box rowi"><p>14 pull requests merged · 9 issues closed · 6 new issues</p><div class="bars">${[3, 5, 2, 7, 6, 4, 8].map((v) => `<i style="height:${v * 10}px"></i>`).join('')}</div></div></div></div>`,
+      branches: `<div class="box"><div class="hd"><b>Branches</b></div>${r.branches.map((b) => `<div class="rowi"><code>${esc(b)}</code>${b === (DEFAULT_BRANCH[r.id] || 'main') ? ' <span class="badge">Default</span>' : ''}${(RULES[r.id] || []).some((x) => globToRe(x.pattern).test(b)) ? ' <span class="badge">🛡 Protected</span>' : ''}</div>`).join('')}</div>`,
+      tags: `<div class="box"><div class="hd"><b>Tags</b></div>${r.tags.length ? r.tags.map((t) => `<div class="rowi">🏷 <b>${t}</b></div>`).join('') : '<div class="rowi meta">No tags yet.</div>'}</div>`,
+      commits: `<div class="box">${['fix: guard against double subscribe', 'test: stabilise presence sync', 'release: 2.4.1', 'docs: badges'].map((m, i) => `<div class="rowi"><b>${m}</b><div class="meta">${PEOPLE[i][0]} committed ${['yesterday', '3 days ago', 'last week', '2 weeks ago'][i]}</div></div>`).join('')}</div>`,
+    };
+    return repoHead(r, ['branches', 'tags', 'commits'].includes(tab) ? '' : tab) + (B[tab] || '<p>Not found.</p>') + '</div>';
+  }
+  function blobView(r, kind, path) {
+    const name = path.join('/');
+    const body = kind === 'tree' ? `<div class="box"><div class="hd"><b>${esc(name)}</b></div><table class="files"><tbody>${['index.ts', 'client.ts', 'channel.ts', 'presence.ts', 'errors.ts'].map((f) => `<tr><td>📄 ${f}</td><td class="msg">refactor: tidy exports</td><td class="when">last month</td></tr>`).join('')}</tbody></table></div>`
+      : `<div class="box"><div class="hd"><b>${esc(name)}</b><span class="meta" style="margin-left:auto">42 lines · 1.3 KB</span></div><div class="code-lines">${['# ' + name, '', 'This file is part of ' + r.name + '.', '', 'See README.md for details.'].map((l, i) => `<div><span>${i + 1}</span>${esc(l)}</div>`).join('')}</div></div>`;
+    return repoHead(r, '') + `<p><a href="#/${ORG}/${r.name}">${esc(r.name)}</a> / ${esc(name)}</p>` + body + '</div>';
+  }
+
+  // ------------------------------------------------------------------------------------ settings
+  const SNAV = [[null, [['general', 'General']]], ['Access', [['access', 'Collaborators and teams']]], ['Code and automation', [['branches', 'Branches'], ['tags', 'Tags'], ['actions', 'Actions'], ['webhooks', 'Webhooks'], ['pages', 'Pages']]], ['Security', [['secrets', 'Secrets and variables'], ['deploy-keys', 'Deploy keys']]]];
+  function settingsTab(r, sec, rest) {
+    const nav = `<nav class="snav" aria-label="Repository settings">${SNAV.map(([g, items]) => (g ? `<div class="grp">${g}</div>` : '') + items.map(([k, l]) => `<a href="#/${ORG}/${r.name}/settings/${k}" class="${sec === k ? 'on' : ''}">${l}</a>`).join('')).join('')}</nav>`;
+    let body;
+    if (sec === 'general') body = settingsGeneral(r);
+    else if (sec === 'branches' && rest[0] === 'new') body = ruleForm(r, null);
+    else if (sec === 'branches' && rest[0] === 'edit') body = ruleForm(r, +rest[1]);
+    else if (sec === 'branches') body = settingsBranches(r);
+    else if (sec === 'access') body = settingsAccess(r);
+    else if (sec === 'tags') body = `<h2>Protected tags</h2><p class="meta">Protected tags can only be created or deleted by users with enhanced permissions.</p><div class="box">${(TAGRULES[r.id] || []).map((p) => `<div class="rowi"><code>${esc(p)}</code></div>`).join('') || '<div class="rowi meta">No protected tag rules.</div>'}</div><div class="field"><label for="tag-pat">Tag name pattern</label><input type="text" id="tag-pat" placeholder="v*"> <button type="button" class="btn" id="tag-add">Add rule</button></div>`;
+    else if (sec === 'actions') body = `<h2>Actions permissions</h2>${[['all', 'Allow all actions and reusable workflows'], ['local', 'Allow tidewater-labs actions and reusable workflows'], ['select', 'Allow tidewater-labs, and select non-tidewater-labs, actions and reusable workflows'], ['none', 'Disable actions']].map(([v, l], i) => `<div class="opt"><label><input type="radio" name="act-perm" value="${v}" ${i === 0 ? 'checked' : ''}> ${l}</label></div>`).join('')}<h3>Workflow permissions</h3>${[['read', 'Read repository contents and packages permissions'], ['write', 'Read and write permissions']].map(([v, l], i) => `<div class="opt"><label><input type="radio" name="wf-perm" value="${v}" ${i === 0 ? 'checked' : ''}> ${l}</label></div>`).join('')}<button type="button" class="btn" id="act-save">Save</button>`;
+    else if (sec === 'webhooks') body = `<div style="display:flex;align-items:center"><h2 style="flex:1">Webhooks</h2><button type="button" class="btn" id="hook-add">Add webhook</button></div><div class="box">${(HOOKS[r.id] || []).map((hk, i) => `<div class="rowi" style="display:flex;gap:10px;align-items:center"><span class="${hk.ok ? 'ok' : 'bad'}">${hk.ok ? '✓' : '⚠'}</span><code>${esc(hk.url)}</code><span class="meta">(${esc(hk.events)})</span><span style="margin-left:auto"></span><button type="button" class="btn sm" data-hook-edit="${i}">Edit</button><button type="button" class="btn sm danger" data-hook-del="${i}">Delete</button></div>`).join('') || '<div class="rowi meta">No webhooks yet.</div>'}</div>`;
+    else if (sec === 'pages') body = `<h2>Pages</h2><div class="field"><label for="pg-src">Source</label><select id="pg-src"><option>Deploy from a branch</option><option>Stackhaven Actions</option></select></div><div class="field"><label for="pg-branch">Branch</label><select id="pg-branch"><option>None</option>${r.branches.map((b) => `<option>${esc(b)}</option>`).join('')}</select> <select id="pg-folder" aria-label="Folder"><option>/ (root)</option><option>/docs</option></select></div><button type="button" class="btn" id="pg-save">Save</button>`;
+    else if (sec === 'secrets') body = `<div style="display:flex;align-items:center"><h2 style="flex:1">Actions secrets and variables</h2><button type="button" class="btn primary" id="sec-add">New repository secret</button></div><p class="meta">Secrets are encrypted and are only exposed to selected actions.</p><div class="box">${(SECRETS[r.id] || []).map(([n, u]) => `<div class="rowi" style="display:flex;gap:10px;align-items:center"><code>${n}</code><span class="meta">${u}</span><span style="margin-left:auto"></span><button type="button" class="btn sm" data-sec-edit="${n}">Update</button><button type="button" class="btn sm danger" data-sec-del="${n}">Remove</button></div>`).join('') || '<div class="rowi meta">This repository has no secrets.</div>'}</div>`;
+    else if (sec === 'deploy-keys') body = `<div style="display:flex;align-items:center"><h2 style="flex:1">Deploy keys</h2><button type="button" class="btn" id="dk-add">Add deploy key</button></div><div class="box">${(DKEYS[r.id] || []).map(([n, fp, d]) => `<div class="rowi"><b>${esc(n)}</b><div class="meta mono">${fp}</div><div class="meta">${d}</div></div>`).join('') || '<div class="rowi meta">There are no deploy keys for this repository.</div>'}</div>`;
+    else body = '<p>Settings page not found.</p>';
+    return repoHead(r, 'settings') + `<div class="settings">${nav}<div class="sbody">${takeFlash()}${body}</div></div></div>`;
+  }
+  const featRow = (r, k, label, desc) => `<div class="opt"><label><input type="checkbox" class="feat" data-k="${k}" ${FEAT[r.id][k] ? 'checked' : ''}> ${label}</label>${desc ? `<div class="desc">${desc}</div>` : ''}</div>`;
+  function settingsGeneral(r) {
+    return `<h2>General</h2>
+      <div class="field"><label for="repo-name">Repository name</label><div style="display:flex;gap:8px;align-items:center"><input type="text" id="repo-name" value="${esc(r.name)}" style="width:300px" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="rename-btn" disabled>Rename</button></div><div class="hint" id="rename-status" aria-live="polite"></div></div>
+      ${featRow(r, 'template', 'Template repository', 'Template repositories let users generate new repositories with the same directory structure and files.')}
+      ${featRow(r, 'signoff', 'Require contributors to sign off on web-based commits', 'Enabling this setting will require contributors to sign off on commits made through the web interface.')}
+      <h3>Default branch</h3><p class="meta">The default branch is considered the “base” branch in your repository, against which all pull requests and code commits are automatically made.</p><div style="display:flex;gap:8px;align-items:center"><code class="chip">${esc(DEFAULT_BRANCH[r.id] || 'main')}</code><button type="button" class="btn sm" id="switch-default" aria-label="Switch to another branch">⇄</button></div>
+      <h3>Features</h3>${featRow(r, 'wikis', 'Wikis', 'Wikis host documentation for your repository.')}${featRow(r, 'restrict_wiki', 'Restrict editing to users in teams with push access only', '')}${featRow(r, 'issues', 'Issues', 'Issues integrate lightweight task tracking into your repository.')}${featRow(r, 'sponsorships', 'Sponsorships', 'Sponsorships help your community know how to financially support this repository.')}${featRow(r, 'discussions', 'Discussions', 'Discussions is the space for your community to have conversations, ask questions and post answers.')}${featRow(r, 'projects', 'Projects', 'Projects on Stackhaven are created at the repository owner’s level.')}
+      <h3>Pull Requests</h3>${featRow(r, 'merge_commit', 'Allow merge commits', 'Add all commits from the head branch to the base branch with a merge commit.')}${featRow(r, 'squash', 'Allow squash merging', 'Combine all commits from the head branch into a single commit in the base branch.')}${featRow(r, 'rebase', 'Allow rebase merging', 'Add all commits from the head branch onto the base branch individually.')}${featRow(r, 'suggest_update', 'Always suggest updating pull request branches', '')}${featRow(r, 'auto_merge', 'Allow auto-merge', 'Waits for merge requirements to be met and then merges automatically.')}${featRow(r, 'delete_branch', 'Automatically delete head branches', 'Deleted branches will still be able to be restored.')}
+      <h3>Archives</h3>${featRow(r, 'lfs', 'Include Git LFS objects in archives', '')}
+      <h3 style="color:var(--red)">Danger Zone</h3><div class="danger">
+        <div class="rowi"><div><b>Change repository visibility</b><div class="meta">This repository is currently ${r.vis.toLowerCase()}.</div></div><button type="button" class="btn danger" data-danger="visibility">Change visibility</button></div>
+        <div class="rowi"><div><b>Transfer ownership</b><div class="meta">Transfer this repository to another user or to an organization where you can create repositories.</div></div><button type="button" class="btn danger" data-danger="transfer">Transfer</button></div>
+        <div class="rowi"><div><b>Archive this repository</b><div class="meta">Mark this repository as archived and read-only.</div></div><button type="button" class="btn danger" data-danger="archive">Archive this repository</button></div>
+        <div class="rowi"><div><b>Delete this repository</b><div class="meta">Once you delete a repository, there is no going back. Please be certain.</div></div><button type="button" class="btn danger" data-danger="delete">Delete this repository</button></div></div>`;
+  }
+  function ruleSummary(x) {
+    const s = [];
+    if (x.require_pr) s.push(`PR with ${x.approvals} approval${x.approvals > 1 ? 's' : ''}`);
+    if (x.require_sc) s.push(`checks: ${x.checks.join(', ') || 'none selected'}`);
+    if (x.signed_commits) s.push('signed commits');
+    if (x.linear_history) s.push('linear history');
+    if (x.restrict_push) s.push('restricted pushes');
+    return s.join(' · ') || 'No protections enabled';
+  }
+  function settingsBranches(r) {
+    const rules = RULES[r.id] || [];
+    return `<h2>Branches</h2><h3 style="margin-top:0">Default branch</h3><p class="meta">The default branch is considered the “base” branch in your repository, against which all pull requests and code commits are automatically made, unless you specify a different branch.</p>
+      <div style="display:flex;gap:8px;align-items:center"><code class="chip">${esc(DEFAULT_BRANCH[r.id] || 'main')}</code><button type="button" class="btn sm" id="switch-default" aria-label="Switch to another branch">⇄</button></div>
+      <div style="display:flex;align-items:center;margin-top:26px"><h3 style="flex:1;margin:0">Branch protection rules</h3><button type="button" class="btn" data-go="#/${ORG}/${r.name}/settings/branches/new">Add rule</button></div>
+      <p class="meta">Define branch protection rules to disable force pushing, prevent branches from being deleted, and optionally require status checks before merging.</p>
+      <div class="box">${rules.length ? rules.map((x, i) => { const m = matches(r, x.pattern); return `<div class="rowi" style="display:flex;gap:10px;align-items:center"><div style="flex:1"><code><b>${esc(x.pattern)}</b></code> <span class="meta">Currently applies to ${m.length} branch${m.length === 1 ? '' : 'es'}</span><div class="meta">${esc(ruleSummary(x))}</div></div><button type="button" class="btn sm" data-go="#/${ORG}/${r.name}/settings/branches/edit/${i}" aria-label="Edit rule ${esc(x.pattern)}">Edit</button><button type="button" class="btn sm danger" data-rule-del="${i}" aria-label="Delete rule ${esc(x.pattern)}">Delete</button></div>`; }).join('') : '<div class="rowi meta">No branch protection rules defined yet.</div>'}</div>`;
+  }
+  const cb = (id, label, desc, on, extra = '') => `<div class="opt"><label><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>${desc ? `<div class="desc">${desc}</div>` : ''}${extra}</div>`;
+  let RF = null;
+  function ruleForm(r, idx) {
+    const x = idx == null ? blankRule() : JSON.parse(JSON.stringify((RULES[r.id] || [])[idx] || blankRule()));
+    RF = { repo: r, idx, checks: x.checks.slice(), active: 0 };
+    const m = matches(r, x.pattern);
+    return `<h2>${idx == null ? 'Branch protection rule' : 'Edit branch protection rule'}</h2>
+      <div class="field"><label for="bp-pattern">Branch name pattern</label><input type="text" id="bp-pattern" value="${esc(x.pattern)}" style="width:340px" autocomplete="off" spellcheck="false"><div class="hint" id="bp-applies">${x.pattern ? `Applies to ${m.length} branch${m.length === 1 ? '' : 'es'}${m.length ? ': ' + m.map(esc).join(', ') : ''}` : 'Use * as a wildcard, for example release/*.'}</div></div>
+      <h3>Protect matching branches</h3>
+      ${cb('bp-pr', 'Require a pull request before merging', 'When enabled, all commits must be made to a non-protected branch and submitted via a pull request before they can be merged into a branch that matches this rule.', x.require_pr,
+        `<div class="nested" id="bp-pr-opts" ${x.require_pr ? '' : 'hidden'}><div class="field"><label for="bp-approvals">Required number of approvals before merging</label><select id="bp-approvals">${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}" ${n === x.approvals ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+          ${cb('bp-dismiss', 'Dismiss stale pull request approvals when new commits are pushed', 'New reviewable commits pushed to a matching branch will dismiss pull request review approvals.', x.dismiss_stale)}
+          ${cb('bp-codeowners', 'Require review from Code Owners', 'Require an approved review in pull requests including files with a designated code owner.', x.code_owners)}</div>`)}
+      ${cb('bp-sc', 'Require status checks to pass before merging', 'Choose which status checks must pass before branches can be merged into a branch that matches this rule.', x.require_sc,
+        `<div class="nested" id="bp-sc-opts" ${x.require_sc ? '' : 'hidden'}>${cb('bp-strict', 'Require branches to be up to date before merging', 'This ensures pull requests targeting a matching branch have been tested with the latest code.', x.strict)}
+          <div class="field combo"><label for="bp-sc-q" style="font-weight:400" class="meta">Search for status checks in the last week for this repository</label><input type="search" id="bp-sc-q" role="combobox" aria-expanded="false" aria-controls="bp-sc-list" aria-autocomplete="list" autocomplete="off" placeholder="Search for status checks"><ul role="listbox" id="bp-sc-list" aria-label="Status checks" hidden></ul></div>
+          <div class="meta">Status checks that are required.</div><div class="chips" id="bp-chips"></div></div>`)}
+      ${cb('bp-conv', 'Require conversation resolution before merging', 'When enabled, all conversations on code must be resolved before a pull request can be merged into a branch that matches this rule.', x.conversation_resolution)}
+      ${cb('bp-signed', 'Require signed commits', 'Commits pushed to matching branches must have verified signatures.', x.signed_commits)}
+      ${cb('bp-linear', 'Require linear history', 'Prevent merge commits from being pushed to matching branches.', x.linear_history)}
+      ${cb('bp-restrict', 'Restrict who can push to matching branches', 'Specify people, teams, or apps allowed to push to matching branches. Required status checks will still prevent these people, teams, and apps from merging if the checks fail.', x.restrict_push,
+        `<div class="nested" id="bp-restrict-opts" ${x.restrict_push ? '' : 'hidden'}><input type="search" aria-label="Search for people, teams, or apps" placeholder="Search for people, teams, or apps" style="width:340px"></div>`)}
+      <h3>Rules applied to everyone including administrators</h3>
+      ${cb('bp-force', 'Allow force pushes', 'Permit force pushes for all users with push access.', x.force_push)}
+      ${cb('bp-deletions', 'Allow deletions', 'Allow users with push access to delete matching branches.', x.deletions)}
+      <div class="flash err" id="bp-err" role="alert" hidden></div>
+      <div style="margin-top:18px;display:flex;gap:8px"><button type="button" class="btn primary" id="bp-save">${idx == null ? 'Create' : 'Save changes'}</button><button type="button" class="btn" data-go="#/${ORG}/${r.name}/settings/branches">Cancel</button></div>`;
+  }
+  function drawChips() {
+    const box = q('#bp-chips'); if (!box || !RF) return;
+    box.innerHTML = RF.checks.length ? RF.checks.map((c) => `<span class="chip">${esc(c)}<button type="button" data-chip-rm="${esc(c)}" aria-label="Remove ${esc(c)}">✕</button></span>`).join('') : '<span class="meta">No required checks yet — search above to add some.</span>';
+  }
+  function scResults() {
+    const inp = q('#bp-sc-q'); if (!inp || !RF) return [];
+    const s = inp.value.trim().toLowerCase();
+    if (!s) return [];
+    const all = RF.repo.checks.filter((c) => !RF.checks.includes(c) && c.toLowerCase().includes(s));
+    return all.sort((a, b) => (a.toLowerCase() === s ? -1 : b.toLowerCase() === s ? 1 : a.localeCompare(b)));
+  }
+  function drawList() {
+    const ul = q('#bp-sc-list'), inp = q('#bp-sc-q'); if (!ul || !inp) return;
+    const res = scResults();
+    const s = inp.value.trim();
+    if (!s) { ul.hidden = true; inp.setAttribute('aria-expanded', 'false'); return; }
+    RF.active = Math.min(RF.active, Math.max(0, res.length - 1));
+    ul.innerHTML = res.length ? res.map((c, i) => `<li role="option" id="sc-opt-${i}" data-check="${esc(c)}" data-src="Stackhaven Actions" aria-selected="${i === RF.active}">${esc(c)}</li>`).join('') : `<li class="meta" style="padding:6px 12px">No status checks found. Status checks must have run in the last week.</li>`;
+    ul.hidden = false; inp.setAttribute('aria-expanded', 'true');
+    if (res.length) inp.setAttribute('aria-activedescendant', 'sc-opt-' + RF.active); else inp.removeAttribute('aria-activedescendant');
+  }
+  function addCheck(c) { if (!RF.checks.includes(c)) RF.checks.push(c); const inp = q('#bp-sc-q'); inp.value = ''; RF.active = 0; drawList(); drawChips(); inp.focus(); }
+  async function saveRule() {
+    const RF0 = RF, r = RF0.repo, pat = q('#bp-pattern').value.trim();
+    const err = (m) => { const e = q('#bp-err'); e.textContent = m; e.hidden = !m; };
+    if (!pat) return err('Branch name pattern can’t be blank.');
+    const rules = RULES[r.id] || (RULES[r.id] = []);
+    if (rules.some((x, i) => x.pattern === pat && i !== RF0.idx)) return err(`A branch protection rule for ${pat} already exists.`);
+    err('');
+    const ck = (id) => q('#' + id).checked;
+    const pr = ck('bp-pr'), sc = ck('bp-sc');
+    const x = { pattern: pat, require_pr: pr, approvals: +q('#bp-approvals').value, dismiss_stale: pr && ck('bp-dismiss'), code_owners: pr && ck('bp-codeowners'), require_sc: sc, strict: sc && ck('bp-strict'), checks: sc ? RF0.checks.slice().sort() : [], conversation_resolution: ck('bp-conv'), signed_commits: ck('bp-signed'), linear_history: ck('bp-linear'), restrict_push: ck('bp-restrict'), force_push: ck('bp-force'), deletions: ck('bp-deletions') };
+    const b = q('#bp-save'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Saving…';
+    await sleep(700);
+    await post({ event: RF0.idx == null ? 'branch_rule_create' : 'branch_rule_update', repo: `${ORG}/${r.name}`, pattern: pat, require_pr: yn(pr), approvals: pr ? String(x.approvals) : '', dismiss_stale: yn(x.dismiss_stale), code_owners: yn(x.code_owners), status_checks: x.checks.join(','), strict: yn(x.strict), conversation_resolution: yn(x.conversation_resolution), signed_commits: yn(x.signed_commits), linear_history: yn(x.linear_history), restrict_push: yn(x.restrict_push), force_push: yn(x.force_push), deletions: yn(x.deletions) });
+    if (RF0.idx == null) rules.push(x); else rules[RF0.idx] = x;
+    flash = { msg: RF0.idx == null ? 'Branch protection rule created.' : 'Branch protection rule updated.' };
+    go(`#/${ORG}/${r.name}/settings/branches`);
+  }
+  function settingsAccess(r) {
+    const list = COLLABS[r.id] || [['@tidewater-labs/platform', 'team', 'Write']];
+    return `<div style="display:flex;align-items:center"><h2 style="flex:1">Collaborators and teams</h2><button type="button" class="btn primary" id="add-people">Add people</button><button type="button" class="btn" id="add-teams" style="margin-left:8px">Add teams</button></div>
+      <div class="box" style="margin-bottom:16px"><div class="rowi"><b>Base role</b> <span class="meta">· Members of tidewater-labs have <b>Read</b> access to this repository.</span></div></div>
+      <div class="box"><div class="hd"><b>Manage access</b></div>${list.map(([n, t, role], i) => `<div class="rowi" style="display:flex;gap:10px;align-items:center">${t === 'team' ? '👥' : avatar(n)} <b>${esc(n)}</b> <span class="meta">${t}</span><span style="margin-left:auto"></span><select data-role="${i}" aria-label="Role for ${esc(n)}">${['Read', 'Triage', 'Write', 'Maintain', 'Admin'].map((x) => `<option ${x === role ? 'selected' : ''}>${x}</option>`).join('')}</select><button type="button" class="btn sm danger" data-collab-rm="${i}" aria-label="Remove ${esc(n)}">Remove</button></div>`).join('')}</div>`;
+  }
+
+  // rename availability
+  let renameTimer = null, renameOk = false;
+  function checkName() {
+    const r = curRepo(); if (!r) return;
+    const inp = q('#repo-name'), st = q('#rename-status'), b = q('#rename-btn');
+    const v = inp.value.trim();
+    renameOk = false; b.disabled = true;
+    clearTimeout(renameTimer);
+    if (v === r.name) { st.textContent = ''; return; }
+    st.innerHTML = '<span class="meta">Checking availability…</span>';
+    renameTimer = setTimeout(() => {
+      if (!v) { st.innerHTML = '<span class="bad">✗ Repository name can’t be blank.</span>'; return; }
+      if (!/^[A-Za-z0-9._-]+$/.test(v) || v === '.' || v === '..' || v.length > 100) { st.innerHTML = '<span class="bad">✗ Repository names can only contain ASCII letters, digits, and the characters ., -, and _.</span>'; return; }
+      if (REPOS.some((x) => x !== r && x.name.toLowerCase() === v.toLowerCase())) { st.innerHTML = `<span class="bad">✗ The repository <b>${esc(v)}</b> already exists on this account.</span>`; return; }
+      st.innerHTML = `<span class="ok">✓ <b>${esc(v)}</b> is available.</span>`;
+      renameOk = true; b.disabled = false;
+    }, 400);
+  }
+  async function doRename() {
+    const r = curRepo(); const v = q('#repo-name').value.trim();
+    if (!renameOk || v === r.name) return;
+    const b = q('#rename-btn'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Renaming…';
+    await sleep(700);
+    await post({ event: 'repo_rename', repo_id: r.id, from: r.name, to: v });
+    RENAMED[r.name] = v; r.name = v;
+    flash = { msg: `Repository name changed to ${v}. Requests to the old name will be redirected.` };
+    go(`#/${ORG}/${v}/settings/general`);
+  }
+
+  // ------------------------------------------------------------------------------------ modals / menus
+  function modal(title, body, foot) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h3>${esc(title)}</h3><button type="button" data-x aria-label="Close dialog">✕</button></header><div class="body">${body}</div><footer>${foot}</footer></div></div>`;
+    const m = q('#modal-root .modal');
+    m.querySelector('[data-x]').addEventListener('click', closeModal);
+    return m;
+  }
+  function closeModal(m) { const cur = q('#modal-root .modal'); if (!m || !(m instanceof Element) || cur === m) q('#modal-root').innerHTML = ''; }
+  function closeMenu() { q('#menu-root').innerHTML = ''; }
+  function menuAt(btn, html) {
+    const rc = btn.getBoundingClientRect();
+    q('#menu-root').innerHTML = `<div class="menu" role="menu" style="top:${rc.bottom + window.scrollY + 4}px;left:${Math.max(8, rc.right + window.scrollX - 260)}px">${html}</div>`;
+  }
+  function confirmTyped(r, title, warning, btnLabel, extra, onOk) {
+    const full = `${ORG}/${r.name}`;
+    const m = modal(title, `<p>${warning}</p>${extra || ''}<div class="field"><label for="typed">To confirm, type “${esc(full)}” in the box below</label><input type="text" id="typed" style="width:100%" autocomplete="off"></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn danger" id="typed-ok" disabled>${esc(btnLabel)}</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    const inp = m.querySelector('#typed'), ok = m.querySelector('#typed-ok');
+    inp.addEventListener('input', () => { ok.disabled = inp.value.trim() !== full; });
+    ok.addEventListener('click', async () => { ok.disabled = true; ok.innerHTML = '<span class="spin"></span>'; await sleep(600); closeModal(m); await onOk(m); });
+  }
+  function danger(kind) {
+    const r = curRepo();
+    if (kind === 'visibility') {
+      const to = r.vis === 'Public' ? 'private' : 'public';
+      confirmTyped(r, 'Change repository visibility', `You are about to make <b>${esc(r.name)}</b> ${to}. ${to === 'private' ? 'Stars and watchers from outside the organization will be removed.' : 'Anyone on the internet will be able to see this repository.'}`, `I understand, make this repository ${to}`, '', async () => {
+        await post({ event: 'repo_visibility_change', repo_id: r.id, repo: `${ORG}/${r.name}`, visibility: to });
+        r.vis = to === 'private' ? 'Private' : 'Public'; flash = { msg: `Repository is now ${to}.` }; render();
+      });
+    } else if (kind === 'transfer') {
+      confirmTyped(r, 'Transfer repository', 'Transferring moves the repository, its issues and its settings to the new owner.', 'I understand, transfer this repository', `<div class="field"><label for="new-owner">New owner’s Stackhaven username or organization name</label><input type="text" id="new-owner" style="width:100%"></div>`, async (m) => {
+        await post({ event: 'repo_transfer', repo_id: r.id, repo: `${ORG}/${r.name}`, new_owner: norm(m.querySelector('#new-owner').value) });
+        toast('Transfer requested. The new owner must accept it.');
+      });
+    } else if (kind === 'archive') {
+      confirmTyped(r, 'Archive repository', 'This repository will become read-only. You can unarchive it later.', 'I understand, archive this repository', '', async () => {
+        await post({ event: 'repo_archive', repo_id: r.id, repo: `${ORG}/${r.name}` });
+        flash = { msg: 'This repository has been archived. It is now read-only.' }; render();
+      });
+    } else if (kind === 'delete') {
+      confirmTyped(r, `Delete ${ORG}/${r.name}`, 'This will permanently delete the repository, wiki, issues, comments, packages, secrets, workflow runs and remove all collaborator associations.', 'Delete this repository', '', async () => {
+        await post({ event: 'repo_delete', repo_id: r.id, repo: `${ORG}/${r.name}` });
+        REPOS.splice(REPOS.indexOf(r), 1); flash = null; go(`#/${ORG}`); toast('Repository deleted.');
+      });
+    }
+  }
+
+  // ------------------------------------------------------------------------------------ router
+  let current = null;
+  function curRepo() { return current; }
+  function simplePage(title, text) { return `<div class="wrap" style="padding-top:24px"><h2 style="font-weight:400">${esc(title)}</h2><div class="box rowi">${text}</div></div>`; }
+  function render() {
+    const { parts, qs } = route();
+    closeMenu();
+    current = null;
+    let h;
+    if (!parts.length || (parts.length === 1 && parts[0] === ORG)) h = orgOverview();
+    else if (parts[0] === 'orgs' && parts[1] === ORG) h = orgTab(parts[2] || 'repositories');
+    else if (parts[0] === ORG && parts[1]) {
+      let r = byName(parts[1]);
+      if (!r && RENAMED[parts[1]]) { location.replace('#/' + [ORG, RENAMED[parts[1]], ...parts.slice(2)].join('/')); return; }
+      if (!r) h = simplePage('404', 'This is not the repository you are looking for.');
+      else {
+        current = r;
+        const tab = parts[2] || '';
+        if (tab === '') h = codeTab(r);
+        else if (tab === 'issues' && parts[3] === 'new') h = newIssue(r);
+        else if (tab === 'issues' && parts[3]) h = issueDetail(r, parts[3]);
+        else if (tab === 'issues') h = issuesTab(r, qs);
+        else if (tab === 'pulls') h = pullsTab(r);
+        else if (tab === 'pull') h = pullDetail(r, parts[3]);
+        else if (tab === 'actions') h = actionsTab(r);
+        else if (tab === 'settings') h = settingsTab(r, parts[3] || 'general', parts.slice(4));
+        else if (tab === 'tree' || tab === 'blob') h = blobView(r, tab, parts.slice(4));
+        else h = simpleTab(r, tab);
+      }
+    }
+    else if (parts[0] === 'u') { const p = person(parts[1]); h = `<div class="wrap" style="padding-top:24px"><div style="display:flex;gap:14px;align-items:center">${avatar(p[0], 'lg')}<div><h2 style="margin:0">${esc(p[1])}</h2><div class="meta">${esc(p[0])} · Member of <a href="#/${ORG}">tidewater-labs</a></div></div></div></div>`; }
+    else if (parts[0] === 'notifications') h = simplePage('Notifications', `<div>${[['aurora', 'Reconnect loop after token refresh on Safari 18', 'mentioned you'], ['aurora', 'fix: re-arm heartbeat after token refresh', 'review requested'], ['pelican-api', 'Release v0.19.1', 'assigned']].map(([r, t, why]) => `<div class="rowi"><b>${esc(t)}</b> <span class="meta">${ORG}/${r} · ${why}</span></div>`).join('')}</div>`);
+    else if (parts[0] === 'pulls') h = simplePage('Your pull requests', `<div class="rowi"><a href="#/${ORG}/aurora/pull/403">test: stabilise presence sync test</a> <span class="meta">${ORG}/aurora #403</span></div>`);
+    else if (parts[0] === 'issues') h = simplePage('Your issues', `<div class="rowi"><a href="#/${ORG}/aurora/issues/401">Flaky test: presence sync under packet loss</a> <span class="meta">${ORG}/aurora #401</span></div><div class="rowi"><a href="#/${ORG}/aurora/issues/390">Release 2.4.2 checklist</a> <span class="meta">${ORG}/aurora #390</span></div>`);
+    else if (parts[0] === 'explore') h = simplePage('Explore', 'Trending repositories and topics picked for you will appear here.');
+    else if (parts[0] === 'marketplace') h = simplePage('Marketplace', 'Find tools to improve your workflow: CI, code quality, security and more.');
+    else if (parts[0] === 'search') { const s = (qs.get('q') || '').toLowerCase(); const hits = REPOS.filter((r) => r.name.includes(s) || r.desc.toLowerCase().includes(s)); h = simplePage(`Search results for “${qs.get('q') || ''}”`, hits.map((r) => `<div class="rowi"><a href="#/${ORG}/${r.name}">${ORG}/${esc(r.name)}</a> <span class="meta">${esc(r.desc)}</span></div>`).join('') || 'No results.'); }
+    else if (parts[0] === 'new') h = `<div class="wrap" style="padding-top:24px;max-width:760px"><h2 style="font-weight:400">Create a new repository</h2><div class="field"><label for="nr-owner">Owner</label><select id="nr-owner"><option>tidewater-labs</option><option>rkapoor</option></select></div><div class="field"><label for="nr-name">Repository name</label><input type="text" id="nr-name" style="width:320px"></div><div class="field"><label for="nr-desc">Description (optional)</label><input type="text" id="nr-desc" style="width:100%"></div><div class="opt"><label><input type="radio" name="nr-vis" value="public" checked> Public</label></div><div class="opt"><label><input type="radio" name="nr-vis" value="private"> Private</label></div><button type="button" class="btn primary" id="nr-create">Create repository</button><div class="flash err" id="nr-err" hidden></div></div>`;
+    else if (parts[0] === 'about') h = simplePage(parts[1] ? parts[1][0].toUpperCase() + parts[1].slice(1) : 'About', 'Stackhaven — code hosting for teams. This page is informational.');
+    else h = simplePage('404', 'Page not found.');
+    q('#app').innerHTML = h;
+    document.title = current ? `${ORG}/${current.name}${parts[2] ? ' · ' + parts[2] : ''} · Stackhaven` : 'Tidewater Labs · Stackhaven';
+    if (q('#bp-chips')) { drawChips(); }
+  }
+  window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+
+  // ------------------------------------------------------------------------------------ events
+  document.addEventListener('click', async (e) => {
+    const t = e.target;
+    if (!t.closest('.menu') && !t.closest('#branch-btn') && !t.closest('#watch-btn') && !t.closest('#clone-btn') && !t.closest('#addfile') && !t.closest('#newmenu-btn')) closeMenu();
+    if (!t.closest('.combo')) { const ul = q('#bp-sc-list'); if (ul && !ul.hidden) { ul.hidden = true; q('#bp-sc-q').setAttribute('aria-expanded', 'false'); } }
+    const g = t.closest('[data-go]'); if (g && !t.closest('[data-topic]')) { go(g.dataset.go); return; }
+    const tp = t.closest('[data-topic]'); if (tp) { repoFilter.q = 'topic:' + tp.dataset.topic; if (!location.hash.match(/^#\/(tidewater-labs|orgs\/tidewater-labs\/repositories)?$/)) go(`#/${ORG}`); else { const l = q('#repo-list'); if (l) l.innerHTML = repoList(); } return; }
+    const lg = t.closest('[data-lang]'); if (lg) { repoFilter.lang = lg.dataset.lang; const l = q('#repo-list'); if (l) l.innerHTML = repoList(); return; }
+    const st = t.closest('[data-star]');
+    if (st) {
+      const r = REPOS.find((x) => x.id === st.dataset.star); const on = !starred.has(r.id);
+      on ? starred.add(r.id) : starred.delete(r.id);
+      await post({ event: 'repo_star', repo: `${ORG}/${r.name}`, starred: yn(on) });
+      render(); return;
+    }
+    const opt = t.closest('[role=option][data-check]'); if (opt && RF) { addCheck(opt.dataset.check); return; }
+    const chip = t.closest('[data-chip-rm]'); if (chip && RF) { RF.checks = RF.checks.filter((c) => c !== chip.dataset.chipRm); drawChips(); drawList(); return; }
+    if (t.closest('#bp-save')) { saveRule(); return; }
+    if (t.closest('#rename-btn')) { doRename(); return; }
+    const dz = t.closest('[data-danger]'); if (dz) { danger(dz.dataset.danger); return; }
+    const rd = t.closest('[data-rule-del]');
+    if (rd) {
+      const r = curRepo(), i = +rd.dataset.ruleDel, x = RULES[r.id][i];
+      const m = modal('Delete branch protection rule?', `<p>Are you sure you want to delete the <code>${esc(x.pattern)}</code> branch protection rule? Matching branches will no longer be protected.</p>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn danger" data-ok>I understand, delete this rule</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('[data-ok]').addEventListener('click', async () => { closeModal(); await post({ event: 'branch_rule_delete', repo: `${ORG}/${r.name}`, pattern: x.pattern }); RULES[r.id].splice(i, 1); flash = { msg: 'Branch protection rule deleted.' }; render(); });
+      return;
+    }
+    if (t.closest('#branch-btn')) {
+      const r = curRepo();
+      menuAt(t.closest('#branch-btn'), `<div style="padding:6px 14px" class="meta">Switch branches/tags</div><ul role="listbox" aria-label="Branches" style="border:0;box-shadow:none;margin:0">${r.branches.map((b) => `<li role="option" data-branch="${esc(b)}" aria-selected="${b === (curBranch[r.id] || 'main')}">${esc(b)}</li>`).join('')}</ul><a href="#/${ORG}/${r.name}/branches">View all branches</a>`);
+      return;
+    }
+    const bo = t.closest('[data-branch]'); if (bo) { curBranch[curRepo().id] = bo.dataset.branch; render(); return; }
+    if (t.closest('#clone-btn')) { const r = curRepo(); menuAt(t.closest('#clone-btn'), `<div style="padding:8px 14px"><b>Clone</b><div class="meta">HTTPS</div><input type="text" readonly value="https://stackhaven.dev/${ORG}/${esc(r.name)}.git" aria-label="Clone URL" style="width:100%;margin:6px 0"><button type="button" class="btn sm" id="copy-url">Copy</button></div><button type="button" id="dl-zip">Download ZIP</button>`); return; }
+    if (t.closest('#copy-url')) { closeMenu(); toast('Copied to clipboard.'); return; }
+    if (t.closest('#dl-zip')) { closeMenu(); toast('Preparing archive…'); return; }
+    if (t.closest('#addfile')) { menuAt(t.closest('#addfile'), `<button type="button" id="af-create">Create new file</button><button type="button" id="af-upload">Upload files</button>`); return; }
+    if (t.closest('#af-create') || t.closest('#af-upload')) { closeMenu(); toast('Use a local clone to add files to this repository — web editing is disabled by your organization.'); return; }
+    if (t.closest('#gotofile')) { toast('Type a file name after pressing t in the file list.'); return; }
+    if (t.closest('#watch-btn')) { menuAt(t.closest('#watch-btn'), ['Participating and @mentions', 'All Activity', 'Ignore', 'Custom'].map((w) => `<button type="button" role="menuitemradio" data-watch="${w}">${w}</button>`).join('')); return; }
+    const wt = t.closest('[data-watch]'); if (wt) { const r = curRepo(); watching[r.id] = wt.dataset.watch; closeMenu(); await post({ event: 'repo_watch', repo: `${ORG}/${r.name}`, level: wt.dataset.watch }); toast(`Watching: ${wt.dataset.watch}`); return; }
+    if (t.closest('#fork-btn')) {
+      const r = curRepo();
+      const m = modal('Create a new fork', `<div class="field"><label for="fork-owner">Owner</label><select id="fork-owner"><option>rkapoor</option></select></div><div class="field"><label for="fork-name">Repository name</label><input type="text" id="fork-name" value="${esc(r.name)}" style="width:100%"></div><div class="opt"><label><input type="checkbox" id="fork-main" checked> Copy the main branch only</label></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="fork-ok">Create fork</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#fork-ok').addEventListener('click', async () => { closeModal(); await post({ event: 'repo_fork', repo: `${ORG}/${r.name}`, to: 'rkapoor/' + norm(m.querySelector('#fork-name').value) }); toast('Fork created.'); });
+      return;
+    }
+    if (t.closest('#newmenu-btn')) { menuAt(t.closest('#newmenu-btn'), `<a href="#/new">New repository</a><a href="#/new">Import repository</a><a href="#/orgs/${ORG}/projects">New project</a>`); return; }
+    if (t.closest('#switch-default')) {
+      const r = curRepo();
+      const m = modal('Switch default branch', `<div class="field"><label for="def-br">Choose another branch to use as the default branch of ${esc(r.name)}</label><select id="def-br">${r.branches.map((b) => `<option ${b === (DEFAULT_BRANCH[r.id] || 'main') ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn danger" id="def-ok">Update</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#def-ok').addEventListener('click', async () => { const b = m.querySelector('#def-br').value; closeModal(); if (b === (DEFAULT_BRANCH[r.id] || 'main')) return; await post({ event: 'default_branch_change', repo: `${ORG}/${r.name}`, branch: b }); DEFAULT_BRANCH[r.id] = b; flash = { msg: `Default branch changed to ${b}.` }; render(); });
+      return;
+    }
+    if (t.closest('#post-cmt')) { const r = curRepo(); const v = norm(q('#cmt').value); if (!v) { toast('Comment cannot be empty.'); return; } const cmt = q('#cmt'); await post({ event: 'issue_comment', repo: `${ORG}/${r.name}`, issue: t.closest('#post-cmt').dataset.n, body: v }); cmt.value = ''; toast('Comment posted.'); return; }
+    if (t.closest('#close-issue')) { const r = curRepo(); await post({ event: 'issue_close', repo: `${ORG}/${r.name}`, issue: t.closest('#close-issue').dataset.n }); toast('Issue closed.'); go(`#/${ORG}/${r.name}/issues`); return; }
+    if (t.closest('#ni-submit')) { const r = curRepo(); const ti = norm(q('#ni-title').value); if (!ti) { toast('Title can’t be blank.'); return; } await post({ event: 'issue_create', repo: `${ORG}/${r.name}`, title: ti, body: norm(q('#ni-body').value) }); toast('Issue created.'); go(`#/${ORG}/${r.name}/issues`); return; }
+    if (t.closest('#new-pr')) { toast('Choose two branches to compare from a local clone or the branches page.'); return; }
+    if (t.closest('#labels-btn') || t.closest('#miles-btn')) { toast('Labels and milestones are managed by repository maintainers.'); return; }
+    if (t.closest('#tag-add')) { const r = curRepo(); const p = q('#tag-pat').value.trim(); if (!p) return; await post({ event: 'tag_protection_add', repo: `${ORG}/${r.name}`, pattern: p }); (TAGRULES[r.id] = TAGRULES[r.id] || []).push(p); flash = { msg: 'Tag protection rule added.' }; render(); return; }
+    if (t.closest('#act-save')) { const r = curRepo(); const o = { event: 'actions_settings_update', repo: `${ORG}/${r.name}`, actions: q('input[name=act-perm]:checked').value, workflow_permissions: q('input[name=wf-perm]:checked').value }; await sleep(400); await post(o); toast('Actions settings saved.'); return; }
+    if (t.closest('#pg-save')) { const r = curRepo(); const o = { event: 'pages_update', repo: `${ORG}/${r.name}`, source: q('#pg-src').value, branch: q('#pg-branch').value }; await sleep(400); await post(o); toast('Pages settings saved.'); return; }
+    if (t.closest('#hook-add') || t.closest('[data-hook-edit]')) {
+      const r = curRepo();
+      const m = modal('Add webhook', `<div class="field"><label for="hk-url">Payload URL</label><input type="url" id="hk-url" style="width:100%" placeholder="https://example.com/postreceive"></div><div class="field"><label for="hk-ct">Content type</label><select id="hk-ct"><option>application/json</option><option>application/x-www-form-urlencoded</option></select></div><div class="opt"><label><input type="radio" name="hk-ev" value="push" checked> Just the push event</label></div><div class="opt"><label><input type="radio" name="hk-ev" value="all"> Send me everything</label></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="hk-ok">Add webhook</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#hk-ok').addEventListener('click', async () => { const u = m.querySelector('#hk-url').value.trim(); if (!/^https?:\/\//.test(u)) { toast('Payload URL must start with https://'); return; } closeModal(); await post({ event: 'webhook_add', repo: `${ORG}/${r.name}`, url: u, events: m.querySelector('input[name=hk-ev]:checked').value }); (HOOKS[r.id] = HOOKS[r.id] || []).push({ url: u, events: 'push', ok: true }); render(); });
+      return;
+    }
+    const hd = t.closest('[data-hook-del]'); if (hd) { const r = curRepo(); const hk = HOOKS[r.id][+hd.dataset.hookDel]; await post({ event: 'webhook_delete', repo: `${ORG}/${r.name}`, url: hk.url }); HOOKS[r.id].splice(+hd.dataset.hookDel, 1); render(); return; }
+    if (t.closest('#sec-add') || t.closest('[data-sec-edit]')) {
+      const r = curRepo(); const name = t.closest('[data-sec-edit]') ? t.closest('[data-sec-edit]').dataset.secEdit : '';
+      const m = modal(name ? 'Update secret' : 'New repository secret', `<div class="field"><label for="sc-name">Name</label><input type="text" id="sc-name" value="${esc(name)}" style="width:100%" ${name ? 'readonly' : ''}></div><div class="field"><label for="sc-val">Secret</label><textarea id="sc-val" style="width:100%;min-height:80px"></textarea></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="sc-ok">${name ? 'Update secret' : 'Add secret'}</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#sc-ok').addEventListener('click', async () => { const n = m.querySelector('#sc-name').value.trim().toUpperCase(); if (!n || !m.querySelector('#sc-val').value) { toast('Name and secret are required.'); return; } closeModal(); await post({ event: name ? 'secret_update' : 'secret_add', repo: `${ORG}/${r.name}`, name: n }); if (!name) (SECRETS[r.id] = SECRETS[r.id] || []).push([n, 'Updated now']); render(); });
+      return;
+    }
+    const sd = t.closest('[data-sec-del]'); if (sd) { const r = curRepo(); await post({ event: 'secret_remove', repo: `${ORG}/${r.name}`, name: sd.dataset.secDel }); SECRETS[r.id] = SECRETS[r.id].filter((x) => x[0] !== sd.dataset.secDel); render(); return; }
+    if (t.closest('#dk-add')) {
+      const r = curRepo();
+      const m = modal('Add deploy key', `<div class="field"><label for="dk-title">Title</label><input type="text" id="dk-title" style="width:100%"></div><div class="field"><label for="dk-key">Key</label><textarea id="dk-key" style="width:100%;min-height:80px" placeholder="Begins with 'ssh-ed25519' or 'ssh-rsa'"></textarea></div><div class="opt"><label><input type="checkbox" id="dk-write"> Allow write access</label></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="dk-ok">Add key</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#dk-ok').addEventListener('click', async () => { const ti = norm(m.querySelector('#dk-title').value); if (!ti || !/^ssh-/.test(m.querySelector('#dk-key').value.trim())) { toast('Enter a title and a valid public key.'); return; } closeModal(); await post({ event: 'deploy_key_add', repo: `${ORG}/${r.name}`, title: ti, write: yn(m.querySelector('#dk-write').checked) }); (DKEYS[r.id] = DKEYS[r.id] || []).push([ti, 'SHA256:…', m.querySelector('#dk-write').checked ? 'Read/write · added now' : 'Read-only · added now']); render(); });
+      return;
+    }
+    if (t.closest('#add-people') || t.closest('#add-teams')) {
+      const r = curRepo(), teams = !!t.closest('#add-teams');
+      const m = modal(`Add ${teams ? 'teams' : 'people'} to ${r.name}`, `<div class="field"><label for="ap-q">Search by ${teams ? 'team name' : 'username, full name or email'}</label><input type="text" id="ap-q" style="width:100%"></div><div class="field"><label for="ap-role">Role</label><select id="ap-role"><option>Read</option><option>Triage</option><option selected>Write</option><option>Maintain</option><option>Admin</option></select></div>`, `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="ap-ok">Add to repository</button>`);
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#ap-ok').addEventListener('click', async () => { const who = norm(m.querySelector('#ap-q').value); if (!who) { toast('Choose who to add.'); return; } closeModal(); await post({ event: 'collaborator_add', repo: `${ORG}/${r.name}`, who, role: m.querySelector('#ap-role').value }); (COLLABS[r.id] = COLLABS[r.id] || [['@tidewater-labs/platform', 'team', 'Write']]).push([who, teams ? 'team' : 'person', m.querySelector('#ap-role').value]); render(); });
+      return;
+    }
+    const cr = t.closest('[data-collab-rm]'); if (cr) { const r = curRepo(); const list = COLLABS[r.id] || (COLLABS[r.id] = [['@tidewater-labs/platform', 'team', 'Write']]); const x = list[+cr.dataset.collabRm]; await post({ event: 'collaborator_remove', repo: `${ORG}/${r.name}`, who: x[0] }); list.splice(+cr.dataset.collabRm, 1); render(); return; }
+    if (t.closest('#nr-create')) { const n = q('#nr-name').value.trim(); const e2 = q('#nr-err'); if (!/^[A-Za-z0-9._-]+$/.test(n)) { e2.textContent = 'Enter a valid repository name.'; e2.hidden = false; return; } if (byName(n)) { e2.textContent = `The repository ${n} already exists on this account.`; e2.hidden = false; return; } await post({ event: 'repo_create', owner: q('#nr-owner').value, name: n, visibility: q('input[name=nr-vis]:checked').value }); toast('Repository created.'); go(`#/${ORG}`); return; }
+  });
+  document.addEventListener('change', async (e) => {
+    const t = e.target;
+    if (t.id === 'bp-pr') { q('#bp-pr-opts').hidden = !t.checked; return; }
+    if (t.id === 'bp-sc') { q('#bp-sc-opts').hidden = !t.checked; return; }
+    if (t.id === 'bp-restrict') { q('#bp-restrict-opts').hidden = !t.checked; return; }
+    if (t.classList.contains('feat')) { const r = curRepo(); FEAT[r.id][t.dataset.k] = t.checked; await post({ event: 'repo_settings_update', repo: `${ORG}/${r.name}`, setting: t.dataset.k, value: t.checked ? 'on' : 'off' }); toast('Saved.'); return; }
+    if (t.dataset.role != null && t.tagName === 'SELECT') { const r = curRepo(); const list = COLLABS[r.id] || (COLLABS[r.id] = [['@tidewater-labs/platform', 'team', 'Write']]); const x = list[+t.dataset.role]; x[2] = t.value; await post({ event: 'collaborator_role_change', repo: `${ORG}/${r.name}`, who: x[0], role: t.value }); toast(`${x[0]} is now ${t.value}.`); return; }
+    if (t.id === 'rf-type' || t.id === 'rf-lang' || t.id === 'rf-sort') { repoFilter[t.id.slice(3)] = t.value; q('#repo-list').innerHTML = repoList(); return; }
+  });
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'repo-name') { checkName(); return; }
+    if (t.id === 'bp-pattern') { const r = curRepo(), v = t.value.trim(), m = matches(r, v); q('#bp-applies').textContent = v ? `Applies to ${m.length} branch${m.length === 1 ? '' : 'es'}${m.length ? ': ' + m.join(', ') : ''}` : 'Use * as a wildcard, for example release/*.'; return; }
+    if (t.id === 'bp-sc-q') { RF.active = 0; drawList(); return; }
+    if (t.id === 'rf-q') { repoFilter.q = t.value; const l = q('#repo-list'); const pos = t.selectionStart; l.innerHTML = repoList(); const n = q('#rf-q'); n.focus(); try { n.setSelectionRange(pos, pos); } catch {} return; }
+  });
+  document.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t.id === 'bp-sc-q') {
+      const res = scResults();
+      if (e.key === 'ArrowDown' && res.length) { e.preventDefault(); RF.active = Math.min(res.length - 1, RF.active + 1); drawList(); }
+      else if (e.key === 'ArrowUp' && res.length) { e.preventDefault(); RF.active = Math.max(0, RF.active - 1); drawList(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (res.length) addCheck(res[RF.active]); }
+      else if (e.key === 'Escape') { q('#bp-sc-list').hidden = true; }
+    }
+    if (t.id === 'gsearch' && e.key === 'Enter') { const v = t.value.trim(); if (v) go('#/search?q=' + encodeURIComponent(v)); }
+    if (t.id === 'repo-name' && e.key === 'Enter') { e.preventDefault(); if (renameOk) doRename(); }
+  });
+  document.addEventListener('focusin', (e) => { if (e.target.id === 'bp-sc-q') drawList(); });
+  render();
+})();
+</script>
+</body>
+</html>

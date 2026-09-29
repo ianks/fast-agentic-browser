@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ashgrove University · Registration</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f8f7f4; }
+  header { background: #7f1d1d; }
+  main { max-width: 1040px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid #e7e5e4; margin: 12px 0 14px; }
+  .tabs [role=tab] { border: 0; border-bottom: 3px solid transparent; background: none; border-radius: 0; font-weight: 600; }
+  .tabs [role=tab][aria-selected=true] { border-bottom-color: #7f1d1d; color: #7f1d1d; }
+  table { background: #fff; font-size: 14px; }
+  .status { font-size: 12px; border-radius: 8px; padding: 1px 8px; }
+  .status.Open { background: #dcfce7; } .status.Full { background: #fee2e2; } .status.Restricted { background: #e0e7ff; }
+  .note { font-size: 12px; color: #6b7280; }
+  .searchbar { display: flex; gap: 8px; align-items: flex-end; }
+  .searchbar label { margin: 0 0 3px; }
+</style>
+</head>
+<body>
+<header><strong>Ashgrove University</strong><span>Student Records · Registration</span><span style="margin-left:auto">Tomasina Ekwueme-Hart · ID 20417763 · Autumn 2026</span></header>
+<main>
+  <h1>Autumn 2026 registration</h1>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-sched" aria-selected="true" aria-controls="p-sched">My schedule</button>
+    <button role="tab" id="t-search" aria-selected="false" aria-controls="p-search">Search classes</button>
+    <button role="tab" id="t-wait" aria-selected="false" aria-controls="p-wait">Waitlists</button>
+  </div>
+  <section id="p-sched" role="tabpanel" aria-labelledby="t-sched"></section>
+  <section id="p-search" role="tabpanel" aria-labelledby="t-search" hidden>
+    <div class="searchbar"><div><label for="subj">Subject and number</label><input id="subj" type="text" placeholder="e.g. ECON 305" style="width:200px"></div><button type="button" class="primary" id="find">Search</button></div>
+    <div id="results" style="margin-top:14px"></div>
+  </section>
+  <section id="p-wait" role="tabpanel" aria-labelledby="t-wait" hidden></section>
+</main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0"></h3><p id="dlg-b"></p>
+    <div class="row" style="justify-content:flex-end"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes"></button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const MINE = [
+    { course: 'STAT 210', section: '001', title: 'Statistical Methods I', days: 'MWF', start: '09:00', end: '09:50', room: 'Harlow 104', units: 4 },
+    { course: 'CHEM 115', section: '002', title: 'General Chemistry', days: 'TTh', start: '10:00', end: '11:15', room: 'Brunel 2', units: 4 },
+    { course: 'CHEM 115L', section: '006', title: 'General Chemistry Lab', days: 'W', start: '13:00', end: '15:50', room: 'Brunel Lab C', units: 1 },
+    { course: 'ENGL 120', section: '004', title: 'Academic Writing', days: 'MW', start: '16:00', end: '17:15', room: 'Keats 12', units: 3 },
+  ];
+  const S = (course, section, title, days, start, end, instr, enrolled, cap, extra = {}) => ({ course, section, title, days, start, end, instr, enrolled, cap, units: 3, ...extra });
+  const CATALOG = [
+    S('ECON 305', '001', 'Intermediate Macroeconomics', 'MWF', '09:00', '09:50', 'Prof. Adaeze Nwosu', 31, 35),
+    S('ECON 305', '002', 'Intermediate Macroeconomics', 'TTh', '10:30', '11:45', 'Prof. Adaeze Nwosu', 22, 35),
+    S('ECON 305', '003', 'Intermediate Macroeconomics', 'TTh', '13:00', '14:15', 'Dr. Rhys Pemberton', 35, 35, { waitlist: 4 }),
+    S('ECON 305', '004', 'Intermediate Macroeconomics', 'MW', '14:00', '15:15', 'Dr. Rhys Pemberton', 18, 35),
+    S('ECON 305', '005', 'Intermediate Macroeconomics', 'TTh', '15:00', '16:15', 'Dr. Mireia Soler', 28, 35),
+    S('ECON 305', '006', 'Intermediate Macroeconomics', 'F', '10:00', '12:50', 'Dr. Mireia Soler', 9, 20, { restricted: 'Reserved for Economics majors' }),
+    S('ECON 350', '001', 'Economics of Labour', 'TTh', '15:00', '16:15', 'Dr. Mireia Soler', 12, 30),
+    S('HIST 240', '001', 'The Atlantic World, 1500–1800', 'TTh', '13:00', '14:15', 'Prof. Laurent Dufresne', 40, 40, { waitlist: 12 }),
+    S('HIST 240', '002', 'The Atlantic World, 1500–1800', 'MW', '11:00', '12:15', 'Dr. Sunita Rao', 26, 40),
+    S('HIST 240', '003', 'The Atlantic World, 1500–1800', 'F', '13:00', '15:50', 'Dr. Sunita Rao', 17, 30),
+    S('HIST 204', '001', 'Modern Atlantic Economies', 'TTh', '13:00', '14:15', 'Prof. Laurent Dufresne', 19, 40),
+  ];
+  const WAIT = [];
+  const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const dayset = (d) => d.match(/Th|M|T|W|F/g);
+  const clash = (a, b) => dayset(a.days).some((d) => dayset(b.days).includes(d)) && toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  let dlgFn = null;
+  const dialog = (h, b, yes, fn) => { q('#dlg-h').textContent = h; q('#dlg-b').textContent = b; q('#dlg-yes').textContent = yes; dlgFn = fn; q('#dlg').hidden = false; };
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; dlgFn = null; };
+  q('#dlg-yes').onclick = async () => { const f = dlgFn; if (!f) return; q('#dlg-yes').disabled = true; await f(); q('#dlg-yes').disabled = false; q('#dlg').hidden = true; dlgFn = null; };
+  qa('[role=tab]').forEach((t) => t.addEventListener('click', () => { qa('[role=tab]').forEach((o) => { o.setAttribute('aria-selected', String(o === t)); q('#' + o.getAttribute('aria-controls')).hidden = o !== t; }); if (t.id === 't-wait') renderWait(); }));
+  function renderSched() {
+    const units = MINE.reduce((a, c) => a + c.units, 0);
+    q('#p-sched').innerHTML = `<p>You're enrolled in <strong>${units} units</strong> (maximum 18).</p><table><thead><tr><th>Course</th><th>Section</th><th>Title</th><th>Days</th><th>Time</th><th>Room</th><th>Units</th></tr></thead><tbody>${MINE.map((c) => `<tr><td>${c.course}</td><td>${c.section}</td><td>${c.title}</td><td>${c.days}</td><td>${c.start}–${c.end}</td><td>${c.room}</td><td>${c.units}</td></tr>`).join('')}</tbody></table><p class="note">Days: M = Monday, T = Tuesday, W = Wednesday, Th = Thursday, F = Friday.</p>`;
+  }
+  function renderWait() { q('#p-wait').innerHTML = WAIT.length ? `<ul>${WAIT.map((w) => `<li>${w}</li>`).join('')}</ul>` : '<p class="muted">You are not on any waitlists.</p>'; }
+  async function search() {
+    const term = q('#subj').value.trim().toUpperCase().replace(/\s+/g, ' ');
+    const out = q('#results');
+    if (!term) { out.innerHTML = '<p class="muted">Enter a subject, like ECON or ECON 305.</p>'; return; }
+    out.innerHTML = '<p class="muted" role="status">Searching the class schedule…</p>';
+    await later(450);
+    const rows = CATALOG.filter((c) => c.course === term || c.course.startsWith(term + ' ') || c.course.split(' ')[0] === term);
+    out.innerHTML = rows.length ? `<table><thead><tr><th>Course</th><th>Section</th><th>Days &amp; time</th><th>Instructor</th><th>Seats</th><th>Status</th><th></th></tr></thead><tbody>${rows.map((c) => {
+      const mine = MINE.some((m) => m.course === c.course && m.section === c.section);
+      const full = c.enrolled >= c.cap; const status = c.restricted ? 'Restricted' : full ? 'Full' : 'Open';
+      let action = '';
+      if (mine) action = '<span class="muted">Enrolled</span>';
+      else if (c.restricted) action = `<button type="button" disabled aria-label="Enroll in ${c.course} section ${c.section}">Enroll</button><div class="note">${c.restricted}</div>`;
+      else if (full) action = `<button type="button" disabled aria-label="Enroll in ${c.course} section ${c.section}">Enroll</button><div class="note">This section is full.</div> <button type="button" data-wait="${c.course}|${c.section}" aria-label="Join waitlist for ${c.course} section ${c.section}">Join waitlist (${c.waitlist} waiting)</button>`;
+      else action = `<button type="button" data-enroll="${c.course}|${c.section}" aria-label="Enroll in ${c.course} section ${c.section}">Enroll</button>`;
+      return `<tr><td><strong>${c.course}</strong><div class="note">${c.title}</div></td><td>${c.section}</td><td>${c.days} ${c.start}–${c.end}</td><td>${c.instr}</td><td>${c.enrolled}/${c.cap}</td><td><span class="status ${status}">${status === 'Full' ? 'Full — class is at capacity' : status}</span></td><td>${action}</td></tr>`;
+    }).join('')}</tbody></table>` : '<p class="muted">No classes found.</p>';
+  }
+  q('#find').addEventListener('click', search);
+  q('#subj').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); search(); } });
+  q('#results').addEventListener('click', (e) => {
+    const en = e.target.closest('[data-enroll]'); const wt = e.target.closest('[data-wait]');
+    if (en) {
+      const [course, section] = en.dataset.enroll.split('|'); const c = CATALOG.find((x) => x.course === course && x.section === section);
+      const cl = MINE.find((m) => clash(m, c));
+      dialog(`Enroll in ${course}-${section}?`, `${c.title} · ${c.days} ${c.start}–${c.end} · ${c.units} units.${cl ? ` Warning: this overlaps ${cl.course}-${cl.section} (${cl.days} ${cl.start}–${cl.end}). You can still enroll, but you'll need an instructor override for the clash.` : ''}`, 'Confirm enrollment', async () => {
+        await later(400); await rec({ event: 'enroll', course, section, clash: cl ? `${cl.course}-${cl.section}` : 'none' });
+        MINE.push({ course, section, title: c.title, days: c.days, start: c.start, end: c.end, room: 'TBA', units: c.units }); c.enrolled++; renderSched(); search(); toast(`Enrolled in ${course}-${section}.`);
+      });
+    }
+    if (wt) {
+      const [course, section] = wt.dataset.wait.split('|');
+      dialog(`Join the waitlist for ${course}-${section}?`, 'If a seat opens up you will be enrolled automatically.', 'Join waitlist', async () => { await later(300); await rec({ event: 'waitlist_join', course, section }); WAIT.push(`${course}-${section}`); toast('Added to the waitlist.'); });
+    }
+  });
+  renderSched();
+})();
+</script>
+</body>
+</html>

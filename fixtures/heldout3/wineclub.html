@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Côte &amp; Cask · Members</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Hoefler Text", Baskerville, Georgia, serif; color: #2a1d1f; background: #f8f4ef; }
+  a { color: #7b1e2b; }
+  button, input, select { font: 14px -apple-system, "Segoe UI", sans-serif; }
+  header { background: #3b0f17; color: #f3e6dc; }
+  header .in { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 24px; padding: 14px 24px; }
+  .logo { font-size: 24px; letter-spacing: .06em; }
+  header nav a { color: #e8cfc2; text-decoration: none; font: 14px -apple-system, sans-serif; margin-right: 14px; padding-bottom: 4px; }
+  header nav a.on { color: #fff; border-bottom: 2px solid #d9a441; }
+  header .sp { flex: 1; }
+  header .who { font: 13px -apple-system, sans-serif; color: #e8cfc2; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 24px 60px; }
+  h1 { font-weight: 400; font-size: 32px; margin: 0 0 6px; }
+  .sub { color: #7a6a66; font-family: -apple-system, sans-serif; font-size: 14px; margin: 0 0 18px; }
+  .card { background: #fff; border: 1px solid #eadfd6; border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; }
+  .btn { border: 1px solid #cdb9ad; background: #fff; border-radius: 999px; padding: 7px 16px; cursor: pointer; color: #2a1d1f; }
+  .btn.primary { background: #7b1e2b; border-color: #7b1e2b; color: #fff; }
+  .btn.ghost { border-color: transparent; color: #7b1e2b; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .slot { display: grid; grid-template-columns: 34px 46px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0e7e0; position: relative; }
+  .slot:last-child { border-bottom: 0; }
+  .slot .n { font: 600 13px -apple-system, sans-serif; color: #a08f89; }
+  .bottle { width: 18px; height: 44px; border-radius: 6px 6px 3px 3px; margin: 0 auto; }
+  .slot .meta { font: 13px -apple-system, sans-serif; color: #7a6a66; }
+  .slot .changed { font: 600 11px -apple-system, sans-serif; color: #9a6b00; background: #fff4d6; border-radius: 9px; padding: 1px 8px; margin-left: 6px; }
+  .listbox { position: absolute; right: 0; top: 100%; z-index: 20; width: 460px; background: #fff; border: 1px solid #d9c7bb; border-radius: 10px; box-shadow: 0 16px 40px rgba(59,15,23,.18); padding: 6px; }
+  .listbox .opt { padding: 9px 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; font-family: -apple-system, sans-serif; font-size: 14px; }
+  .listbox .opt:hover, .listbox .opt[aria-selected=true] { background: #f7ece6; }
+  .listbox .opt small { color: #7a6a66; display: block; }
+  .listbox .hd { font: 600 12px -apple-system, sans-serif; color: #7a6a66; padding: 6px 10px; }
+  .dates { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dates label { border: 1px solid #d9c7bb; border-radius: 10px; padding: 8px 12px; cursor: pointer; font: 14px -apple-system, sans-serif; background: #fff; }
+  .dates label.sel { border-color: #7b1e2b; background: #fbf1ee; box-shadow: inset 0 0 0 1px #7b1e2b; }
+  .dates input { margin-right: 6px; }
+  .savebar { position: sticky; bottom: 0; background: #3b0f17; color: #fff; padding: 12px 20px; border-radius: 12px; display: flex; align-items: center; gap: 12px; font-family: -apple-system, sans-serif; margin-top: 14px; }
+  .savebar .sp { flex: 1; }
+  .savebar .btn { border-color: #d9a441; }
+  .upsell { display: flex; gap: 14px; align-items: center; background: #fdf8f0; border: 1px dashed #d9a441; border-radius: 12px; padding: 12px 16px; font-family: -apple-system, sans-serif; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, sans-serif; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #f0e7e0; }
+  th { font-size: 12px; color: #7a6a66; text-transform: uppercase; letter-spacing: .05em; }
+  td.num, th.num { text-align: right; }
+  .fav { border: 0; background: none; font-size: 18px; cursor: pointer; color: #b8a39a; }
+  .fav[aria-pressed=true] { color: #c2185b; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; font-family: -apple-system, sans-serif; }
+  .pager button[aria-current=page] { background: #3b0f17; color: #fff; border-color: #3b0f17; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #3b0f17; color: #fff; padding: 10px 18px; border-radius: 999px; font-family: -apple-system, sans-serif; z-index: 60; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(40, 10, 15, .45); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .modal { background: #fff; border-radius: 12px; padding: 20px 22px; width: 440px; font-family: -apple-system, sans-serif; }
+  footer { text-align: center; color: #9a8a84; font: 12px -apple-system, sans-serif; padding: 24px; }
+</style>
+</head>
+<body>
+<header><div class="in"><span class="logo">Côte &amp; Cask</span><nav aria-label="Members"><a href="#/shipment" data-nav="shipment">Next shipment</a><a href="#/cellar" data-nav="cellar">My cellar</a><a href="#/orders" data-nav="orders">Orders</a><a href="#/membership" data-nav="membership">Membership</a><a href="#/shop" data-nav="shop">Shop</a></nav><span class="sp"></span><span class="who">Henrik Lindahl · Explorer member</span></div></header>
+<main id="view"></main>
+<footer>Côte &amp; Cask Wine Club AB · Please drink responsibly · Deliveries require ID from someone aged 20+</footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toFixed(2);
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const W = (id, vintage, name, producer, region, price, color) => ({ id, vintage, name, producer, region, price, color });
+  const label = (w) => `${w.vintage} ${w.name} (${w.producer})`;
+  const SLOTS = [
+    { cur: W('CC-1101', 2023, 'Vinho Verde Loureiro', 'Quinta do Ameal', 'Minho, Portugal', 14.0, '#e8e2a8'), alts: [W('CC-1204', 2022, 'Albariño Rías Baixas', 'Pazo de Señoráns', 'Galicia, Spain', 15.5, '#e9e0a0'), W('CC-1207', 2021, 'Albariño Rías Baixas Reserva', 'Pazo Baión', 'Galicia, Spain', 19.0, '#e3d690'), W('CC-1211', 2022, 'Alvarinho Monção e Melgaço', 'Soalheiro', 'Minho, Portugal', 15.0, '#ece5b0'), W('CC-1215', 2023, 'Grüner Veltliner Kamptal', 'Hirsch', 'Kamptal, Austria', 14.5, '#e2e5a0'), W('CC-1218', 2022, 'Picpoul de Pinet', 'Félines Jourdan', 'Languedoc, France', 12.5, '#efe9b8')] },
+    { cur: W('CC-2102', 2022, 'Beaujolais-Villages', 'Domaine Chignard', 'Beaujolais, France', 16.5, '#7a1f33'), alts: [W('CC-2208', 2022, 'Morgon', 'Domaine Marcel Lapierre', 'Beaujolais, France', 19.0, '#6d1a2e'), W('CC-2209', 2021, 'Morgon Côte du Py', 'Jean Foillard', 'Beaujolais, France', 26.0, '#5f1628'), W('CC-2212', 2022, 'Fleurie', 'Clos de la Roilette', 'Beaujolais, France', 18.5, '#86263b'), W('CC-2216', 2022, 'Morgon', 'Domaine Jean-Marc Burgaud', 'Beaujolais, France', 17.5, '#6a1c2f'), W('CC-2220', 2021, 'Pinot Noir Reserve', 'Bründlmayer', 'Kamptal, Austria', 21.0, '#7c2235')] },
+    { cur: W('CC-3103', 2021, 'Rioja Crianza', 'Bodegas Ontañón', 'Rioja, Spain', 18.0, '#5a1422'), alts: [W('CC-3301', 2020, 'Ribera del Duero Roble', 'Pago de Carraovejas', 'Castilla y León, Spain', 19.5, '#51121f'), W('CC-3305', 2021, 'Douro Tinto', 'Niepoort', 'Douro, Portugal', 17.0, '#4e1320')] },
+    { cur: W('CC-4104', 2022, 'Côtes du Rhône', 'Domaine de la Janasse', 'Rhône, France', 17.0, '#621827'), alts: [W('CC-4402', 2021, 'Crozes-Hermitage', 'Alain Graillot', 'Rhône, France', 23.0, '#57141f'), W('CC-4406', 2022, 'Minervois', 'Château Maris', 'Languedoc, France', 15.0, '#661a29')] },
+    { cur: W('CC-5105', 2023, 'Sancerre', 'Domaine Vacheron', 'Loire, France', 24.0, '#efe6b3'), alts: [W('CC-5501', 2022, 'Pouilly-Fumé', 'Domaine Didier Dagueneau', 'Loire, France', 32.0, '#ece2a8'), W('CC-5503', 2023, 'Menetou-Salon', 'Henry Pellé', 'Loire, France', 21.0, '#f0e8b8')] },
+    { cur: W('CC-6106', 2020, 'Chianti Classico', 'Fontodi', 'Tuscany, Italy', 22.0, '#5c1523'), alts: [W('CC-6601', 2019, 'Rosso di Montalcino', 'Il Poggione', 'Tuscany, Italy', 21.5, '#561420'), W('CC-6604', 2020, 'Etna Rosso', 'Tenuta delle Terre Nere', 'Sicily, Italy', 23.0, '#6b1a2b')] },
+  ];
+  const DATES = [['2026-10-13', 'Tue 13 Oct', 0], ['2026-10-14', 'Wed 14 Oct', 0], ['2026-10-15', 'Thu 15 Oct', 0], ['2026-10-16', 'Fri 16 Oct', 0], ['2026-10-17', 'Sat 17 Oct', 5]];
+  const CELLAR = [
+    ['K-01', '2019 Riesling Kabinett Wehlener Sonnenuhr (J.J. Prüm)', 'Mosel', 2, 94, 93, false], ['K-02', '2021 Sancerre (Domaine Vacheron)', 'Loire', 3, 88, 91, false], ['K-03', '2019 Châteauneuf-du-Pape (Vieux Télégraphe)', 'Rhône', 1, 92, 95, true],
+    ['K-04', '2020 Douro Tinto Redoma (Niepoort)', 'Douro', 2, 90, 92, true], ['K-05', '2015 Rioja Gran Reserva 904 (La Rioja Alta)', 'Rioja', 1, 93, 97, false], ['K-06', '2022 Morgon (Domaine Marcel Lapierre)', 'Beaujolais', 4, 89, 91, false],
+    ['K-07', '2019 Riesling Spätlese Wehlener Sonnenuhr (J.J. Prüm)', 'Mosel', 1, 90, 95, false], ['K-08', '2020 Etna Rosso (Tenuta delle Terre Nere)', 'Sicily', 2, 87, 90, false], ['K-09', '2021 Albariño Rías Baixas (Pazo de Señoráns)', 'Galicia', 3, 86, 90, false],
+    ['K-10', '2018 Priorat (Clos Mogador)', 'Priorat', 1, 91, 95, false], ['K-11', '2020 Chablis Premier Cru Montée de Tonnerre (Raveneau)', 'Burgundy', 1, 93, 98, false], ['K-12', '2018 Brunello di Montalcino (Il Poggione)', 'Tuscany', 2, 95, 96, false],
+    ['K-13', '2017 Pomerol (Château La Conseillante)', 'Bordeaux', 1, 92, 94, false], ['K-14', '2021 Crozes-Hermitage (Alain Graillot)', 'Rhône', 2, 88, 92, false], ['K-15', '2022 Grüner Veltliner Lamm (Hirsch)', 'Kamptal', 2, 91, 94, false],
+    ['K-16', '2016 Barolo (Brezza)', 'Piedmont', 2, 89, 93, false], ['K-17', '2019 Rosso di Montalcino (Il Poggione)', 'Tuscany', 3, 85, 89, false], ['K-18', '2020 Côte-Rôtie (Jamet)', 'Rhône', 1, 92, 96, false],
+    ['K-19', '2021 Pouilly-Fumé Silex (Dagueneau)', 'Loire', 1, 91, 97, false], ['K-20', '2018 Ribera del Duero (Pago de Carraovejas)', 'Castilla y León', 2, 87, 92, false], ['K-21', '2016 Barolo Cannubi (Brezza)', 'Piedmont', 1, 97, 94, false],
+    ['K-22', '2022 Fleurie (Clos de la Roilette)', 'Beaujolais', 3, 88, 90, false], ['K-23', '2020 Minervois La Touge (Château Maris)', 'Languedoc', 2, 84, 88, false], ['K-24', '2019 Chianti Classico Riserva (Fontodi)', 'Tuscany', 2, 90, 94, false],
+    ['K-25', '2021 Picpoul de Pinet (Félines Jourdan)', 'Languedoc', 4, 83, 87, false], ['K-26', '2017 Champagne Brut Nature (Larmandier-Bernier)', 'Champagne', 1, 92, 95, false],
+  ].map(([id, name, region, bottles, mine, critic, fav], i) => ({ id, name, region, bottles, mine, critic, fav, added: 26 - i }));
+  const st = { pending: SLOTS.map((s) => s.cur), date: '2026-10-13', saved: { bottles: SLOTS.map((s) => s.cur), date: '2026-10-13' }, extra: false, open: -1, busy: false, skipped: false, sort: 'recent', page: 1 };
+  const dirty = () => st.pending.some((w, i) => w !== st.saved.bottles[i]) || st.date !== st.saved.date || st.extra;
+  const surcharge = () => st.pending.reduce((a, w, i) => a + Math.max(0, w.price - SLOTS[i].cur.price), 0); // pricier swaps pay the difference
+
+  function shipmentPage() {
+    if (st.skipped) return `<h1>October shipment skipped</h1><p class="sub">Your next shipment is the November selection.</p>`;
+    const d = DATES.find((x) => x[0] === st.date);
+    return `<h1>Your October shipment</h1><p class="sub">Explorer · 6 bottles · ships from our Gothenburg cellar. Changes close Sunday 11 October at 23:59.</p>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-family:-apple-system,sans-serif">Bottles</strong><span class="sub" style="margin:0">Swap any bottle for another from the same style</span></div>
+      ${st.pending.map((w, i) => `<div class="slot"><span class="n">${i + 1}</span><span class="bottle" style="background:${w.color}"></span><div><div>${esc(w.vintage + ' ' + w.name)}${w !== SLOTS[i].cur ? '<span class="changed">Swapped</span>' : ''}</div><div class="meta">${esc(w.producer)} · ${esc(w.region)} · ${eur(w.price)}</div></div>
+        <div><button class="btn" type="button" data-swap="${i}" aria-haspopup="listbox" aria-expanded="${st.open === i}" aria-label="Swap ${esc(w.vintage + ' ' + w.name)}">Swap</button>${w !== SLOTS[i].cur ? ` <button class="btn ghost" type="button" data-undo="${i}">Undo</button>` : ''}</div>
+        ${st.open === i ? `<div class="listbox" role="listbox" aria-label="Swap options for bottle ${i + 1}"><div class="hd">Swap ${esc(w.vintage + ' ' + w.name)} for…</div>${[SLOTS[i].cur, ...SLOTS[i].alts].filter((x) => x !== w).map((x) => `<div class="opt" role="option" tabindex="0" data-pick="${x.id}" aria-selected="false"><span>${esc(x.vintage + ' ' + x.name)}<small>${esc(x.producer)} · ${esc(x.region)}</small></span><span>${eur(x.price)}</span></div>`).join('')}</div>` : ''}</div>`).join('')}</div>
+      <div class="upsell"><span class="bottle" style="background:#4a1019;width:16px;height:40px"></span><div style="flex:1"><strong>Complete your shipment: 2019 Barolo Ravera (Vietti)</strong><div class="sub" style="margin:0">Member price €38.00 · ships with this box</div></div><button class="btn" type="button" id="extra">${st.extra ? 'Remove' : 'Add bottle'}</button></div>
+      <div class="card" style="margin-top:18px"><strong style="font-family:-apple-system,sans-serif">Delivery day</strong><p class="sub" style="margin:4px 0 10px">Delivered by Bring between 08:00 and 16:00 to Karlavägen 58, 114 49 Stockholm.</p><div class="dates" role="radiogroup" aria-label="Delivery day">${DATES.map(([v, l, fee]) => `<label class="${st.date === v ? 'sel' : ''}"><input type="radio" name="ddate" value="${v}" ${st.date === v ? 'checked' : ''}>${l}${fee ? ` (+€${fee})` : ''}</label>`).join('')}</div></div>
+      <p style="font-family:-apple-system,sans-serif"><button class="btn" type="button" id="skip">Skip October shipment</button> <a href="#/membership">Pause membership</a></p>
+      ${dirty() ? `<div class="savebar"><span>You have unsaved changes${surcharge() ? ` · swap supplement ${eur(surcharge())}` : ''}${st.extra ? ' · extra bottle €38.00' : ''}${d[2] ? ` · Saturday delivery €${d[2]}` : ''}</span><span class="sp"></span><button class="btn" type="button" id="discard" style="color:#fff;background:transparent">Discard</button><button class="btn primary" type="button" id="save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Save changes'}</button></div>` : ''}`;
+  }
+  function cellarPage() {
+    const list = CELLAR.slice().sort((a, b) => (st.sort === 'name' ? a.name.localeCompare(b.name) : st.sort === 'region' ? a.region.localeCompare(b.region) || a.name.localeCompare(b.name) : b.added - a.added));
+    const per = 10; const pages = Math.ceil(list.length / per);
+    return `<h1>My cellar</h1><p class="sub">${CELLAR.reduce((a, w) => a + w.bottles, 0)} bottles from ${CELLAR.length} wines. Rate wines after you open them to improve your picks.</p>
+      <div class="card"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;font-family:-apple-system,sans-serif"><label for="sort">Sort by</label><select id="sort"><option value="recent" ${st.sort === 'recent' ? 'selected' : ''}>Recently added</option><option value="name" ${st.sort === 'name' ? 'selected' : ''}>Name (A–Z)</option><option value="region" ${st.sort === 'region' ? 'selected' : ''}>Region</option></select><span class="sub" style="margin:0 0 0 auto">♥ = favourite</span><button class="btn" type="button" id="cellar-export">Export CSV</button><button class="btn" type="button" id="cellar-add">Add a bottle</button></div>
+      <table><thead><tr><th>Wine</th><th>Region</th><th class="num">Bottles</th><th class="num">My rating</th><th class="num">Critic score</th><th>Favourite</th><th></th></tr></thead><tbody>${list.slice((st.page - 1) * per, st.page * per).map((w) => `<tr><td>${esc(w.name)}</td><td>${esc(w.region)}</td><td class="num">${w.bottles}</td><td class="num">${w.mine}</td><td class="num">${w.critic}</td><td><button class="fav" type="button" data-fav="${w.id}" aria-pressed="${w.fav}" aria-label="${w.fav ? 'Remove from favourites' : 'Add to favourites'}: ${esc(w.name)}">${w.fav ? '♥' : '♡'}</button></td><td><button class="btn" type="button" data-notes="${w.id}" style="padding:3px 10px;font-size:12px" aria-label="Tasting notes: ${esc(w.name)}">Notes</button> <button class="btn" type="button" data-reorder="${w.id}" style="padding:3px 10px;font-size:12px" aria-label="Reorder ${esc(w.name)}">Reorder</button></td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-page="${st.page - 1}" ${st.page === 1 ? 'disabled' : ''}>Previous</button>${Array.from({ length: pages }, (_, i) => `<button class="btn" type="button" data-page="${i + 1}" ${st.page === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button class="btn" type="button" data-page="${st.page + 1}" ${st.page === pages ? 'disabled' : ''}>Next</button><span class="sub" style="margin:0 0 0 auto">Page ${st.page} of ${pages}</span></div></div>`;
+  }
+  function ordersPage() { return `<h1>Orders</h1><div class="card"><table><thead><tr><th>Order</th><th>Date</th><th>Items</th><th class="num">Total</th></tr></thead><tbody><tr><td>CC-88213</td><td>15 Sep 2026</td><td>September Explorer shipment</td><td class="num">€111.00</td></tr><tr><td>CC-87940</td><td>14 Aug 2026</td><td>August Explorer shipment</td><td class="num">€111.00</td></tr><tr><td>CC-87702</td><td>2 Aug 2026</td><td>Shop: 2 × 2017 Champagne Brut Nature</td><td class="num">€96.00</td></tr></tbody></table></div>`; }
+  function membershipPage() { return `<h1>Membership</h1><div class="card" style="font-family:-apple-system,sans-serif"><p><strong>Explorer</strong> · 6 bottles every month · €111.00 per shipment</p><p><button class="btn" type="button" id="upgrade">Upgrade to Collector (12 bottles)</button> <button class="btn" type="button" id="pause">Pause for a month</button> <button class="btn" type="button" id="cancel-mem">Cancel membership</button></p></div>`; }
+
+  function route() {
+    const p = (location.hash || '#/shipment').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] === 'cellar') v.innerHTML = cellarPage();
+    else if (p[0] === 'orders') v.innerHTML = ordersPage();
+    else if (p[0] === 'membership') v.innerHTML = membershipPage();
+    else if (p[0] === 'shop') v.innerHTML = `<h1>Shop</h1><p class="sub">Member-only releases arrive on the first Monday of each month.</p>`;
+    else { document.querySelector('[data-nav=shipment]').classList.add('on'); v.innerHTML = shipmentPage(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { st.open = -1; route(); scrollTo(0, 0); });
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const sw = t.closest('[data-swap]'); if (sw) { const i = +sw.dataset.swap; st.open = st.open === i ? -1 : i; rerender(); return; }
+    const pk = t.closest('[data-pick]'); if (pk) { const i = st.open; st.pending[i] = [SLOTS[i].cur, ...SLOTS[i].alts].find((x) => x.id === pk.dataset.pick); st.open = -1; rerender(); return; }
+    const un = t.closest('[data-undo]'); if (un) { st.pending[+un.dataset.undo] = SLOTS[+un.dataset.undo].cur; rerender(); return; }
+    if (t.closest('#extra')) { st.extra = !st.extra; rerender(); return; }
+    if (t.closest('#discard')) { st.pending = st.saved.bottles.slice(); st.date = st.saved.date; st.extra = false; rerender(); return; }
+    if (t.closest('#save')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(800);
+      const fee = DATES.find((x) => x[0] === st.date)[2];
+      await rec({ event: 'shipment_update', shipment: 'OCT-2026', bottles: st.pending.map(label).join('; '), swaps: String(st.pending.filter((w, i) => w !== SLOTS[i].cur).length), delivery: st.date, extra_bottle: st.extra ? 'yes' : 'no', supplement: (surcharge() + fee + (st.extra ? 38 : 0)).toFixed(2) });
+      st.saved = { bottles: st.pending.slice(), date: st.date }; st.busy = false; rerender(); toast('Shipment updated'); return;
+    }
+    if (t.closest('#skip')) {
+      $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h3 style="margin-top:0">Skip your October shipment?</h3><p>You won't be charged this month.</p><p style="text-align:right"><button class="btn" type="button" id="sk-no">Keep it</button> <button class="btn primary" type="button" id="sk-yes">Skip shipment</button></p></div></div>`;
+      $('#sk-no').onclick = () => ($('#modal-root').innerHTML = '');
+      $('#sk-yes').onclick = async () => { await later(400); await rec({ event: 'shipment_skip', shipment: 'OCT-2026' }); st.skipped = true; $('#modal-root').innerHTML = ''; rerender(); };
+      return;
+    }
+    const fv = t.closest('[data-fav]');
+    if (fv) { const w = CELLAR.find((x) => x.id === fv.dataset.fav); fv.disabled = true; await later(350); await rec({ event: w.fav ? 'favorite_remove' : 'favorite_add', wine_id: w.id, wine: w.name }); w.fav = !w.fav; rerender(); toast(w.fav ? 'Added to favourites' : 'Removed from favourites'); return; }
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { st.page = +pg.dataset.page; rerender(); return; }
+    const nt = t.closest('[data-notes]'); if (nt) { const w = CELLAR.find((x) => x.id === nt.dataset.notes); toast(`${w.name}: ${w.mine >= 93 ? 'outstanding, would buy again' : w.mine >= 89 ? 'lovely with food' : 'fine for weeknights'}`); return; }
+    const ro = t.closest('[data-reorder]'); if (ro) { const w = CELLAR.find((x) => x.id === ro.dataset.reorder); await later(400); await rec({ event: 'wine_reorder', wine_id: w.id }); toast('Added to your next shipment'); return; }
+    if (t.closest('#cellar-export') || t.closest('#cellar-add')) { toast(t.closest('#cellar-export') ? 'CSV downloaded' : 'Scan the bottle label in the Côte & Cask app.'); return; }
+    if (t.closest('#upgrade') || t.closest('#pause') || t.closest('#cancel-mem')) { const id = t.closest('button').id; await later(300); await rec({ event: 'membership_change', action: id }); toast('Request received'); return; }
+  });
+  view.addEventListener('change', (e) => { const t = e.target; if (t.name === 'ddate') { st.date = t.value; rerender(); } if (t.id === 'sort') { st.sort = t.value; st.page = 1; rerender(); } });
+  view.addEventListener('keydown', (e) => { const o = e.target.closest && e.target.closest('[data-pick]'); if (o && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); o.click(); } if (e.key === 'Escape' && st.open >= 0) { st.open = -1; rerender(); } });
+  document.addEventListener('click', (e) => { if (st.open >= 0 && !e.target.closest('.slot')) { st.open = -1; rerender(); } });
+  route();
+})();
+</script>
+</body>
+</html>

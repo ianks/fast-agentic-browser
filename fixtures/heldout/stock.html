@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kittering Logistics · Stock</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f5f7f5; }
+  header { background: #14532d; }
+  main { max-width: 980px; }
+  .wh { background: #fff; border: 1px solid #dfe7df; border-radius: 10px; margin: 10px 0; }
+  .wh > h2 { margin: 0; }
+  .acc { width: 100%; text-align: left; background: none; border: 0; border-radius: 10px; padding: 12px 16px; font-size: 17px; font-weight: 700; display: flex; justify-content: space-between; }
+  .sub { padding: 0 16px 12px; }
+  .grp { border-top: 1px solid #eef2ee; }
+  .grp > h3 { margin: 0; }
+  .acc2 { width: 100%; text-align: left; background: none; border: 0; padding: 8px 4px; font-weight: 600; font-size: 15px; }
+  table { font-size: 14px; margin-bottom: 8px; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+</style>
+</head>
+<body>
+<header><strong>Kittering Logistics</strong><span>Stock by location</span><span style="margin-left:auto">Snapshot 2026-06-12 06:00</span></header>
+<main>
+  <h1>Stock by location</h1>
+  <p class="note">“On hand” is physically in the building. “Reserved” units are allocated to open orders but still on hand. “On order” hasn't arrived yet.</p>
+  <div id="list"></div>
+</main>
+<script>
+(() => {
+  const STOCK = /*DATA*/[
+    {"warehouse": "Leeds", "category": "Pumps", "family": "Corvina", "model": "Corvina 40", "variant": "230 V", "sku": "CV-40-230", "on_hand": 46, "reserved": 8, "on_order": 0},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Corvina", "model": "Corvina 40", "variant": "230 V", "sku": "CV-40-230", "on_hand": 7, "reserved": 6, "on_order": 10},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Corvina", "model": "Corvina 40", "variant": "230 V", "sku": "CV-40-230", "on_hand": 54, "reserved": 14, "on_order": 40},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Corvina", "model": "Corvina 40", "variant": "115 V", "sku": "CV-40-115", "on_hand": 50, "reserved": 15, "on_order": 20},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Corvina", "model": "Corvina 40", "variant": "115 V", "sku": "CV-40-115", "on_hand": 1, "reserved": 0, "on_order": 20},
+    {"warehouse": "Leeds", "category": "Pumps", "family": "Corvina", "model": "Corvina 60", "variant": "230 V", "sku": "CV-60-230", "on_hand": 58, "reserved": 6, "on_order": 40},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Corvina", "model": "Corvina 60", "variant": "230 V", "sku": "CV-60-230", "on_hand": 12, "reserved": 0, "on_order": 0},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Corvina", "model": "Corvina 60", "variant": "230 V", "sku": "CV-60-230", "on_hand": 1, "reserved": 1, "on_order": 10},
+    {"warehouse": "Returns quarantine", "category": "Pumps", "family": "Corvina", "model": "Corvina 60", "variant": "230 V", "sku": "CV-60-230", "on_hand": 5, "reserved": 5, "on_order": 0},
+    {"warehouse": "Leeds", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "230 V", "sku": "CV-60P-230", "on_hand": 28, "reserved": 6, "on_order": 0},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "230 V", "sku": "CV-60P-230", "on_hand": 13, "reserved": 12, "on_order": 0},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "230 V", "sku": "CV-60P-230", "on_hand": 37, "reserved": 7, "on_order": 20},
+    {"warehouse": "Returns quarantine", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "230 V", "sku": "CV-60P-230", "on_hand": 2, "reserved": 0, "on_order": 40},
+    {"warehouse": "Leeds", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "400 V 3-phase", "sku": "CV-60P-400", "on_hand": 7, "reserved": 2, "on_order": 10},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "400 V 3-phase", "sku": "CV-60P-400", "on_hand": 53, "reserved": 6, "on_order": 40},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "400 V 3-phase", "sku": "CV-60P-400", "on_hand": 24, "reserved": 2, "on_order": 10},
+    {"warehouse": "Returns quarantine", "category": "Pumps", "family": "Corvina", "model": "Corvina 60 Pro", "variant": "400 V 3-phase", "sku": "CV-60P-400", "on_hand": 7, "reserved": 5, "on_order": 0},
+    {"warehouse": "Leeds", "category": "Pumps", "family": "Marlin", "model": "Marlin 25", "variant": "230 V", "sku": "MA-25-230", "on_hand": 49, "reserved": 9, "on_order": 40},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Marlin", "model": "Marlin 25", "variant": "230 V", "sku": "MA-25-230", "on_hand": 58, "reserved": 1, "on_order": 20},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Marlin", "model": "Marlin 25", "variant": "230 V", "sku": "MA-25-230", "on_hand": 4, "reserved": 4, "on_order": 0},
+    {"warehouse": "Returns quarantine", "category": "Pumps", "family": "Marlin", "model": "Marlin 25", "variant": "230 V", "sku": "MA-25-230", "on_hand": 2, "reserved": 1, "on_order": 10},
+    {"warehouse": "Leeds", "category": "Pumps", "family": "Marlin", "model": "Marlin 50", "variant": "230 V", "sku": "MA-50-230", "on_hand": 44, "reserved": 4, "on_order": 20},
+    {"warehouse": "Rotterdam", "category": "Pumps", "family": "Marlin", "model": "Marlin 50", "variant": "230 V", "sku": "MA-50-230", "on_hand": 29, "reserved": 5, "on_order": 40},
+    {"warehouse": "Gdańsk", "category": "Pumps", "family": "Marlin", "model": "Marlin 50", "variant": "230 V", "sku": "MA-50-230", "on_hand": 29, "reserved": 3, "on_order": 20},
+    {"warehouse": "Leeds", "category": "Spare parts", "family": "Impellers", "model": "Corvina impeller kit", "variant": "40/60", "sku": "SP-CV-IMP", "on_hand": 18, "reserved": 1, "on_order": 40},
+    {"warehouse": "Rotterdam", "category": "Spare parts", "family": "Impellers", "model": "Corvina impeller kit", "variant": "40/60", "sku": "SP-CV-IMP", "on_hand": 14, "reserved": 5, "on_order": 10},
+    {"warehouse": "Gdańsk", "category": "Spare parts", "family": "Impellers", "model": "Corvina impeller kit", "variant": "40/60", "sku": "SP-CV-IMP", "on_hand": 29, "reserved": 6, "on_order": 40},
+    {"warehouse": "Returns quarantine", "category": "Spare parts", "family": "Impellers", "model": "Corvina impeller kit", "variant": "40/60", "sku": "SP-CV-IMP", "on_hand": 9, "reserved": 0, "on_order": 20},
+    {"warehouse": "Leeds", "category": "Spare parts", "family": "Seals", "model": "Corvina seal set", "variant": "All models", "sku": "SP-CV-SEAL", "on_hand": 28, "reserved": 4, "on_order": 10},
+    {"warehouse": "Gdańsk", "category": "Spare parts", "family": "Seals", "model": "Corvina seal set", "variant": "All models", "sku": "SP-CV-SEAL", "on_hand": 29, "reserved": 10, "on_order": 0},
+    {"warehouse": "Leeds", "category": "Spare parts", "family": "Impellers", "model": "Marlin impeller kit", "variant": "25/50", "sku": "SP-MA-IMP", "on_hand": 51, "reserved": 10, "on_order": 0},
+    {"warehouse": "Rotterdam", "category": "Spare parts", "family": "Impellers", "model": "Marlin impeller kit", "variant": "25/50", "sku": "SP-MA-IMP", "on_hand": 59, "reserved": 5, "on_order": 0},
+    {"warehouse": "Gdańsk", "category": "Spare parts", "family": "Impellers", "model": "Marlin impeller kit", "variant": "25/50", "sku": "SP-MA-IMP", "on_hand": 23, "reserved": 4, "on_order": 10},
+    {"warehouse": "Leeds", "category": "Controllers", "family": "Tessellate", "model": "Flow controller FC-2", "variant": "—", "sku": "CT-FC2", "on_hand": 36, "reserved": 1, "on_order": 0},
+    {"warehouse": "Rotterdam", "category": "Controllers", "family": "Tessellate", "model": "Flow controller FC-2", "variant": "—", "sku": "CT-FC2", "on_hand": 19, "reserved": 9, "on_order": 0},
+    {"warehouse": "Gdańsk", "category": "Controllers", "family": "Tessellate", "model": "Flow controller FC-2", "variant": "—", "sku": "CT-FC2", "on_hand": 47, "reserved": 6, "on_order": 40}
+  ]/*END*/;
+  const WH = [['Leeds', 'Leeds (UK)'], ['Rotterdam', 'Rotterdam (NL)'], ['Gdańsk', 'Gdańsk (PL)'], ['Returns quarantine', 'Returns quarantine (Leeds annex)']];
+  const open = new Set();
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function render() {
+    q('#list').innerHTML = WH.map(([w, label]) => {
+      const rows = STOCK.filter((s) => s.warehouse === w); const cats = [...new Set(rows.map((r) => r.category))];
+      const k = 'w:' + w;
+      return `<section class="wh"><h2><button type="button" class="acc" aria-expanded="${open.has(k)}" data-k="${k}"><span>${esc(label)}</span><span class="muted">${rows.length} SKUs ${open.has(k) ? '▴' : '▾'}</span></button></h2>
+        ${open.has(k) ? `<div class="sub">${cats.map((c) => { const k2 = k + '|' + c; const cr = rows.filter((r) => r.category === c); return `<div class="grp"><h3><button type="button" class="acc2" aria-expanded="${open.has(k2)}" data-k="${k2}">${open.has(k2) ? '▾' : '▸'} ${esc(c)} (${cr.length})</button></h3>
+          ${open.has(k2) ? `<table aria-label="${esc(label)} — ${esc(c)}"><thead><tr><th>SKU</th><th>Family</th><th>Model</th><th>Variant</th><th style="text-align:right">On hand</th><th style="text-align:right">Reserved</th><th style="text-align:right">On order</th></tr></thead><tbody>${cr.map((r) => `<tr><td>${r.sku}</td><td>${esc(r.family)}</td><td>${esc(r.model)}</td><td>${esc(r.variant)}</td><td class="n">${r.on_hand}</td><td class="n">${r.reserved}</td><td class="n">${r.on_order}</td></tr>`).join('')}</tbody></table>` : ''}</div>`; }).join('')}</div>` : ''}</section>`;
+    }).join('');
+  }
+  q('#list').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k; open.has(k) ? open.delete(k) : open.add(k); render(); });
+  render();
+})();
+</script>
+</body>
+</html>

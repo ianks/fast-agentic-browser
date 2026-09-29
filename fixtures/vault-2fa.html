@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Forge</title><link rel="stylesheet" href="style.css"></head>
+<body><main id="app"></main>
+<script>
+  // Like a big code host: a sign-up email box on the home page, a separate
+  // sign-in page, then a passkey step whose "More options" leads to an
+  // authenticator-app code.
+  const app = document.getElementById("app");
+  const views = {
+    home: () => `<header><a href="#" id="signin">Sign in</a></header>
+      <h1>Build software together</h1>
+      <form id="signup"><input type="email" name="email" placeholder="Enter your email"><button type="submit">Sign up for Forge</button></form>`,
+    login: () => `<h1>Sign in to Forge</h1>
+      <form id="login"><label>Username or email address <input name="login" autocomplete="username"></label>
+      <label>Password <input name="password" type="password" autocomplete="current-password"></label>
+      <button type="submit">Sign in</button></form><p id="err" role="alert"></p>`,
+    passkey: () => `<h1>Two-factor authentication</h1><p>Authenticate using your passkey or security key.</p>
+      <button type="button" id="pk">Use passkey or security key</button> <button type="button" id="more">More options</button>
+      <div id="opts" hidden><a href="#" id="app-opt">Authenticator app</a> · <a href="#">GitHub Mobile</a></div>`,
+    code: () => `<h1>Two-factor authentication</h1><form id="otp"><label>Authentication code <input name="code" autocomplete="one-time-code" inputmode="numeric"></label>
+      <button type="submit">Verify</button></form><p id="err" role="alert"></p>`,
+    done: () => `<h1>Dashboard</h1><p>Signed in as ada@acme.test</p>`,
+    signup: () => `<h1>Create your account</h1><p>Signing up with ${window.su}</p>`,
+  };
+  const show = (v) => { app.innerHTML = views[v](); bind(); };
+  function bind() {
+    const q = (s) => document.querySelector(s);
+    if (q("#signin")) q("#signin").onclick = (e) => { e.preventDefault(); show("login"); };
+    if (q("#signup")) q("#signup").onsubmit = (e) => { e.preventDefault(); window.su = e.target.email.value; console.log("signup started"); show("signup"); };
+    if (q("#login")) q("#login").onsubmit = (e) => {
+      e.preventDefault();
+      if (e.target.login.value === "ada@acme.test" && e.target.password.value === "correct horse battery") show("passkey");
+      else q("#err").textContent = "Incorrect username or password.";
+    };
+    if (q("#pk")) q("#pk").onclick = () => {};
+    if (q("#more")) q("#more").onclick = () => { q("#opts").hidden = false; };
+    if (q("#app-opt")) q("#app-opt").onclick = (e) => { e.preventDefault(); show("code"); };
+    if (q("#otp")) q("#otp").onsubmit = (e) => { e.preventDefault(); if (e.target.code.value === "123456") show("done"); else q("#err").textContent = "Invalid code."; };
+  }
+  show("home");
+</script></body></html>

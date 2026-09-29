@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lexicon · Translation management</title>
+<script src="../common.js"></script>
+<style>
+  :root { --rail: #141925; --rail2: #1d2433; --acc: #7c5cff; --acc2: #6247e8; --ink: #1c2230; --muted: #687085; --line: #e3e6ee; --bg: #f6f7fb; --ok: #1f9d6b; --warn: #c7811a; --bad: #d24b4b; --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 Inter, "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  a { color: var(--acc2); }
+  button { font: inherit; }
+  aside.rail { background: var(--rail); color: #c8cfdf; display: flex; flex-direction: column; }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 16px 18px; color: #fff; font-weight: 800; font-size: 17px; text-decoration: none; }
+  .logo span.m { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #7c5cff, #3cc6ff); display: grid; place-items: center; font-size: 15px; }
+  .rail .org { padding: 0 18px 12px; font-size: 12px; color: #8791a7; text-transform: uppercase; letter-spacing: .6px; }
+  .rail nav a { display: flex; align-items: center; gap: 10px; padding: 9px 18px; color: #c8cfdf; text-decoration: none; }
+  .rail nav a:hover { background: var(--rail2); }
+  .rail nav a.on { background: var(--rail2); color: #fff; box-shadow: inset 3px 0 var(--acc); }
+  .rail nav .ic { width: 18px; text-align: center; opacity: .85; }
+  .rail .sect { padding: 16px 18px 6px; font-size: 11px; color: #6f7a92; text-transform: uppercase; letter-spacing: .7px; }
+  .rail .foot { margin-top: auto; padding: 14px 18px; font-size: 12px; color: #6f7a92; border-top: 1px solid #232b3b; }
+  .rail .foot a { color: #9aa6c0; }
+  .wrap { display: flex; flex-direction: column; min-width: 0; }
+  header.top { height: 56px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 0 20px; }
+  .lb { position: relative; }
+  .lb > button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+  .lb ul[role=listbox] { position: absolute; top: 40px; left: 0; min-width: 260px; margin: 0; padding: 6px; list-style: none; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 30px rgba(20,25,37,.14); z-index: 20; }
+  .lb li[role=option] { padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+  .lb li[role=option]:hover, .lb li[role=option][aria-selected=true] { background: #f0edff; }
+  .lb li small { display: block; color: var(--muted); }
+  .search { flex: 1; max-width: 420px; position: relative; }
+  .search input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px 7px 32px; font: inherit; background: var(--bg); }
+  .search::before { content: "⌕"; position: absolute; left: 11px; top: 5px; color: var(--muted); font-size: 16px; }
+  .top .right { margin-left: auto; display: flex; gap: 14px; align-items: center; }
+  .iconbtn { border: 0; background: none; cursor: pointer; font-size: 16px; color: var(--muted); position: relative; }
+  .iconbtn .dot { position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--bad); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: #ffd8c2; color: #8a3d12; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+  main { padding: 18px 20px 30px; min-width: 0; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .keys { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .keys.editing { grid-template-columns: 250px minmax(0, 1fr) 430px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+  .card .hd { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .card .bd { padding: 12px 14px; }
+  ul[role=tree], ul[role=group] { list-style: none; margin: 0; padding: 0; }
+  ul[role=group] { padding-left: 16px; }
+  li[role=treeitem] > .ti { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-radius: 6px; }
+  li[role=treeitem][aria-selected=true] > .ti { background: #efeaff; }
+  li[role=treeitem] > .ti:hover { background: #f4f2fb; }
+  .chev { width: 20px; height: 20px; border: 0; background: none; cursor: pointer; color: var(--muted); border-radius: 4px; font-size: 11px; padding: 0; }
+  .chev.none { visibility: hidden; }
+  li[role=treeitem] > .ti a { flex: 1; color: var(--ink); text-decoration: none; font-family: var(--mono); font-size: 13px; padding: 2px 0; }
+  li[role=treeitem][aria-selected=true] > .ti a { color: var(--acc2); font-weight: 700; }
+  .cnt { font-size: 11px; color: var(--muted); background: #f0f2f7; border-radius: 8px; padding: 0 6px; }
+  .crumbs { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .crumbs a { color: var(--acc2); text-decoration: none; }
+  .tools { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .tools label { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 3px; text-transform: uppercase; letter-spacing: .4px; }
+  select, input[type=text], input[type=email], textarea { font: inherit; border: 1px solid #cfd4e1; border-radius: 8px; padding: 6px 10px; background: #fff; }
+  textarea { width: 100%; resize: vertical; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 600; background: #fafbfd; }
+  td.key a { font-family: var(--mono); font-size: 12.5px; text-decoration: none; }
+  tr.sel td { background: #f5f2ff; }
+  td.src { color: #394056; max-width: 320px; }
+  td.tr { color: #394056; max-width: 280px; }
+  td.tr.empty { color: #a0a7b8; font-style: italic; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .st { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .st::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .st.reviewed { color: var(--ok); } .st.translated { color: var(--warn); } .st.untranslated { color: var(--bad); }
+  .btn { border: 1px solid #cfd4e1; background: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; color: var(--ink); }
+  .btn.pri { background: var(--acc); border-color: var(--acc); color: #fff; }
+  .btn.danger { color: var(--bad); border-color: #efc0c0; }
+  .btn.sm { padding: 3px 9px; font-size: 12.5px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .pager { display: flex; gap: 6px; align-items: center; padding: 10px 14px; }
+  .pager button { min-width: 32px; height: 30px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; }
+  .pager button[aria-current=page] { background: var(--acc); color: #fff; border-color: var(--acc); font-weight: 700; }
+  .pager button:disabled { opacity: .45; cursor: default; }
+  .pager .info { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .ed .keyname { font-family: var(--mono); font-weight: 700; font-size: 14px; word-break: break-all; }
+  .ed .path { font-family: var(--mono); font-size: 12px; color: var(--muted); word-break: break-all; }
+  .src-box { background: #f6f7fb; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+  .meta { color: var(--muted); font-size: 12.5px; }
+  [role=tablist].loc { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); margin: 12px 0 10px; }
+  [role=tablist].loc [role=tab] { border: 0; background: none; padding: 7px 8px; cursor: pointer; font-family: var(--mono); font-size: 12.5px; border-bottom: 2px solid transparent; color: var(--muted); display: flex; gap: 5px; align-items: center; }
+  [role=tablist].loc [role=tab][aria-selected=true] { border-bottom-color: var(--acc); color: var(--ink); font-weight: 700; }
+  [role=tablist].loc [role=tab] i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  i.reviewed { background: var(--ok); } i.translated { background: var(--warn); } i.untranslated { background: var(--bad); }
+  i.dirty { background: var(--acc); }
+  .ed label.fl { display: block; font-weight: 600; margin-bottom: 4px; }
+  .counter { font-size: 12px; color: var(--muted); text-align: right; }
+  .counter.over { color: var(--bad); font-weight: 700; }
+  .ed .acts { display: flex; gap: 8px; margin-top: 12px; }
+  .ed .acts .grow { flex: 1; }
+  .err { color: var(--bad); font-size: 13px; margin-top: 6px; }
+  .hist li { padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+  .hist ul { list-style: none; margin: 0; padding: 0; }
+  .langcards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 16px; }
+  .langcards .card { padding: 10px 12px; }
+  .langcards b { display: block; font-family: var(--mono); }
+  .bar { height: 6px; border-radius: 3px; background: #eceef4; overflow: hidden; margin: 6px 0 4px; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--acc), #3cc6ff); }
+  th button.sort { border: 0; background: none; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; padding: 0; font-weight: 700; }
+  .feed li { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .feed ul { list-style: none; margin: 0; padding: 0; }
+  .feed .when { color: var(--muted); font-size: 12.5px; min-width: 130px; }
+  .toast { position: fixed; bottom: 22px; right: 22px; background: #1d2433; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 50; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,25,37,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 90px; z-index: 40; }
+  .dialog { background: #fff; border-radius: 12px; width: 460px; padding: 20px 22px; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+  .dialog .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: 600; margin-bottom: 4px; }
+  .switch { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .tr { width: 36px; height: 20px; border-radius: 10px; background: #cfd4e1; position: relative; }
+  .switch .tr::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: left .15s; }
+  .switch input:checked + .tr { background: var(--acc); }
+  .switch input:checked + .tr::after { left: 18px; }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .empty { padding: 40px 20px; text-align: center; color: var(--muted); }
+  .kbd { font-family: var(--mono); font-size: 11.5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: #fff; }
+</style>
+</head>
+<body>
+<aside class="rail">
+  <a class="logo" href="#/projects"><span class="m">L</span>Lexicon</a>
+  <div class="org">Harbor Labs</div>
+  <nav id="railnav" aria-label="Project"></nav>
+  <div class="sect">Workspace</div>
+  <nav aria-label="Workspace"><a href="#/projects"><span class="ic">▦</span>All projects</a><a href="#/team"><span class="ic">☺</span>Team</a><a href="#/billing"><span class="ic">¤</span>Billing</a></nav>
+  <div class="foot">Lexicon 4.18 · <a href="#/docs">Docs</a> · <a href="#/status">Status</a><br>© 2026 Lexicon Localization Oy</div>
+</aside>
+<div class="wrap">
+  <header class="top">
+    <div class="lb" id="proj-lb"></div>
+    <div class="search"><input type="text" id="gsearch" placeholder="Search keys and source text" aria-label="Search keys"></div>
+    <div class="right">
+      <span class="meta">Press <span class="kbd">Enter</span> to search</span>
+      <button type="button" class="iconbtn" id="bell" aria-label="Notifications">🔔<span class="dot"></span></button>
+      <button type="button" class="iconbtn" id="help" aria-label="Help">?</button>
+      <span class="avatar" title="Lina Okafor">LO</span>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3500); };
+  const fmt = (n) => n.toLocaleString('en-US');
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function shuffle(arr, rnd) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+
+  const LOCS = ['de-DE', 'de-AT', 'fr-FR', 'es-ES', 'pt-BR', 'ja-JP', 'it-IT'];
+  const LNAME = { 'en-GB': 'English (United Kingdom)', 'de-DE': 'German (Germany)', 'de-AT': 'German (Austria)', 'fr-FR': 'French (France)', 'es-ES': 'Spanish (Spain)', 'pt-BR': 'Portuguese (Brazil)', 'ja-JP': 'Japanese (Japan)', 'it-IT': 'Italian (Italy)' };
+  const LANG = { 'de-DE': 'de', 'de-AT': 'de', 'fr-FR': 'fr', 'es-ES': 'es', 'pt-BR': 'pt', 'ja-JP': 'ja', 'it-IT': 'it' };
+
+  // Phrase bank for generated keys: [stem, en, de, fr, es, pt, ja, it]
+  const BANK = [
+    ['title', 'Overview', 'Übersicht', 'Aperçu', 'Resumen', 'Visão geral', '概要', 'Panoramica'],
+    ['subtitle', 'Everything you need in one place', 'Alles, was Sie brauchen, an einem Ort', 'Tout ce dont vous avez besoin, au même endroit', 'Todo lo que necesitas en un solo lugar', 'Tudo o que você precisa em um só lugar', '必要なものがすべてここに', 'Tutto ciò che ti serve in un unico posto'],
+    ['description', 'You can change this at any time.', 'Sie können dies jederzeit ändern.', 'Vous pouvez modifier ce paramètre à tout moment.', 'Puedes cambiarlo en cualquier momento.', 'Você pode alterar isso a qualquer momento.', 'これはいつでも変更できます。', 'Puoi modificarlo in qualsiasi momento.'],
+    ['label', 'Name', 'Name', 'Nom', 'Nombre', 'Nome', '名前', 'Nome'],
+    ['hint', 'Optional', 'Optional', 'Facultatif', 'Opcional', 'Opcional', '任意', 'Facoltativo'],
+    ['placeholder', 'Search…', 'Suchen …', 'Rechercher…', 'Buscar…', 'Pesquisar…', '検索…', 'Cerca…'],
+    ['error', 'Something went wrong. Please try again.', 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.', "Une erreur s'est produite. Veuillez réessayer.", 'Algo salió mal. Inténtalo de nuevo.', 'Algo deu errado. Tente novamente.', '問題が発生しました。もう一度お試しください。', 'Si è verificato un errore. Riprova.'],
+    ['empty_state', 'Nothing here yet', 'Hier ist noch nichts', 'Rien pour le moment', 'Aún no hay nada aquí', 'Nada por aqui ainda', 'まだ何もありません', "Non c'è ancora niente qui"],
+    ['cta', 'Get started', 'Jetzt starten', 'Commencer', 'Empezar', 'Começar', '始める', 'Inizia'],
+    ['confirm', 'Confirm', 'Bestätigen', 'Confirmer', 'Confirmar', 'Confirmar', '確認', 'Conferma'],
+    ['cancel', 'Cancel', 'Abbrechen', 'Annuler', 'Cancelar', 'Cancelar', 'キャンセル', 'Annulla'],
+    ['dismiss', 'Not now', 'Nicht jetzt', 'Pas maintenant', 'Ahora no', 'Agora não', '後で', 'Non ora'],
+    ['tooltip', 'Learn more', 'Mehr erfahren', 'En savoir plus', 'Más información', 'Saiba mais', '詳細', 'Scopri di più'],
+    ['banner', 'New features are available', 'Neue Funktionen sind verfügbar', 'De nouvelles fonctionnalités sont disponibles', 'Hay nuevas funciones disponibles', 'Novos recursos disponíveis', '新機能が利用可能です', 'Sono disponibili nuove funzionalità'],
+    ['success', 'Saved', 'Gespeichert', 'Enregistré', 'Guardado', 'Salvo', '保存しました', 'Salvato'],
+    ['loading', 'Loading…', 'Wird geladen …', 'Chargement…', 'Cargando…', 'Carregando…', '読み込み中…', 'Caricamento…'],
+    ['retry', 'Try again', 'Erneut versuchen', 'Réessayer', 'Reintentar', 'Tentar novamente', '再試行', 'Riprova'],
+    ['continue', 'Continue', 'Weiter', 'Continuer', 'Continuar', 'Continuar', '続行', 'Continua'],
+    ['back', 'Back', 'Zurück', 'Retour', 'Atrás', 'Voltar', '戻る', 'Indietro'],
+    ['done', 'Done', 'Fertig', 'Terminé', 'Listo', 'Concluído', '完了', 'Fatto'],
+    ['edit', 'Edit', 'Bearbeiten', 'Modifier', 'Editar', 'Editar', '編集', 'Modifica'],
+    ['delete_confirm', 'Are you sure you want to delete this?', 'Möchten Sie das wirklich löschen?', 'Voulez-vous vraiment supprimer cet élément ?', '¿Seguro que quieres eliminarlo?', 'Tem certeza de que deseja excluir?', '本当に削除しますか？', 'Vuoi davvero eliminarlo?'],
+    ['offline', "You're offline. Check your connection.", 'Sie sind offline. Prüfen Sie Ihre Verbindung.', 'Vous êtes hors ligne. Vérifiez votre connexion.', 'No tienes conexión. Comprueba tu conexión.', 'Você está offline. Verifique sua conexão.', 'オフラインです。接続を確認してください。', 'Sei offline. Controlla la connessione.'],
+    ['updated_at', 'Updated {date}', 'Aktualisiert am {date}', 'Mis à jour le {date}', 'Actualizado el {date}', 'Atualizado em {date}', '{date}に更新', 'Aggiornato il {date}'],
+    ['count_one', '{count} item', '{count} Element', '{count} élément', '{count} elemento', '{count} item', '{count}件', '{count} elemento'],
+    ['count_other', '{count} items', '{count} Elemente', '{count} éléments', '{count} elementos', '{count} itens', '{count}件', '{count} elementi'],
+  ];
+  const BANKI = { de: 2, fr: 3, es: 4, pt: 5, ja: 6, it: 7 };
+  const TIERS = ['', 'short', 'a11y', 'secondary', 'v2', 'compact', 'tablet', 'legacy', 'web', 'modal', 'inline', 'toast'];
+
+  // Hand-written keys (always translated): [ns, key, en, context, {locale: [value, status]}]
+  const T7 = (de, fr, es, pt, ja, it, st = {}) => ({ 'de-DE': [de, st['de-DE'] || 'reviewed'], 'de-AT': [de, st['de-AT'] || 'reviewed'], 'fr-FR': [fr, st['fr-FR'] || 'reviewed'], 'es-ES': [es, st['es-ES'] || 'reviewed'], 'pt-BR': [pt, st['pt-BR'] || 'reviewed'], 'ja-JP': [ja, st['ja-JP'] || 'reviewed'], 'it-IT': [it, st['it-IT'] || 'reviewed'] });
+  const PINNED = [
+    ['checkout.payment.errors', 'card_declined', 'Your card was declined. Please check your card details.', 'Shown under the card form when the payment provider declines the card.',
+      { ...T7('Ihre Karte wurde abgelehnt.', 'Votre carte a été refusée. Veuillez vérifier les informations de votre carte.', 'Tu tarjeta ha sido rechazada. Comprueba los datos de tu tarjeta.', 'Seu cartão foi recusado. Verifique os dados do cartão.', 'カードが拒否されました。カード情報をご確認ください。', 'La tua carta è stata rifiutata. Controlla i dati della carta.', { 'pt-BR': 'translated', 'it-IT': 'translated' }) }],
+    ['checkout.payment.errors', 'card_expired', 'Your card has expired. Use a different card.', 'Shown when the card expiry date is in the past.',
+      T7('Ihre Karte ist abgelaufen. Verwenden Sie eine andere Karte.', 'Votre carte a expiré. Utilisez une autre carte.', 'Tu tarjeta ha caducado. Usa otra tarjeta.', 'Seu cartão expirou. Use outro cartão.', 'カードの有効期限が切れています。別のカードをご利用ください。', "La tua carta è scaduta. Usa un'altra carta.")],
+    ['checkout.payment.errors', 'insufficient_funds', "There isn't enough money on this card.", 'Returned by the issuer; do not mention the bank by name.',
+      T7('Auf dieser Karte ist nicht genügend Guthaben.', 'Le solde de cette carte est insuffisant.', 'No hay saldo suficiente en esta tarjeta.', 'Não há saldo suficiente neste cartão.', 'このカードの残高が不足しています。', 'Il saldo di questa carta non è sufficiente.')],
+    ['checkout.payment.errors', 'processing_error', "We couldn't process your payment. Please try again.", 'Generic fallback for gateway errors.',
+      T7('Ihre Zahlung konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.', "Nous n'avons pas pu traiter votre paiement. Veuillez réessayer.", 'No hemos podido procesar tu pago. Inténtalo de nuevo.', 'Não foi possível processar seu pagamento. Tente novamente.', 'お支払いを処理できませんでした。もう一度お試しください。', 'Non è stato possibile elaborare il pagamento. Riprova.', { 'ja-JP': 'translated' })],
+    ['checkout.payment.errors', 'cvc_invalid', 'The security code is incorrect.', 'CVC / CVV field validation.',
+      T7('Der Sicherheitscode ist falsch.', 'Le code de sécurité est incorrect.', 'El código de seguridad no es correcto.', 'O código de segurança está incorreto.', 'セキュリティコードが正しくありません。', 'Il codice di sicurezza non è corretto.')],
+    ['checkout.payment.errors', '3ds_failed', "Your bank couldn't verify this payment.", 'Shown after a failed 3-D Secure challenge.',
+      T7('Ihre Bank konnte diese Zahlung nicht bestätigen.', "Votre banque n'a pas pu vérifier ce paiement.", 'Tu banco no ha podido verificar este pago.', 'Seu banco não conseguiu verificar este pagamento.', '銀行でこのお支払いを確認できませんでした。', 'La tua banca non è riuscita a verificare questo pagamento.')],
+    ['account.billing.errors', 'card_declined', 'Your card was declined. Update your billing details to keep your subscription.', 'Shown on the Billing page when a subscription renewal charge fails.',
+      T7('Ihre Karte wurde abgelehnt. Aktualisieren Sie Ihre Zahlungsdaten, um Ihr Abo zu behalten.', 'Votre carte a été refusée. Mettez à jour vos informations de facturation pour conserver votre abonnement.', 'Tu tarjeta ha sido rechazada. Actualiza tus datos de facturación para mantener tu suscripción.', 'Seu cartão foi recusado. Atualize seus dados de cobrança para manter sua assinatura.', 'カードが拒否されました。サブスクリプションを継続するには請求情報を更新してください。', "La tua carta è stata rifiutata. Aggiorna i dati di fatturazione per mantenere l'abbonamento.")],
+    ['account.billing.errors', 'payment_method_missing', 'Add a payment method to continue.', 'Billing page, no card on file.',
+      T7('Fügen Sie eine Zahlungsmethode hinzu, um fortzufahren.', 'Ajoutez un moyen de paiement pour continuer.', 'Añade un método de pago para continuar.', 'Adicione uma forma de pagamento para continuar.', '続行するには支払い方法を追加してください。', 'Aggiungi un metodo di pagamento per continuare.')],
+    ['account.billing.errors', 'invoice_unavailable', "This invoice isn't available yet.", 'Invoices are generated up to 24 hours after payment.',
+      T7('Diese Rechnung ist noch nicht verfügbar.', "Cette facture n'est pas encore disponible.", 'Esta factura aún no está disponible.', 'Esta fatura ainda não está disponível.', 'この請求書はまだご利用いただけません。', 'Questa fattura non è ancora disponibile.')],
+    ['account.billing.errors', 'vat_invalid', 'Enter a valid VAT number, for example DE123456789.', 'Keep the example number unchanged.',
+      T7('Geben Sie eine gültige USt-IdNr. ein, zum Beispiel DE123456789.', 'Saisissez un numéro de TVA valide, par exemple DE123456789.', 'Introduce un NIF-IVA válido, por ejemplo DE123456789.', 'Informe um número de IVA válido, por exemplo DE123456789.', '有効なVAT番号を入力してください（例：DE123456789）。', 'Inserisci una partita IVA valida, ad esempio DE123456789.')],
+    ['wallet.transfers', 'send_money_title', 'Send money', 'Screen title.', T7('Geld senden', "Envoyer de l'argent", 'Enviar dinero', 'Enviar dinheiro', '送金', 'Invia denaro')],
+    ['wallet.transfers', 'fee_notice', 'A fee of {fee} applies to this transfer.', '{fee} is a formatted amount, e.g. €0.50.',
+      T7('Für diese Überweisung fällt eine Gebühr von {fee} an.', "Des frais de {fee} s'appliquent à ce virement.", 'Esta transferencia tiene una comisión de {fee}.', 'Uma taxa de {fee} se aplica a esta transferência.', 'この送金には{fee}の手数料がかかります。', 'A questo bonifico si applica una commissione di {fee}.')],
+    ['wallet.transfers', 'limit_reached', "You've reached your daily transfer limit of {limit}.", '{limit} is a formatted amount.',
+      T7('Sie haben Ihr tägliches Überweisungslimit von {limit} erreicht.', 'Vous avez atteint votre limite quotidienne de virement de {limit}.', 'Has alcanzado tu límite diario de transferencias de {limit}.', 'Você atingiu seu limite diário de transferências de {limit}.', '1日の送金上限（{limit}）に達しました。', 'Hai raggiunto il limite giornaliero di bonifici di {limit}.')],
+  ];
+
+  // Namespaces: [path, own key count, topics for generated key names]
+  const PROJECTS = {
+    'harbor-app': {
+      name: 'Harbor Mobile App', desc: 'iOS and Android app strings, synced from the harbor-mobile repository.',
+      ns: [
+        ['account', 14, ['header', 'menu', 'avatar', 'sign_out']], ['account.profile', 118, ['name', 'photo', 'email', 'phone', 'address', 'birthday', 'language', 'bio']],
+        ['account.billing', 36, ['plan', 'payment_method', 'billing_address', 'vat', 'receipt']], ['account.billing.errors', 22, ['charge', 'address', 'coupon', 'plan']],
+        ['account.billing.invoices', 64, ['invoice', 'download', 'period', 'total', 'status', 'filter']], ['account.security', 135, ['password', 'two_factor', 'passkey', 'sessions', 'devices', 'recovery', 'login_alerts']],
+        ['checkout', 18, ['header', 'progress', 'summary']], ['checkout.cart', 96, ['item', 'quantity', 'subtotal', 'saved_items', 'recommendations', 'empty_cart']],
+        ['checkout.payment', 30, ['card_form', 'wallet_pay', 'billing', 'total']], ['checkout.payment.errors', 6, []],
+        ['checkout.payment.methods', 74, ['card', 'apple_pay', 'google_pay', 'paypal', 'klarna', 'gift_card', 'bank_transfer']],
+        ['checkout.shipping', 128, ['address', 'delivery_speed', 'pickup_point', 'instructions', 'eta', 'carrier', 'gift_wrap']], ['checkout.promo', 60, ['code', 'discount', 'gift_card', 'referral_credit']],
+        ['common', 0, []], ['common.buttons', 62, ['']], ['common.errors', 58, ['network', 'server', 'validation', 'permission', 'not_found', 'timeout']],
+        ['common.dates', 124, ['today', 'yesterday', 'weekday', 'month', 'relative', 'duration', 'time', 'range']],
+        ['help_center', 188, ['article', 'category', 'search', 'feedback', 'contact', 'faq', 'video', 'related']], ['legal', 61, ['terms', 'privacy', 'cookies', 'licenses']],
+        ['loyalty', 143, ['points', 'tier', 'rewards', 'expiry', 'history', 'partner']],
+        ['notifications', 12, ['center', 'badge']], ['notifications.push', 196, ['order_update', 'price_drop', 'back_in_stock', 'reminder', 'promo', 'security', 'transfer', 'chat']],
+        ['notifications.email', 164, ['digest', 'receipt', 'shipping', 'security', 'newsletter', 'unsubscribe', 'preferences']],
+        ['onboarding', 9, ['intro']], ['onboarding.welcome_tour', 142, ['step_one', 'step_two', 'step_three', 'step_four', 'skip', 'finish']],
+        ['onboarding.permissions', 88, ['location', 'camera', 'notifications', 'contacts']], ['onboarding.signup', 138, ['email', 'password', 'name', 'terms', 'verify', 'social']],
+        ['orders', 40, ['list', 'detail']], ['orders.tracking', 132, ['status', 'map', 'eta', 'courier', 'proof', 'delay']], ['orders.returns', 126, ['reason', 'label', 'refund', 'dropoff', 'status', 'policy']],
+        ['referrals', 84, ['invite', 'share', 'reward', 'terms']], ['search', 96, ['bar', 'results', 'filters', 'sort', 'suggestions']],
+        ['settings', 201, ['appearance', 'language', 'region', 'privacy', 'data', 'accessibility', 'about']], ['support_chat', 157, ['composer', 'agent', 'queue', 'attachments', 'rating', 'transcript']],
+        ['wallet', 25, ['balance', 'overview']], ['wallet.cards', 150, ['add_card', 'freeze', 'limits', 'pin', 'virtual_card', 'replace']],
+        ['wallet.transfers', 170, ['send', 'recipient', 'amount', 'fee', 'schedule', 'limit', 'history', 'receipt']], ['wallet.errors', 60, ['limit', 'verification', 'blocked', 'insufficient', 'network']],
+      ],
+      // untranslated keys per top-level namespace, in LOCS order
+      untr: {
+        account: [4, 21, 11, 23, 97, 142, 30], checkout: [0, 15, 6, 12, 58, 97, 19], common: [0, 2, 0, 2, 3, 18, 1], help_center: [22, 60, 40, 51, 102, 188, 60],
+        legal: [0, 0, 0, 0, 12, 61, 0], loyalty: [9, 20, 14, 19, 77, 120, 25], notifications: [15, 44, 20, 41, 231, 260, 45], onboarding: [7, 30, 18, 33, 136, 201, 40],
+        orders: [2, 9, 5, 9, 12, 70, 8], referrals: [3, 10, 3, 10, 40, 84, 12], search: [0, 4, 2, 4, 40, 55, 6], settings: [1, 12, 4, 7, 88, 101, 10],
+        support_chat: [12, 40, 30, 44, 90, 157, 50], wallet: [3, 18, 9, 26, 121, 180, 21],
+      },
+      updated: { account: '21 Sep 2026', checkout: '23 Sep 2026', common: '2 Sep 2026', help_center: '11 Aug 2026', legal: '30 Jun 2026', loyalty: '15 Sep 2026', notifications: '22 Sep 2026', onboarding: '18 Sep 2026', orders: '9 Sep 2026', referrals: '27 Aug 2026', search: '1 Sep 2026', settings: '16 Sep 2026', support_chat: '19 Aug 2026', wallet: '24 Sep 2026' },
+      home: 'common.buttons',
+    },
+    'harbor-web': {
+      name: 'Harbor Marketing Site', desc: 'harbor.app marketing pages and blog (Next.js).',
+      ns: [['home', 64, ['hero', 'features', 'testimonials', 'cta_band']], ['pricing', 38, ['plan', 'faq', 'compare']], ['blog', 120, ['post', 'author', 'tags', 'newsletter', 'pagination']],
+        ['careers', 45, ['jobs', 'perks', 'apply']], ['nav', 18, ['menu']], ['footer', 22, ['links', 'social']], ['legal', 30, ['terms', 'privacy']]],
+      untr: null,
+      updated: { home: '14 Sep 2026', pricing: '3 Sep 2026', blog: '22 Sep 2026', careers: '28 Aug 2026', nav: '14 Sep 2026', footer: '14 Sep 2026', legal: '2 Jul 2026' },
+      home: 'home',
+    },
+  };
+
+  // ---------------------------------------------------------------- build data
+  function build(pid) {
+    const P = PROJECTS[pid];
+    const keys = [];
+    const used = new Set();
+    for (const [path, own, topics] of P.ns) {
+      const pins = PINNED.filter((p) => pid === 'harbor-app' && p[0] === path);
+      for (const [ns, k, en, ctx, tr] of pins) {
+        const vals = {}, stat = {};
+        for (const L of LOCS) { vals[L] = tr[L][0]; stat[L] = tr[L][1]; }
+        keys.push({ ns, key: k, full: ns + '.' + k, en, ctx, vals, stat, pinned: true, max: 120 });
+        used.add(ns + '.' + k);
+      }
+      let need = own - pins.length;
+      for (let ti = 0; ti < TIERS.length && need > 0; ti++) {
+        const combos = [];
+        for (const tp of topics) for (let bi = 0; bi < BANK.length; bi++) combos.push([tp, bi]);
+        shuffle(combos, mulberry32(hashStr(pid + path + ti)));
+        for (const [tp, bi] of combos) {
+          if (need <= 0) break;
+          const stem = BANK[bi][0];
+          const name = [tp, stem, TIERS[ti]].filter(Boolean).join('_');
+          const full = path + '.' + name;
+          if (used.has(full)) continue;
+          used.add(full); need--;
+          const vals = {}, stat = {};
+          for (const L of LOCS) { vals[L] = BANK[bi][BANKI[LANG[L]]]; stat[L] = 'reviewed'; }
+          keys.push({ ns: path, key: name, full, en: BANK[bi][1], ctx: '', vals, stat, pinned: false, max: 120, bi });
+        }
+      }
+    }
+    const tops = [...new Set(P.ns.map((n) => n[0].split('.')[0]))];
+    let untr = P.untr;
+    if (!untr) {
+      untr = {};
+      const rnd = mulberry32(hashStr(pid + 'untr'));
+      for (const t of tops) { const K = keys.filter((k) => k.ns.split('.')[0] === t).length; untr[t] = LOCS.map((L) => Math.floor(K * (L === 'ja-JP' ? 0.35 + rnd() * 0.4 : L === 'pt-BR' ? 0.1 + rnd() * 0.3 : rnd() * 0.12))); }
+    }
+    for (const t of tops) {
+      const inT = keys.filter((k) => k.ns.split('.')[0] === t);
+      const pool = inT.filter((k) => !k.pinned);
+      LOCS.forEach((L, li) => {
+        const want = untr[t][li];
+        const picks = shuffle(pool.slice(), mulberry32(hashStr(pid + t + L)));
+        const rnd = mulberry32(hashStr(pid + t + L + 'rv'));
+        const chosen = new Set(picks.slice(0, want));
+        for (const k of pool) {
+          if (chosen.has(k)) { k.stat[L] = 'untranslated'; k.vals[L] = ''; }
+          else k.stat[L] = rnd() < 0.74 ? 'reviewed' : 'translated';
+        }
+      });
+    }
+    keys.sort((a, b) => a.full.localeCompare(b.full));
+    // namespace tree
+    const nodes = {};
+    for (const [path] of P.ns) {
+      const parts = path.split('.');
+      for (let i = 1; i <= parts.length; i++) { const p = parts.slice(0, i).join('.'); if (!nodes[p]) nodes[p] = { path: p, name: parts[i - 1], depth: i, kids: [] }; }
+    }
+    for (const n of Object.values(nodes)) { if (n.depth > 1) nodes[n.path.split('.').slice(0, -1).join('.')].kids.push(n); }
+    for (const n of Object.values(nodes)) n.kids.sort((a, b) => a.name.localeCompare(b.name));
+    const roots = Object.values(nodes).filter((n) => n.depth === 1).sort((a, b) => a.name.localeCompare(b.name));
+    return { id: pid, P, keys, byFull: new Map(keys.map((k) => [k.full, k])), nodes, roots, tops: tops.sort() };
+  }
+  const DB = { 'harbor-app': build('harbor-app'), 'harbor-web': build('harbor-web') };
+  const subtreeCount = (db, path) => db.keys.filter((k) => k.full.startsWith(path + '.')).length;
+  const HIST_PEOPLE = ['Jana Richter', 'Mateus Albuquerque', 'Chloé Marchand', 'Álvaro Ibáñez', 'Yuki Tanabe', 'Giulia Ferri', 'Lina Okafor'];
+
+  // ---------------------------------------------------------------- state
+  const st = {
+    expanded: { 'harbor-app': new Set(['common']), 'harbor-web': new Set() },
+    target: 'de-DE', show: 'all', filter: '', page: 1,
+    statsLang: 'de-DE', statsDir: 1, statsPage: 1, statsKey: '',
+    ed: null, // { full, tab, drafts: {}, err }
+    comments: { 'harbor-app/checkout.payment.errors.card_declined': [['Jana Richter', '12 Mar 2026', 'Shown under the card field when the bank declines a payment. Keep it under 120 characters so it fits on one line on tablets.']] },
+    history: {},
+    members: [['Lina Okafor', 'lina@harborlabs.io', 'Owner'], ['Jana Richter', 'jana.richter@lingo-partners.de', 'Translator (de-DE, de-AT)'], ['Mateus Albuquerque', 'mateus@traduz.com.br', 'Translator (pt-BR)'], ['Chloé Marchand', 'chloe@marchand-l10n.fr', 'Reviewer (fr-FR)'], ['Yuki Tanabe', 'yuki.tanabe@kotoba.jp', 'Translator (ja-JP)'], ['Álvaro Ibáñez', 'alvaro@traducciones-ib.es', 'Translator (es-ES)'], ['Giulia Ferri', 'giulia.ferri@parole.it', 'Translator (it-IT)']],
+    integrations: { github: true, figma: false, slack: true, mt: true },
+    langs: new Set(LOCS),
+    projLbOpen: false,
+  };
+  function historyFor(db, k, L) {
+    const id = db.id + '/' + k.full + '/' + L;
+    if (!st.history[id]) {
+      if (k.full === 'checkout.payment.errors.card_declined' && (L === 'de-DE' || L === 'de-AT')) st.history[id] = [['Lina Okafor', '13 Mar 2026', 'Reviewed'], ['Jana Richter', '12 Mar 2026', 'Translated: “Ihre Karte wurde abgelehnt.”']];
+      else if (k.stat[L] === 'untranslated') st.history[id] = [['Sync', '2 Feb 2026', 'Key imported from harbor-mobile@main']];
+      else {
+        const r = mulberry32(hashStr(id));
+        const who = HIST_PEOPLE[Math.floor(r() * 6)];
+        const d = 1 + Math.floor(r() * 27), m = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'][Math.floor(r() * 6)];
+        st.history[id] = (k.stat[L] === 'reviewed' ? [['Lina Okafor', `${Math.min(d + 1, 28)} ${m} 2026`, 'Reviewed']] : []).concat([[who, `${d} ${m} 2026`, 'Translated'], ['Sync', '2 Feb 2026', 'Key imported from harbor-mobile@main']]);
+      }
+    }
+    return st.history[id];
+  }
+
+  // ---------------------------------------------------------------- routing
+  const route = () => { const r = location.hash.replace(/^#\/?/, ''); return r ? r.split('/').map(decodeURIComponent) : []; };
+  function curProject() { const r = route(); return DB[r[0]] ? r[0] : 'harbor-app'; }
+
+  function renderRail(pid, view) {
+    const P = PROJECTS[pid];
+    q('#railnav').innerHTML = `<div class="sect" style="padding-top:4px">${esc(P.name)}</div>` + [['keys', '⌘', 'Keys'], ['stats', '▤', 'Statistics'], ['activity', '↻', 'Activity'], ['glossary', 'Aa', 'Glossary'], ['settings', '⚙', 'Settings']]
+      .map(([v, ic, l]) => `<a href="#/${pid}/${v}" class="${view === v ? 'on' : ''}"><span class="ic">${ic}</span>${l}</a>`).join('');
+    const lb = q('#proj-lb');
+    lb.innerHTML = `<button type="button" id="proj-btn" aria-haspopup="listbox" aria-expanded="${st.projLbOpen}">▣ ${esc(P.name)} <span style="color:var(--muted)">▾</span></button>
+      <ul role="listbox" aria-label="Project" ${st.projLbOpen ? '' : 'hidden'}>${Object.entries(PROJECTS).map(([id, p]) => `<li role="option" data-proj="${id}" aria-selected="${id === pid}">${esc(p.name)}<small>${fmt(DB[id].keys.length)} keys · ${esc(id)}</small></li>`).join('')}</ul>`;
+  }
+  q('#proj-lb').addEventListener('click', (e) => {
+    if (e.target.closest('#proj-btn')) { st.projLbOpen = !st.projLbOpen; renderRail(curProject(), route()[1] || 'keys'); return; }
+    const o = e.target.closest('[data-proj]');
+    if (o) { st.projLbOpen = false; st.ed = null; st.page = 1; st.statsPage = 1; location.hash = `#/${o.dataset.proj}/keys`; renderRail(o.dataset.proj, 'keys'); }
+  });
+  document.addEventListener('click', (e) => { if (st.projLbOpen && !e.target.closest('#proj-lb')) { st.projLbOpen = false; renderRail(curProject(), route()[1] || 'keys'); } });
+
+  // ---------------------------------------------------------------- keys view
+  function treeHtml(db, nodes, sel, level = 1) {
+    const exp = st.expanded[db.id];
+    return nodes.map((n) => {
+      const hasKids = n.kids.length > 0;
+      const open = hasKids && exp.has(n.path);
+      const count = level === 1 ? `<span class="cnt" title="${subtreeCount(db, n.path)} keys">${fmt(subtreeCount(db, n.path))}</span>` : '';
+      return `<li role="treeitem" aria-level="${level}" ${hasKids ? `aria-expanded="${open}"` : ''} aria-selected="${sel === n.path}" data-ns="${esc(n.path)}">
+        <div class="ti"><button type="button" class="chev ${hasKids ? '' : 'none'}" ${hasKids ? `data-toggle="${esc(n.path)}" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(n.path)}"` : 'tabindex="-1" aria-hidden="true"'}>${open ? '▾' : '▸'}</button><a href="#/${db.id}/keys/${encodeURIComponent(n.path)}">${esc(n.name)}</a>${count}</div>
+        ${open ? `<ul role="group">${treeHtml(db, n.kids, sel, level + 1)}</ul>` : ''}</li>`;
+    }).join('');
+  }
+  function locOptions(sel) { return LOCS.map((L) => `<option value="${L}" ${sel === L ? 'selected' : ''}>${L} · ${LNAME[L]}</option>`).join(''); }
+  const statusLabel = { reviewed: 'Reviewed', translated: 'Needs review', untranslated: 'Untranslated' };
+
+  function viewKeys(db, nsPath, keyName) {
+    const node = nsPath ? db.nodes[nsPath] : null;
+    if (node) { const parts = nsPath.split('.'); for (let i = 1; i <= parts.length; i++) { const p = parts.slice(0, i).join('.'); if (db.nodes[p].kids.length) st.expanded[db.id].add(p); } }
+    const full = node && keyName ? nsPath + '.' + keyName : null;
+    const k = full ? db.byFull.get(full) : null;
+    if (k) { if (!st.ed || st.ed.full !== full || st.ed.pid !== db.id) st.ed = { pid: db.id, full, tab: st.target, drafts: {}, err: '' }; }
+    else st.ed = null;
+    let list = '';
+    if (!node) list = `<div class="card"><div class="empty">Select a namespace on the left to see its keys.<br><span class="meta">${fmt(db.keys.length)} keys in ${db.roots.length} top-level namespaces</span></div></div>`;
+    else {
+      const own = db.keys.filter((x) => x.ns === nsPath);
+      const f = st.filter.toLowerCase();
+      const shown = own.filter((x) => (st.show === 'all' || x.stat[st.target] === st.show) && (!f || x.key.toLowerCase().includes(f) || x.en.toLowerCase().includes(f)));
+      const per = 50, pages = Math.max(1, Math.ceil(shown.length / per));
+      if (st.page > pages) st.page = pages;
+      const rows = shown.slice((st.page - 1) * per, st.page * per);
+      const crumbs = nsPath.split('.').map((p, i, a) => `<a href="#/${db.id}/keys/${encodeURIComponent(a.slice(0, i + 1).join('.'))}">${esc(p)}</a>`).join(' › ');
+      list = `<div class="card"><div class="hd"><div><div class="crumbs">${crumbs}</div><div class="meta">${own.length} key${own.length === 1 ? '' : 's'} in this namespace${node.kids.length ? ` · ${node.kids.length} sub-namespace${node.kids.length === 1 ? '' : 's'}` : ''}</div></div><button type="button" class="btn sm" id="add-key" style="margin-left:auto">＋ New key</button></div>
+        <div class="tools"><div><label for="k-target">Target language</label><select id="k-target">${locOptions(st.target)}</select></div>
+          <div><label for="k-show">Show</label><select id="k-show">${[['all', 'All keys'], ['untranslated', 'Untranslated'], ['translated', 'Needs review'], ['reviewed', 'Reviewed']].map(([v, l]) => `<option value="${v}" ${st.show === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+          <div><label for="k-filter">Filter</label><input type="text" id="k-filter" placeholder="Key or source text" value="${esc(st.filter)}"></div></div>
+        ${own.length ? `<table><thead><tr><th>Key</th><th>Source · en-GB</th><th>${esc(st.target)}</th><th>Status</th></tr></thead><tbody>
+          ${rows.map((x) => `<tr class="${k && x.full === k.full ? 'sel' : ''}"><td class="key"><a href="#/${db.id}/keys/${encodeURIComponent(nsPath)}/${encodeURIComponent(x.key)}">${esc(x.key)}</a></td><td class="src">${esc(x.en)}</td><td class="tr ${x.vals[st.target] ? '' : 'empty'}">${esc(x.vals[st.target] || 'Not translated')}</td><td><span class="st ${x.stat[st.target]}">${statusLabel[x.stat[st.target]]}</span></td></tr>`).join('') || '<tr><td colspan="4" class="meta">No keys match.</td></tr>'}
+          </tbody></table>
+          <nav class="pager" aria-label="Keys pages"><button type="button" data-kp="prev" ${st.page === 1 ? 'disabled' : ''}>‹</button>${Array.from({ length: pages }, (_, i) => `<button type="button" data-kp="${i + 1}" ${i + 1 === st.page ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button type="button" data-kp="next" ${st.page === pages ? 'disabled' : ''}>›</button><span class="info">${shown.length ? (st.page - 1) * per + 1 : 0}–${(st.page - 1) * per + rows.length} of ${shown.length}</span></nav>`
+          : `<div class="empty">This namespace has no keys of its own. Open a sub-namespace: ${node.kids.map((c) => `<a href="#/${db.id}/keys/${encodeURIComponent(c.path)}">${esc(c.name)}</a>`).join(', ')}</div>`}</div>`;
+    }
+    return `<div class="keys ${k ? 'editing' : ''}">
+      <div class="card"><div class="hd"><h2 style="margin:0">Namespaces</h2><button type="button" class="btn sm" id="collapse-all" style="margin-left:auto">Collapse all</button></div><div class="bd" style="padding:8px 6px"><ul role="tree" aria-label="Namespaces">${treeHtml(db, db.roots, nsPath)}</ul></div></div>
+      <div style="min-width:0">${list}</div>
+      ${k ? `<div class="card ed" id="editor">${editorHtml(db, k)}</div>` : ''}</div>`;
+  }
+
+  function placeholders(s) { return [...String(s).matchAll(/\{[a-z_]+\}/g)].map((m) => m[0]).sort().join(','); }
+  function editorHtml(db, k) {
+    const e = st.ed;
+    const L = e.tab;
+    const val = L in e.drafts ? e.drafts[L] : k.vals[L];
+    const over = [...val].length > k.max;
+    const cm = st.comments[db.id + '/' + k.full] || [];
+    return `<div class="hd"><div style="min-width:0"><div class="keyname">${esc(k.key)}</div><div class="path">${esc(k.full)}</div></div><button type="button" class="btn sm" id="ed-copykey" style="margin-left:auto">Copy key</button><button type="button" class="btn sm" id="ed-close" aria-label="Close editor">✕</button></div>
+      <div class="bd">
+        <div class="meta">Source · en-GB</div><div class="src-box">${esc(k.en)}</div>
+        <div class="meta">${k.ctx ? 'Context: ' + esc(k.ctx) + ' · ' : ''}Max length ${k.max} characters${placeholders(k.en) ? ' · Placeholders: ' + esc(placeholders(k.en)) : ''}</div>
+        <div role="tablist" class="loc" aria-label="Languages">${LOCS.map((x) => `<button type="button" role="tab" id="tab-${x}" aria-controls="tp-${x}" aria-selected="${x === L}" data-tab="${x}" title="${LNAME[x]}"><i class="${x in e.drafts && e.drafts[x] !== k.vals[x] ? 'dirty' : k.stat[x]}"></i>${x}</button>`).join('')}</div>
+        <div role="tabpanel" id="tp-${L}" aria-labelledby="tab-${L}">
+          <label class="fl" for="ed-text">${esc(LNAME[L])} — ${L}</label>
+          <textarea id="ed-text" rows="4" lang="${L}">${esc(val)}</textarea>
+          <div class="row" style="display:flex;justify-content:space-between;align-items:center"><span class="st ${k.stat[L]}">${statusLabel[k.stat[L]]}</span><span class="counter ${over ? 'over' : ''}" id="ed-count">${[...val].length} / ${k.max}</span></div>
+          <div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="btn sm" id="ed-copysrc">Copy from source</button><button type="button" class="btn sm" id="ed-mt">Machine translate</button></div>
+          ${e.err ? `<div class="err" role="alert">${esc(e.err)}</div>` : ''}
+          <div class="acts"><button type="button" class="btn" id="ed-save">Save</button><button type="button" class="btn pri" id="ed-save-review">Save &amp; mark reviewed</button><span class="grow"></span></div>
+        </div>
+        <h2 style="margin-top:16px">History · ${L}</h2><div class="hist"><ul>${historyFor(db, k, L).map(([who, when, what]) => `<li><b>${esc(who)}</b> · ${esc(when)} — ${esc(what)}</li>`).join('')}</ul></div>
+        <h2 style="margin-top:16px">Comments (${cm.length})</h2><div class="hist"><ul>${cm.map(([who, when, what]) => `<li><b>${esc(who)}</b> · ${esc(when)}<br>${esc(what)}</li>`).join('') || '<li class="meta">No comments yet.</li>'}</ul></div>
+        <div class="field" style="margin-top:8px"><label for="ed-comment" class="meta">Add a comment for translators</label><textarea id="ed-comment" rows="2"></textarea></div><button type="button" class="btn sm" id="ed-post">Post comment</button>
+      </div>`;
+  }
+  function rerenderEditor() {
+    const db = DB[st.ed.pid], k = db.byFull.get(st.ed.full);
+    const el = q('#editor'); if (el) el.innerHTML = editorHtml(db, k);
+  }
+  function captureDraft() {
+    if (!st.ed) return;
+    const t = q('#ed-text'); if (!t) return;
+    const db = DB[st.ed.pid], k = db.byFull.get(st.ed.full);
+    if (t.value !== k.vals[st.ed.tab]) st.ed.drafts[st.ed.tab] = t.value; else delete st.ed.drafts[st.ed.tab];
+  }
+  function mtFor(k, L) {
+    if (k.full === 'checkout.payment.errors.card_declined' && LANG[L] === 'de') return 'Ihre Karte wurde abgelehnt. Bitte überprüfen Sie Ihre Kartendaten.';
+    if (k.bi != null) return BANK[k.bi][BANKI[LANG[L]]];
+    return k.vals[L] || k.en;
+  }
+  async function saveEditor(reviewed, btn) {
+    captureDraft();
+    const e = st.ed, db = DB[e.pid], k = db.byFull.get(e.full);
+    let dirty = LOCS.filter((L) => L in e.drafts && e.drafts[L] !== k.vals[L]);
+    if (!dirty.length && !reviewed) { e.err = ''; toast('No changes to save.'); return; }
+    if (!dirty.length && reviewed) {
+      if (!k.vals[e.tab]) { e.err = 'Add a translation before marking it as reviewed.'; rerenderEditor(); return; }
+      if (k.stat[e.tab] === 'reviewed') { toast('Already reviewed.'); return; }
+      dirty = [e.tab];
+    }
+    for (const L of dirty) {
+      const v = norm(L in e.drafts ? e.drafts[L] : k.vals[L]);
+      if ([...v].length > k.max) { e.err = `${L}: the translation is ${[...v].length} characters long. The limit is ${k.max}.`; e.tab = L; rerenderEditor(); return; }
+      if (v && placeholders(v) !== placeholders(k.en)) { e.err = `${L}: keep the placeholders ${placeholders(k.en)} exactly as in the source.`; e.tab = L; rerenderEditor(); return; }
+    }
+    e.err = '';
+    btn.disabled = true; const lbl = btn.innerHTML; btn.innerHTML = '<span class="spin"></span>Saving';
+    await sleep(550);
+    for (const L of dirty) {
+      const v = norm(L in e.drafts ? e.drafts[L] : k.vals[L]);
+      await post({ event: 'translation_save', project: db.id, key: k.full, locale: L, value: v, reviewed: reviewed ? 'yes' : 'no' });
+      const prev = k.stat[L];
+      k.vals[L] = v; k.stat[L] = !v ? 'untranslated' : reviewed ? 'reviewed' : 'translated';
+      historyFor(db, k, L).unshift(['Lina Okafor', '24 Sep 2026', reviewed ? `Saved and reviewed: “${v}”` : `Translated: “${v}”${prev === 'reviewed' ? ' (review reset)' : ''}`]);
+      delete e.drafts[L];
+    }
+    btn.innerHTML = lbl; btn.disabled = false;
+    render();
+    toast(`Saved ${dirty.length} translation${dirty.length === 1 ? '' : 's'}${reviewed ? ' and marked reviewed' : ''}.`);
+  }
+
+  // ---------------------------------------------------------------- stats view
+  function viewStats(db) {
+    const L = st.statsLang;
+    const rows = db.tops.map((t) => {
+      const ks = db.keys.filter((k) => k.ns.split('.')[0] === t);
+      const u = ks.filter((k) => k.stat[L] === 'untranslated').length;
+      const words = ks.reduce((s, k) => s + k.en.split(/\s+/).filter(Boolean).length, 0);
+      return { t, keys: ks.length, words, u, pct: ks.length ? ((ks.length - u) / ks.length) * 100 : 100, upd: db.P.updated[t] || '—' };
+    }).sort((a, b) => st.statsDir * a.t.localeCompare(b.t));
+    const per = 10, pages = Math.ceil(rows.length / per);
+    if (st.statsPage > pages) st.statsPage = pages;
+    const page = rows.slice((st.statsPage - 1) * per, st.statsPage * per);
+    const cards = LOCS.filter((x) => st.langs.has(x)).map((x) => {
+      const u = db.keys.filter((k) => k.stat[x] === 'untranslated').length;
+      const pct = ((db.keys.length - u) / db.keys.length) * 100;
+      return `<div class="card"><b>${x}</b><span class="meta">${esc(LNAME[x])}</span><div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div><span class="meta">${pct.toFixed(1)}% translated</span></div>`;
+    }).join('');
+    return `<h1>Statistics</h1><p class="sub">${esc(db.P.name)} · ${fmt(db.keys.length)} keys · source language ${LNAME['en-GB']}</p>
+      <div class="langcards">${cards}</div>
+      <div class="card"><div class="hd"><h2 style="margin:0">Top-level namespaces</h2><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><label for="st-lang" class="meta">Language</label><select id="st-lang">${locOptions(L)}</select></div></div>
+        <table><thead><tr><th aria-sort="${st.statsDir === 1 ? 'ascending' : 'descending'}"><button type="button" class="sort" id="st-sort">Namespace ${st.statsDir === 1 ? '▲' : '▼'}</button></th><th class="num">Keys</th><th class="num">Words</th><th class="num">Untranslated</th><th class="num">Completion</th><th>Last updated</th></tr></thead><tbody>
+        ${page.map((r) => `<tr><td><a href="#/${db.id}/keys/${encodeURIComponent(r.t)}" style="font-family:var(--mono)">${esc(r.t)}</a></td><td class="num">${fmt(r.keys)}</td><td class="num">${fmt(r.words)}</td><td class="num">${fmt(r.u)}</td><td class="num">${r.pct.toFixed(1)}%</td><td>${esc(r.upd)}</td></tr>`).join('')}
+        </tbody></table>
+        <nav class="pager" aria-label="Namespace pages"><button type="button" data-sp="prev" ${st.statsPage === 1 ? 'disabled' : ''}>‹ Previous</button>${Array.from({ length: pages }, (_, i) => `<button type="button" data-sp="${i + 1}" ${i + 1 === st.statsPage ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button type="button" data-sp="next" ${st.statsPage === pages ? 'disabled' : ''}>Next ›</button><span class="info">Showing ${(st.statsPage - 1) * per + 1}–${(st.statsPage - 1) * per + page.length} of ${rows.length} namespaces</span></nav></div>
+      <p class="meta" style="margin-top:10px">Counts include keys in sub-namespaces. Statistics refresh within a minute of any change.</p>`;
+  }
+
+  function viewSearch(db, qs) {
+    const f = qs.toLowerCase();
+    const hits = db.keys.filter((k) => k.full.toLowerCase().includes(f) || k.en.toLowerCase().includes(f)).slice(0, 100);
+    return `<h1>Search results</h1><p class="sub">${hits.length === 100 ? 'First 100' : hits.length} key${hits.length === 1 ? '' : 's'} matching “${esc(qs)}” in ${esc(db.P.name)}</p>
+      <div class="card"><table><thead><tr><th>Key</th><th>Source · en-GB</th><th>${esc(st.target)}</th></tr></thead><tbody>
+      ${hits.map((k) => `<tr><td class="key"><a href="#/${db.id}/keys/${encodeURIComponent(k.ns)}/${encodeURIComponent(k.key)}">${esc(k.full)}</a></td><td class="src">${esc(k.en)}</td><td><span class="st ${k.stat[st.target]}">${statusLabel[k.stat[st.target]]}</span></td></tr>`).join('') || '<tr><td colspan="3" class="meta">Nothing found.</td></tr>'}</tbody></table></div>`;
+  }
+
+  const FEED = [
+    ['24 Sep 2026 09:14', 'Mateus Albuquerque', 'translated 38 strings in pt-BR · wallet.transfers'], ['24 Sep 2026 08:02', 'Sync', 'imported 12 new keys from harbor-mobile@main (checkout.shipping, wallet)'],
+    ['23 Sep 2026 17:45', 'Jana Richter', 'translated 64 strings in de-DE · checkout'], ['23 Sep 2026 16:20', 'Lina Okafor', 'reviewed 41 strings in de-DE · checkout.payment'],
+    ['23 Sep 2026 11:08', 'Yuki Tanabe', 'translated 22 strings in ja-JP · notifications.push'], ['22 Sep 2026 15:31', 'Chloé Marchand', 'reviewed 57 strings in fr-FR · account.security'],
+    ['22 Sep 2026 10:12', 'Álvaro Ibáñez', 'translated 19 strings in es-ES · orders.returns'], ['21 Sep 2026 14:55', 'Giulia Ferri', 'translated 30 strings in it-IT · account.profile'],
+    ['21 Sep 2026 09:40', 'Sync', 'exported 7 languages to harbor-mobile@release/5.12'], ['19 Sep 2026 18:03', 'Lina Okafor', 'invited Giulia Ferri as Translator (it-IT)'],
+    ['18 Sep 2026 12:27', 'Mateus Albuquerque', 'translated 51 strings in pt-BR · onboarding.signup'], ['16 Sep 2026 10:00', 'Sync', 'imported 44 new keys from harbor-mobile@main (settings)'],
+  ];
+  function viewActivity(db) { return `<h1>Activity</h1><p class="sub">${esc(db.P.name)} · last 14 days</p><div class="card"><div class="bd feed"><ul>${FEED.map(([w, who, what]) => `<li><span class="when">${esc(w)}</span><span><b>${esc(who)}</b> ${esc(what)}</span></li>`).join('')}</ul></div></div>`; }
+  const GLOSS = [['Harbor Pay', 'Product name. Never translate.', 'Harbor Pay', 'Harbor Pay'], ['wallet', 'The in-app balance, not a physical wallet.', 'Wallet', 'Carteira'], ['transfer', 'Sending money to another person.', 'Überweisung', 'Transferência'], ['top up', 'Adding money to the wallet.', 'aufladen', 'recarregar'], ['card', 'A payment card (debit or credit).', 'Karte', 'Cartão'], ['checkout', 'The payment flow for orders.', 'Kasse', 'Finalizar compra'], ['promo code', 'A discount code.', 'Aktionscode', 'Código promocional'], ['pickup point', 'Parcel shop or locker.', 'Abholstation', 'Ponto de retirada']];
+  function viewGlossary(db) { return `<h1>Glossary</h1><p class="sub">Terms translators must use consistently in ${esc(db.P.name)}.</p><div class="card"><div class="hd"><span class="meta">${GLOSS.length} terms</span><button type="button" class="btn sm" id="gl-add" style="margin-left:auto">＋ Add term</button></div><table><thead><tr><th>Term (en-GB)</th><th>Definition</th><th>de-DE</th><th>pt-BR</th></tr></thead><tbody>${GLOSS.map((g) => `<tr><td><b>${esc(g[0])}</b></td><td>${esc(g[1])}</td><td>${esc(g[2])}</td><td>${esc(g[3])}</td></tr>`).join('')}</tbody></table></div>`; }
+  function viewSettings(db) {
+    const sw = (k, l, d) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><div><b>${l}</b><div class="meta">${d}</div></div><label class="switch"><input type="checkbox" data-int="${k}" ${st.integrations[k] ? 'checked' : ''} aria-label="${esc(l)}"><span class="tr"></span></label></div>`;
+    return `<h1>Settings</h1><p class="sub">${esc(db.P.name)}</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div class="card"><div class="hd"><h2 style="margin:0">General</h2></div><div class="bd"><div class="field"><label for="ps-name">Project name</label><input type="text" id="ps-name" value="${esc(db.P.name)}" style="width:100%"></div><div class="field"><label for="ps-desc">Description</label><textarea id="ps-desc" rows="2">${esc(db.P.desc)}</textarea></div>
+        <div class="field"><label>Source language</label><div class="meta">en-GB · ${LNAME['en-GB']} (can't be changed after keys exist)</div></div>
+        <fieldset style="border:0;padding:0;margin:0 0 12px"><legend style="font-weight:600;margin-bottom:6px">Target languages</legend>${LOCS.map((x) => `<label style="display:flex;gap:8px;align-items:center;margin:4px 0"><input type="checkbox" data-lang="${x}" ${st.langs.has(x) ? 'checked' : ''}> ${x} · ${LNAME[x]}</label>`).join('')}</fieldset>
+        <button type="button" class="btn pri" id="ps-save">Save changes</button></div></div>
+      <div><div class="card"><div class="hd"><h2 style="margin:0">Members</h2><button type="button" class="btn sm" id="pm-invite" style="margin-left:auto">＋ Invite</button></div><table><tbody>${st.members.map(([n, e, r]) => `<tr><td><b>${esc(n)}</b><div class="meta">${esc(e)}</div></td><td class="meta">${esc(r)}</td></tr>`).join('')}</tbody></table></div>
+        <div class="card" style="margin-top:16px"><div class="hd"><h2 style="margin:0">Integrations</h2></div><div class="bd">${sw('github', 'GitHub sync', 'Pull new keys from harbor-mobile@main and open pull requests with translations')}${sw('figma', 'Figma plugin', 'Show translations in design files')}${sw('slack', 'Slack notifications', 'Post daily progress to #l10n')}${sw('mt', 'Machine translation suggestions', 'Show suggestions in the editor')}</div></div>
+        <div class="card" style="margin-top:16px;border-color:#f0c9c9"><div class="hd"><h2 style="margin:0;color:var(--bad)">Danger zone</h2></div><div class="bd"><p class="meta">Deleting the project removes every key, translation and history entry.</p><button type="button" class="btn danger" id="ps-delete">Delete project</button></div></div></div></div>`;
+  }
+  function viewProjects() {
+    return `<h1>Projects</h1><p class="sub">Harbor Labs workspace</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">${Object.values(DB).map((db) => {
+      const tot = db.keys.length * LOCS.length, done = db.keys.reduce((s, k) => s + LOCS.filter((L) => k.stat[L] !== 'untranslated').length, 0);
+      return `<div class="card"><div class="bd"><h2><a href="#/${db.id}/keys">${esc(db.P.name)}</a></h2><p class="meta">${esc(db.P.desc)}</p><div class="bar"><i style="width:${((done / tot) * 100).toFixed(1)}%"></i></div><div class="meta">${fmt(db.keys.length)} keys · ${LOCS.length} target languages · ${((done / tot) * 100).toFixed(1)}% translated</div><p><a href="#/${db.id}/stats">View statistics</a></p></div></div>`;
+    }).join('')}</div>`;
+  }
+
+  function render() {
+    const r = route();
+    if (!r.length) { location.replace(`#/harbor-app/keys/${PROJECTS['harbor-app'].home}`); return; }
+    if (['projects', 'team', 'billing', 'docs', 'status'].includes(r[0])) {
+      renderRail('harbor-app', '');
+      q('#main').innerHTML = r[0] === 'projects' ? viewProjects() : `<h1>${esc(r[0][0].toUpperCase() + r[0].slice(1))}</h1><div class="card"><div class="bd">${r[0] === 'team' ? 'Seven people have access to Harbor Labs projects. Manage members in each project’s settings.' : r[0] === 'billing' ? 'Plan: Growth · 25,000 hosted keys · renews 1 January 2027.' : r[0] === 'status' ? 'All systems operational.' : 'See docs.lexicon.dev for API and CLI guides.'}</div></div>`;
+      return;
+    }
+    const pid = DB[r[0]] ? r[0] : 'harbor-app';
+    const db = DB[pid];
+    const view = r[1] || 'keys';
+    renderRail(pid, view);
+    let h;
+    if (view === 'keys') h = viewKeys(db, r[2] && db.nodes[r[2]] ? r[2] : null, r[3]);
+    else if (view === 'stats') h = viewStats(db);
+    else if (view === 'activity') h = viewActivity(db);
+    else if (view === 'glossary') h = viewGlossary(db);
+    else if (view === 'settings') h = viewSettings(db);
+    else if (view === 'search') h = viewSearch(db, r.slice(2).join('/'));
+    else h = `<h1>Not found</h1><p><a href="#/${pid}/keys">Back to keys</a></p>`;
+    q('#main').innerHTML = h;
+  }
+  let lastKeyRoute = '';
+  window.addEventListener('hashchange', () => {
+    const r = route();
+    const sameNs = r[1] === 'keys' && lastKeyRoute === (r[0] + '/' + r[2]);
+    if (!sameNs) { st.page = 1; st.filter = ''; }
+    lastKeyRoute = r[0] + '/' + r[2];
+    render();
+  });
+
+  // ---------------------------------------------------------------- events
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const tg = t.closest('[data-toggle]');
+    if (tg) { const s = st.expanded[curProject()]; s.has(tg.dataset.toggle) ? s.delete(tg.dataset.toggle) : s.add(tg.dataset.toggle); captureDraft(); render(); return; }
+    if (t.closest('#collapse-all')) { st.expanded[curProject()].clear(); captureDraft(); render(); return; }
+    const kp = t.closest('[data-kp]');
+    if (kp && !kp.disabled) { const v = kp.dataset.kp; st.page = v === 'prev' ? st.page - 1 : v === 'next' ? st.page + 1 : +v; captureDraft(); render(); return; }
+    const sp = t.closest('[data-sp]');
+    if (sp && !sp.disabled) { const v = sp.dataset.sp; st.statsPage = v === 'prev' ? st.statsPage - 1 : v === 'next' ? st.statsPage + 1 : +v; render(); return; }
+    if (t.closest('#st-sort')) { st.statsDir *= -1; st.statsPage = 1; render(); return; }
+    const tab = t.closest('[data-tab]');
+    if (tab && st.ed) { captureDraft(); st.ed.tab = tab.dataset.tab; st.ed.err = ''; rerenderEditor(); const ta = q('#ed-text'); if (ta) ta.focus(); return; }
+    if (t.closest('#ed-close')) { captureDraft(); const r = route(); location.hash = `#/${r[0]}/keys/${encodeURIComponent(r[2])}`; return; }
+    if (t.closest('#ed-copykey')) { toast('Key copied to clipboard.'); return; }
+    if (t.closest('#ed-copysrc') || t.closest('#ed-mt')) {
+      const db = DB[st.ed.pid], k = db.byFull.get(st.ed.full);
+      const v = t.closest('#ed-copysrc') ? k.en : mtFor(k, st.ed.tab);
+      if (t.closest('#ed-mt')) { const b = t.closest('#ed-mt'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Translating'; await sleep(700); }
+      st.ed.drafts[st.ed.tab] = v; rerenderEditor();
+      return;
+    }
+    if (t.closest('#ed-save')) { saveEditor(false, t.closest('#ed-save')); return; }
+    if (t.closest('#ed-save-review')) { saveEditor(true, t.closest('#ed-save-review')); return; }
+    if (t.closest('#ed-post')) {
+      const v = norm(q('#ed-comment').value); if (!v) return;
+      const b = t.closest('#ed-post'); b.disabled = true; await sleep(400);
+      const id = st.ed.pid + '/' + st.ed.full;
+      await post({ event: 'comment_add', project: st.ed.pid, key: st.ed.full, text: v });
+      captureDraft(); (st.comments[id] = st.comments[id] || []).push(['Lina Okafor', '24 Sep 2026', v]); rerenderEditor(); toast('Comment posted.');
+      return;
+    }
+    if (t.closest('#add-key')) {
+      const r = route();
+      openDialog('New key', `<div class="field"><label for="nk-name">Key name</label><input type="text" id="nk-name" placeholder="e.g. empty_state_title" style="width:100%"></div><div class="field"><label for="nk-src">Source text (en-GB)</label><textarea id="nk-src" rows="2"></textarea></div>`, 'Create key', async (d) => {
+        const n = d.querySelector('#nk-name').value.trim(), s = norm(d.querySelector('#nk-src').value);
+        if (!/^[a-z0-9_]+$/.test(n) || !s) { toast('Use lowercase letters, numbers and underscores, and add source text.'); return false; }
+        await post({ event: 'key_create', project: r[0], namespace: r[2], key: n, source: s }); toast('Key created. It will appear after the next sync.');
+      });
+      return;
+    }
+    if (t.closest('#gl-add')) {
+      openDialog('Add glossary term', `<div class="field"><label for="gt-term">Term</label><input type="text" id="gt-term" style="width:100%"></div><div class="field"><label for="gt-def">Definition</label><textarea id="gt-def" rows="2"></textarea></div>`, 'Add term', async (d) => {
+        const term = norm(d.querySelector('#gt-term').value); if (!term) return false;
+        await post({ event: 'glossary_add', project: curProject(), term, definition: norm(d.querySelector('#gt-def').value) }); toast('Term added.');
+      });
+      return;
+    }
+    if (t.closest('#ps-save')) {
+      const db = DB[curProject()];
+      const name = norm(q('#ps-name').value), desc = norm(q('#ps-desc').value), langs = qa('[data-lang]').filter((c) => c.checked).map((c) => c.dataset.lang);
+      if (!name) { toast('Enter a project name.'); return; }
+      const b = t.closest('#ps-save'); b.disabled = true; await sleep(600);
+      await post({ event: 'project_settings_update', project: db.id, name, description: desc, target_languages: langs.join(',') });
+      db.P.name = name; db.P.desc = desc; st.langs = new Set(langs); render(); toast('Settings saved.');
+      return;
+    }
+    if (t.closest('#pm-invite')) {
+      openDialog('Invite a member', `<div class="field"><label for="iv-email">Email</label><input type="email" id="iv-email" style="width:100%"></div><div class="field"><label for="iv-role">Role</label><select id="iv-role"><option>Translator</option><option>Reviewer</option><option>Developer</option><option>Admin</option></select></div>`, 'Send invite', async (d) => {
+        const em = d.querySelector('#iv-email').value.trim().toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { toast('Enter a valid email.'); return false; }
+        await post({ event: 'member_invite', project: curProject(), email: em, role: d.querySelector('#iv-role').value.toLowerCase() }); toast('Invitation sent.');
+      });
+      return;
+    }
+    if (t.closest('#ps-delete')) {
+      const db = DB[curProject()];
+      openDialog('Delete project', `<p>This permanently deletes <b>${esc(db.P.name)}</b>. Type the project ID <code>${db.id}</code> to confirm.</p><div class="field"><label for="dp-id">Project ID</label><input type="text" id="dp-id" style="width:100%"></div>`, 'Delete project', async (d) => {
+        if (d.querySelector('#dp-id').value.trim() !== db.id) { toast('The project ID doesn’t match.'); return false; }
+        await post({ event: 'project_delete', project: db.id }); toast('Project scheduled for deletion.');
+      });
+      return;
+    }
+  });
+  q('#main').addEventListener('change', async (e) => {
+    const t = e.target;
+    if (t.id === 'k-target') { st.target = t.value; captureDraft(); render(); }
+    if (t.id === 'k-show') { st.show = t.value; st.page = 1; captureDraft(); render(); }
+    if (t.id === 'st-lang') { st.statsLang = t.value; render(); }
+    if (t.dataset && t.dataset.int) {
+      const k = t.dataset.int; st.integrations[k] = t.checked;
+      await post({ event: 'integration_update', project: curProject(), integration: k, enabled: t.checked ? 'yes' : 'no' }); toast('Integration updated.');
+    }
+  });
+  q('#main').addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'ed-text' && st.ed) {
+      const db = DB[st.ed.pid], k = db.byFull.get(st.ed.full);
+      const n = [...t.value].length, c = q('#ed-count');
+      if (c) { c.textContent = `${n} / ${k.max}`; c.classList.toggle('over', n > k.max); }
+      captureDraft();
+      const dot = q(`#tab-${st.ed.tab} i`); if (dot) dot.className = st.ed.tab in st.ed.drafts ? 'dirty' : k.stat[st.ed.tab];
+    }
+    if (t.id === 'k-filter') { st.filter = t.value; st.page = 1; clearTimeout(st.ft); st.ft = setTimeout(() => { captureDraft(); render(); const f = q('#k-filter'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }, 250); }
+  });
+  q('#gsearch').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const v = e.target.value.trim(); if (!v) return;
+    location.hash = `#/${curProject()}/search/${encodeURIComponent(v)}`;
+  });
+  q('#bell').addEventListener('click', () => toast('3 new: Mateus translated 38 pt-BR strings; sync imported 12 keys; Jana left a comment.'));
+  q('#help').addEventListener('click', () => toast('Shortcuts: Enter to search · Ctrl+S to save in the editor.'));
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && st.ed && q('#ed-save')) { e.preventDefault(); saveEditor(false, q('#ed-save')); }
+  });
+
+  function openDialog(title, body, okLabel, onOk) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h2>${esc(title)}</h2>${body}<div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>${esc(okLabel)}</button></div></div></div>`;
+    const d = q('#modal-root .dialog');
+    d.querySelector('[data-c]').addEventListener('click', () => (q('#modal-root').innerHTML = ''));
+    d.querySelector('[data-ok]').addEventListener('click', async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; await sleep(500); const ok = await onOk(d); if (ok === false) { b.disabled = false; return; } q('#modal-root').innerHTML = ''; render(); });
+  }
+
+  lastKeyRoute = (route()[0] || '') + '/' + (route()[2] || '');
+  render();
+})();
+</script>
+</body>
+</html>

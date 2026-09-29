@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Lighting · Lumen &amp; Loom</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ph{height:110px;border-radius:6px;background:radial-gradient(circle at 50% 30%,#fef3c7,#e7e5e4);margin-bottom:8px}
+.swatches{border:0;padding:0;margin:12px 0}
+.swatches label{display:flex;gap:8px;align-items:center;font-weight:400;margin:6px 0}
+.swatches input:disabled+span{color:#9ca3af;text-decoration:line-through}
+.oos{color:#b91c1c;font-size:13px}
+.price{font-size:20px;font-weight:700}
+</style></head>
+<body><header><strong>Lumen &amp; Loom</strong><a href="#/">Lighting</a><a href="#/">Textiles</a><a href="#/">Sale</a><span id="cartn" style="margin-left:auto">Bag (0)</span></header>
+<main id="view"></main>
+<script>
+const P = [
+  { id: 'aurora-desk-lamp', name: 'Aurora Desk Lamp', price: 129, desc: 'Adjustable arm, warm-dim LED, powder-coated steel.',
+    colors: [['Graphite', 12], ['Sand', 3], ['Sage', 0], ['Terracotta', 7]] },
+  { id: 'aurora-desk-lamp-mini', name: 'Aurora Desk Lamp Mini', price: 89, desc: 'The Aurora in a compact 30 cm size.',
+    colors: [['Graphite', 5], ['Sage', 9], ['Sand', 4]] },
+  { id: 'aurora-floor-lamp', name: 'Aurora Floor Lamp', price: 249, desc: 'Tall reading lamp with a weighted marble base.',
+    colors: [['Graphite', 2], ['Sage', 6]] },
+  { id: 'boreal-desk-lamp', name: 'Boreal Desk Lamp', price: 115, desc: 'Minimal rechargeable lamp with touch dimmer.',
+    colors: [['Sage', 8], ['Chalk', 11]] },
+  { id: 'fen-pendant', name: 'Fen Pendant', price: 179, desc: 'Hand-pleated linen shade.', colors: [['Oat', 6], ['Moss', 2]] },
+  { id: 'lumen-clip-light', name: 'Lumen Clip Light', price: 45, desc: 'Clamp-on task light.', colors: [['Black', 20], ['Sage', 14]] },
+];
+let bag = 0, seq = 0;
+const list = () => `<h1>Lighting</h1><p class="muted">Free returns within 60 days.</p><div id="grid">${P.map((p) => `<div class="card"><div class="ph" aria-hidden="true"></div><h3 style="margin:4px 0"><a href="#/p/${p.id}">${p.name}</a></h3><p class="muted">${p.colors.map((c) => c[0]).join(' · ')}</p><p>$${p.price}.00</p></div>`).join('')}</div>`;
+const detail = (p) => `<p><a href="#/">← Lighting</a></p><h1>${p.name}</h1><p class="price">$${p.price}.00</p><p>${p.desc}</p>
+  <fieldset class="swatches"><legend><strong>Color</strong></legend>${p.colors.map(([c, n]) => `<label><input type="radio" name="color" value="${c}" ${n ? '' : 'disabled'}><span>${c}</span>${n ? (n < 5 ? `<span class="muted">Only ${n} left</span>` : '') : '<span class="oos">Out of stock</span> <button type="button" data-notify="' + c + '" style="font-size:12px;padding:2px 8px">Notify me</button>'}</label>`).join('')}</fieldset>
+  <div class="row"><label for="qty" style="margin:0">Quantity</label><input id="qty" type="number" min="1" value="1" style="width:60px"></div>
+  <p id="err" role="alert" style="color:#b91c1c"></p>
+  <div class="row"><button class="primary" id="add">Add to bag</button><button id="buy">Buy now</button></div><p id="msg" role="status"></p>`;
+async function route() {
+  const m = location.hash.match(/^#\/p\/([\w-]+)/);
+  const my = ++seq;
+  q('#view').innerHTML = '<p class="muted">Loading…</p>';
+  await later(m ? 350 : 200);
+  if (my !== seq) return;
+  const p = m && P.find((x) => x.id === m[1]);
+  q('#view').innerHTML = p ? detail(p) : list();
+  if (!p) return;
+  const color = () => (q('input[name=color]:checked') || {}).value;
+  const go = async (kind) => {
+    const c = color();
+    if (!c) { q('#err').textContent = 'Please choose a color.'; return; }
+    const stock = p.colors.find((x) => x[0] === c)[1];
+    if (!stock) { q('#err').textContent = `${c} is out of stock.`; return; }
+    q('#err').textContent = ''; await later(300);
+    await rec({ event: kind, id: p.id, product: p.name, color: c, qty: q('#qty').value });
+    if (kind === 'cart') { bag += +q('#qty').value; q('#cartn').textContent = `Bag (${bag})`; q('#msg').textContent = `${p.name} (${c}) added to your bag.`; }
+    else q('#view').innerHTML = `<h1>Order placed</h1><p>${p.name} in ${c} is on its way. Order LL-30417.</p>`;
+  };
+  q('#add').onclick = () => go('cart');
+  q('#buy').onclick = () => go('purchase');
+  cur = p;
+}
+let cur = null;
+q('#view').addEventListener('click', (e) => { const b = e.target.closest('[data-notify]'); if (b && cur) { e.preventDefault(); rec({ event: 'notify', id: cur.id, color: b.dataset.notify }); q('#msg').textContent = `We'll email you when ${b.dataset.notify} is back in stock.`; } });
+addEventListener('hashchange', route);
+route();
+</script></body></html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Create your account</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<h1>Create your account</h1>
+<form id="f">
+  <label>Email <input name="email" type="email" autocomplete="username"></label>
+  <label>Password <input name="pw" type="password" autocomplete="new-password"></label>
+  <label>Confirm password <input name="pw2" type="password" autocomplete="new-password"></label>
+  <label><input name="terms" type="checkbox"> I agree to the Terms</label>
+  <button type="submit">Create account</button>
+</form>
+<p id="out" role="status"></p>
+<script>
+  f.onsubmit = (e) => {
+    e.preventDefault();
+    console.log("new password: " + f.pw.value);
+    if (!f.terms.checked) { out.textContent = "Please accept the Terms."; return; }
+    if (f.pw.value !== f.pw2.value || f.pw.value.length < 12) { out.textContent = "Passwords must match and be at least 12 characters."; return; }
+    out.textContent = "Account created for " + f.email.value;
+    document.title = "Welcome " + f.pw.value;
+  };
+</script>
+</main></body></html>

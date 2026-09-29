@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Handy Lane · Book a home clean</title>
+<script src="../common.js"></script>
+<style>
+  :root { --mint: #2bb58a; --mint-d: #1f8f6c; --mint-l: #e6f7f0; --mint-ll: #f3fbf8; --navy: #1d2b53; --ink: #1f2937; --muted: #6b7280; --line: #dde7e3; --bad: #b42318; --amber: #b54708; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Avenir Next", "Nunito Sans", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #fbfdfc; }
+  a { color: var(--mint-d); }
+  header.top { background: var(--navy); color: #fff; }
+  header .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; gap: 26px; padding: 12px 24px; }
+  .logo { display: flex; align-items: center; gap: 9px; color: #fff; text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -.3px; }
+  .logo em { font-style: normal; color: #7ee2bf; }
+  header nav { display: flex; gap: 4px; }
+  header nav a { color: #d6def0; text-decoration: none; padding: 7px 12px; border-radius: 999px; font-weight: 600; font-size: 14px; }
+  header nav a:hover { background: rgba(255,255,255,.08); }
+  header nav a.on { background: rgba(126,226,191,.18); color: #fff; }
+  header .me { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 13px; color: #c3cde3; }
+  header .me .av { width: 32px; height: 32px; border-radius: 50%; background: var(--mint); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
+  .promo { background: var(--mint-l); border-bottom: 1px solid #c9eee0; }
+  .promo .in { max-width: 1120px; margin: 0 auto; padding: 9px 24px; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+  .promo button.link { background: none; border: 0; color: var(--mint-d); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0; }
+  .promo .x { margin-left: auto; background: none; border: 0; cursor: pointer; font-size: 16px; color: #4b5563; }
+  main { max-width: 1120px; margin: 0 auto; padding: 26px 24px 50px; min-height: 70vh; }
+  h1 { font-size: 30px; letter-spacing: -.5px; margin: 0 0 6px; color: var(--navy); }
+  h2 { font-size: 19px; margin: 0 0 12px; color: var(--navy); }
+  h3 { font-size: 16px; margin: 0 0 6px; color: var(--navy); }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+  .btn { font: inherit; font-weight: 700; padding: 10px 20px; border-radius: 999px; border: 1.5px solid #cfd8d4; background: #fff; color: var(--navy); cursor: pointer; text-decoration: none; display: inline-block; }
+  .btn:hover { border-color: var(--mint); }
+  .btn.pri { background: var(--mint); border-color: var(--mint); color: #fff; }
+  .btn.pri:hover { background: var(--mint-d); border-color: var(--mint-d); }
+  .btn.sm { padding: 5px 13px; font-size: 13px; }
+  .btn.ghost { border-color: transparent; background: none; }
+  .btn.danger { color: var(--bad); border-color: #f3c9c4; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: center; background: linear-gradient(120deg, #eaf8f2, #f7fbff); border-radius: 22px; padding: 36px 40px; margin-bottom: 26px; }
+  .hero p { font-size: 17px; color: #374151; }
+  .hero .art { height: 200px; border-radius: 18px; background: radial-gradient(circle at 30% 30%, #b8ecd8 0 22%, transparent 23%), radial-gradient(circle at 70% 60%, #cfe3ff 0 26%, transparent 27%), #fff; display: flex; align-items: center; justify-content: center; font-size: 64px; }
+  .svcs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+  .svc h3 { margin-top: 4px; }
+  .price { font-weight: 800; color: var(--navy); }
+  .wizard { display: grid; grid-template-columns: 1fr 330px; gap: 22px; align-items: start; }
+  .stepper { display: flex; gap: 6px; margin-bottom: 18px; list-style: none; padding: 0; }
+  .stepper li { flex: 1; }
+  .stepper button { width: 100%; background: none; border: 0; border-top: 4px solid #dfe7e4; padding: 8px 2px 0; text-align: left; font: inherit; font-size: 13px; color: #9aa4a0; cursor: default; }
+  .stepper li.done button { border-color: #9fdcc4; color: var(--mint-d); cursor: pointer; }
+  .stepper li.on button { border-color: var(--mint); color: var(--navy); font-weight: 800; }
+  .rcards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rcard { display: flex; gap: 12px; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; cursor: pointer; background: #fff; }
+  .rcard:hover { border-color: #9fdcc4; }
+  .rcard:has(input:checked) { border-color: var(--mint); background: var(--mint-ll); box-shadow: 0 0 0 3px #d5f3e7; }
+  .rcard:has(input:disabled) { opacity: .6; cursor: not-allowed; }
+  .rcard input { margin-top: 4px; accent-color: var(--mint); }
+  .rcard b { color: var(--navy); }
+  .rcard .muted { display: block; }
+  .flabel { display: block; font-weight: 700; color: var(--navy); margin: 16px 0 6px; font-size: 14px; }
+  label.fl { display: block; font-weight: 700; color: var(--navy); margin: 16px 0 6px; font-size: 14px; }
+  select, input[type=text], input[type=email], input[type=tel], textarea { font: inherit; font-size: 14.5px; padding: 9px 12px; border: 1.5px solid #cfd8d4; border-radius: 10px; background: #fff; color: var(--ink); }
+  select:focus, input:focus, textarea:focus { outline: 3px solid #cdeee1; border-color: var(--mint); }
+  textarea { width: 100%; min-height: 76px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .lb { position: relative; }
+  .lb-btn { width: 100%; text-align: left; font: inherit; font-size: 14.5px; padding: 9px 36px 9px 12px; border: 1.5px solid #cfd8d4; border-radius: 10px; background: #fff; cursor: pointer; color: var(--ink); position: relative; }
+  .lb-btn::after { content: "▾"; position: absolute; right: 12px; top: 9px; color: var(--muted); }
+  .lb-btn[aria-expanded=true] { border-color: var(--mint); outline: 3px solid #cdeee1; }
+  .lb ul { position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 4px); list-style: none; margin: 0; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 28px rgba(16,24,40,.14); }
+  .lb li { padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+  .lb li:hover, .lb li.active { background: var(--mint-l); }
+  .lb li[aria-selected=true] { font-weight: 800; color: var(--mint-d); }
+  .lb li[aria-selected=true]::after { content: " ✓"; }
+  .extras { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .xcard { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 14px; padding: 13px 15px; cursor: pointer; background: #fff; }
+  .xcard:has(input:checked) { border-color: var(--mint); background: var(--mint-ll); }
+  .xcard input { accent-color: var(--mint); margin-top: 4px; }
+  .cal { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; max-width: 380px; }
+  .cal .hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-weight: 800; color: var(--navy); }
+  .cal .hd button { background: #fff; border: 1.5px solid var(--line); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px; }
+  .cal .hd button:disabled { opacity: .35; cursor: default; }
+  .cal .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .cal .dn { font-size: 11.5px; color: var(--muted); font-weight: 700; padding: 3px 0; }
+  .cal .d { height: 40px; border-radius: 10px; border: 1.5px solid transparent; background: var(--mint-ll); font: inherit; font-weight: 700; cursor: pointer; color: var(--navy); }
+  .cal .d:hover { border-color: var(--mint); }
+  .cal .d:disabled { background: none; color: #c3cbc8; cursor: default; font-weight: 400; border-color: transparent; }
+  .cal .d[aria-pressed=true] { background: var(--mint); color: #fff; }
+  .cal .d.today { text-decoration: underline; }
+  .when { display: grid; grid-template-columns: 380px 1fr; gap: 22px; }
+  .live { margin-top: 12px; background: var(--mint-l); border-radius: 12px; padding: 10px 14px; font-weight: 700; color: var(--navy); }
+  .note { background: #fff8eb; border: 1px solid #f6d9a8; color: #7a4a0c; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; margin-top: 10px; }
+  .err { color: var(--bad); font-size: 14px; margin-top: 12px; font-weight: 600; }
+  .pros { display: grid; gap: 10px; margin-top: 12px; }
+  .pro { display: flex; gap: 12px; align-items: center; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; background: #fff; }
+  .pro:has(input:checked) { border-color: var(--mint); background: var(--mint-ll); }
+  .pro:has(input:disabled) { background: #f7f7f7; cursor: not-allowed; }
+  .ph { width: 42px; height: 42px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex: none; }
+  .ph::before { content: attr(data-i); }
+  .pro .un { color: var(--bad); font-size: 13px; display: block; font-weight: 600; }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 800; background: #e7ecfb; color: #3749a3; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px; }
+  .switch { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid #edf2f0; cursor: pointer; }
+  .switch input { appearance: none; -webkit-appearance: none; width: 42px; height: 24px; border-radius: 12px; background: #d0d7d4; position: relative; cursor: pointer; flex: none; transition: background .15s; margin: 0; }
+  .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked { background: var(--mint); }
+  .switch input:checked::after { left: 21px; }
+  .radios { display: flex; gap: 10px; flex-wrap: wrap; }
+  .radios label { display: flex; gap: 6px; align-items: center; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .radios label:has(input:checked) { border-color: var(--mint); background: var(--mint-ll); font-weight: 700; }
+  .actions { display: flex; justify-content: space-between; margin-top: 22px; }
+  .summary { position: sticky; top: 18px; }
+  .summary dl { display: grid; grid-template-columns: 96px 1fr; gap: 6px 10px; margin: 0 0 12px; font-size: 14px; }
+  .summary dt { color: var(--muted); }
+  .summary dd { margin: 0; font-weight: 600; }
+  .lines { border-top: 1px dashed #cfd8d4; padding-top: 10px; font-size: 14px; }
+  .lines div { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .lines .tot { font-size: 18px; font-weight: 800; color: var(--navy); border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+  .kv { display: grid; grid-template-columns: 170px 1fr; gap: 8px 14px; margin: 0; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 600; }
+  .bk { display: flex; gap: 16px; align-items: center; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; background: #fff; }
+  .bk .dd { width: 58px; text-align: center; background: var(--mint-l); border-radius: 12px; padding: 6px 0; font-weight: 800; color: var(--navy); line-height: 1.1; flex: none; }
+  .bk .dd small { display: block; font-size: 11px; color: var(--mint-d); text-transform: uppercase; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .spacer { flex: 1; }
+  details { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  summary { cursor: pointer; font-weight: 700; color: var(--navy); }
+  .overlay { position: fixed; inset: 0; background: rgba(17,24,39,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 90px; z-index: 40; }
+  .modal { background: #fff; border-radius: 18px; width: 480px; padding: 22px 24px; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+  .modal .mf { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 26px; background: var(--navy); color: #fff; padding: 11px 20px; border-radius: 999px; z-index: 50; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 7px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  footer.foot { background: var(--navy); color: #aeb9d3; font-size: 13px; }
+  footer .in { max-width: 1120px; margin: 0 auto; padding: 26px 24px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 20px; }
+  footer a { color: #d6def0; display: block; text-decoration: none; margin: 3px 0; }
+  .ok { color: var(--mint-d); font-weight: 800; }
+  .stars { color: #f5a524; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="logo" href="#/"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="2" y="2" width="24" height="24" rx="8" fill="#2bb58a"/><path d="M8 15 L14 9 L20 15 V21 H8 Z" fill="#fff"/><circle cx="20.5" cy="7.5" r="2.5" fill="#fef3c7"/></svg>handy<em>lane</em></a>
+  <nav aria-label="Main">
+    <a href="#/book" data-nav="book">Book a clean</a>
+    <a href="#/bookings" data-nav="bookings">My bookings</a>
+    <a href="#/pros" data-nav="pros">My pros</a>
+    <a href="#/account" data-nav="account">Account</a>
+  </nav>
+  <div class="me"><span>Today: Thursday 24 September 2026</span><span class="av" aria-hidden="true">BH</span><span>Bea Hollis</span></div>
+</div></header>
+<div class="promo" id="promo"><div class="in"><span>✨ <b>Join Handy Lane+</b> and save 10% on every clean.</span><button type="button" class="link" data-plus>Learn more</button><button type="button" class="x" id="promo-x" aria-label="Dismiss offer">✕</button></div></div>
+<main id="main"></main>
+<footer class="foot"><div class="in">
+  <div><b style="color:#fff;font-size:16px">handy lane</b><p>Vetted, insured cleaners across Bristol, Bath and Cardiff. Handy Lane Ltd, 14 Wine Street, Bristol BS1 2BB.</p></div>
+  <div><a href="#/book">Regular cleaning</a><a href="#/book">Deep cleaning</a><a href="#/book">End of tenancy</a></div>
+  <div><a href="#/bookings">My bookings</a><a href="#/pros">My pros</a><a href="#/account">Account</a></div>
+  <div><a href="#/help">Help centre</a><a href="#/help">Cancellation policy</a><a href="#/help">Privacy</a></div>
+</div></footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 4000); };
+
+  const TODAY = '2026-09-24'; const FIRST = '2026-09-26'; const LAST = '2026-10-31';
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dt = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+  const addDays = (iso, n) => { const x = dt(iso); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+  const longDate = (iso) => { const x = dt(iso); return `${DAYS[x.getUTCDay()]} ${x.getUTCDate()} ${MONTHS[x.getUTCMonth()]} ${x.getUTCFullYear()}`; };
+  const midDate = (iso) => { const x = dt(iso); return `${DAYS[x.getUTCDay()]} ${x.getUTCDate()} ${MONTHS[x.getUTCMonth()]}`; };
+  const shortDate = (iso) => { const x = dt(iso); return `${DAYS[x.getUTCDay()].slice(0, 3)} ${x.getUTCDate()} ${MONTHS[x.getUTCMonth()].slice(0, 3)}`; };
+  const toM = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const money = (p) => '£' + (p / 100).toFixed(2);
+
+  const SERVICES = {
+    regular: { name: 'Regular clean', rate: 2400, min: 2, blurb: 'Kitchen, bathrooms, dusting, hoovering and mopping. Ideal weekly or fortnightly.' },
+    deep: { name: 'Deep clean', rate: 3400, min: 3, blurb: 'Top to bottom: limescale, skirting boards, inside cupboards and behind appliances.' },
+    tenancy: { name: 'End of tenancy', rate: 4200, min: 4, blurb: 'Checklist-based clean to help you get your deposit back.' },
+    oven: { name: 'Oven clean only', fixed: 6500, min: 2, blurb: 'Professional oven valet: racks, glass, hob and extractor filter.' },
+  };
+  const EXTRAS = [
+    ['oven', 'Inside oven', 2500, 'Racks, glass and interior degreased'], ['fridge', 'Inside fridge', 1500, 'Emptied, wiped and restocked'],
+    ['windows', 'Interior windows', 2000, 'Glass, frames and sills inside'], ['balcony', 'Balcony or patio', 1200, 'Swept, washed down, furniture wiped'],
+    ['ironing', 'Ironing (1 hour)', 1800, 'Your pro irons for up to an hour'],
+  ];
+  const BEDS = [['studio', 'Studio'], ['1', '1 bedroom'], ['2', '2 bedrooms'], ['3', '3 bedrooms'], ['4', '4 bedrooms'], ['5+', '5+ bedrooms']];
+  const BATHS = [['1', '1 bathroom'], ['2', '2 bathrooms'], ['3', '3 bathrooms'], ['4+', '4+ bathrooms']];
+  const DURS = ['2', '2.5', '3', '3.5', '4', '4.5', '5', '6'];
+  const STARTS = []; for (let m = 8 * 60; m <= 16 * 60; m += 30) STARTS.push(hm(m));
+  const ADDRS = [
+    { id: 'ADDR-1', label: 'Home', line: 'Flat 3, 27 Linden Road, Bristol BS6 7RL', beds: '2', baths: '1' },
+    { id: 'ADDR-2', label: 'Studio', line: 'Hollis Studio, 5 Canon’s Way, Bristol BS1 5UH', beds: 'studio', baths: '1' },
+  ];
+  const PROS = [
+    { id: 'anka-wisniewska', name: 'Anka Wiśniewska', first: 'Anka', rating: 4.9, reviews: 212, col: '#7c5cbf', usual: true, cleans: 14, hours: { 1: [8, 18], 2: [8, 18], 3: [8, 18], 4: [8, 18], 5: [8, 12] }, bio: 'Detail-focused, brings her own microfibre kit. Speaks English and Polish.' },
+    { id: 'dev-ranasinghe', name: 'Dev Ranasinghe', first: 'Dev', rating: 4.8, reviews: 167, col: '#d9822b', cleans: 1, hours: { 1: [8, 20], 2: [8, 20], 3: [8, 20], 4: [8, 20], 5: [8, 20], 6: [8, 20] }, bio: 'Deep-clean specialist; great with ovens and limescale.' },
+    { id: 'lottie-carmichael', name: 'Lottie Carmichael', first: 'Lottie', rating: 4.7, reviews: 98, col: '#2f80ed', hours: { 2: [10, 18], 3: [10, 18], 4: [10, 18], 5: [10, 18], 6: [10, 18] }, bio: 'Friendly and fast; pet-lover.' },
+    { id: 'mariam-haddad', name: 'Mariam Haddad', first: 'Mariam', rating: 4.9, reviews: 143, col: '#1f8f6c', hours: { 1: [8, 16], 2: [8, 16], 3: [8, 16], 4: [8, 16], 5: [8, 16] }, bio: 'Eco-products by default; end-of-tenancy expert.' },
+    { id: 'tomasz-krol', name: 'Tomasz Król', first: 'Tomasz', rating: 4.6, reviews: 75, col: '#c2410c', hours: { 0: [12, 20], 1: [12, 20], 2: [12, 20], 3: [12, 20], 4: [12, 20], 5: [12, 20], 6: [12, 20] }, bio: 'Evenings and weekends; ironing pro.' },
+  ];
+  const BUSY = { 'anka-wisniewska': [['2026-09-30', 600, 750]], 'dev-ranasinghe': [['2026-09-26', 540, 780]], 'lottie-carmichael': [['2026-10-01', 600, 840]], 'mariam-haddad': [['2026-09-30', 780, 960]], 'tomasz-krol': [['2026-10-02', 1020, 1200]] };
+  const pro = (id) => PROS.find((p) => p.id === id);
+  function avail(p, date, s, d) {
+    const w = p.hours[dt(date).getUTCDay()]; if (!w) return false;
+    if (s < w[0] * 60 || s + d > w[1] * 60) return false;
+    return !(BUSY[p.id] || []).some(([bd, a, b]) => bd === date && s < b && a < s + d);
+  }
+  function whyNot(p, date, s, d) {
+    const w = p.hours[dt(date).getUTCDay()];
+    let why = w ? `${p.first} works ${hm(w[0] * 60)}–${hm(w[1] * 60)} on ${DAYS[dt(date).getUTCDay()]}s` : `${p.first} doesn’t work on ${DAYS[dt(date).getUTCDay()]}s`;
+    if (w && s >= w[0] * 60 && s + d <= w[1] * 60) why = `${p.first} already has a booking then`;
+    let nx = null; for (let i = 1; i <= 21; i++) { const dd = addDays(date, i); if (dd > LAST) break; if (avail(p, dd, s, d)) { nx = dd; break; } }
+    return `Not available at this time — ${why}.${nx ? ` Next available: ${shortDate(nx)} at ${hm(s)}.` : ''}`;
+  }
+
+  let BOOKINGS = [
+    { id: 'HL-58213', date: '2026-09-30', start: '10:00', end: '12:30', service: 'regular', pro: 'anka-wisniewska', addr: 'ADDR-1', total: 6350, upcoming: true, beds: '2', baths: '1' },
+    { id: 'HL-57740', date: '2026-09-16', start: '10:00', end: '12:30', service: 'regular', pro: 'anka-wisniewska', addr: 'ADDR-1', total: 6350, beds: '2', baths: '1', rated: 5 },
+    { id: 'HL-57102', date: '2026-09-02', start: '10:00', end: '12:30', service: 'regular', pro: 'anka-wisniewska', addr: 'ADDR-1', total: 6350, beds: '2', baths: '1', rated: 5 },
+    { id: 'HL-56488', date: '2026-08-18', start: '09:00', end: '13:00', service: 'deep', pro: 'dev-ranasinghe', addr: 'ADDR-2', total: 13950, beds: 'studio', baths: '1' },
+    { id: 'HL-55930', date: '2026-08-05', start: '10:00', end: '12:30', service: 'regular', pro: 'anka-wisniewska', addr: 'ADDR-1', total: 6350, beds: '2', baths: '1', rated: 5 },
+  ];
+
+  const fresh = () => ({ step: 1, service: 'regular', beds: '1', baths: '1', addr: 'ADDR-1', extras: [], month: '2026-09', date: '', start: '09:00', dur: '', durTouched: false, proMode: 'any', pro: '', pets: 'none', access: '', notes: '', priority: false, eco: false, done: null, banner: '' });
+  let w = fresh();
+  let busy = false;
+
+  function recommended() {
+    const s = SERVICES[w.service]; if (s.fixed) return '2';
+    const beds = w.beds === 'studio' ? 0 : parseInt(w.beds, 10); const baths = parseInt(w.baths, 10);
+    const h = w.service === 'regular' ? 1.5 + 0.5 * beds + 0.5 * (baths - 1) : w.service === 'deep' ? 3 + 0.5 * beds + 0.5 * (baths - 1) : 3 + beds + 0.5 * (baths - 1);
+    return DURS.find((d) => +d >= Math.max(s.min, h)) || '6';
+  }
+  function ensureDur() { const s = SERVICES[w.service]; if (!w.durTouched || !w.dur || +w.dur < s.min) { w.dur = recommended(); w.durTouched = false; } if (s.fixed) w.dur = '2'; }
+  function price() {
+    const s = SERVICES[w.service]; ensureDur();
+    const base = s.fixed ? s.fixed : Math.round(s.rate * +w.dur);
+    const ex = w.extras.reduce((a, id) => a + EXTRAS.find((e) => e[0] === id)[2], 0);
+    const add = (w.priority ? 900 : 0) + (w.eco ? 400 : 0);
+    return { base, ex, add, fee: 350, total: base + ex + add + 350 };
+  }
+  const endOf = () => hm(toM(w.start) + Math.round(+w.dur * 60));
+  const bedLabel = (v) => (BEDS.find((b) => b[0] === v) || [v, v])[1];
+  const bathLabel = (v) => (BATHS.find((b) => b[0] === v) || [v, v])[1];
+  const durLabel = (d) => `${d} hours`;
+
+  // ------------------------------------------------------------------ pages
+  function viewHome() {
+    const next = BOOKINGS.find((b) => b.upcoming);
+    return `<section class="hero"><div><h1>A spotless home, booked in 60 seconds.</h1><p>Vetted, insured pros across Bristol. Pick a time, add extras, and pay only once the clean is done.</p><a class="btn pri" href="#/book">Book a clean</a> <a class="btn ghost" href="#/pros">See my pros</a></div><div class="art" aria-hidden="true">🧽🫧</div></section>
+      <h2>Our services</h2>
+      <div class="svcs">${Object.entries(SERVICES).map(([k, s]) => `<div class="card svc"><h3>${s.name}</h3><p class="muted">${s.blurb}</p><p class="price">${s.fixed ? money(s.fixed) + ' fixed' : money(s.rate) + '/hour · min ' + s.min + ' h'}</p><button type="button" class="btn sm" data-start-service="${k}">Book ${s.name.toLowerCase()}</button></div>`).join('')}</div>
+      ${next ? `<div class="card"><h2>Your next clean</h2><div class="bk" style="border:0;padding:0"><div class="dd"><small>${MONTHS[dt(next.date).getUTCMonth()].slice(0, 3)}</small>${dt(next.date).getUTCDate()}</div><div><b>${SERVICES[next.service].name}</b> with ${esc(pro(next.pro).name)}<div class="muted">${midDate(next.date)}, ${next.start}–${next.end} · ${esc(ADDRS.find((a) => a.id === next.addr).line)}</div></div><span class="spacer"></span><a class="btn sm" href="#/bookings">Manage</a></div></div>` : ''}
+      <div class="card"><div class="row"><h2 style="margin:0">Your pros</h2><span class="spacer"></span><a href="#/pros">See all</a></div>
+        <div class="two" style="grid-template-columns:repeat(3,1fr);margin-top:12px">${PROS.slice(0, 3).map((p) => `<div class="row"><span class="ph" style="background:${p.col}" data-i="${p.name.split(' ').map((x) => x[0]).join('')}" aria-hidden="true"></span><div><b>${esc(p.name)}</b><div class="muted"><span class="stars">★</span> ${p.rating} · ${p.reviews} reviews</div></div><span class="spacer"></span><button type="button" class="btn sm" data-bookpro="${p.id}">Book</button></div>`).join('')}</div></div>
+      <div class="card"><h2>What customers say</h2><div class="two" style="grid-template-columns:repeat(3,1fr)">
+        <blockquote style="margin:0">“Anka is a miracle worker — the flat has never looked better.” <div class="muted">Bea H., Redland</div></blockquote>
+        <blockquote style="margin:0">“Booked a deep clean at 9pm, pro arrived next morning on the dot.” <div class="muted">Rhys T., Clifton</div></blockquote>
+        <blockquote style="margin:0">“End of tenancy clean got our full deposit back.” <div class="muted">Oona &amp; Sam, Bedminster</div></blockquote></div>
+        <div class="row" style="margin-top:12px"><button type="button" class="btn sm" data-toast="Showing reviews from the last 30 days.">Read all 4,812 reviews</button><button type="button" class="btn sm" data-toast="Link copied — your friend gets £10 off and so do you.">Refer a friend</button><button type="button" class="btn sm" data-toast="Gift cards from £25 are coming soon.">Gift cards</button></div></div>
+      <div class="card"><h2>Areas we cover</h2><div class="row" style="flex-wrap:wrap">${['Bristol city centre', 'Clifton', 'Redland', 'Bedminster', 'Southville', 'Bishopston', 'Easton', 'Bath', 'Cardiff'].map((a) => `<button type="button" class="btn sm" data-toast="Yes — we cover ${a}. Pros are usually available within 48 hours.">${a}</button>`).join('')}</div></div>
+      <div class="two"><div class="card"><h2>How it works</h2><ol style="margin:0;padding-left:20px"><li>Tell us about your home and pick extras.</li><li>Choose a time — any available pro, or someone you know.</li><li>Relax. We charge your card after the clean.</li></ol></div>
+      <div class="card"><h2>Questions</h2>
+        <details><summary>Do I need to be home?</summary><p class="muted">No — most customers leave a key or a key-safe code in the access notes.</p></details>
+        <details><summary>Can I cancel?</summary><p class="muted">Free cancellation up to 24 hours before the start time. Later cancellations are charged 50%.</p></details>
+        <details><summary>What does priority booking do?</summary><p class="muted">Guarantees your pro arrives within 15 minutes of the start time, for £9.</p></details>
+        <details><summary>Are cleaning products included?</summary><p class="muted">Your pro uses your products and equipment. Eco-friendly products can be added for £4.</p></details></div></div>`;
+  }
+
+  function lbHtml(key, label, opts, val) {
+    return `<div class="lb" data-lb="${key}"><span class="flabel" id="lbl-${key}">${label}</span>
+      <button type="button" class="lb-btn" id="${key}-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="lbl-${key} ${key}-btn">${esc(opts.find((o) => o[0] === val)[1])}</button>
+      <ul role="listbox" id="${key}-list" aria-labelledby="lbl-${key}" tabindex="-1" hidden>${opts.map(([v, l]) => `<li role="option" id="${key}-opt-${v.replace('+', 'p')}" data-v="${v}" aria-selected="${v === val}">${esc(l)}</li>`).join('')}</ul></div>`;
+  }
+  function calHtml() {
+    const [y, mo] = w.month.split('-').map(Number);
+    const first = `${w.month}-01`; const days = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+    const lead = (dt(first).getUTCDay() + 6) % 7;
+    let cells = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => `<div class="dn" aria-hidden="true">${d}</div>`).join('');
+    for (let i = 0; i < lead; i++) cells += '<div></div>';
+    for (let d = 1; d <= days; d++) {
+      const iso = `${w.month}-${String(d).padStart(2, '0')}`;
+      const dis = iso < FIRST || iso > LAST;
+      cells += `<button type="button" class="d${iso === TODAY ? ' today' : ''}" data-day="${iso}" aria-label="${longDate(iso)}${dis ? ', unavailable' : ''}" aria-pressed="${iso === w.date}" ${dis ? 'disabled' : ''}>${d}</button>`;
+    }
+    return `<div class="cal"><div class="hd"><button type="button" data-month="-1" aria-label="Previous month" ${w.month <= '2026-09' ? 'disabled' : ''}>‹</button><span>${MONTHS[mo - 1]} ${y}</span><button type="button" data-month="1" aria-label="Next month" ${w.month >= '2026-10' ? 'disabled' : ''}>›</button></div><div class="g">${cells}</div>
+      <p class="muted" style="margin:8px 0 0">Earliest available: Saturday 26 September. Bookings open to 31 October.</p></div>`;
+  }
+  function proListHtml() {
+    if (w.proMode !== 'choose') return '';
+    if (!w.date) return '<p class="muted" style="margin-top:10px">Pick a date to see which pros are free.</p>';
+    const s = toM(w.start); const d = Math.round(+w.dur * 60);
+    const order = PROS.slice().sort((a, b) => (b.usual ? 1 : 0) - (a.usual ? 1 : 0));
+    return `<div class="pros" role="radiogroup" aria-label="Pros">${order.map((p) => { const ok = avail(p, w.date, s, d); return `<label class="pro"><input type="radio" name="pro" value="${p.id}" ${w.pro === p.id && ok ? 'checked' : ''} ${ok ? '' : 'disabled'}><span class="ph" style="background:${p.col}" data-i="${p.name.split(' ').map((x) => x[0]).join('')}" aria-hidden="true"></span><span><b>${esc(p.name)}</b>${p.usual ? '<span class="tag">Your usual pro</span>' : ''} <span class="stars">★</span> ${p.rating} · ${p.reviews} reviews<span class="muted" style="display:block">${esc(p.bio)}</span>${ok ? '' : `<span class="un">${esc(whyNot(p, w.date, s, d))}</span>`}</span></label>`; }).join('')}</div>`;
+  }
+  function stepHtml() {
+    const s = SERVICES[w.service];
+    if (w.step === 1) {
+      return `<h2>Tell us about your home</h2>
+        <div class="rcards" role="radiogroup" aria-label="Service">${Object.entries(SERVICES).map(([k, v]) => `<label class="rcard"><input type="radio" name="service" value="${k}" ${w.service === k ? 'checked' : ''}><span><b>${v.name}</b><span class="muted">${v.fixed ? money(v.fixed) + ' fixed price' : money(v.rate) + '/h · min ' + v.min + ' h'}</span><span class="muted">${v.blurb}</span></span></label>`).join('')}</div>
+        <div class="two">${lbHtml('beds', 'Bedrooms', BEDS, w.beds)}${lbHtml('baths', 'Bathrooms', BATHS, w.baths)}</div>
+        <label class="fl" for="addr">Address</label>
+        <select id="addr" style="width:100%">${ADDRS.map((a) => `<option value="${a.id}" ${w.addr === a.id ? 'selected' : ''}>${esc(a.label)} — ${esc(a.line)}</option>`).join('')}<option value="new">+ Add a new address</option></select>
+        <div id="newaddr" ${w.addr === 'new' ? '' : 'hidden'} class="note">New addresses can be added from <a href="#/account">Account</a> — we check coverage before your first booking.</div>`;
+    }
+    if (w.step === 2) {
+      return `<h2>Any extras?</h2><p class="muted">Extras are added to your pro’s checklist. Prices are per clean.</p>
+        <div class="extras">${EXTRAS.map(([id, l, p, d]) => { const inc = w.service === 'oven' && id === 'oven'; return `<label class="xcard"><input type="checkbox" name="extra" value="${id}" ${w.extras.includes(id) ? 'checked' : ''} ${inc ? 'disabled' : ''}><span><b>${l}</b> <span class="price">+${money(p)}</span><span class="muted" style="display:block">${inc ? 'Included in an oven clean' : d}</span></span></label>`; }).join('')}</div>`;
+    }
+    if (w.step === 3) {
+      ensureDur();
+      const rec = recommended();
+      return `<h2>When should we come?</h2><div class="when"><div>${calHtml()}</div><div>
+          <label class="fl" for="start" style="margin-top:0">Start time</label><select id="start">${STARTS.map((t) => `<option ${t === w.start ? 'selected' : ''}>${t}</option>`).join('')}</select>
+          <label class="fl" for="dur">Duration</label><select id="dur" ${s.fixed ? 'disabled' : ''}>${DURS.map((d) => `<option value="${d}" ${d === w.dur ? 'selected' : ''} ${+d < s.min ? 'disabled' : ''}>${durLabel(d)}${+d < s.min ? ` (minimum ${s.min} hours)` : ''}${d === rec && !s.fixed ? ' — recommended' : ''}</option>`).join('')}</select>
+          <p class="muted" style="margin:6px 0 0">${s.fixed ? 'An oven clean takes about 2 hours.' : `We recommend ${rec} hours for a ${s.name.toLowerCase()} of a ${bedLabel(w.beds).toLowerCase()}, ${bathLabel(w.baths)} home.`}</p>
+          <div class="live" id="live">Your pro will clean from ${w.start} to ${endOf()}${w.date ? ` on ${midDate(w.date)}` : ''}</div>
+        </div></div>
+        <span class="flabel">Who would you like?</span>
+        <div class="rcards"><label class="rcard"><input type="radio" name="promode" value="any" ${w.proMode === 'any' ? 'checked' : ''}><span><b>Any available pro (recommended)</b><span class="muted">We’ll match you with a top-rated pro who’s free at this time.</span></span></label>
+        <label class="rcard"><input type="radio" name="promode" value="choose" ${w.proMode === 'choose' ? 'checked' : ''}><span><b>Choose a pro</b><span class="muted">Pick someone you know. Availability depends on the time you choose.</span></span></label></div>
+        <div id="prolist">${proListHtml()}</div>`;
+    }
+    if (w.step === 4) {
+      return `<h2>A few details</h2>
+        <label class="fl" for="access">Access notes</label><textarea id="access" placeholder="e.g. Key under the mat, gate code 1234">${esc(w.access)}</textarea>
+        <span class="flabel">Pets at home</span><div class="radios" role="radiogroup" aria-label="Pets at home">${[['none', 'No pets'], ['cats', 'Cat(s)'], ['dogs', 'Dog(s)'], ['other', 'Other pets']].map(([v, l]) => `<label><input type="radio" name="pets" value="${v}" ${w.pets === v ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+        <label class="fl" for="notes">Anything else your pro should know? (optional)</label><textarea id="notes" placeholder="e.g. Please skip the spare room">${esc(w.notes)}</textarea>
+        <span class="flabel">Add-ons</span>
+        <label class="switch"><input type="checkbox" role="switch" id="prio" ${w.priority ? 'checked' : ''}><span><b>Priority booking</b> <span class="price">+£9.00</span><span class="muted" style="display:block">Guaranteed arrival within 15 minutes of your start time.</span></span></label>
+        <label class="switch"><input type="checkbox" role="switch" id="eco" ${w.eco ? 'checked' : ''}><span><b>Eco-friendly products</b> <span class="price">+£4.00</span><span class="muted" style="display:block">Your pro brings plant-based, fragrance-free products.</span></span></label>`;
+    }
+    const p = price(); const a = ADDRS.find((x) => x.id === w.addr);
+    return `<h2>Review and pay</h2>
+      <dl class="kv"><dt>Service</dt><dd>${s.name}</dd><dt>Home</dt><dd>${bedLabel(w.beds)}, ${bathLabel(w.baths)}</dd><dt>Address</dt><dd>${esc(a ? a.line : '')}</dd>
+      <dt>Extras</dt><dd>${w.extras.length ? w.extras.map((id) => EXTRAS.find((e) => e[0] === id)[1]).join(', ') : 'None'}</dd><dt>Date</dt><dd>${longDate(w.date)}</dd><dt>Time</dt><dd>${w.start}–${endOf()} (${durLabel(w.dur)})</dd>
+      <dt>Pro</dt><dd>${w.proMode === 'any' ? 'Any available pro' : esc(pro(w.pro).name)}</dd><dt>Access notes</dt><dd>${esc(norm(w.access)) || '—'}</dd><dt>Add-ons</dt><dd>${[w.priority && 'Priority booking', w.eco && 'Eco-friendly products'].filter(Boolean).join(', ') || 'None'}</dd><dt>Payment</dt><dd>Visa •••• 0612 <span class="muted">(charged after the clean)</span></dd></dl>
+      <div class="note">Handy Lane+ members would pay ${money(Math.round(p.total - (p.base + p.ex) * 0.1))} for this clean. <button type="button" class="btn sm" data-plus>Join Handy Lane+</button></div>
+      <p class="muted">By booking you agree to our cancellation policy: free up to 24 hours before your start time.</p>`;
+  }
+  function summaryHtml() {
+    const s = SERVICES[w.service]; const p = price(); const a = ADDRS.find((x) => x.id === w.addr);
+    return `<div class="card summary"><h2>Your clean</h2><dl><dt>Service</dt><dd>${s.name}</dd><dt>Home</dt><dd>${bedLabel(w.beds)}, ${bathLabel(w.baths)}</dd><dt>Where</dt><dd>${esc(a ? a.label : 'New address')}</dd><dt>When</dt><dd>${w.date && w.step >= 3 ? `${shortDate(w.date)}, ${w.start}–${endOf()}` : '—'}</dd><dt>Pro</dt><dd>${w.proMode === 'choose' && w.pro ? esc(pro(w.pro).name) : 'Any available'}</dd></dl>
+      <div class="lines"><div><span>${s.fixed ? 'Oven clean' : `${s.name} · ${w.dur} h × ${money(s.rate)}`}</span><span>${money(p.base)}</span></div>
+      ${w.extras.map((id) => { const e = EXTRAS.find((x) => x[0] === id); return `<div><span>${e[1]}</span><span>${money(e[2])}</span></div>`; }).join('')}
+      ${w.priority ? `<div><span>Priority booking</span><span>£9.00</span></div>` : ''}${w.eco ? `<div><span>Eco-friendly products</span><span>£4.00</span></div>` : ''}
+      <div><span>Booking fee</span><span>£3.50</span></div><div class="tot"><span>Total</span><span id="sum-total">${money(p.total)}</span></div></div></div>`;
+  }
+  function viewBook() {
+    if (w.done) {
+      const b = w.done;
+      return `<div class="card" style="max-width:640px;margin:20px auto;text-align:center"><div style="font-size:44px">✅</div><h1>You’re booked!</h1><p>${SERVICES[b.service].name} on <b>${longDate(b.date)}</b>, ${b.start}–${b.end}.<br>Reference <b>${b.id}</b> · ${money(b.total)} charged after the clean.</p><a class="btn pri" href="#/bookings">View my bookings</a> <button type="button" class="btn" id="book-another">Book another clean</button></div>`;
+    }
+    const names = ['Your home', 'Extras', 'Date & time', 'Details', 'Review & pay'];
+    return `<h1>Book a clean</h1><p class="muted" style="margin:0 0 18px">Bea Hollis · Bristol</p>
+      ${w.banner ? `<div class="note" style="margin:0 0 16px">${esc(w.banner)}</div>` : ''}
+      <div class="wizard"><div class="card">
+        <ol class="stepper">${names.map((n, i) => `<li class="${i + 1 === w.step ? 'on' : i + 1 < w.step ? 'done' : ''}"><button type="button" data-goto="${i + 1}" ${i + 1 < w.step ? '' : 'tabindex="-1"'} aria-current="${i + 1 === w.step ? 'step' : 'false'}">${i + 1}. ${n}</button></li>`).join('')}</ol>
+        <div id="step">${stepHtml()}</div>
+        <div class="err" id="err" role="alert" hidden></div>
+        <div class="actions">${w.step > 1 ? '<button type="button" class="btn" id="back">Back</button>' : '<span></span>'}${w.step < 5 ? '<button type="button" class="btn pri" id="next">Continue</button>' : `<button type="button" class="btn pri" id="pay">Book and pay ${money(price().total)}</button>`}</div>
+      </div><div id="summary">${summaryHtml()}</div></div>`;
+  }
+  function viewBookings() {
+    const up = BOOKINGS.filter((b) => b.upcoming).sort((a, b) => a.date.localeCompare(b.date));
+    const past = BOOKINGS.filter((b) => !b.upcoming).sort((a, b) => b.date.localeCompare(a.date));
+    const row = (b, isUp) => `<div class="bk"><div class="dd"><small>${MONTHS[dt(b.date).getUTCMonth()].slice(0, 3)}</small>${dt(b.date).getUTCDate()}</div><div><b>${SERVICES[b.service].name}</b> · ${b.pro === 'any' ? 'Pro to be confirmed' : esc(pro(b.pro).name)}<div class="muted">${midDate(b.date)}, ${b.start}–${b.end} · ${esc(ADDRS.find((a) => a.id === b.addr).line)} · ${money(b.total)} · Ref ${b.id}</div></div><span class="spacer"></span>
+      ${isUp ? `<button type="button" class="btn sm" data-toast="To move a clean, cancel it (free up to 24 hours before) and book a new time.">Reschedule</button><button type="button" class="btn sm danger" data-cancel="${b.id}">Cancel</button>` : `<button type="button" class="btn sm" data-again="${b.id}">Book again</button>${b.rated ? `<span class="muted">You rated ${b.rated}★</span>` : `<button type="button" class="btn sm" data-rate="${b.id}">Rate</button>`}`}</div>`;
+    return `<h1>My bookings</h1><p class="muted">Upcoming and past cleans</p>
+      <div class="card"><h2>Upcoming</h2>${up.map((b) => row(b, true)).join('') || '<p class="muted">No upcoming cleans. <a href="#/book">Book one</a></p>'}</div>
+      <div class="card"><h2>Past</h2>${past.map((b) => row(b, false)).join('')}</div>`;
+  }
+  function viewPros() {
+    return `<h1>My pros</h1><p class="muted">Pros who have cleaned for you, and top-rated pros near BS6.</p>
+      <div class="two">${PROS.map((p) => `<div class="card"><div class="row"><span class="ph" style="width:48px;height:48px;background:${p.col}" data-i="${p.name.split(' ').map((x) => x[0]).join('')}" aria-hidden="true"></span><div><h3 style="margin:0">${esc(p.name)}${p.usual ? '<span class="tag">Your usual pro</span>' : ''}</h3><div class="muted"><span class="stars">★</span> ${p.rating} · ${p.reviews} reviews${p.cleans ? ` · ${p.cleans} clean${p.cleans > 1 ? 's' : ''} with you` : ''}</div></div></div>
+        <p class="muted">${esc(p.bio)}</p><p class="muted">Usual hours: ${Object.entries(p.hours).map(([d, [a, b]]) => `${DAYS[d].slice(0, 3)} ${a}–${b}`).join(', ')}</p><button type="button" class="btn sm" data-bookpro="${p.id}">Book ${esc(p.first)}</button></div>`).join('')}</div>`;
+  }
+  function viewAccount() {
+    return `<h1>Account</h1><div class="two"><div class="card"><h2>Your details</h2>
+        <label class="fl" for="ac-name">Full name</label><input type="text" id="ac-name" value="Bea Hollis" style="width:100%">
+        <label class="fl" for="ac-email">Email</label><input type="email" id="ac-email" value="bea.hollis@fernmail.co.uk" style="width:100%">
+        <label class="fl" for="ac-phone">Mobile</label><input type="tel" id="ac-phone" value="07700 900584" style="width:100%">
+        <div style="margin-top:14px"><button type="button" class="btn pri" id="ac-save">Save details</button></div></div>
+      <div><div class="card"><h2>Saved addresses</h2>${ADDRS.map((a) => `<div class="row" style="margin-bottom:8px"><div><b>${esc(a.label)}</b><div class="muted">${esc(a.line)} · ${bedLabel(a.beds)}, ${bathLabel(a.baths)}</div></div><span class="spacer"></span><button type="button" class="btn sm" data-toast="Address changes are checked by our team — email hello@handylane.co.uk.">Edit</button></div>`).join('')}</div>
+      <div class="card"><h2>Payment</h2><div class="row"><span>Visa •••• 0612 · expires 04/28</span><span class="spacer"></span><button type="button" class="btn sm" data-toast="You need at least one card on file while you have upcoming cleans.">Remove</button></div></div>
+      <div class="card"><h2>Handy Lane+</h2><p class="muted">Not a member. Members save 10% on every clean and get free rescheduling.</p><button type="button" class="btn sm" data-plus>Learn more</button></div>
+      <div class="card"><h2>Notifications</h2><label class="switch"><input type="checkbox" role="switch" id="nt-sms" checked><span>Text me when my pro is on the way</span></label><label class="switch"><input type="checkbox" role="switch" id="nt-mail"><span>Offers and news by email</span></label><button type="button" class="btn sm" id="nt-save">Save preferences</button></div></div></div>`;
+  }
+  function viewHelp() {
+    return `<h1>Help centre</h1><div class="card"><details open><summary>Cancellation policy</summary><p class="muted">Cancel for free up to 24 hours before the start time. Within 24 hours we charge 50% of the clean so your pro is paid for the time they kept free.</p></details><details><summary>Privacy</summary><p class="muted">We share your address and access notes only with your pro, and only for the booking.</p></details><details><summary>Contact us</summary><p class="muted">hello@handylane.co.uk · 0117 496 0321 (8am–8pm)</p></details></div>`;
+  }
+
+  // ------------------------------------------------------------------ render
+  const main = q('#main');
+  function route() { return location.hash.replace(/^#\/?/, '').split('/')[0] || 'home'; }
+  function render() {
+    const r = route();
+    qa('header nav a').forEach((a) => a.classList.toggle('on', a.dataset.nav === r));
+    main.innerHTML = r === 'home' ? viewHome() : r === 'book' ? viewBook() : r === 'bookings' ? viewBookings() : r === 'pros' ? viewPros() : r === 'account' ? viewAccount() : r === 'help' ? viewHelp() : `<h1>Page not found</h1><p><a href="#/">Go home</a></p>`;
+  }
+  function rerenderStep() { render(); }
+  function refreshSummary() { const s = q('#summary'); if (s) s.innerHTML = summaryHtml(); const p = q('#pay'); if (p) p.textContent = `Book and pay ${money(price().total)}`; }
+  window.addEventListener('hashchange', () => { if (route() === 'book' && w.done) w = fresh(); render(); window.scrollTo(0, 0); });
+
+  function err(m) { const e = q('#err'); if (e) { e.textContent = m; e.hidden = !m; } }
+  function validate() {
+    if (w.step === 1 && w.addr === 'new') return 'Choose one of your saved addresses, or add a new one from your account first.';
+    if (w.step === 3) {
+      if (!w.date) return 'Pick a date for your clean.';
+      const s = toM(w.start); const d = Math.round(+w.dur * 60);
+      if (s + d > 20 * 60) return 'Cleans must finish by 20:00 — choose an earlier start time or a shorter clean.';
+      if (w.proMode === 'choose') {
+        if (!w.pro) return 'Choose a pro, or switch to “Any available pro”.';
+        const p = pro(w.pro); if (!avail(p, w.date, s, d)) return `${p.name} isn’t available at this time. Choose another time or another pro.`;
+      } else if (!PROS.some((p) => avail(p, w.date, s, d))) return 'No pros are free at this time. Try another start time or date.';
+    }
+    return '';
+  }
+
+  // ------------------------------------------------------------------ listbox
+  function closeLbs(except) { qa('.lb').forEach((lb) => { if (lb === except) return; const b = lb.querySelector('.lb-btn'); const l = lb.querySelector('[role=listbox]'); b.setAttribute('aria-expanded', 'false'); l.hidden = true; }); }
+  function pickLb(lb, v) {
+    const key = lb.dataset.lb; w[key] = v; w.durTouched = false;
+    closeLbs(); render(); q(`#${key}-btn`).focus();
+  }
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('.lb')) closeLbs(); });
+
+  // ------------------------------------------------------------------ events
+  main.addEventListener('click', async (e) => {
+    const t = e.target;
+    const lbb = t.closest('.lb-btn');
+    if (lbb) { const lb = lbb.closest('.lb'); const l = lb.querySelector('[role=listbox]'); const open = l.hidden; closeLbs(lb); l.hidden = !open; lbb.setAttribute('aria-expanded', String(open)); if (open) { const sel = l.querySelector('[aria-selected=true]'); qa('li', l).forEach((x) => x.classList.toggle('active', x === sel)); l.focus(); } return; }
+    const opt = t.closest('.lb [role=option]'); if (opt) { pickLb(opt.closest('.lb'), opt.dataset.v); return; }
+    const tst = t.closest('[data-toast]'); if (tst) { toast(tst.dataset.toast); return; }
+    if (t.closest('[data-plus]')) { openPlus(); return; }
+    const ss = t.closest('[data-start-service]'); if (ss) { w = fresh(); w.service = ss.dataset.startService; location.hash = '#/book'; return; }
+    const bp = t.closest('[data-bookpro]'); if (bp) { w = fresh(); w.proMode = 'choose'; w.pro = bp.dataset.bookpro; w.beds = '2'; w.banner = `Booking with ${pro(w.pro).name} — pick a date and time; we’ll show whether ${pro(w.pro).first} is free.`; location.hash = '#/book'; return; }
+    const ag = t.closest('[data-again]');
+    if (ag) {
+      const b = BOOKINGS.find((x) => x.id === ag.dataset.again);
+      w = fresh(); Object.assign(w, { service: b.service, beds: b.beds, baths: b.baths, addr: b.addr, proMode: 'choose', pro: b.pro, start: b.start, dur: String((toM(b.end) - toM(b.start)) / 60), durTouched: true, banner: `Booking again with ${pro(b.pro).name} — pick a new date. We’ll show whether ${pro(b.pro).first} is free.` });
+      location.hash = '#/book'; return;
+    }
+    const cn = t.closest('[data-cancel]');
+    if (cn) {
+      const b = BOOKINGS.find((x) => x.id === cn.dataset.cancel);
+      openModal(`<h2>Cancel this clean?</h2><p>${SERVICES[b.service].name} with ${esc(pro(b.pro).name)} on ${midDate(b.date)}, ${b.start}–${b.end}. Cancelling now is free.</p><div class="mf"><button type="button" class="btn" data-close>Keep booking</button><button type="button" class="btn danger" id="cn-go">Cancel clean</button></div>`);
+      q('#cn-go').addEventListener('click', async (ev) => { ev.currentTarget.disabled = true; await sleep(600); await post({ event: 'booking_cancel', booking: b.id, date: b.date }); BOOKINGS = BOOKINGS.filter((x) => x !== b); closeModal(); render(); toast('Clean cancelled — no charge.'); });
+      return;
+    }
+    const rt = t.closest('[data-rate]');
+    if (rt) {
+      const b = BOOKINGS.find((x) => x.id === rt.dataset.rate);
+      openModal(`<h2>Rate your clean</h2><p class="muted">${esc(pro(b.pro).name)} · ${midDate(b.date)}</p><label class="fl" for="rt-stars">Rating</label><select id="rt-stars"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select><label class="fl" for="rt-text">Comment (optional)</label><textarea id="rt-text"></textarea><div class="mf"><button type="button" class="btn" data-close>Not now</button><button type="button" class="btn pri" id="rt-go">Submit rating</button></div>`);
+      q('#rt-go').addEventListener('click', async () => { await sleep(500); await post({ event: 'review_submit', booking: b.id, rating: q('#rt-stars').value }); b.rated = +q('#rt-stars').value; closeModal(); render(); toast('Thanks for your rating!'); });
+      return;
+    }
+    if (t.closest('#book-another')) { w = fresh(); render(); return; }
+    const gt = t.closest('[data-goto]'); if (gt && +gt.dataset.goto < w.step) { collect(); w.step = +gt.dataset.goto; render(); return; }
+    const mo = t.closest('[data-month]'); if (mo && !mo.disabled) { collect(); w.month = +mo.dataset.month > 0 ? '2026-10' : '2026-09'; render(); return; }
+    const dd = t.closest('[data-day]'); if (dd && !dd.disabled) { collect(); w.date = dd.dataset.day; render(); return; }
+    if (t.closest('#back')) { collect(); w.step--; render(); return; }
+    if (t.closest('#next')) { collect(); const m = validate(); if (m) { err(m); return; } w.step++; render(); window.scrollTo(0, 0); return; }
+    if (t.closest('#pay')) { await pay(); return; }
+    if (t.closest('#ac-save')) { await sleep(500); await post({ event: 'account_update', name: norm(q('#ac-name').value), email: norm(q('#ac-email').value).toLowerCase(), phone: q('#ac-phone').value.replace(/\D/g, '') }); toast('Details saved.'); return; }
+    if (t.closest('#nt-save')) { await sleep(400); await post({ event: 'notification_prefs_update', sms: q('#nt-sms').checked ? 'on' : 'off', email: q('#nt-mail').checked ? 'on' : 'off' }); toast('Preferences saved.'); }
+  });
+  main.addEventListener('keydown', (e) => {
+    const l = e.target.closest('.lb [role=listbox]'); if (!l) return;
+    const items = qa('li', l); let i = items.findIndex((x) => x.classList.contains('active'));
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); i = Math.max(0, Math.min(items.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1))); items.forEach((x, j) => x.classList.toggle('active', j === i)); }
+    if (e.key === 'Enter' && items[i]) { e.preventDefault(); pickLb(l.closest('.lb'), items[i].dataset.v); }
+    if (e.key === 'Escape') closeLbs();
+  });
+  function collect() {
+    if (w.step === 1) { const a = q('#addr'); if (a) w.addr = a.value; }
+    if (w.step === 4) { w.access = q('#access').value; w.notes = q('#notes').value; }
+  }
+  main.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'service') { w.service = t.value; w.durTouched = false; w.extras = w.extras.filter((x) => !(w.service === 'oven' && x === 'oven')); refreshSummary(); }
+    if (t.id === 'addr') { w.addr = t.value; q('#newaddr').hidden = t.value !== 'new'; refreshSummary(); }
+    if (t.name === 'extra') { w.extras = qa('input[name=extra]:checked').map((x) => x.value); refreshSummary(); }
+    if (t.id === 'start') { w.start = t.value; render(); }
+    if (t.id === 'dur') { w.dur = t.value; w.durTouched = true; render(); }
+    if (t.name === 'promode') { w.proMode = t.value; if (w.proMode === 'any') w.pro = ''; render(); }
+    if (t.name === 'pro') { w.pro = t.value; refreshSummary(); err(''); }
+    if (t.name === 'pets') w.pets = t.value;
+    if (t.id === 'prio') { w.priority = t.checked; refreshSummary(); }
+    if (t.id === 'eco') { w.eco = t.checked; refreshSummary(); }
+  });
+  main.addEventListener('input', (e) => { if (e.target.id === 'access') w.access = e.target.value; if (e.target.id === 'notes') w.notes = e.target.value; });
+
+  async function pay() {
+    if (busy) return;
+    const b = q('#pay'); const p = price();
+    busy = true; b.disabled = true; b.innerHTML = '<span class="spin"></span>Booking…';
+    await sleep(900);
+    const ref = 'HL-' + (58390 + BOOKINGS.length);
+    const end = endOf();
+    await post({
+      event: 'cleaning_booking', service: w.service, bedrooms: w.beds, bathrooms: w.baths, address_id: w.addr,
+      extras: w.extras.slice().sort().join(','), date: w.date, start: w.start, duration: String(w.dur), end,
+      pro: w.proMode === 'any' ? 'any' : w.pro, pro_name: w.proMode === 'any' ? '' : pro(w.pro).name,
+      priority: w.priority ? 'yes' : 'no', eco: w.eco ? 'yes' : 'no', pets: w.pets,
+      access_notes: norm(w.access), notes: norm(w.notes), total: (p.total / 100).toFixed(2),
+    });
+    BOOKINGS.push({ id: ref, date: w.date, start: w.start, end, service: w.service, pro: w.proMode === 'any' ? 'any' : w.pro, addr: w.addr, total: p.total, upcoming: true, beds: w.beds, baths: w.baths });
+    busy = false;
+    w.done = { id: ref, service: w.service, date: w.date, start: w.start, end, total: p.total };
+    render(); window.scrollTo(0, 0);
+    toast(`Booked — reference ${ref}.`);
+  }
+
+  // ------------------------------------------------------------------ modals
+  function openModal(html) { q('#modal-root').innerHTML = `<div class="overlay"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`; qa('#modal-root [data-close]').forEach((b) => b.addEventListener('click', closeModal)); }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function openPlus() {
+    openModal(`<h2>Handy Lane+</h2><ul style="padding-left:20px"><li>10% off every clean</li><li>Free rescheduling up to 2 hours before</li><li>Priority support</li></ul><p class="price">£4.99 a month · cancel anytime</p><div class="mf"><button type="button" class="btn" data-close>Not now</button><button type="button" class="btn pri" id="plus-go">Start membership</button></div>`);
+    q('#plus-go').addEventListener('click', async (e) => { e.currentTarget.disabled = true; await sleep(700); await post({ event: 'membership_join', plan: 'plus-monthly' }); closeModal(); toast('Welcome to Handy Lane+!'); });
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest('#promo [data-plus]')) openPlus(); });
+  q('#promo-x').addEventListener('click', () => { q('#promo').hidden = true; });
+
+  render();
+})();
+</script>
+</body>
+</html>

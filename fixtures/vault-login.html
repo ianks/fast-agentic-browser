@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Acme — sign in</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<h1>Sign in to Acme</h1>
+<form id="f1">
+  <label>Email <input name="email" type="email" autocomplete="username"></label>
+  <label>Password <input name="password" type="password" autocomplete="current-password"></label>
+  <button type="submit">Sign in</button>
+</form>
+<form id="f2" hidden>
+  <p>Enter the code from your authenticator app</p>
+  <label>Authentication code <input name="code" autocomplete="one-time-code" inputmode="numeric"></label>
+  <button type="submit">Verify</button>
+</form>
+<div id="done" hidden><h2>Welcome back</h2><p id="who"></p><p id="echo"></p></div>
+<p id="err" role="alert"></p>
+<script>
+  // A careless site: it logs the password, sends it in a URL, and echoes it.
+  let pw = "";
+  f1.onsubmit = (e) => {
+    e.preventDefault();
+    const u = f1.email.value;
+    pw = f1.password.value;
+    console.log("login attempt for " + u + " with " + pw);
+    fetch("/nope?pw=" + encodeURIComponent(pw)).catch(() => {});
+    if (u !== "ada@acme.test" || pw !== "correct horse battery") { err.textContent = "Incorrect email or password."; return; }
+    err.textContent = ""; f1.hidden = true; f2.hidden = false;
+  };
+  f2.onsubmit = (e) => {
+    e.preventDefault();
+    if (f2.code.value !== "123456") { err.textContent = "Invalid code, try again."; return; }
+    err.textContent = ""; f2.hidden = true; done.hidden = false;
+    who.textContent = "Signed in as ada@acme.test";
+    echo.textContent = "Debug: your password is " + pw;
+  };
+</script>
+</main></body></html>

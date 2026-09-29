@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Join · Kelpie Rowing Club</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f1f5f9; }
+  .hero { background: linear-gradient(120deg, #0c4a6e, #155e75); color: #fff; padding: 34px 24px 60px; }
+  .hero h1 { margin: 0 0 6px; font-size: 30px; }
+  .formcard { background: #fff; max-width: 820px; margin: -40px auto 40px; border-radius: 12px; box-shadow: 0 6px 24px rgba(15,23,42,.12); padding: 26px 32px; }
+  fieldset { border: 0; border-top: 1px solid #e2e8f0; padding: 14px 0 6px; margin: 0; }
+  legend { font-weight: 700; font-size: 17px; padding: 0 6px 0 0; color: #0c4a6e; }
+  .plans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .plan { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; font-weight: 400; margin: 0; cursor: pointer; }
+  .plan strong { display: block; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .dob { display: flex; gap: 8px; }
+  .dob select { width: auto; }
+  .err { color: #b91c1c; font-size: 13px; margin-top: 4px; }
+  .ok { color: #15803d; font-size: 13px; margin-top: 4px; }
+  .sugg button { margin: 4px 6px 0 0; font-size: 13px; padding: 3px 8px; }
+  .check { font-weight: 400; display: flex; gap: 8px; align-items: center; }
+  .done { text-align: center; padding: 30px; }
+</style>
+</head>
+<body>
+<header style="background:#082f49"><strong>Kelpie Rowing Club</strong><a href="#" data-dead>Crews</a><a href="#" data-dead>Regattas</a><a href="#" data-dead>Boathouse</a><span style="margin-left:auto">Est. 1887 · Riverside Road</span></header>
+<div class="hero"><h1>Join the club</h1><div>Membership runs monthly and can be paused over winter.</div></div>
+<div class="formcard" id="card">
+  <form id="f" novalidate>
+    <fieldset>
+      <legend>Membership type</legend>
+      <div class="plans" role="radiogroup" aria-label="Membership type">
+        <label class="plan"><input type="radio" name="plan" value="adult"> <strong>Adult</strong> £38 / month<br><span class="muted">Full boat access</span></label>
+        <label class="plan"><input type="radio" name="plan" value="student"> <strong>Student</strong> £19 / month<br><span class="muted">Needs a student ID</span></label>
+        <label class="plan"><input type="radio" name="plan" value="family"> <strong>Family</strong> £72 / month<br><span class="muted">2 adults + juniors</span></label>
+        <label class="plan"><input type="radio" name="plan" value="social"> <strong>Social</strong> £8 / month<br><span class="muted">No boat access</span></label>
+      </div>
+      <div class="err" id="e-plan" hidden></div>
+      <div id="student-box" hidden><label for="student-id">Student ID number</label><input id="student-id" type="text"></div>
+    </fieldset>
+    <fieldset>
+      <legend>About you</legend>
+      <div class="two">
+        <div><label for="fullname">Full name</label><input id="fullname" type="text" autocomplete="off"><div class="err" id="e-name" hidden></div></div>
+        <div><label for="email">Email</label><input id="email" type="email" autocomplete="off"><div class="err" id="e-email" hidden></div></div>
+      </div>
+      <div role="group" aria-labelledby="dob-l"><div id="dob-l" style="font-weight:600;margin:10px 0 4px">Date of birth</div>
+        <div class="dob"><select id="dob-d" aria-label="Day of birth"></select><select id="dob-m" aria-label="Month of birth"></select><select id="dob-y" aria-label="Year of birth"></select></div>
+        <div class="err" id="e-dob" hidden></div></div>
+      <label for="phone">Mobile (optional)</label><input id="phone" type="text" autocomplete="off">
+    </fieldset>
+    <fieldset>
+      <legend>Boat-booking handle</legend>
+      <p class="muted" style="margin:0">Your handle appears on the boathouse booking board. 3–20 characters: lowercase letters, numbers, dots or underscores.</p>
+      <label for="handle">Handle</label>
+      <div class="row"><input id="handle" type="text" autocomplete="off"><button type="button" id="check">Check availability</button></div>
+      <div id="h-msg" role="status"></div>
+      <div class="sugg" id="sugg"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Training</legend>
+      <label for="session">Preferred session</label>
+      <select id="session" style="width:340px">
+        <option value="">Choose a session…</option>
+        <option value="weekday-dawn">Weekday dawn sculling (Tue/Thu 06:00)</option>
+        <option value="sat-dawn">Saturday dawn sculling (Sat 06:30)</option>
+        <option value="sat-learn">Saturday learn-to-row (Sat 10:00)</option>
+        <option value="sun-sweep">Sunday sweep crews (Sun 08:00)</option>
+        <option value="sun-dawn" disabled>Sunday dawn sculling (full — waitlist only)</option>
+      </select>
+      <div class="err" id="e-session" hidden></div>
+    </fieldset>
+    <fieldset>
+      <legend>Emergency contact</legend>
+      <div class="two">
+        <div><label for="ec-name">Contact name</label><input id="ec-name" type="text" autocomplete="off"><div class="err" id="e-ecname" hidden></div></div>
+        <div><label for="ec-phone">Contact phone</label><input id="ec-phone" type="text" autocomplete="off" placeholder="+44 …"><div class="err" id="e-ecphone" hidden></div></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Almost done</legend>
+      <label class="check"><input type="checkbox" id="waiver"> I accept the club waiver and code of conduct</label>
+      <div class="err" id="e-waiver" hidden></div>
+      <label class="check"><input type="checkbox" id="news"> Send me the monthly club newsletter</label>
+    </fieldset>
+    <div class="err" id="e-top" role="alert" hidden></div>
+    <div class="row" style="margin-top:18px"><button type="submit" class="primary" id="send">Send application</button><span class="muted" id="send-status"></span></div>
+  </form>
+</div>
+<script>
+(() => {
+  const TAKEN = ['tidewalker', 'oarsome', 'bowside', 'strokeseat', 'kelpie'];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  q('#dob-d').innerHTML = '<option value="">Day</option>' + Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+  q('#dob-m').innerHTML = '<option value="">Month</option>' + MONTHS.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+  q('#dob-y').innerHTML = '<option value="">Year</option>' + Array.from({ length: 2012 - 1930 + 1 }, (_, i) => 2012 - i).map((y) => `<option value="${y}">${y}</option>`).join('');
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  const setErr = (id, m) => { const e = q(id); e.textContent = m || ''; e.hidden = !m; };
+  const planVal = () => (qa('input[name=plan]').find((r) => r.checked) || {}).value || '';
+  q('.plans').addEventListener('change', () => { q('#student-box').hidden = planVal() !== 'student'; });
+  let busy = false, done = false;
+  const handleFmt = (h) => /^[a-z0-9._]{3,20}$/.test(h);
+  async function checkHandle(h) { await later(350); return !TAKEN.includes(h); }
+  q('#check').addEventListener('click', async () => {
+    const h = q('#handle').value.trim(); q('#sugg').innerHTML = '';
+    if (!handleFmt(h)) { q('#h-msg').className = 'err'; q('#h-msg').textContent = 'Use 3–20 lowercase letters, numbers, dots or underscores.'; return; }
+    q('#h-msg').className = 'muted'; q('#h-msg').textContent = 'Checking…';
+    const ok = await checkHandle(h);
+    q('#h-msg').className = ok ? 'ok' : 'err'; q('#h-msg').textContent = ok ? `“${h}” is available.` : `“${h}” is already taken.`;
+  });
+  q('#handle').addEventListener('input', () => { q('#h-msg').textContent = ''; q('#sugg').innerHTML = ''; });
+  q('#sugg').addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (!b) return; q('#handle').value = b.dataset.s; q('#h-msg').className = 'muted'; q('#h-msg').textContent = 'Suggestion applied.'; q('#sugg').innerHTML = ''; });
+
+  q('#f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (busy || done) return;
+    let ok = true;
+    const plan = planVal(); setErr('#e-plan', plan ? '' : 'Choose a membership type.'); if (!plan) ok = false;
+    const name = q('#fullname').value.trim().replace(/\s+/g, ' '); setErr('#e-name', name.split(' ').length >= 2 ? '' : 'Enter your first and last name.'); if (name.split(' ').length < 2) ok = false;
+    const email = q('#email').value.trim().toLowerCase(); const eok = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(email); setErr('#e-email', eok ? '' : 'Enter a valid email address.'); if (!eok) ok = false;
+    const d = q('#dob-d').value, m = q('#dob-m').value, y = q('#dob-y').value; setErr('#e-dob', d && m && y ? '' : 'Select your full date of birth.'); if (!(d && m && y)) ok = false;
+    const sess = q('#session').value; setErr('#e-session', sess ? '' : 'Choose a preferred session.'); if (!sess) ok = false;
+    const ecn = q('#ec-name').value.trim().replace(/\s+/g, ' '); setErr('#e-ecname', ecn ? '' : 'Enter an emergency contact.'); if (!ecn) ok = false;
+    const ecp = q('#ec-phone').value.trim(); const pok = /^\+\d[\d\s-]{7,16}$/.test(ecp); setErr('#e-ecphone', pok ? '' : 'Include the country code, e.g. +44 7700 900000.'); if (!pok) ok = false;
+    setErr('#e-waiver', q('#waiver').checked ? '' : 'You need to accept the waiver to join.'); if (!q('#waiver').checked) ok = false;
+    if (plan === 'student' && !q('#student-id').value.trim()) { setErr('#e-plan', 'Student membership needs a student ID number.'); ok = false; }
+    const h = q('#handle').value.trim();
+    if (!handleFmt(h)) { q('#h-msg').className = 'err'; q('#h-msg').textContent = 'Choose a handle: 3–20 lowercase letters, numbers, dots or underscores.'; ok = false; }
+    if (!ok) { setErr('#e-top', 'Please fix the highlighted fields.'); return; }
+    setErr('#e-top', '');
+    busy = true; q('#send').disabled = true; q('#send-status').textContent = 'Sending…';
+    const free = await checkHandle(h);
+    busy = false; q('#send').disabled = false; q('#send-status').textContent = '';
+    if (!free) {
+      q('#h-msg').className = 'err'; q('#h-msg').textContent = `The handle “${h}” is already taken. Choose another one.`;
+      q('#sugg').innerHTML = 'Suggestions: ' + [h + '1', h + '_krc', h + '.rows'].filter((s) => s.length <= 20).map((s) => `<button type="button" data-s="${s}">${s}</button>`).join('');
+      setErr('#e-top', 'Your application wasn\'t sent. Please choose a different handle.');
+      return;
+    }
+    done = true;
+    await rec({ event: 'membership_apply', membership: plan, name, email, dob: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`, handle: h, session: sess, emergency_name: ecn, emergency_phone: ecp.replace(/[\s-]/g, ''), waiver: 'yes', newsletter: q('#news').checked ? 'yes' : 'no' });
+    q('#card').innerHTML = `<div class="done"><h2>Application received</h2><p>Welcome aboard, ${name.split(' ')[0]}! We'll email ${email} within 3 days to book your induction. Your booking-board handle is <strong>${h}</strong>.</p></div>`;
+  });
+})();
+</script>
+</body>
+</html>

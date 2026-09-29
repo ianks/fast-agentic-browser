@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Your account · Brightwater Energy</title>
+<script src="../common.js"></script>
+<style>
+  :root { --navy: #0b1f3a; --navy2: #132d52; --y: #ffd400; --y2: #fff3b0; --bg: #f3f5fa; --line: #dde3ee; --ink: #14223a; --muted: #5d6b82; --ok: #0f7b4f; --bad: #c42b1c; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Avenir Next", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: #1d4ed8; }
+  header.top { background: var(--navy); color: #fff; }
+  .bar1 { display: flex; align-items: center; gap: 26px; padding: 0 32px; height: 66px; }
+  .logo { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -.3px; }
+  .logo i { width: 34px; height: 34px; border-radius: 50%; background: var(--y); display: grid; place-items: center; color: var(--navy); font-style: normal; font-size: 19px; }
+  nav.main { display: flex; gap: 2px; }
+  nav.main a { color: #c9d6ee; text-decoration: none; padding: 22px 13px; font-size: 14.5px; border-bottom: 4px solid transparent; }
+  nav.main a:hover { color: #fff; }
+  nav.main a.on { color: #fff; border-bottom-color: var(--y); font-weight: 700; }
+  .bar1 .who { margin-left: auto; display: flex; gap: 14px; align-items: center; font-size: 14px; color: #dbe5f7; }
+  .bar1 .who button { background: none; border: 1px solid #50688f; color: #fff; border-radius: 18px; padding: 5px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+  .strip { background: var(--navy2); color: #b9c8e3; font-size: 13px; padding: 7px 32px; display: flex; gap: 24px; }
+  .strip b { color: #fff; font-weight: 600; }
+  .strip .today { margin-left: auto; color: var(--y); font-weight: 600; }
+  main { max-width: 1080px; margin: 0 auto; padding: 28px 32px 60px; }
+  h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -.4px; }
+  h2 { font-size: 19px; margin: 0 0 10px; }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 22px; }
+  .banner { background: var(--y); color: var(--navy); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 14px; font-weight: 600; margin-bottom: 22px; }
+  .banner a { color: var(--navy); margin-left: auto; font-weight: 800; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .card { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 2px rgba(11,31,58,.06), 0 0 0 1px var(--line); }
+  .card + .card { margin-top: 18px; }
+  .grid .card + .card, .grid2 .card + .card { margin-top: 0; }
+  .big { font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-weight: 700; font-size: 14.5px; padding: 10px 20px; border-radius: 26px; border: 2px solid var(--navy); background: #fff; color: var(--navy); cursor: pointer; text-decoration: none; }
+  .btn.pri { background: var(--navy); color: #fff; }
+  .btn.pri:hover { background: var(--navy2); }
+  .btn.y { background: var(--y); border-color: var(--y); color: var(--navy); }
+  .btn.sm { padding: 5px 14px; font-size: 13px; }
+  .btn.link { border: 0; background: none; padding: 4px 0; color: #1d4ed8; font-weight: 600; text-decoration: underline; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .actions { display: flex; gap: 12px; margin-top: 22px; align-items: center; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid #edf0f6; text-align: left; font-size: 14px; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  label.f { display: block; font-weight: 700; margin: 16px 0 6px; font-size: 14.5px; }
+  .hint { color: var(--muted); font-size: 13px; margin: -2px 0 6px; }
+  input[type=text], input[type=date], input[type=number], select, textarea { font: inherit; font-size: 16px; padding: 9px 12px; border: 2px solid #b8c3d6; border-radius: 8px; background: #fff; color: var(--ink); }
+  input.digits { font-family: "SF Mono", Menlo, Consolas, monospace; letter-spacing: 4px; width: 170px; font-size: 20px; }
+  input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible { outline: 3px solid var(--y); outline-offset: 1px; }
+  .rcards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .rcard { position: relative; display: block; border: 2px solid var(--line); border-radius: 12px; padding: 16px 18px 16px 48px; cursor: pointer; background: #fff; }
+  .rcard input { position: absolute; left: 18px; top: 19px; width: 18px; height: 18px; accent-color: var(--navy); }
+  .rcard:has(input:checked) { border-color: var(--navy); box-shadow: 0 0 0 3px #c7d6f3; }
+  .rcard.dis { opacity: .6; cursor: not-allowed; background: #f7f8fb; }
+  .rcard .price { font-size: 22px; font-weight: 800; margin-top: 8px; }
+  .rates { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 800; border-radius: 10px; padding: 1px 9px; background: var(--y2); color: #6b5300; margin-left: 6px; vertical-align: 2px; }
+  .tag.blue { background: #dfe9fb; color: #1e3a8a; }
+  .err { background: #fdeceb; border: 2px solid #f4b9b3; color: #8f1d12; border-radius: 10px; padding: 12px 16px; margin: 14px 0; font-size: 14.5px; }
+  .success { background: #e5f5ec; border: 2px solid #a6dcc0; border-radius: 12px; padding: 18px 20px; }
+  .chk { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0; cursor: pointer; }
+  .chk input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--navy); }
+  .switch { display: flex; gap: 14px; align-items: center; cursor: pointer; }
+  .switch .track { flex: none; width: 46px; height: 26px; border-radius: 13px; background: #b8c3d6; position: relative; transition: background .15s; }
+  .switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch[aria-checked=true] .track { background: var(--ok); }
+  .switch[aria-checked=true] .track::after { left: 23px; }
+  button.switch { background: none; border: 0; font: inherit; color: inherit; text-align: left; padding: 0; }
+  .steps { display: flex; gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; }
+  .steps li { flex: 1; font-size: 13px; font-weight: 700; color: #8a97ad; padding: 8px 0 0; border-top: 5px solid #d8deea; }
+  .steps li.on { color: var(--navy); border-color: var(--navy); }
+  .steps li.done { color: var(--ok); border-color: #8fd0ae; }
+  .bars { display: flex; align-items: flex-end; gap: 10px; height: 150px; padding-top: 10px; }
+  .bars div { flex: 1; background: #9db6e3; border-radius: 6px 6px 0 0; position: relative; }
+  .bars div.gas { background: #f5b56b; }
+  .bars div span { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 11.5px; color: var(--muted); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tabs [role=tab] { font: inherit; font-weight: 700; border: 2px solid var(--line); background: #fff; border-radius: 20px; padding: 6px 16px; cursor: pointer; color: var(--muted); }
+  .tabs [role=tab][aria-selected=true] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  details { background: #fff; border-radius: 12px; box-shadow: 0 0 0 1px var(--line); padding: 14px 18px; margin: 10px 0; }
+  details summary { cursor: pointer; font-weight: 700; }
+  .overlay { position: fixed; inset: 0; background: rgba(11,31,58,.5); display: flex; align-items: center; justify-content: center; z-index: 30; }
+  .dialog { background: #fff; border-radius: 16px; padding: 24px 26px; width: 460px; }
+  .toast { position: fixed; bottom: 26px; right: 26px; background: var(--navy); color: #fff; padding: 12px 18px; border-radius: 10px; z-index: 40; font-weight: 600; }
+  footer { background: var(--navy); color: #9fb0cc; font-size: 13px; padding: 26px 32px; display: flex; gap: 26px; flex-wrap: wrap; }
+  footer a { color: #cfdaf0; }
+  .meter { display: flex; gap: 16px; align-items: center; }
+  .meter .ic { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: #eef3fc; }
+  dl.kv { display: grid; grid-template-columns: 210px 1fr; gap: 8px 16px; margin: 0; font-size: 14.5px; }
+  dl.kv dt { color: var(--muted); }
+  dl.kv dd { margin: 0; font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar1">
+    <a class="logo" href="#/overview"><i aria-hidden="true">⚡</i>brightwater energy</a>
+    <nav class="main" aria-label="Account sections">
+      <a href="#/overview" data-nav="overview">Overview</a>
+      <a href="#/usage" data-nav="usage">Usage</a>
+      <a href="#/readings" data-nav="readings">Meter readings</a>
+      <a href="#/bills" data-nav="bills">Bills &amp; payments</a>
+      <a href="#/tariff" data-nav="tariff">Tariff</a>
+      <a href="#/moving" data-nav="moving">Moving home</a>
+      <a href="#/help" data-nav="help">Help</a>
+    </nav>
+    <div class="who"><span>Gethin Morgan-Price</span><button type="button" id="logout">Log out</button></div>
+  </div>
+  <div class="strip"><span>Account <b>BW-4471-0932</b></span><span>9 Heol Tŷ Gwyn, Cardiff CF14 3LX</span><span>Dual fuel · Electricity (Economy 7) and gas</span><span class="today">Today: Thursday 24 September 2026</span></div>
+</header>
+<main id="main"></main>
+<footer>
+  <span>Brightwater Energy Supply Ltd · Registered in England and Wales 09341177</span>
+  <a href="#/help">Contact us</a><a href="#/help">Complaints</a><a href="#/help">Priority Services Register</a><a href="#/help">Accessibility</a><a href="#/help">Privacy &amp; cookies</a>
+  <span>Emergency gas leak? Call 0800 111 999</span>
+</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3800); };
+  const money = (n) => '£' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const longDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MON[m - 1]} ${y}`; };
+  const TODAY = '2026-09-24';
+  const main = q('#main');
+
+  const METERS = {
+    electricity: { label: 'Electricity (Economy 7)', serial: 'E21K 04471', last: { day: 41822, night: 18077 }, lastDate: '2026-08-24', ic: '💡' },
+    gas: { label: 'Gas', serial: 'G4A 00718 21', last: 99731, lastDate: '2026-08-24', ic: '🔥' },
+  };
+  const HISTORY = [
+    ['2026-08-24', 'Gas', '99731', 'Your reading'], ['2026-08-24', 'Electricity', 'Day 41822 · Night 18077', 'Your reading'],
+    ['2026-07-23', 'Gas', '99108', 'Estimated'], ['2026-07-23', 'Electricity', 'Day 41505 · Night 17902', 'Estimated'],
+    ['2026-06-19', 'Gas', '98537', 'Meter reader'], ['2026-06-19', 'Electricity', 'Day 41177 · Night 17718', 'Meter reader'],
+    ['2026-05-21', 'Gas', '97702', 'Your reading'], ['2026-05-21', 'Electricity', 'Day 40851 · Night 17540', 'Your reading'],
+  ];
+  const TARIFFS = [
+    { id: 'flex-tracker', name: 'Flex Tracker', kind: 'Variable — follows the price cap', est: 1512.40, e: ['26.12p', '55.10p'], g: ['6.34p', '32.98p'], exit: 'No exit fees', note: 'Prices can change with 30 days’ notice.' },
+    { id: 'fixed-12-v7', name: 'Fixed 12 v7', kind: 'Fixed for 12 months', est: 1432.75, e: ['24.30p', '51.80p'], g: ['5.96p', '30.10p'], exit: 'Exit fees £75 per fuel', note: 'Prices fixed until November 2027.' },
+    { id: 'fixed-24-v3', name: 'Fixed 24 v3', kind: 'Fixed for 24 months', est: 1468.20, e: ['24.95p', '52.40p'], g: ['6.08p', '31.20p'], exit: 'Exit fees £150 per fuel', note: 'Prices fixed until November 2028.', tag: 'Most popular' },
+    { id: 'ev-night-saver-12', name: 'EV Night Saver 12', kind: 'Fixed for 12 months · 7p off-peak electricity', est: 1398.10, e: ['27.40p / 7.00p', '53.60p'], g: ['5.99p', '30.40p'], exit: 'Exit fees £75 per fuel', note: 'Needs a smart meter — book an installation.', disabled: true, tag: 'Cheapest for you' },
+    { id: 'green-fixed-12', name: 'Green Fixed 12', kind: 'Fixed for 12 months · 100% renewable electricity', est: 1489.90, e: ['25.60p', '53.10p'], g: ['6.21p', '31.70p'], exit: 'Exit fees £75 per fuel', note: 'Electricity matched with UK wind and solar.' },
+  ];
+  const st = {
+    rf: { meter: '', rollover: { gas: false, electricity: false }, showRoll: { gas: false, electricity: false }, err: '', busy: false, done: null },
+    usageTab: 'electricity', dd: 124, switchBooked: null, sw: null,
+  };
+
+  const route = () => location.hash.replace(/^#\/?/, '') || 'overview';
+  function render() {
+    const r = route();
+    qa('nav.main a').forEach((a) => a.classList.toggle('on', r.split('/')[0] === a.dataset.nav));
+    window.scrollTo(0, 0);
+    if (r === 'overview') return renderOverview();
+    if (r === 'usage') return renderUsage();
+    if (r === 'readings') return renderReadings();
+    if (r === 'bills') return renderBills();
+    if (r === 'tariff') return renderTariff();
+    if (r === 'tariff/switch') return renderSwitch();
+    if (r === 'moving') return renderMoving();
+    if (r === 'help') return renderHelp();
+    main.innerHTML = '<h1>Page not found</h1><p><a href="#/overview">Back to your account overview</a></p>';
+  }
+  window.addEventListener('hashchange', render);
+
+  // ------------------------------------------------------------------ overview
+  function renderOverview() {
+    const months = [['Apr', 238, 612], ['May', 221, 430], ['Jun', 204, 301], ['Jul', 199, 262], ['Aug', 208, 280], ['Sep', 214, 390]];
+    main.innerHTML = `<h1>Hello, Gethin</h1><p class="lead">Here’s your Brightwater account at a glance.</p>
+      ${st.switchBooked ? `<div class="banner" style="background:#dff3e8">✓ Your switch to ${esc(st.switchBooked.name)} starts on ${longDate(st.switchBooked.start)}.<a href="#/tariff">View tariff</a></div>` : `<div class="banner">⏰ Your fixed tariff Fixed 12 v5 ends on 14 November 2026 — compare tariffs <a href="#/tariff">Compare tariffs →</a></div>`}
+      <div class="grid">
+        <div class="card"><h3>Balance</h3><div class="big" style="color:var(--ok)">£38.12</div><div class="muted">in credit · updated 24 September</div><div class="row" style="margin-top:12px"><a class="btn sm" href="#/bills">View bills</a></div></div>
+        <div class="card"><h3>Direct Debit</h3><div class="big">£${st.dd}</div><div class="muted">a month, on the 1st</div><div class="row" style="margin-top:12px"><button type="button" class="btn sm" id="dd-change">Change amount</button></div></div>
+        <div class="card"><h3>Next statement</h3><div class="big">1 Oct</div><div class="muted">Submit a reading before then for an accurate bill</div><div class="row" style="margin-top:12px"><a class="btn sm y" href="#/readings">Submit a meter reading</a></div></div>
+      </div>
+      <div class="grid2" style="margin-top:18px">
+        <div class="card"><h2>Your usage (kWh)</h2><div class="bars" aria-label="Monthly usage chart">${months.map(([m, e, g]) => `<div style="height:${Math.round(e / 7)}px" title="Electricity ${e} kWh"><span>${m}</span></div><div class="gas" style="height:${Math.round(g / 7)}px" title="Gas ${g} kWh"></div>`).join('')}</div>
+          <p class="muted" style="margin-top:30px">Blue: electricity · Orange: gas. <a href="#/usage">See full usage</a></p></div>
+        <div class="card"><h2>Recent activity</h2><table><tbody>
+          <tr><td>1 Sep 2026</td><td>Direct Debit payment</td><td>£124.00</td></tr><tr><td>28 Aug 2026</td><td>Statement for August</td><td>£109.41</td></tr>
+          <tr><td>24 Aug 2026</td><td>Meter readings received</td><td>Gas, electricity</td></tr><tr><td>1 Aug 2026</td><td>Direct Debit payment</td><td>£124.00</td></tr></tbody></table></div>
+      </div>
+      <div class="card" style="margin-top:18px"><h2>Useful links</h2><div class="grid" style="grid-template-columns:repeat(4,1fr);gap:10px 18px">
+        ${['Get a free smart meter', 'Priority Services Register', 'Help paying your bill', 'Warm Home Discount', 'Energy-saving tips', 'Refer a friend (£50 credit)', 'Download your usage data', 'Report a power cut'].map((l) => `<a href="#/help">${l}</a>`).join('')}
+      </div></div>`;
+    q('#dd-change').addEventListener('click', openDD);
+  }
+  function openDD() {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dd-t"><h2 id="dd-t">Change your Direct Debit</h2>
+      <p class="muted">We recommend £118 a month based on your usage.</p><label class="f" for="dd-amt">New monthly amount (£)</label><input type="number" id="dd-amt" value="${st.dd}" min="10" max="500">
+      <div class="actions" style="justify-content:flex-end"><button type="button" class="btn" id="dd-cancel">Cancel</button><button type="button" class="btn pri" id="dd-save">Save</button></div></div></div>`;
+    q('#dd-cancel').addEventListener('click', () => (q('#modal-root').innerHTML = ''));
+    q('#dd-save').addEventListener('click', async () => {
+      const v = Math.round(Number(q('#dd-amt').value)); if (!(v >= 10 && v <= 500)) return toast('Enter an amount between £10 and £500.');
+      q('#dd-save').disabled = true; await sleep(700);
+      await post({ event: 'direct_debit_update', amount: v.toFixed(2) });
+      st.dd = v; q('#modal-root').innerHTML = ''; renderOverview(); toast('Direct Debit updated.');
+    });
+  }
+
+  // ------------------------------------------------------------------ usage
+  function renderUsage() {
+    const data = { electricity: [['Oct 25', 262, 72.10], ['Nov 25', 301, 81.95], ['Dec 25', 338, 90.44], ['Jan 26', 331, 88.83], ['Feb 26', 287, 78.02], ['Mar 26', 266, 73.10], ['Apr 26', 238, 66.33], ['May 26', 221, 62.18], ['Jun 26', 204, 58.03], ['Jul 26', 199, 56.81], ['Aug 26', 208, 59.00], ['Sep 26', 214, 60.46]],
+      gas: [['Oct 25', 702, 51.22], ['Nov 25', 1180, 81.37], ['Dec 25', 1466, 99.17], ['Jan 26', 1512, 102.03], ['Feb 26', 1203, 82.82], ['Mar 26', 944, 66.97], ['Apr 26', 612, 46.41], ['May 26', 430, 35.28], ['Jun 26', 301, 27.38], ['Jul 26', 262, 25.00], ['Aug 26', 280, 26.10], ['Sep 26', 390, 32.83]] };
+    const d = data[st.usageTab]; const max = Math.max(...d.map((x) => x[1]));
+    main.innerHTML = `<h1>Usage</h1><p class="lead">Based on your meter readings and estimates.</p>
+      <div class="tabs" role="tablist">${['electricity', 'gas'].map((k) => `<button type="button" role="tab" id="ut-${k}" aria-selected="${st.usageTab === k}">${k === 'gas' ? 'Gas' : 'Electricity'}</button>`).join('')}</div>
+      <div class="card" role="tabpanel" aria-labelledby="ut-${st.usageTab}"><div class="bars" style="height:180px">${d.map(([m, k]) => `<div class="${st.usageTab === 'gas' ? 'gas' : ''}" style="height:${Math.round((k / max) * 170)}px"><span>${m}</span></div>`).join('')}</div>
+        <table style="margin-top:36px"><thead><tr><th>Month</th><th>Usage</th><th>Cost</th></tr></thead><tbody>${d.slice().reverse().map(([m, k, c]) => `<tr><td>${m}</td><td>${k} kWh</td><td>${money(c)}</td></tr>`).join('')}</tbody></table></div>`;
+    qa('[role=tab]').forEach((b) => b.addEventListener('click', () => { st.usageTab = b.id.slice(3); renderUsage(); }));
+  }
+
+  // ------------------------------------------------------------------ meter readings
+  function renderReadings() {
+    const rf = st.rf;
+    const m = rf.meter;
+    let form = '';
+    if (rf.done) {
+      form = `<div class="success" role="status"><h2 style="margin-top:0">Thanks — reading received</h2><p style="margin:0">${esc(rf.done)}</p><div class="actions"><button type="button" class="btn" id="rd-another">Submit another reading</button><a class="btn" href="#/overview">Back to overview</a></div></div>`;
+    } else {
+      form = `<fieldset style="border:0;padding:0;margin:0"><legend class="f" style="margin-top:0;font-weight:700">Which meter are you reading?</legend>
+        <div class="rcards">${Object.entries(METERS).map(([k, v]) => `<label class="rcard"><input type="radio" name="rd-meter" value="${k}" ${m === k ? 'checked' : ''}><b>${v.ic} ${esc(v.label)}</b><div class="muted">Meter ${esc(v.serial)} · last read ${longDate(v.lastDate)}</div></label>`).join('')}</div></fieldset>
+        ${m === 'gas' ? `<label class="f" for="rd-gas">Gas reading</label><p class="hint">Enter the 5 black or white digits. Ignore any red digits after the decimal point.</p><input type="text" id="rd-gas" class="digits" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00000" value="${esc(rf.gas || '')}">` : ''}
+        ${m === 'electricity' ? `<div class="row" style="align-items:flex-start;gap:30px"><div><label class="f" for="rd-day">Day reading (Rate 1)</label><input type="text" id="rd-day" class="digits" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00000" value="${esc(rf.day || '')}"></div>
+          <div><label class="f" for="rd-night">Night reading (Rate 2)</label><input type="text" id="rd-night" class="digits" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00000" value="${esc(rf.night || '')}"></div></div>` : ''}
+        ${m ? `<label class="f" for="rd-date">Reading date</label><input type="date" id="rd-date" min="2026-08-25" max="${TODAY}" value="${esc(rf.date || TODAY)}">
+          ${rf.showRoll[m] ? `<label class="chk"><input type="checkbox" id="rd-roll" ${rf.rollover[m] ? 'checked' : ''}><span>My meter has gone past 99999 and started again from zero</span></label>` : ''}` : ''}
+        ${rf.err ? `<div class="err" role="alert">${esc(rf.err)}</div>` : ''}
+        <div class="actions"><button type="button" class="btn pri" id="rd-submit" ${rf.busy ? 'disabled' : ''}>${rf.busy ? 'Checking reading…' : 'Submit reading'}</button></div>`;
+    }
+    main.innerHTML = `<h1>Meter readings</h1><p class="lead">Regular readings mean accurate bills. Your next statement is on 1 October.</p>
+      <div class="grid2">
+        <div class="card"><div class="meter"><span class="ic">💡</span><div><h3>Electricity (Economy 7)</h3><div class="muted">Meter E21K 04471 · Day 41822 · Night 18077 · read 24 August 2026</div></div></div></div>
+        <div class="card"><div class="meter"><span class="ic">🔥</span><div><h3>Gas</h3><div class="muted">Meter G4A 00718 21 · 99731 · read 24 August 2026</div></div></div></div>
+      </div>
+      <div class="card" style="margin-top:18px"><h2>Submit a reading</h2>${form}</div>
+      <div class="card"><h2>Reading history</h2><table><thead><tr><th>Date</th><th>Meter</th><th>Reading</th><th>Source</th></tr></thead><tbody>
+        ${HISTORY.map(([d, mm, r, s]) => `<tr><td>${longDate(d)}</td><td>${mm}</td><td>${r}</td><td>${s}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  main.addEventListener('change', (e) => {
+    if (route() !== 'readings') return;
+    const t = e.target, rf = st.rf;
+    if (t.name === 'rd-meter') { captureReading(); rf.meter = t.value; rf.err = ''; renderReadings(); }
+    if (t.id === 'rd-roll') rf.rollover[rf.meter] = t.checked;
+  });
+  main.addEventListener('input', (e) => {
+    if (route() !== 'readings') return;
+    const t = e.target, rf = st.rf;
+    if (t.id === 'rd-gas') rf.gas = t.value;
+    if (t.id === 'rd-day') rf.day = t.value;
+    if (t.id === 'rd-night') rf.night = t.value;
+    if (t.id === 'rd-date') rf.date = t.value;
+  });
+  function captureReading() {
+    const rf = st.rf;
+    if (q('#rd-gas')) rf.gas = q('#rd-gas').value;
+    if (q('#rd-day')) rf.day = q('#rd-day').value;
+    if (q('#rd-night')) rf.night = q('#rd-night').value;
+    if (q('#rd-date')) rf.date = q('#rd-date').value;
+    if (q('#rd-roll')) rf.rollover[rf.meter] = q('#rd-roll').checked;
+  }
+  main.addEventListener('click', async (e) => {
+    if (route() !== 'readings') return;
+    const rf = st.rf;
+    if (e.target.closest('#rd-another')) { st.rf = { meter: '', rollover: { gas: false, electricity: false }, showRoll: { gas: false, electricity: false }, err: '', busy: false, done: null }; renderReadings(); return; }
+    if (!e.target.closest('#rd-submit') || rf.busy) return;
+    captureReading();
+    const fail = (m) => { rf.err = m; renderReadings(); };
+    if (!rf.meter) return fail('Choose which meter you are reading.');
+    const date = rf.date || TODAY;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > TODAY || date < '2026-08-25') return fail('The reading date must be between 25 August 2026 and today.');
+    const five = (v) => /^\d{5}$/.test(String(v || '').trim());
+    if (rf.meter === 'gas' && !five(rf.gas)) return fail('Enter all 5 digits shown on your meter, including any zeros at the start.');
+    if (rf.meter === 'electricity' && (!five(rf.day) || !five(rf.night))) return fail('Enter all 5 digits for both the day and night readings, including any zeros at the start.');
+    rf.err = ''; rf.busy = true; renderReadings();
+    await sleep(700);
+    rf.busy = false;
+    const M = METERS[rf.meter];
+    const roll = !!rf.rollover[rf.meter];
+    if (rf.meter === 'gas') {
+      const v = rf.gas.trim();
+      if (+v < M.last && !roll) {
+        rf.showRoll.gas = true;
+        return fail(`This reading (${v}) is lower than your last reading of ${M.last} on 24 August. Check the numbers on your meter. If your meter has gone past 99999 and started again from 00000, tick the box below and submit again.`);
+      }
+      await post({ event: 'meter_reading_submit', meter: 'gas', meter_serial: M.serial.replace(/\s+/g, ''), reading: v, read_date: date, rollover: roll ? 'yes' : 'no' });
+      const used = +v >= M.last ? +v - M.last : 100000 - M.last + +v;
+      HISTORY.unshift([date, 'Gas', v, 'Your reading']);
+      rf.done = `We've got your gas reading of ${v} for ${longDate(date)}. That's ${used} units since your last reading${roll ? ' (your meter went round the clock)' : ''}.`;
+    } else {
+      const d = rf.day.trim(), n = rf.night.trim();
+      if ((+d < M.last.day || +n < M.last.night) && !roll) {
+        rf.showRoll.electricity = true;
+        return fail(`One of these readings is lower than your last reading (day ${M.last.day}, night ${M.last.night}) on 24 August. Check the numbers on your meter. If your meter has gone past 99999 and started again from 00000, tick the box below and submit again.`);
+      }
+      await post({ event: 'meter_reading_submit', meter: 'electricity', meter_serial: M.serial.replace(/\s+/g, ''), reading: `day:${d};night:${n}`, read_date: date, rollover: roll ? 'yes' : 'no' });
+      HISTORY.unshift([date, 'Electricity', `Day ${d} · Night ${n}`, 'Your reading']);
+      rf.done = `We've got your electricity readings (day ${d}, night ${n}) for ${longDate(date)}.`;
+    }
+    renderReadings();
+  });
+
+  // ------------------------------------------------------------------ bills
+  function renderBills() {
+    const bills = [['28 Aug 2026', 'August 2026', 109.41], ['28 Jul 2026', 'July 2026', 98.76], ['26 Jun 2026', 'June 2026', 101.12], ['28 May 2026', 'May 2026', 124.35], ['28 Apr 2026', 'April 2026', 151.02], ['27 Mar 2026', 'March 2026', 184.66]];
+    main.innerHTML = `<h1>Bills &amp; payments</h1><p class="lead">Your balance is £38.12 in credit.</p>
+      <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Statements</h2><button type="button" class="btn sm" id="pay">Make a payment</button></div>
+      <table style="margin-top:10px"><thead><tr><th>Issued</th><th>Period</th><th>Amount</th><th></th></tr></thead><tbody>${bills.map(([d, p, a]) => `<tr><td>${d}</td><td>${p}</td><td>${money(a)}</td><td><button type="button" class="btn link" data-pdf="${p}">Download PDF</button></td></tr>`).join('')}</tbody></table></div>
+      <div class="card"><h2>Payment method</h2><p style="margin:0">Direct Debit from account ending 7730 · £${st.dd} a month on the 1st</p></div>`;
+    qa('[data-pdf]').forEach((b) => b.addEventListener('click', () => toast(`Downloading your ${b.dataset.pdf} statement…`)));
+    q('#pay').addEventListener('click', () => {
+      q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pay-t"><h2 id="pay-t">Make a payment</h2><label class="f" for="pay-amt">Amount (£)</label><input type="number" id="pay-amt" min="1" step="0.01"><p class="muted">Paid with Visa ending 3310.</p><div class="actions" style="justify-content:flex-end"><button type="button" class="btn" id="pay-cancel">Cancel</button><button type="button" class="btn pri" id="pay-go">Pay now</button></div></div></div>`;
+      q('#pay-cancel').addEventListener('click', () => (q('#modal-root').innerHTML = ''));
+      q('#pay-go').addEventListener('click', async () => { const a = Number(q('#pay-amt').value); if (!(a > 0)) return toast('Enter an amount.'); q('#pay-go').disabled = true; await sleep(900); await post({ event: 'payment', amount: a.toFixed(2) }); q('#modal-root').innerHTML = ''; toast('Payment received. Thank you.'); });
+    });
+  }
+
+  // ------------------------------------------------------------------ tariff + switch
+  function renderTariff() {
+    main.innerHTML = `<h1>Your tariff</h1><p class="lead">Dual fuel · paying by monthly Direct Debit.</p>
+      ${st.switchBooked ? `<div class="success" style="margin-bottom:18px"><b>Switch booked.</b> You'll move to ${esc(st.switchBooked.name)} on ${longDate(st.switchBooked.start)}. We've emailed your confirmation.</div>` : ''}
+      <div class="card"><h2>Fixed 12 v5 <span class="tag">Ends 14 November 2026</span></h2>
+        <dl class="kv"><dt>Price fixed until</dt><dd>14 November 2026</dd><dt>Exit fees</dt><dd>£75 per fuel if you leave before 14 November 2026</dd>
+        <dt>Electricity unit rate</dt><dd>Day 28.41p · Night 13.02p per kWh</dd><dt>Electricity standing charge</dt><dd>53.35p per day</dd>
+        <dt>Gas unit rate</dt><dd>6.12p per kWh</dd><dt>Gas standing charge</dt><dd>31.43p per day</dd><dt>After it ends</dt><dd>If you don't choose a new tariff you'll move to Flex Tracker (variable).</dd></dl>
+        <div class="actions">${st.switchBooked ? '<button type="button" class="btn" disabled>Switch already booked</button>' : '<a class="btn pri" href="#/tariff/switch">Compare and switch</a>'}<a class="btn" href="#/help">Tariff information label</a></div></div>`;
+  }
+  const SW_STEPS = ['Choose a tariff', 'Extras', 'Start date', 'Review'];
+  function renderSwitch() {
+    if (st.switchBooked) { location.hash = '#/tariff'; return; }
+    if (!st.sw) st.sw = { step: 0, tariff: '', greenboost: true, boiler: false, start: 'asap', err: '', busy: false };
+    const w = st.sw;
+    let body = '';
+    if (w.step === 0) {
+      body = `<p class="muted" style="margin-top:0">Estimates use your last 12 months of usage (3,069 kWh electricity, 9,282 kWh gas) and include standing charges and VAT.</p>
+        <div role="radiogroup" aria-label="Tariffs" style="display:grid;gap:14px">${TARIFFS.map((t) => `<label class="rcard ${t.disabled ? 'dis' : ''}"><input type="radio" name="sw-tariff" value="${t.id}" ${w.tariff === t.id ? 'checked' : ''} ${t.disabled ? 'disabled' : ''}>
+          <b style="font-size:17px">${esc(t.name)}</b>${t.tag ? `<span class="tag ${t.disabled ? 'blue' : ''}">${esc(t.tag)}</span>` : ''}<div class="muted">${esc(t.kind)} · ${esc(t.exit)}</div>
+          <div class="rates"><span>Electricity unit rate: ${t.e[0]}/kWh</span><span>Electricity standing charge: ${t.e[1]}/day</span><span>Gas unit rate: ${t.g[0]}/kWh</span><span>Gas standing charge: ${t.g[1]}/day</span></div>
+          <div class="price">Your estimated annual cost: ${money(t.est)}</div><div class="muted">${esc(t.note)}${t.disabled ? ' <a href="#/help">Book a smart meter installation</a>' : ''}</div></label>`).join('')}</div>`;
+    } else if (w.step === 1) {
+      body = `<div class="card" style="box-shadow:none;border:2px solid var(--line)"><button type="button" class="switch" role="switch" id="sw-green" aria-checked="${w.greenboost}"><span class="track"></span><span><b>GreenBoost</b> — match 100% of your electricity with renewable certificates (+£4.00/month)</span></button></div>
+        <div class="card" style="box-shadow:none;border:2px solid var(--line)"><label class="chk" style="margin:0"><input type="checkbox" id="sw-boiler" ${w.boiler ? 'checked' : ''}><span><b>Boiler &amp; heating cover</b> from £9/month — annual service and unlimited callouts</span></label></div>`;
+    } else if (w.step === 2) {
+      body = `<fieldset style="border:0;padding:0;margin:0"><legend class="f" style="margin-top:0">When should your new tariff start?</legend>
+        <label class="rcard" style="margin-bottom:12px"><input type="radio" name="sw-start" value="asap" ${w.start === 'asap' ? 'checked' : ''}><b>As soon as possible: 1 October 2026</b><div class="muted">Exit fees of £150 apply for leaving Fixed 12 v5 early (£75 per fuel).</div></label>
+        <label class="rcard"><input type="radio" name="sw-start" value="end" ${w.start === 'end' ? 'checked' : ''}><b>When my current tariff ends: 14 November 2026</b><div class="muted">No exit fees.</div></label></fieldset>`;
+    } else {
+      const t = TARIFFS.find((x) => x.id === w.tariff);
+      body = `<dl class="kv"><dt>New tariff</dt><dd>${esc(t.name)} (${esc(t.kind)})</dd><dt>Estimated annual cost</dt><dd>${money(t.est)}</dd>
+        <dt>GreenBoost</dt><dd>${w.greenboost ? 'Yes (+£4.00/month)' : 'No'}</dd><dt>Boiler &amp; heating cover</dt><dd>${w.boiler ? 'Yes (from £9/month)' : 'No'}</dd>
+        <dt>Start date</dt><dd>${w.start === 'asap' ? '1 October 2026 — exit fees £150' : '14 November 2026 — no exit fees'}</dd></dl>
+        <p class="muted">You have 14 days to change your mind after confirming.</p>`;
+    }
+    main.innerHTML = `<div class="muted"><a href="#/tariff">Tariff</a> › Compare and switch</div><h1>Compare and switch</h1>
+      <ol class="steps">${SW_STEPS.map((s, i) => `<li class="${i === w.step ? 'on' : i < w.step ? 'done' : ''}">${i + 1}. ${s}</li>`).join('')}</ol>
+      <div class="card">${body}${w.err ? `<div class="err" role="alert">${esc(w.err)}</div>` : ''}
+        <div class="actions">${w.step ? '<button type="button" class="btn" id="sw-back">Back</button>' : '<a class="btn" href="#/tariff">Cancel</a>'}
+          ${w.step < 3 ? '<button type="button" class="btn pri" id="sw-next">Continue</button>' : `<button type="button" class="btn link" id="sw-email">Email me this quote</button><button type="button" class="btn pri" id="sw-confirm" ${w.busy ? 'disabled' : ''}>${w.busy ? 'Confirming…' : 'Confirm switch'}</button>`}</div></div>`;
+  }
+  main.addEventListener('change', (e) => {
+    if (route() !== 'tariff/switch' || !st.sw) return;
+    const t = e.target;
+    if (t.name === 'sw-tariff') { st.sw.tariff = t.value; st.sw.err = ''; }
+    if (t.name === 'sw-start') st.sw.start = t.value;
+    if (t.id === 'sw-boiler') st.sw.boiler = t.checked;
+  });
+  main.addEventListener('click', async (e) => {
+    if (route() !== 'tariff/switch' || !st.sw) return;
+    const w = st.sw, t = e.target;
+    if (t.closest('#sw-green')) { w.greenboost = !w.greenboost; t.closest('#sw-green').setAttribute('aria-checked', String(w.greenboost)); return; }
+    if (t.closest('#sw-back')) { w.err = ''; w.step--; renderSwitch(); return; }
+    if (t.closest('#sw-next')) { if (w.step === 0 && !w.tariff) { w.err = 'Choose a tariff to continue.'; renderSwitch(); return; } w.err = ''; w.step++; renderSwitch(); return; }
+    if (t.closest('#sw-email')) { toast('We’ve emailed this quote to g.morgan-price@cwmail.co.uk.'); return; }
+    if (t.closest('#sw-confirm') && !w.busy) {
+      w.busy = true; renderSwitch();
+      await sleep(900);
+      const tf = TARIFFS.find((x) => x.id === w.tariff);
+      const start = w.start === 'asap' ? '2026-10-01' : '2026-11-14';
+      await post({ event: 'tariff_switch', tariff: tf.id, tariff_name: tf.name, start, greenboost: w.greenboost ? 'yes' : 'no', boiler_cover: w.boiler ? 'yes' : 'no', est_annual: tf.est.toFixed(2) });
+      st.switchBooked = { name: tf.name, start }; st.sw = null;
+      location.hash = '#/tariff'; toast(`Switch to ${tf.name} confirmed.`);
+    }
+  });
+
+  // ------------------------------------------------------------------ moving, help
+  function renderMoving() {
+    main.innerHTML = `<h1>Moving home</h1><p class="lead">Tell us at least 2 days before you move and we'll close your account or move it with you.</p>
+      <div class="card"><label class="f" for="mv-date" style="margin-top:0">Moving-out date</label><input type="date" id="mv-date" min="2026-09-26">
+        <label class="f" for="mv-pc">New address postcode</label><input type="text" id="mv-pc" style="width:180px">
+        <label class="chk"><input type="checkbox" id="mv-take"><span>I'd like Brightwater to supply my new home</span></label>
+        <div class="actions"><button type="button" class="btn pri" id="mv-go">Tell us you're moving</button></div></div>`;
+    q('#mv-go').addEventListener('click', async () => {
+      const d = q('#mv-date').value, pc = norm(q('#mv-pc').value).toUpperCase();
+      if (!d || !pc) return toast('Enter your moving date and new postcode.');
+      q('#mv-go').disabled = true; await sleep(800);
+      await post({ event: 'moving_home_request', move_date: d, new_postcode: pc, move_supply: q('#mv-take').checked ? 'yes' : 'no' });
+      toast('Thanks — we’ll be in touch about your move.'); location.hash = '#/overview';
+    });
+  }
+  function renderHelp() {
+    const faq = [['How do I read an Economy 7 meter?', 'Economy 7 meters show two rates. Rate 1 (day) is usually labelled “Normal” or “Day”; Rate 2 (night) is “Low” or “Night”. Press the button to cycle between them.'],
+      ['What happens when my fixed tariff ends?', 'We’ll write to you 49 days before it ends. If you don’t choose a new tariff, you’ll move to our variable Flex Tracker tariff with no exit fees.'],
+      ['Can I switch tariff early?', 'Yes, but exit fees apply if you leave a fixed tariff more than 49 days before it ends.'],
+      ['My meter has gone back to zero', 'Older meters roll over to 00000 after 99999. Submit your reading as normal — we’ll ask you to confirm it went round the clock.'],
+      ['How do I get a smart meter?', 'Smart meter installations are free. Call us to book an appointment.']];
+    main.innerHTML = `<h1>Help</h1><p class="lead">Answers to common questions, or get in touch.</p>${faq.map(([qq, a]) => `<details><summary>${esc(qq)}</summary><p>${esc(a)}</p></details>`).join('')}
+      <div class="card" style="margin-top:18px"><h2>Contact us</h2><p style="margin:0">Call 0330 808 2210 (Mon–Fri 8am–8pm, Sat 9am–1pm) or start a web chat.</p><div class="actions"><button type="button" class="btn" id="chat">Start web chat</button></div></div>`;
+    q('#chat').addEventListener('click', () => toast('All our advisers are busy. Please try again in a few minutes.'));
+  }
+  q('#logout').addEventListener('click', () => toast('You can’t log out of this demo account.'));
+  render();
+})();
+</script>
+</body>
+</html>

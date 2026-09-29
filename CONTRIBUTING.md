@@ -1,0 +1,26 @@
+# Contributing
+
+## Build and test
+
+```bash
+cargo build --release
+cargo test --workspace --locked
+```
+
+## The scrape eval
+
+`fab-bench scrape gen` generates the fixture sites and their gold records, and
+`fab-bench scrape run` runs the cases through the `fab` CLI and scores them.
+The run calls an LLM, so it needs `OPENROUTER_API_KEY` (in the environment or
+in `~/.config/fab/env`):
+
+```bash
+cargo run --release --bin fab-bench -- scrape gen
+cargo run --release --bin fab-bench -- scrape run
+```
+
+## Measured changes
+
+`bench/LOG.md` records every change that was measured, with its result. If
+your change affects speed, accuracy or cost, run the relevant suite and add an
+entry.

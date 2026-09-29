@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lensworth Optical · Prescription glasses online</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Gill Sans", "Gill Sans MT", Calibri, "Segoe UI", sans-serif; color: #222; background: #fcfbf8; }
+  a { color: #1d4e89; }
+  button, input, select { font: inherit; }
+  .promo { background: #1d4e89; color: #fff; text-align: center; font-size: 13px; padding: 6px; }
+  header { display: flex; align-items: center; gap: 24px; padding: 14px 34px; background: #fff; border-bottom: 1px solid #ebe7df; }
+  .logo { font-size: 22px; letter-spacing: .12em; text-transform: uppercase; color: #222; text-decoration: none; }
+  header nav a { color: #222; text-decoration: none; margin-right: 18px; font-size: 14px; }
+  header .sp { flex: 1; }
+  .cart-link { position: relative; text-decoration: none; color: #222; border: 1px solid #ddd6ca; border-radius: 999px; padding: 6px 14px; }
+  .cart-link b { background: #1d4e89; color: #fff; border-radius: 9px; padding: 0 6px; font-size: 12px; margin-left: 4px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 34px 60px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .frame { background: #fff; border: 1px solid #ebe7df; border-radius: 12px; padding: 14px; text-decoration: none; color: #222; display: block; }
+  .glasses { height: 90px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .glasses i { width: 52px; height: 40px; border: 5px solid var(--c, #6b4f3a); border-radius: 50%; display: block; }
+  .glasses i.sq { border-radius: 10px; }
+  .pdp { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
+  .hero-img { background: #fff; border: 1px solid #ebe7df; border-radius: 16px; height: 340px; display: flex; align-items: center; justify-content: center; }
+  .hero-img .glasses i { width: 120px; height: 92px; border-width: 9px; }
+  .swatches { display: flex; gap: 10px; margin: 8px 0 14px; }
+  .swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ccc; cursor: pointer; }
+  .swatch[aria-pressed=true] { box-shadow: 0 0 0 2px #1d4e89; }
+  .sizes { display: flex; gap: 8px; }
+  .sizes label { border: 1px solid #ddd6ca; border-radius: 8px; padding: 8px 12px; cursor: pointer; background: #fff; font-size: 14px; }
+  .sizes label.sel { border-color: #1d4e89; box-shadow: inset 0 0 0 1px #1d4e89; }
+  .btn { display: inline-block; border: 1px solid #cfc7b9; background: #fff; border-radius: 999px; padding: 10px 20px; cursor: pointer; color: #222; text-decoration: none; }
+  .btn.primary { background: #1d4e89; border-color: #1d4e89; color: #fff; }
+  .btn.sm { padding: 5px 12px; font-size: 13px; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .muted { color: #6f6a61; }
+  .wiz { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; }
+  .progress { display: flex; gap: 6px; margin-bottom: 18px; }
+  .progress span { flex: 1; border-top: 3px solid #e3ddd2; padding-top: 6px; font-size: 13px; color: #8a8378; }
+  .progress span.on { border-color: #1d4e89; color: #222; font-weight: 600; }
+  .rcards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rcard { border: 1.5px solid #e0d9cc; border-radius: 12px; padding: 14px 16px; background: #fff; cursor: pointer; display: block; }
+  .rcard.sel { border-color: #1d4e89; background: #f4f8fd; }
+  .rcard input { margin-right: 8px; }
+  .rcard .p { float: right; font-weight: 600; }
+  .rx { border-collapse: collapse; background: #fff; }
+  .rx th, .rx td { border: 1px solid #e3ddd2; padding: 8px 10px; text-align: center; font-size: 14px; }
+  .rx th { background: #f6f3ed; }
+  .rx select, .rx input { padding: 5px; border: 1px solid #cfc7b9; border-radius: 6px; width: 90px; }
+  .opt { display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1px solid #e0d9cc; border-radius: 10px; padding: 12px 14px; margin: 8px 0; }
+  .opt .p { margin-left: auto; white-space: nowrap; }
+  .opt .rec { background: #fff1c9; color: #7a5a00; font-size: 11px; border-radius: 9px; padding: 1px 8px; margin-left: 6px; }
+  .summary { background: #fff; border: 1px solid #ebe7df; border-radius: 12px; padding: 16px; position: sticky; top: 16px; }
+  .summary ul { list-style: none; padding: 0; margin: 8px 0; font-size: 14px; }
+  .summary li { display: flex; justify-content: space-between; padding: 3px 0; }
+  .summary .tot { font-weight: 700; border-top: 1px solid #ebe7df; padding-top: 8px; margin-top: 6px; }
+  .field { margin: 12px 0; }
+  .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .err { color: #a3261d; font-size: 14px; }
+  .offer { background: #fff7e0; border: 1px dashed #e0b84a; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin: 14px 0; }
+  .line { background: #fff; border: 1px solid #ebe7df; border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 90px 1fr auto; gap: 14px; margin-bottom: 12px; }
+  .line .glasses i { width: 34px; height: 26px; border-width: 4px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 18px; border-radius: 999px; z-index: 60; }
+  footer { border-top: 1px solid #ebe7df; padding: 28px 34px; font-size: 13px; color: #6f6a61; background: #fff; }
+  footer .cols { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  footer a { display: block; color: #6f6a61; text-decoration: none; margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="promo">Free shipping &amp; returns across the EU · 30-day fit guarantee</div>
+<header>
+  <a class="logo" href="#/">Lensworth</a>
+  <nav aria-label="Shop"><a href="#/">Eyeglasses</a><a href="#/">Sunglasses</a><a href="#/">Contacts</a><a href="#/tryon">Home try-on</a><a href="#/help">Help</a></nav>
+  <span class="sp"></span>
+  <a href="#/account">Account</a>
+  <a class="cart-link" href="#/cart" id="cart-link">Bag<b id="cart-n">0</b></a>
+</header>
+<main id="view"></main>
+<footer><div class="cols"><div><strong>Lensworth Optical</strong><br>Keizersgracht 212, Amsterdam</div><div><a href="#/help">Reading your prescription</a><a href="#/help">Measuring your PD</a><a href="#/help">Lens guide</a></div><div><a href="#/help">Shipping</a><a href="#/help">Returns</a><a href="#/help">Warranty</a></div><div><a href="#/help">Privacy</a><a href="#/help">Terms</a><a href="#/help">Contact</a></div></div></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toFixed(2);
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const FRAMES = [
+    { id: 'harlow', name: 'Harlow', kind: 'Round acetate', price: 129, round: true, colors: [['Tortoise', '#6b4f3a'], ['Black', '#1b1b1b'], ['Crystal Sage', '#9fb8a4'], ['Honey', '#c99a4b']] },
+    { id: 'harlow-ti', name: 'Harlow Titanium', kind: 'Round titanium', price: 179, round: true, colors: [['Gold', '#b8963e'], ['Gunmetal', '#55585c'], ['Silver', '#b9bcc0']] },
+    { id: 'otis', name: 'Otis', kind: 'Rectangle acetate', price: 109, round: false, colors: [['Black', '#1b1b1b'], ['Crystal Sage', '#9fb8a4'], ['Navy', '#22335a']] },
+    { id: 'marlowe', name: 'Marlowe', kind: 'Keyhole-bridge acetate', price: 149, round: true, colors: [['Tortoise', '#6b4f3a'], ['Rose', '#d8a0a6']] },
+    { id: 'edie', name: 'Edie', kind: 'Cat-eye acetate', price: 119, round: false, colors: [['Black', '#1b1b1b'], ['Tortoise', '#6b4f3a']] },
+    { id: 'fenwick', name: 'Fenwick', kind: 'Square acetate', price: 119, round: false, colors: [['Crystal', '#dfe6e3'], ['Tortoise', '#6b4f3a']] },
+    { id: 'juno', name: 'Juno', kind: 'Oversized round', price: 139, round: true, colors: [['Honey', '#c99a4b'], ['Black', '#1b1b1b']] },
+    { id: 'wren', name: 'Wren', kind: 'Petite round', price: 109, round: true, colors: [['Crystal Sage', '#9fb8a4'], ['Tortoise', '#6b4f3a']] },
+  ];
+  const SIZES = [['Narrow', '46-20-140'], ['Medium', '49-21-145'], ['Wide', '52-21-145']];
+  const USAGE = [['distance', 'Distance', 'Single vision for driving, TV and everyday wear.', 0], ['reading', 'Reading', 'Single vision for close-up tasks.', 0], ['progressive', 'Progressive', 'Seamless near, middle and far vision in one lens.', 150], ['non_prescription', 'Non-prescription', 'Clear lenses with no correction.', 0]];
+  const MATERIALS = [['1.50', 'Standard 1.50', 'Included', 0], ['1.60', 'Thin 1.60', 'Recommended up to ±4.00', 30], ['1.67', 'Ultra-thin 1.67', 'For strong prescriptions', 70], ['1.74', 'Thinnest 1.74', 'Our thinnest lens', 120]];
+  const COATS = [['blue_light', 'Blue-light filter', 'Recommended for screen use', 25, true], ['photochromic', 'Photochromic (darkens outdoors)', '', 60, false], ['warranty', 'Scratch shield + 2-year lens warranty', 'Popular', 15, true]];
+  const sgn = (v) => (v > 0 ? '+' : v < 0 ? '-' : '') + Math.abs(v).toFixed(2);
+  const range = (a, b, s) => { const o = []; for (let v = a; v <= b + 1e-9; v += s) o.push(Math.round(v * 100) / 100); return o; };
+  const SPH = range(-10, 6, 0.25).map(sgn).map((x) => (x === '0.00' ? '0.00' : x));
+  const CYL = range(-4, 4, 0.25).map(sgn);
+  const ADD = range(0.75, 3.5, 0.25).map(sgn);
+  const PDS = range(50, 75, 0.5).map((v) => (Number.isInteger(v) ? String(v) : v.toFixed(1)));
+  const SAVED = { od_sph: '-1.00', od_cyl: '-0.50', od_axis: '90', os_sph: '-1.00', os_cyl: '-0.50', os_axis: '80', add: '+1.75', pd: '62' };
+
+  const st = { frame: 'harlow', color: null, size: 'Medium', step: 1, usage: null, rxMode: 'enter', rx: { od_sph: '', od_cyl: '0.00', od_axis: '', os_sph: '', os_cyl: '0.00', os_axis: '', add: '', pd: '', dual: false, pd_r: '', pd_l: '' }, material: '1.50', coats: new Set(COATS.filter((c) => c[4]).map((c) => c[0])), err: '', cart: [], coupon: null, couponInput: '', couponErr: '', busy: false, done: null };
+  const F = () => FRAMES.find((f) => f.id === st.frame);
+  const glasses = (c, round) => `<div class="glasses" style="--c:${c}"><i class="${round ? '' : 'sq'}"></i><i class="${round ? '' : 'sq'}"></i></div>`;
+  function lensPrice() { const u = USAGE.find((x) => x[0] === st.usage); return (u ? u[3] : 0) + MATERIALS.find((m) => m[0] === st.material)[3] + COATS.filter((c) => st.coats.has(c[0])).reduce((a, c) => a + c[3], 0); }
+  const cartTotal = () => st.cart.reduce((a, l) => a + l.price, 0);
+
+  function shop() {
+    return `<h1 style="font-weight:400">Eyeglasses</h1><p class="muted">Every pair includes anti-reflective, UV-protective lenses.</p><div class="grid">${FRAMES.map((f) => `<a class="frame" href="#/frame/${f.id}">${glasses(f.colors[0][1], f.round)}<strong>${esc(f.name)}</strong><div class="muted" style="font-size:13px">${esc(f.kind)} · ${f.colors.length} colours</div><div>from €${f.price}</div></a>`).join('')}</div>`;
+  }
+  function pdp(id) {
+    const f = FRAMES.find((x) => x.id === id); if (!f) return '<p>Not found</p>';
+    if (st.frame !== id) { st.frame = id; st.color = null; }
+    const col = f.colors.find((c) => c[0] === st.color) || f.colors[0];
+    return `<p class="muted"><a href="#/">Eyeglasses</a> › ${esc(f.name)}</p><div class="pdp"><div class="hero-img">${glasses(col[1], f.round)}</div><div><h1 style="font-weight:400;margin:0">${esc(f.name)}</h1><p class="muted" style="margin:2px 0 10px">${esc(f.kind)} · from €${f.price} with basic lenses</p>
+      <div><strong>Colour:</strong> <span id="color-name">${esc(st.color || 'choose a colour')}</span></div><div class="swatches" role="group" aria-label="Colour">${f.colors.map(([n, c]) => `<button type="button" class="swatch" style="background:${c}" aria-label="${esc(n)}" aria-pressed="${st.color === n}" data-color="${esc(n)}"></button>`).join('')}</div>
+      <div style="margin-bottom:6px"><strong>Size</strong> <a href="#/help" style="font-size:13px">Size guide</a></div><div class="sizes" role="radiogroup" aria-label="Size">${SIZES.map(([n, m]) => `<label class="${st.size === n ? 'sel' : ''}"><input type="radio" name="size" value="${n}" ${st.size === n ? 'checked' : ''}> ${n} <span class="muted">${m}</span></label>`).join('')}</div>
+      <p class="err" role="alert">${esc(st.err)}</p><p><button class="btn primary" type="button" id="select-lenses">Select lenses</button> <button class="btn" type="button" id="tryon">Add to home try-on</button></p>
+      <details><summary>Frame details</summary><p class="muted">Italian acetate, 5-barrel hinges, adjustable nose pads on request.</p></details><details><summary>Shipping &amp; returns</summary><p class="muted">Made to order in 7–10 working days.</p></details></div></div>`;
+  }
+  function wizard() {
+    const f = F(); const labels = ['Usage', 'Prescription', 'Lenses', 'Review'];
+    let body = '';
+    if (st.step === 1) body = `<h1 style="font-weight:400">How will you use them?</h1><div class="rcards" role="radiogroup" aria-label="Lens usage">${USAGE.map(([k, n, d, p]) => `<label class="rcard ${st.usage === k ? 'sel' : ''}"><input type="radio" name="usage" value="${k}" ${st.usage === k ? 'checked' : ''}><strong>${n}</strong><span class="p">${p ? '+€' + p : 'Included'}</span><div class="muted" style="font-size:13px">${d}</div></label>`).join('')}</div>`;
+    else if (st.step === 2) {
+      const R = st.rx; const prog = st.usage === 'progressive';
+      const sel = (key, opts, ph) => `<select id="rx-${key}" data-rx="${key}" aria-label="${key.replace('_', ' ').toUpperCase()}"><option value="">${ph}</option>${opts.map((o) => `<option ${R[key] === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+      body = `<h1 style="font-weight:400">Your prescription</h1><div class="rcards" role="radiogroup" aria-label="Prescription method" style="grid-template-columns:repeat(3,1fr)">${[['enter', 'Enter it now'], ['saved', 'Use my saved prescription'], ['later', 'Send it later']].map(([k, l]) => `<label class="rcard ${st.rxMode === k ? 'sel' : ''}"><input type="radio" name="rxmode" value="${k}" ${st.rxMode === k ? 'checked' : ''}>${l}${k === 'saved' ? '<div class="muted" style="font-size:12px">Dr. Aoife Keane · 12 Mar 2026</div>' : ''}</label>`).join('')}</div>
+        ${st.rxMode === 'enter' ? `<table class="rx" style="margin-top:16px"><thead><tr><th></th><th>SPH</th><th>CYL</th><th>AXIS</th>${prog ? '<th>ADD</th>' : ''}</tr></thead><tbody>
+          <tr><th>OD (right eye)</th><td>${sel('od_sph', SPH, 'SPH')}</td><td>${sel('od_cyl', CYL, 'CYL')}</td><td><input type="text" inputmode="numeric" id="rx-od_axis" data-rx="od_axis" value="${esc(R.od_axis)}" aria-label="OD AXIS" placeholder="0–180"></td>${prog ? `<td rowspan="2">${sel('add', ADD, 'ADD')}</td>` : ''}</tr>
+          <tr><th>OS (left eye)</th><td>${sel('os_sph', SPH, 'SPH')}</td><td>${sel('os_cyl', CYL, 'CYL')}</td><td><input type="text" inputmode="numeric" id="rx-os_axis" data-rx="os_axis" value="${esc(R.os_axis)}" aria-label="OS AXIS" placeholder="0–180"></td></tr></tbody></table>
+          <div class="field" style="margin-top:14px"><label for="rx-pd">Pupillary distance (PD)</label>${R.dual ? `Right ${sel('pd_r', PDS.map((x) => String(x / 2)), 'Right')} Left ${sel('pd_l', PDS.map((x) => String(x / 2)), 'Left')}` : sel('pd', PDS, 'PD')} <label style="display:inline;font-weight:400;margin-left:10px"><input type="checkbox" id="rx-dual" ${R.dual ? 'checked' : ''}> I have two PD numbers</label></div>` : st.rxMode === 'saved' ? `<div class="opt"><div><strong>Saved prescription · 12 Mar 2026</strong><div class="muted" style="font-size:13px">OD ${SAVED.od_sph} / ${SAVED.od_cyl} × ${SAVED.od_axis} · OS ${SAVED.os_sph} / ${SAVED.os_cyl} × ${SAVED.os_axis} · ADD ${SAVED.add} · PD ${SAVED.pd}</div></div></div>` : `<p class="muted">We'll email you after checkout to collect your prescription. Your order won't be made until we have it.</p>`}`;
+    } else if (st.step === 3) {
+      body = `<h1 style="font-weight:400">Choose your lenses</h1><h3>Lens thickness</h3><div class="rcards" role="radiogroup" aria-label="Lens material">${MATERIALS.map(([k, n, d, p]) => `<label class="rcard ${st.material === k ? 'sel' : ''}"><input type="radio" name="material" value="${k}" ${st.material === k ? 'checked' : ''}><strong>${n}</strong><span class="p">${p ? '+€' + p : 'Included'}</span><div class="muted" style="font-size:13px">${d}</div></label>`).join('')}</div>
+        <h3>Coatings</h3><label class="opt"><input type="checkbox" checked disabled><div><strong>Anti-reflective + UV400</strong><div class="muted" style="font-size:13px">Always included</div></div><span class="p">Included</span></label>
+        ${COATS.map(([k, n, note, p]) => `<label class="opt"><input type="checkbox" data-coat="${k}" ${st.coats.has(k) ? 'checked' : ''}><div><strong>${n}</strong>${note ? `<span class="rec">${note}</span>` : ''}</div><span class="p">+€${p}</span></label>`).join('')}`;
+    } else {
+      const u = USAGE.find((x) => x[0] === st.usage);
+      body = `<h1 style="font-weight:400">Review</h1><table class="rx"><tbody><tr><th>Frame</th><td>${esc(f.name)} · ${esc(st.color)} · ${esc(st.size)}</td></tr><tr><th>Usage</th><td>${u[1]}</td></tr>${st.usage !== 'non_prescription' ? `<tr><th>Prescription</th><td>${st.rxMode === 'enter' ? `OD ${st.rx.od_sph} / ${st.rx.od_cyl} × ${st.rx.od_axis || '—'} · OS ${st.rx.os_sph} / ${st.rx.os_cyl} × ${st.rx.os_axis || '—'}${st.usage === 'progressive' ? ' · ADD ' + st.rx.add : ''} · PD ${st.rx.dual ? st.rx.pd_r + '/' + st.rx.pd_l : st.rx.pd}` : st.rxMode === 'saved' ? 'Saved prescription (12 Mar 2026)' : 'Sending later'}</td></tr>` : ''}<tr><th>Lenses</th><td>${MATERIALS.find((m) => m[0] === st.material)[1]}; anti-reflective${COATS.filter((c) => st.coats.has(c[0])).map((c) => '; ' + c[1]).join('')}</td></tr></tbody></table>`;
+    }
+    return `<p class="muted"><a href="#/frame/${f.id}">${esc(f.name)}</a> › Lenses</p><div class="progress">${labels.map((l, i) => `<span class="${st.step === i + 1 ? 'on' : ''}">${i + 1}. ${l}</span>`).join('')}</div><div class="wiz"><section>${body}<p class="err" role="alert">${esc(st.err)}</p><p style="margin-top:16px">${st.step > 1 ? '<button class="btn" type="button" id="w-back">Back</button> ' : ''}${st.step < 4 ? '<button class="btn primary" type="button" id="w-next">Continue</button>' : '<button class="btn primary" type="button" id="add-cart">Add to bag</button>'}</p></section>
+      <aside class="summary" aria-label="Price summary"><strong>${esc(f.name)}</strong> <span class="muted">${esc(st.color || '')} · ${esc(st.size)}</span><ul><li><span>Frame</span><span>${eur(f.price)}</span></li><li><span>Lenses</span><span>${eur(lensPrice())}</span></li><li class="tot"><span>Subtotal</span><span>${eur(f.price + lensPrice())}</span></li></ul></aside></div>`;
+  }
+  function cart() {
+    if (st.done) return `<h1 style="font-weight:400">Thank you — order ${esc(st.done)} is confirmed</h1><p>We've emailed your receipt to clodagh.brennan@eircom.net.</p><p><a class="btn" href="#/">Keep shopping</a></p>`;
+    const sub = cartTotal(); const disc = st.coupon ? 40 : 0;
+    return `<h1 style="font-weight:400">Your bag</h1>${st.cart.length ? st.cart.map((l, i) => `<div class="line">${glasses(FRAMES.find((f) => f.name === l.frame).colors.find((c) => c[0] === l.color)[1], true)}<div><strong>${esc(l.frame)}</strong> · ${esc(l.color)} · ${esc(l.size)}<div class="muted" style="font-size:13px">${esc(l.desc)}</div><button class="btn sm" type="button" data-rm="${i}">Remove</button></div><div>${eur(l.price)}</div></div>`).join('') : '<p class="muted">Your bag is empty.</p>'}
+      ${st.cart.length ? `${st.coupon ? '' : `<div class="offer"><div><strong>You have a coupon: SPRING40</strong><div class="muted" style="font-size:13px">€40 off one order · expires 31 October 2026</div></div><button class="btn sm" type="button" id="apply-offer" style="margin-left:auto">Apply SPRING40</button></div>`}
+      <div class="field"><label for="coupon">Promo code</label><input type="text" id="coupon" value="${esc(st.couponInput)}" style="padding:8px;border:1px solid #cfc7b9;border-radius:8px"> <button class="btn sm" type="button" id="apply-code">Apply</button> ${st.coupon ? `<span>Applied: <strong>${st.coupon}</strong> <button class="btn sm" type="button" id="rm-coupon">Remove</button></span>` : ''}<div class="err">${esc(st.couponErr)}</div></div>
+      <div class="summary" style="position:static;max-width:420px"><ul><li><span>Subtotal</span><span>${eur(sub)}</span></li>${disc ? `<li><span>Coupon ${st.coupon}</span><span>−${eur(disc)}</span></li>` : ''}<li><span>Shipping</span><span>Free</span></li><li class="tot"><span>Total</span><span>${eur(sub - disc)}</span></li></ul>
+      <p class="muted" style="font-size:13px">Ship to: Clodagh Brennan, 14 Priory Road, Dublin 6W · Pay with Mastercard •••• 8830</p><button class="btn primary" type="button" id="place" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Placing order…' : 'Place order · ' + eur(sub - disc)}</button></div>` : ''}`;
+  }
+  function route() {
+    const p = (location.hash || '#/').slice(2).split('/');
+    const v = $('#view');
+    $('#cart-n').textContent = st.cart.length;
+    if (p[0] === 'frame') v.innerHTML = pdp(p[1]);
+    else if (p[0] === 'lenses') v.innerHTML = st.color ? wizard() : pdp(st.frame);
+    else if (p[0] === 'cart') v.innerHTML = cart();
+    else if (p[0] === 'account') v.innerHTML = `<h1 style="font-weight:400">Account</h1><p>Orders: LW-40981 (Otis, delivered 3 Apr 2026)</p><p>Saved prescription: 12 Mar 2026 (Dr. Aoife Keane)</p>`;
+    else if (p[0] === 'help' || p[0] === 'tryon') v.innerHTML = `<h1 style="font-weight:400">Help</h1><p class="muted">Our opticians answer chat questions 9:00–18:00 CET.</p>`;
+    else v.innerHTML = shop();
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  function validate() {
+    if (st.step === 1 && !st.usage) return 'Choose how you will use your glasses.';
+    if (st.step === 2 && st.rxMode === 'enter') {
+      const R = st.rx;
+      for (const e of ['od', 'os']) {
+        if (!R[e + '_sph']) return `Choose the SPH for your ${e === 'od' ? 'right' : 'left'} eye (OD/OS).`;
+        const cyl = parseFloat(R[e + '_cyl'] || '0'); const ax = String(R[e + '_axis']).trim();
+        if (cyl !== 0) { if (!/^\d{1,3}$/.test(ax) || +ax < 1 || +ax > 180) return `Enter an AXIS between 1 and 180 for your ${e === 'od' ? 'right' : 'left'} eye — it's required when CYL isn't 0.00.`; }
+        else if (ax && (!/^\d{1,3}$/.test(ax) || +ax > 180)) return 'AXIS must be a number between 0 and 180.';
+      }
+      if (st.usage === 'progressive' && !R.add) return 'Progressive lenses need an ADD value.';
+      if (R.dual ? !(R.pd_r && R.pd_l) : !R.pd) return 'Choose your pupillary distance (PD).';
+    }
+    return '';
+  }
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const sw = t.closest('[data-color]'); if (sw) { st.color = sw.dataset.color; st.err = ''; rerender(); return; }
+    if (t.closest('#select-lenses')) { if (!st.color) { st.err = 'Choose a colour first.'; rerender(); return; } st.step = 1; st.err = ''; location.hash = '#/lenses'; return; }
+    if (t.closest('#tryon')) { toast('Home try-on is available for Ireland and the Netherlands only.'); return; }
+    if (t.closest('#w-next')) { const m = validate(); st.err = m; if (!m) st.step = st.usage === 'non_prescription' && st.step === 1 ? 3 : st.step + 1; rerender(); return; }
+    if (t.closest('#w-back')) { st.err = ''; st.step = st.usage === 'non_prescription' && st.step === 3 ? 1 : st.step - 1; rerender(); return; }
+    if (t.closest('#add-cart')) {
+      const f = F(); const R = st.rxMode === 'saved' ? SAVED : st.rx;
+      const np = st.usage === 'non_prescription';
+      const axis = (a) => (String(a).trim() === '' ? '' : String(parseInt(a, 10)));
+      st.cart.push({ frame: f.name, color: st.color, size: st.size, usage: st.usage, rxMode: np ? 'none' : st.rxMode, material: st.material, coats: [...st.coats],
+        rx: np || st.rxMode === 'later' ? {} : { od_sph: R.od_sph, od_cyl: R.od_cyl, od_axis: axis(R.od_axis), os_sph: R.os_sph, os_cyl: R.os_cyl, os_axis: axis(R.os_axis), add: st.usage === 'progressive' ? R.add : '', pd: R.dual ? R.pd_r + '/' + R.pd_l : R.pd },
+        price: f.price + lensPrice(), desc: `${USAGE.find((u) => u[0] === st.usage)[1]} · ${MATERIALS.find((m) => m[0] === st.material)[1]}${COATS.filter((c) => st.coats.has(c[0])).map((c) => ' · ' + c[1]).join('')}` });
+      await later(400); await rec({ event: 'cart_add', frame: f.name, color: st.color });
+      location.hash = '#/cart'; toast('Added to your bag'); return;
+    }
+    const rm = t.closest('[data-rm]'); if (rm) { const l = st.cart.splice(+rm.dataset.rm, 1)[0]; await later(300); await rec({ event: 'cart_remove', frame: l.frame }); rerender(); return; }
+    if (t.closest('#apply-offer') || t.closest('#apply-code')) {
+      const code = t.closest('#apply-offer') ? 'SPRING40' : ($('#coupon').value || '').trim().toUpperCase();
+      st.couponInput = code;
+      await later(500);
+      if (code !== 'SPRING40') { st.couponErr = code ? `“${code}” isn't a valid code.` : 'Enter a code.'; rerender(); return; }
+      await rec({ event: 'coupon_apply', code }); st.coupon = code; st.couponErr = ''; rerender(); toast('Coupon applied: €40 off'); return;
+    }
+    if (t.closest('#rm-coupon')) { await later(300); await rec({ event: 'coupon_remove', code: st.coupon }); st.coupon = null; st.couponInput = ''; rerender(); return; }
+    if (t.closest('#place')) {
+      if (st.busy || !st.cart.length) return; st.busy = true; rerender();
+      await later(1000);
+      const disc = st.coupon ? 40 : 0; const order = 'LW-' + (51200 + st.cart.length * 7);
+      for (const l of st.cart) {
+        await rec({ event: 'order_place', order, frame: l.frame, color: l.color, size: l.size, usage: l.usage, rx_source: l.rxMode,
+          od_sph: l.rx.od_sph || '', od_cyl: l.rx.od_cyl || '', od_axis: l.rx.od_axis || '', os_sph: l.rx.os_sph || '', os_cyl: l.rx.os_cyl || '', os_axis: l.rx.os_axis || '', add: l.rx.add || '', pd: l.rx.pd || '',
+          material: l.material, blue_light: l.coats.includes('blue_light') ? 'yes' : 'no', photochromic: l.coats.includes('photochromic') ? 'yes' : 'no', warranty: l.coats.includes('warranty') ? 'yes' : 'no',
+          coupon: st.coupon || 'none', total: (cartTotal() - disc).toFixed(2) });
+      }
+      st.busy = false; st.done = order; st.cart = []; st.coupon = null; rerender(); toast('Order placed'); return;
+    }
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'size') { st.size = t.value; rerender(); }
+    if (t.name === 'usage') { st.usage = t.value; st.err = ''; rerender(); }
+    if (t.name === 'rxmode') { st.rxMode = t.value; st.err = ''; rerender(); }
+    if (t.dataset.rx) { st.rx[t.dataset.rx] = t.value; if (t.tagName === 'SELECT') rerender(); }
+    if (t.id === 'rx-dual') { st.rx.dual = t.checked; rerender(); }
+    if (t.name === 'material') { st.material = t.value; rerender(); }
+    if (t.dataset.coat) { t.checked ? st.coats.add(t.dataset.coat) : st.coats.delete(t.dataset.coat); rerender(); }
+  });
+  view.addEventListener('input', (e) => { const t = e.target; if (t.dataset.rx && t.tagName === 'INPUT') st.rx[t.dataset.rx] = t.value; if (t.id === 'coupon') st.couponInput = t.value; });
+  route();
+})();
+</script>
+</body>
+</html>

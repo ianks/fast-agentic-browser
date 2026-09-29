@@ -1,0 +1,83 @@
+{"category": "Bakeries", "name": "Matsumoto Bakery", "phone": "+47 22 98 15 38", "website": null}
+{"category": "Bakeries", "name": "McCarthy Bakery", "phone": "+47 95 96 62 56", "website": null}
+{"category": "Bakeries", "name": "Ritchie Bakery", "phone": "+47 74 35 86 86", "website": null}
+{"category": "Bakeries", "name": "Torvalds Bakery", "phone": "+47 42 57 18 47", "website": null}
+{"category": "Bakeries", "name": "Liskov Bakery", "phone": "+47 92 23 55 81", "website": "https://hopper-4.example.no"}
+{"category": "Bakeries", "name": "Rossum Bakery", "phone": "+47 67 22 58 86", "website": "https://perlman-5.example.no"}
+{"category": "Bakeries", "name": "Rossum Bakery", "phone": "+47 48 71 40 60", "website": "https://mccarthy-6.example.no"}
+{"category": "Bakeries", "name": "Lerdorf Bakery", "phone": "+47 97 62 40 64", "website": "https://wirth-7.example.no"}
+{"category": "Bakeries", "name": "McCarthy Bakery", "phone": "+47 24 66 48 77", "website": null}
+{"category": "Bakeries", "name": "Allen Bakery", "phone": "+47 58 70 90 15", "website": null}
+{"category": "Bakeries", "name": "Wirth Bakery", "phone": "+47 52 59 74 84", "website": "https://berners-lee-10.example.no"}
+{"category": "Bakeries", "name": "Thompson Bakery", "phone": "+47 62 15 74 43", "website": "https://hopper-11.example.no"}
+{"category": "Bakeries", "name": "Gosling Bakery", "phone": "+47 31 82 93 38", "website": "https://stroustrup-12.example.no"}
+{"category": "Bakeries", "name": "Hickey Bakery", "phone": "+47 27 73 15 43", "website": null}
+{"category": "Bakeries", "name": "Eich Bakery", "phone": "+47 49 11 88 48", "website": "https://ritchie-14.example.no"}
+{"category": "Bakeries", "name": "Eich Bakery", "phone": "+47 48 19 66 37", "website": "https://dijkstra-15.example.no"}
+{"category": "Bakeries", "name": "Torvalds Bakery", "phone": "+47 93 55 76 29", "website": "https://borg-16.example.no"}
+{"category": "Bakeries", "name": "Dijkstra Bakery", "phone": "+47 80 70 58 41", "website": "https://lamarr-17.example.no"}
+{"category": "Bakeries", "name": "Wall Bakery", "phone": "+47 95 90 94 76", "website": null}
+{"category": "Bakeries", "name": "Liskov Bakery", "phone": "+47 83 42 90 48", "website": "https://knuth-19.example.no"}
+{"category": "Bike shops", "name": "Gosling Cycles", "phone": "+47 70 34 64 53", "website": "https://ritchie-0.example.no"}
+{"category": "Bike shops", "name": "Allen Cycles", "phone": "+47 55 22 19 73", "website": null}
+{"category": "Bike shops", "name": "Wirth Cycles", "phone": "+47 85 43 73 25", "website": null}
+{"category": "Bike shops", "name": "Lamarr Cycles", "phone": "+47 36 67 92 74", "website": null}
+{"category": "Bike shops", "name": "Borg Cycles", "phone": "+47 34 11 28 68", "website": "https://dijkstra-4.example.no"}
+{"category": "Bike shops", "name": "Wirth Cycles", "phone": "+47 61 91 76 48", "website": null}
+{"category": "Bike shops", "name": "Perlman Cycles", "phone": "+47 50 32 54 98", "website": null}
+{"category": "Bike shops", "name": "Lovelace Cycles", "phone": "+47 65 98 18 97", "website": "https://turing-7.example.no"}
+{"category": "Bike shops", "name": "Sammet Cycles", "phone": "+47 49 25 99 35", "website": null}
+{"category": "Bookstores", "name": "McCarthy Books", "phone": "+47 30 25 91 18", "website": null}
+{"category": "Bookstores", "name": "Perlman Books", "phone": "+47 41 61 82 74", "website": null}
+{"category": "Bookstores", "name": "Liskov Books", "phone": "+47 93 30 85 19", "website": null}
+{"category": "Bookstores", "name": "Lerdorf Books", "phone": "+47 65 20 61 21", "website": null}
+{"category": "Bookstores", "name": "Knuth Books", "phone": "+47 46 26 84 49", "website": "https://hickey-4.example.no"}
+{"category": "Bookstores", "name": "Perlman Books", "phone": "+47 61 55 47 95", "website": null}
+{"category": "Bookstores", "name": "Johnson Books", "phone": "+47 62 98 91 30", "website": null}
+{"category": "Cafés", "name": "Knuth Café", "phone": "+47 32 49 69 53", "website": null}
+{"category": "Cafés", "name": "Berners-Lee Café", "phone": "+47 97 65 51 82", "website": "https://thompson-1.example.no"}
+{"category": "Cafés", "name": "Liskov Café", "phone": "+47 36 15 31 93", "website": "https://rossum-2.example.no"}
+{"category": "Cafés", "name": "Ritchie Café", "phone": "+47 31 91 63 23", "website": null}
+{"category": "Cafés", "name": "Wilson Café", "phone": "+47 72 63 37 33", "website": null}
+{"category": "Cafés", "name": "Turing Café", "phone": "+47 39 47 94 26", "website": null}
+{"category": "Cafés", "name": "Ritchie Café", "phone": "+47 27 22 65 54", "website": "https://wall-6.example.no"}
+{"category": "Cafés", "name": "Dijkstra Café", "phone": "+47 68 29 86 79", "website": "https://matsumoto-7.example.no"}
+{"category": "Cafés", "name": "Borg Café", "phone": "+47 79 60 60 43", "website": null}
+{"category": "Florists", "name": "Clarke Flowers", "phone": "+47 85 73 58 54", "website": null}
+{"category": "Florists", "name": "Lamarr Flowers", "phone": "+47 84 44 62 55", "website": "https://turing-1.example.no"}
+{"category": "Florists", "name": "Perlman Flowers", "phone": "+47 88 43 18 39", "website": null}
+{"category": "Florists", "name": "Liskov Flowers", "phone": "+47 48 91 34 74", "website": "https://clarke-3.example.no"}
+{"category": "Florists", "name": "Eich Flowers", "phone": "+47 23 54 71 17", "website": "https://berners-lee-4.example.no"}
+{"category": "Florists", "name": "Johnson Flowers", "phone": "+47 84 17 85 88", "website": "https://lovelace-5.example.no"}
+{"category": "Florists", "name": "Liskov Flowers", "phone": "+47 43 27 85 96", "website": "https://borg-6.example.no"}
+{"category": "Florists", "name": "Rossum Flowers", "phone": "+47 73 81 33 48", "website": "https://liskov-7.example.no"}
+{"category": "Florists", "name": "Berners-Lee Flowers", "phone": "+47 42 60 55 43", "website": "https://thompson-8.example.no"}
+{"category": "Florists", "name": "Perlman Flowers", "phone": "+47 70 81 54 22", "website": "https://hamilton-9.example.no"}
+{"category": "Florists", "name": "Liskov Flowers", "phone": "+47 63 75 90 54", "website": null}
+{"category": "Florists", "name": "Liskov Flowers", "phone": "+47 60 62 83 13", "website": null}
+{"category": "Florists", "name": "Lerdorf Flowers", "phone": "+47 36 68 96 26", "website": "https://wirth-12.example.no"}
+{"category": "Florists", "name": "Sammet Flowers", "phone": "+47 65 41 18 84", "website": "https://sammet-13.example.no"}
+{"category": "Florists", "name": "Ritchie Flowers", "phone": "+47 40 61 93 26", "website": null}
+{"category": "Florists", "name": "Ritchie Flowers", "phone": "+47 43 68 68 53", "website": "https://matsumoto-15.example.no"}
+{"category": "Florists", "name": "Thompson Flowers", "phone": "+47 81 34 87 15", "website": null}
+{"category": "Florists", "name": "Wall Flowers", "phone": "+47 40 12 61 60", "website": null}
+{"category": "Florists", "name": "Turing Flowers", "phone": "+47 61 84 89 16", "website": "https://lovelace-18.example.no"}
+{"category": "Florists", "name": "Matsumoto Flowers", "phone": "+47 93 35 62 78", "website": "https://perlman-19.example.no"}
+{"category": "Florists", "name": "Berners-Lee Flowers", "phone": "+47 68 16 55 89", "website": "https://gosling-20.example.no"}
+{"category": "Florists", "name": "Berners-Lee Flowers", "phone": "+47 31 39 46 69", "website": "https://berners-lee-21.example.no"}
+{"category": "Florists", "name": "Dijkstra Flowers", "phone": "+47 83 48 90 64", "website": "https://thompson-22.example.no"}
+{"category": "Plumbers", "name": "Torvalds Plumbing", "phone": "+47 50 95 93 51", "website": "https://mccarthy-0.example.no"}
+{"category": "Plumbers", "name": "Gosling Plumbing", "phone": "+47 88 37 27 17", "website": null}
+{"category": "Plumbers", "name": "Allen Plumbing", "phone": "+47 61 53 97 70", "website": "https://lerdorf-2.example.no"}
+{"category": "Plumbers", "name": "Matsumoto Plumbing", "phone": "+47 76 17 82 19", "website": "https://allen-3.example.no"}
+{"category": "Plumbers", "name": "Knuth Plumbing", "phone": "+47 73 54 56 30", "website": null}
+{"category": "Plumbers", "name": "Hopper Plumbing", "phone": "+47 80 89 74 67", "website": "https://mccarthy-5.example.no"}
+{"category": "Plumbers", "name": "Allen Plumbing", "phone": "+47 44 39 19 47", "website": "https://allen-6.example.no"}
+{"category": "Plumbers", "name": "Turing Plumbing", "phone": "+47 45 89 31 96", "website": "https://lovelace-7.example.no"}
+{"category": "Plumbers", "name": "Berners-Lee Plumbing", "phone": "+47 29 29 51 33", "website": null}
+{"category": "Plumbers", "name": "Perlman Plumbing", "phone": "+47 31 37 94 26", "website": "https://wirth-9.example.no"}
+{"category": "Plumbers", "name": "Wall Plumbing", "phone": "+47 69 35 13 44", "website": null}
+{"category": "Plumbers", "name": "Matsumoto Plumbing", "phone": "+47 73 64 81 71", "website": "https://borg-11.example.no"}
+{"category": "Plumbers", "name": "Lovelace Plumbing", "phone": "+47 78 84 12 68", "website": "https://lovelace-12.example.no"}
+{"category": "Plumbers", "name": "Ritchie Plumbing", "phone": "+47 98 93 67 64", "website": null}
+{"category": "Plumbers", "name": "Stroustrup Plumbing", "phone": "+47 36 97 29 18", "website": "https://turing-14.example.no"}

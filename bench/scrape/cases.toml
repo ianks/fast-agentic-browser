@@ -1,0 +1,136 @@
+# Scraping eval: a plain-English prompt per case, the page it starts on, and the
+# exact records a correct scrape streams (gold/<name>.jsonl, from `fab-bench scrape gen`).
+# `key` matches records; every gold field must equal the output exactly
+# (whitespace-normalized; null = the field is missing on the site).
+
+[[case]]
+name = "jobs_list"
+url = "fixture:scrape/jobs/page-1.html"
+key = "title+company+location"
+prompt = "Go through every page of job listings and give me the title, company and location of each job."
+
+[[case]]
+name = "jobs_first2"
+url = "fixture:scrape/jobs/page-1.html"
+key = "title+company"
+prompt = "title and company of the jobs on the first 2 pages"
+
+[[case]]
+name = "jobs_details"
+url = "fixture:scrape/jobs/page-1.html"
+key = "title+company+location"
+prompt = "For every job listing on all pages, open it and get the title, company, location, salary and employment type."
+
+[[case]]
+name = "jobs_oslo"
+url = "fixture:scrape/jobs/page-1.html"
+key = "title+company"
+prompt = "I want all the jobs located in Oslo (check every page): title, company, and the salary from the job's page."
+
+[[case]]
+name = "shop_details"
+url = "fixture:scrape/shop/index.html"
+key = "name+price"
+prompt = "Scrape every product in the catalog except sponsored ones: name, price, rating, and the SKU and availability from each product page."
+
+[[case]]
+name = "shop_sale"
+url = "fixture:scrape/shop/index.html"
+key = "name+price"
+prompt = "list all non-sponsored products that are on sale, with name, current price and old price"
+
+[[case]]
+name = "forum_list"
+url = "fixture:scrape/forum/news-1.html"
+key = "title+author"
+prompt = "Get the title, points and author of every story on the first 3 pages."
+
+[[case]]
+name = "forum_comments"
+url = "fixture:scrape/forum/news-1.html"
+key = "title+author"
+prompt = "For each story on the first three pages, give me title, points, author, and the username of the first commenter on its comments page (null if there are no comments)."
+
+[[case]]
+name = "directory_all"
+url = "fixture:scrape/directory/index.html"
+key = "category+name"
+prompt = "For every category in the directory, go through all of its pages and open each business; give me category, name, phone and website."
+
+[[case]]
+name = "spa_details"
+url = "fixture:scrape/spa/index.html"
+key = "address+price"
+prompt = "Open every home listing on all pages and get the address, asking price, living area and agent."
+
+[[case]]
+name = "feed_all"
+url = "fixture:scrape/feed/index.html"
+key = "author+text"
+prompt = "scroll through the whole timeline and export every post's author, text and number of likes"
+
+[[case]]
+name = "invoices_overdue"
+url = "fixture:scrape/invoices/p1.html"
+key = "invoice"
+prompt = "Find every overdue invoice across all pages: invoice number, customer, amount and due date."
+
+# ---- held-out: new sites and prompts, not used for tuning ----
+
+[[case]]
+name = "recipes_all"
+set = "heldout"
+url = "fixture:scrape/recipes/index.html"
+key = "title+author"
+prompt = "Collect every recipe on the site: title, author, prep time and the number of servings (from the recipe page)."
+
+[[case]]
+name = "issues_bugs"
+set = "heldout"
+url = "fixture:scrape/issues/page1.html"
+key = "number"
+prompt = "list all issues labeled bug with their number, title and author"
+
+[[case]]
+name = "news_sections"
+set = "heldout"
+url = "fixture:scrape/news/index.html"
+key = "section+headline"
+prompt = "For each section, get the first 5 articles: section name, headline, and the byline and publish date from the article page."
+
+[[case]]
+name = "deals_under50"
+set = "heldout"
+url = "fixture:scrape/deals/1.html"
+key = "name+price"
+prompt = "I need the first 20 products that cost less than $50, with name and price."
+
+[[case]]
+name = "events_3months"
+set = "heldout"
+url = "fixture:scrape/events/index.html"
+key = "date+title"
+prompt = "Export the events for this month and the next two months: date, title and venue."
+
+# ---- scale ----
+
+[[case]]
+name = "bigcat_all"
+set = "scale"
+url = "fixture:scrape/bigcat/p1.html"
+key = "name"
+prompt = "Scrape the whole catalog: name, price, and the manufacturer and weight from each product's page."
+
+[[case]]
+name = "threads_top3"
+set = "regression"
+url = "fixture:throttled/scrape/threads/index.html"
+key = "author+body"
+prompt = "every story on the front page: the top 3 upvoted replies with author and body"
+
+[[case]]
+name = "csr_details"
+set = "regression"
+url = "fixture:scrape/csr/index.html"
+key = "name"
+prompt = "For each product, open its page and get the name, finish and how many are in stock."

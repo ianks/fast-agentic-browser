@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ticket</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { font-size: 14px; }
+  .t { display: grid; grid-template-columns: 1fr 190px; gap: 14px; padding: 12px; }
+  .msg { border: 1px solid #e7e5e4; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; background: #fafaf9; }
+  .msg .who { font-weight: 600; }
+  .props label { margin-top: 10px; font-size: 13px; }
+  .props select { width: 180px; }
+  .mb { position: relative; }
+  .mb > button { width: 180px; text-align: left; }
+  [role=menu] { position: absolute; top: 100%; left: 0; width: 220px; background: #fff; border: 1px solid #d6d3d1; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12); z-index: 5; padding: 4px 0; max-height: 300px; overflow: auto; }
+  [role=menu] .grp { font-size: 11px; color: #78716c; padding: 6px 10px 2px; text-transform: uppercase; }
+  [role=menuitemradio] { display: block; width: 100%; text-align: left; border: 0; background: none; border-radius: 0; padding: 6px 12px; }
+  [role=menuitemradio][aria-checked=true] { background: #ffedd5; }
+  textarea { width: 100%; box-sizing: border-box; height: 70px; }
+  .submit { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(() => {
+  const D = parent.DESK;
+  const id = new URLSearchParams(location.search).get('id');
+  const t = D && D.get(id);
+  const root = q('#root');
+  if (!t) { root.innerHTML = '<p style="padding:12px">Ticket not found.</p>'; return; }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const draft = { assignee: t.assignee, team: t.team, priority: t.priority };
+  const MACROS = ['Request more info', 'Close as duplicate', 'Refund approved — notify customer'];
+  function render() {
+    root.innerHTML = `<div class="t"><div>
+      <h2 style="margin:0 0 4px">${esc(t.subject)}</h2><div class="muted">${t.id} · ${esc(t.org)} · ${esc(t.requester)} · ${t.status}</div>
+      <div style="margin:8px 0">${t.tags.map((g) => `<span style="font-size:11px;border:1px solid #e7e5e4;border-radius:4px;padding:0 5px;margin-right:3px">${g}</span>`).join('')}</div>
+      <div class="msg"><div class="who">${esc(t.requester)} <span class="muted">· ${t.updated}</span></div><div>Hi, could someone look at this please? Details: “${esc(t.subject)}”. Thanks, ${esc(t.requester.split(' ')[0])}</div></div>
+      <label for="reply">Reply</label><textarea id="reply" placeholder="Write a public reply or internal note"></textarea>
+      <label style="font-weight:400;display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="internal" checked> Internal note (not visible to the customer)</label>
+      <div class="row" style="margin-top:6px"><label for="macro" style="margin:0;font-size:13px">Apply macro</label><select id="macro" style="width:230px"><option value="">Choose a macro…</option>${MACROS.map((m) => `<option>${m}</option>`).join('')}</select></div>
+    </div>
+    <div class="props" aria-label="Ticket properties">
+      <label id="asg-l">Assignee</label>
+      <div class="mb"><button type="button" id="asg" aria-haspopup="menu" aria-expanded="false" aria-labelledby="asg-l asg">${esc(draft.assignee === '—' ? 'Unassigned' : draft.assignee)}${draft.assignee === '—' ? '' : ' · ' + draft.team} ▾</button>
+        <div role="menu" id="asg-menu" aria-label="Assignee" hidden><button type="button" role="menuitemradio" aria-checked="${draft.assignee === '—'}" data-a="—" data-team="${draft.team}">Unassigned</button>${Object.entries(D.agents).map(([team, names]) => `<div class="grp" role="presentation">${team}</div>${names.map((n) => `<button type="button" role="menuitemradio" aria-checked="${draft.assignee === n}" data-a="${esc(n)}" data-team="${team}">${esc(n)} <span class="muted">(${team})</span></button>`).join('')}`).join('')}</div></div>
+      <label for="pri">Priority</label><select id="pri">${['Low', 'Normal', 'High', 'Urgent'].map((p) => `<option ${draft.priority === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
+      <div class="muted" style="margin-top:10px;font-size:12px">Team: <span id="team">${draft.team}</span></div>
+      <div class="submit"><button type="button" class="primary" data-submit="Open">Submit as Open</button><button type="button" data-submit="Pending">Submit as Pending</button><button type="button" data-submit="Solved">Submit as Solved</button></div>
+      <div id="saved" class="muted" role="status"></div>
+    </div></div>`;
+  }
+  root.addEventListener('click', async (e) => {
+    const asg = e.target.closest('#asg');
+    if (asg) { const m = q('#asg-menu'); m.hidden = !m.hidden; asg.setAttribute('aria-expanded', String(!m.hidden)); return; }
+    const it = e.target.closest('[role=menuitemradio]');
+    if (it) { draft.assignee = it.dataset.a; draft.team = it.dataset.team; draft.priority = q('#pri').value; render(); return; }
+    const sb = e.target.closest('[data-submit]');
+    if (sb) {
+      draft.priority = q('#pri').value;
+      const text = q('#reply').value.trim();
+      sb.disabled = true; await later(350);
+      if (text) await D.reply(t.id, text, q('#internal').checked);
+      await D.update(t.id, { assignee: draft.assignee, team: draft.team, priority: draft.priority, status: sb.dataset.submit });
+      render(); q('#saved').textContent = `Ticket ${t.id} updated.`;
+      return;
+    }
+    if (!e.target.closest('.mb')) { const m = q('#asg-menu'); if (m && !m.hidden) { m.hidden = true; q('#asg').setAttribute('aria-expanded', 'false'); } }
+  });
+  root.addEventListener('change', async (e) => {
+    const sel = e.target;
+    if (sel.id === 'macro' && sel.value) { const m = sel.value; await D.macro(t.id, m); q('#reply').value = `[${m}] `; sel.value = ''; }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

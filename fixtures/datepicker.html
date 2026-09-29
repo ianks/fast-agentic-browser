@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Hotels · Staywell</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>#cal{border:1px solid #bbb;border-radius:8px;padding:10px;width:300px;position:absolute;background:#fff;z-index:5}#cal[hidden]{display:none}#days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}#days button{padding:4px}</style></head>
+<body><header><strong>Staywell</strong><a href="#">Hotels</a><a href="#">Deals</a></header>
+<main><h1>Find a hotel in Lisbon</h1>
+<label for="ci">Check-in</label><input id="ci" type="text" readonly placeholder="Select date">
+<div style="position:relative"><div id="cal" role="dialog" aria-label="Choose check-in date" hidden>
+  <div class="row"><button id="prev" aria-label="Previous month">‹</button><strong id="mon" style="flex:1;text-align:center"></strong><button id="next" aria-label="Next month">›</button></div>
+  <div id="days"></div></div></div>
+<label for="nights">Nights</label><select id="nights"><option>1 night</option><option>2 nights</option><option>3 nights</option><option>7 nights</option></select>
+<label for="guests">Guests</label><select id="guests"><option value="1">1 guest</option><option value="2">2 guests</option><option value="3">3 guests</option><option value="4">4 guests</option></select>
+<div style="margin-top:14px"><button class="primary" id="go">Search hotels</button></div><p id="err" role="alert"></p></main>
+<script>
+const M = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let y = 2026, m = 8, picked = null;
+const pad = (n) => String(n).padStart(2, '0');
+const draw = () => {
+  q('#mon').textContent = `${M[m]} ${y}`;
+  const n = new Date(y, m + 1, 0).getDate(), lead = new Date(y, m, 1).getDay();
+  q('#days').innerHTML = '<span></span>'.repeat(lead) + Array.from({ length: n }, (_, i) => `<button aria-label="${M[m]} ${i + 1}, ${y}" data-d="${y}-${pad(m + 1)}-${pad(i + 1)}">${i + 1}</button>`).join('');
+};
+q('#ci').onclick = () => { q('#cal').hidden = false; draw(); };
+q('#prev').onclick = () => { m--; if (m < 0) { m = 11; y--; } draw(); };
+q('#next').onclick = () => { m++; if (m > 11) { m = 0; y++; } draw(); };
+q('#days').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; picked = b.dataset.d; q('#ci').value = b.getAttribute('aria-label'); q('#cal').hidden = true; };
+q('#go').onclick = async () => { if (!picked) { q('#err').textContent = 'Please choose a check-in date.'; return; } await rec({ event: 'search', checkin: picked, nights: q('#nights').value, guests: q('#guests').value }); q('#err').textContent = ''; document.querySelector('main').insertAdjacentHTML('beforeend', '<p role="status">12 hotels found.</p>'); };
+</script></body></html>

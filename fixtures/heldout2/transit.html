@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tapline · My account</title>
+<script src="../common.js"></script>
+<script src="transit_data.js"></script>
+<style>
+  :root { --g: #00614a; --g2: #0a7d60; --gl: #e3f3ee; --y: #ffd23f; --ink: #16231f; --muted: #5d6d68; --line: #dbe5e1; --bg: #f5f8f6; --red: #b42318; --amber: #b54708; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.45 "Avenir Next", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: var(--g2); }
+  button { font: inherit; }
+  .util { background: #0d2b24; color: #b9d5cc; font-size: 12.5px; }
+  .util .in { max-width: 1180px; margin: 0 auto; padding: 5px 22px; display: flex; gap: 18px; justify-content: flex-end; }
+  .util a, .util button { color: #cfe7df; text-decoration: none; background: none; border: 0; cursor: pointer; font-size: 12.5px; padding: 0; }
+  header.top { background: var(--g); color: #fff; }
+  header.top .in { max-width: 1180px; margin: 0 auto; padding: 0 22px; display: flex; align-items: center; height: 62px; gap: 26px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 800; font-size: 21px; letter-spacing: .3px; }
+  .brand .dot { width: 30px; height: 30px; border-radius: 50%; background: var(--y); color: var(--g); display: grid; place-items: center; font-weight: 900; }
+  nav.main { display: flex; gap: 4px; height: 100%; }
+  nav.main a { color: #d7efe7; text-decoration: none; display: flex; align-items: center; padding: 0 14px; border-bottom: 4px solid transparent; font-weight: 600; }
+  nav.main a.on { color: #fff; border-bottom-color: var(--y); }
+  .who { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+  .who .av { width: 32px; height: 32px; border-radius: 50%; background: var(--y); color: var(--g); display: grid; place-items: center; font-weight: 800; }
+  .who button { background: none; border: 1px solid rgba(255,255,255,.5); color: #fff; border-radius: 16px; padding: 4px 12px; cursor: pointer; }
+  .alertbar { background: #fff7d6; border-bottom: 1px solid #f0de8f; font-size: 14px; }
+  .alertbar .in { max-width: 1180px; margin: 0 auto; padding: 8px 22px; display: flex; gap: 10px; align-items: center; }
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 22px 50px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 0 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .tile { border-radius: 12px; padding: 16px; color: #fff; background: linear-gradient(135deg, var(--g), #0f8c6c); position: relative; min-height: 150px; display: flex; flex-direction: column; }
+  .tile.child { background: linear-gradient(135deg, #5b3fa8, #7b5fd0); }
+  .tile.other { background: linear-gradient(135deg, #1f5f8b, #2f82b8); }
+  .tile .nick { font-weight: 700; font-size: 16px; }
+  .tile .holder { font-size: 13px; opacity: .9; }
+  .tile .num { font-family: ui-monospace, Menlo, monospace; font-size: 13px; opacity: .85; margin-top: 2px; }
+  .tile .bal { font-size: 24px; font-weight: 800; margin-top: auto; }
+  .tile .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .tile .acts a, .tile .acts button { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 16px; padding: 4px 12px; text-decoration: none; font-size: 13px; cursor: pointer; }
+  .chip { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 10px; background: var(--gl); color: var(--g); }
+  .chip.warn { background: #fff4d6; color: var(--amber); }
+  .chip.bad { background: #fde8e6; color: var(--red); }
+  .chip.grey { background: #eef1f0; color: #53615c; }
+  .tile .chip { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,.9); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .4px; }
+  td.num, th.num { text-align: right; }
+  .mode { display: inline-flex; gap: 6px; align-items: center; }
+  .mode i { font-style: normal; width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; }
+  .m-Tram i { background: #e3f3ee; } .m-Bus i { background: #fff1d6; } .m-Rail i { background: #e6eefb; } .m-Ferry i { background: #e0f2fb; }
+  .route { font-size: 14px; } .route b { font-weight: 700; }
+  .filters { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+  .filters label { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+  select, input[type=text], input[type=number] { font: inherit; padding: 7px 10px; border: 1px solid #b9c7c2; border-radius: 8px; background: #fff; min-width: 180px; }
+  .btn { border: 1px solid #b9c7c2; background: #fff; color: var(--ink); border-radius: 20px; padding: 7px 16px; cursor: pointer; font-weight: 600; }
+  .btn.pri { background: var(--g); border-color: var(--g); color: #fff; }
+  .btn.warn { background: #fff; color: var(--red); border-color: #f1b8b1; }
+  .btn.danger { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.sm { padding: 3px 10px; font-size: 13px; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .pager button { min-width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .pager button[aria-current=page] { background: var(--g); color: #fff; border-color: var(--g); font-weight: 700; }
+  .pager button:disabled { opacity: .45; cursor: default; }
+  .pager .count { margin-left: auto; color: var(--muted); font-size: 13.5px; }
+  .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .kpi div { background: var(--bg); border-radius: 10px; padding: 12px; }
+  .kpi b { display: block; font-size: 20px; }
+  .kpi span { color: var(--muted); font-size: 13px; }
+  .status li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .status ul { list-style: none; margin: 0; padding: 0; }
+  .status .ln { width: 44px; text-align: center; font-weight: 800; border-radius: 6px; padding: 2px 0; font-size: 13px; color: #fff; }
+  .status .st { flex: 1; font-size: 14px; }
+  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .tr { width: 42px; height: 24px; border-radius: 12px; background: #c3cfcb; position: relative; transition: background .15s; }
+  .switch .tr::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch input:checked + .tr { background: var(--g2); }
+  .switch input:checked + .tr::after { left: 21px; }
+  .switch input:focus-visible + .tr { outline: 3px solid var(--y); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .field { margin-bottom: 14px; }
+  .field > label { display: block; font-weight: 600; margin-bottom: 5px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .overlay { position: fixed; inset: 0; background: rgba(10,30,24,.5); display: flex; align-items: flex-start; justify-content: center; padding-top: 90px; z-index: 40; }
+  .dialog { background: #fff; border-radius: 14px; width: 500px; max-width: calc(100vw - 30px); padding: 22px 24px; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+  .dialog h2 { font-size: 19px; }
+  .dialog .acts { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 400px; background: #fff; border-left: 1px solid var(--line); box-shadow: -12px 0 30px rgba(0,0,0,.12); z-index: 30; padding: 20px 22px; overflow: auto; }
+  .drawer dl { display: grid; grid-template-columns: 130px 1fr; gap: 8px 12px; margin: 0 0 16px; }
+  .drawer dt { color: var(--muted); } .drawer dd { margin: 0; font-weight: 600; }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 26px; background: #0d2b24; color: #fff; padding: 11px 18px; border-radius: 10px; z-index: 60; }
+  .danger-zone { border: 1px solid #f1c3bd; border-radius: 12px; padding: 16px 18px; background: #fffafa; }
+  .danger-zone .it { display: flex; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f6dcd8; }
+  .danger-zone .it:last-child { border-bottom: 0; }
+  .danger-zone .it div { flex: 1; }
+  .amounts { display: flex; gap: 10px; flex-wrap: wrap; }
+  .amounts label { border: 1px solid #b9c7c2; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: 700; }
+  .amounts input { margin-right: 6px; }
+  .amounts label:has(input:checked) { border-color: var(--g); background: var(--gl); }
+  .dep li { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); align-items: center; }
+  .dep ul { list-style: none; margin: 0; padding: 0; }
+  .dep .when { width: 64px; font-weight: 800; }
+  footer { background: #0d2b24; color: #9fbdb3; font-size: 13.5px; margin-top: 30px; }
+  footer .in { max-width: 1180px; margin: 0 auto; padding: 28px 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  footer h3 { color: #fff; font-size: 14px; margin: 0 0 8px; }
+  footer ul { list-style: none; margin: 0; padding: 0; }
+  footer li { margin: 5px 0; }
+  footer a { color: #b9d5cc; text-decoration: none; }
+  footer .legal { grid-column: 1 / -1; border-top: 1px solid #25453c; padding-top: 14px; }
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .skeleton { height: 14px; background: linear-gradient(90deg, #eef3f1, #f7faf9, #eef3f1); border-radius: 6px; margin: 10px 0; }
+</style>
+</head>
+<body>
+<div class="util"><div class="in"><a href="#/help">Help &amp; support</a><a href="#/accessibility">Accessibility</a><button type="button" id="lang-btn">English ▾</button></div></div>
+<header class="top"><div class="in">
+  <a class="brand" href="#/overview"><span class="dot">T</span>Tapline</a>
+  <nav class="main" id="mainnav" aria-label="Account">
+    <a href="#/overview" data-r="overview">Overview</a>
+    <a href="#/journeys" data-r="journeys">Journeys</a>
+    <a href="#/cards" data-r="cards">Cards</a>
+    <a href="#/topup" data-r="topup">Top up</a>
+    <a href="#/passes" data-r="passes">Passes</a>
+    <a href="#/settings" data-r="settings">Settings</a>
+  </nav>
+  <div class="who"><span class="av" aria-hidden="true">MQ</span><span>Marta Quintela</span><button type="button" id="signout">Sign out</button></div>
+</div></header>
+<div class="alertbar" role="note"><div class="in"><span class="chip warn">Planned works</span><span>T2 trams will not run between Old Market and Westgate on Sunday 27 September. Replacement buses run every 10 minutes.</span><a href="#/status/T2" style="margin-left:auto">Details</a></div></div>
+<main id="main"></main>
+<footer><div class="in">
+  <div><h3>Travel</h3><ul><li><a href="#/status">Service status</a></li><li><a href="#/fares">Fares and capping</a></li><li><a href="#/maps">Network maps</a></li><li><a href="#/timetables">Timetables</a></li></ul></div>
+  <div><h3>Your account</h3><ul><li><a href="#/journeys">Journey history</a></li><li><a href="#/cards">Manage cards</a></li><li><a href="#/passes">Buy a pass</a></li><li><a href="#/refunds">Refunds</a></li></ul></div>
+  <div><h3>Help</h3><ul><li><a href="#/help">Help centre</a></li><li><a href="#/lost">Lost property</a></li><li><a href="#/contact">Contact us</a></li><li><a href="#/accessibility">Accessibility</a></li></ul></div>
+  <div><h3>Tapline app</h3><ul><li><a href="#/app">Get the app for iPhone</a></li><li><a href="#/app">Get the app for Android</a></li><li><a href="#/privacy">Privacy</a></li><li><a href="#/terms">Terms of use</a></li></ul></div>
+  <div class="legal">Tapline is operated by Harbourline Transport Authority, 2 Dock Street, Kestrel Bay. Fares shown include VAT. Today is Thursday 24 September 2026.</div>
+</div></footer>
+<div id="drawer-root"></div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const D = window.TAPLINE_DATA;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 4000); };
+  const cents = (s) => Math.round(Number(s) * 100);
+  const eur = (c) => '€' + (c / 100).toFixed(2);
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const fmtDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); const w = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); return `${DOW[w]} ${d} ${MON[m - 1]} ${y}`; };
+  const ICON = { Tram: '🚋', Bus: '🚌', Rail: '🚆', Ferry: '⛴' };
+  const busy = (b, label) => { b.disabled = true; b.dataset.l = b.innerHTML; b.innerHTML = `<span class="spin"></span>${esc(label)}`; };
+  const unbusy = (b) => { b.disabled = false; b.innerHTML = b.dataset.l; };
+
+  const st = {
+    cards: D.cards.map((c) => ({ ...c, bal: cents(c.balance), status: 'active' })),
+    journeys: D.journeys.slice(),
+    jf: { card: 'all', month: 'all', page: 1 },
+    auto: { on: true, below: '5', amount: '20' },
+    settings: { lowbal: true, receipts: false, disruption: true, marketing: false, language: 'English' },
+    dep: 'Old Market',
+    planner: null,
+  };
+  const cardById = (id) => st.cards.find((c) => c.id === id);
+  const tileClass = (c) => (c.type.startsWith('Child') ? 'child' : c.primary ? '' : 'other');
+  const cardLabel = (id) => { const c = cardById(id); return c ? `${c.nick} ••${c.id}` : `Unlinked card ••${id}`; };
+  const monthKey = (iso) => iso.slice(0, 7);
+  const sumFares = (list) => list.reduce((s, j) => s + cents(j.fare), 0);
+  const inMonth = (ym) => st.journeys.filter((j) => monthKey(j.date) === ym);
+
+  const LINES = [
+    ['T1', '#00614a', 'Good service'], ['T2', '#0a7d60', 'Planned works Sun 27 Sep'], ['T4', '#127b58', 'Good service'],
+    ['8', '#c26a00', 'Good service'], ['12', '#c26a00', 'Minor delays: roadworks on Fairfield Road'], ['27', '#c26a00', 'Good service'],
+    ['40X', '#9a4d00', 'Good service'], ['CL', '#1f5f8b', 'Coastline rail: good service'], ['F1', '#0f7fa8', 'Harbour ferry: good service'],
+  ];
+  const DEPS = {
+    'Old Market': [['T1', 'Fairfield', 2], ['T2', 'Westgate', 4], ['8', 'North Quay', 6], ['T1', 'Harbour Gate', 7], ['T2', 'North Quay', 9], ['8', 'Tannery Row', 12], ['T1', 'Fairfield', 14], ['T2', 'Westgate', 16]],
+    'Harbour Gate': [['T1', 'Fairfield', 3], ['27', 'Coldharbour Lane', 5], ['F1', 'Kestrel Bay', 11], ['CL', 'Kestrel Bay', 13], ['T1', 'Fairfield', 15], ['27', 'St. Aldric', 21]],
+    'University': [['40X', 'Airport', 1], ['T1', 'Harbour Gate', 4], ['CL', 'Millbrook', 8], ['40X', 'Airport', 16], ['T1', 'Fairfield', 18]],
+  };
+
+  const FAVS = [['Castle Hill', 'University', 'Weekday mornings · T1'], ['Old Market', 'Westgate', 'T2 · planned works Sun 27 Sep'], ['Harbour Gate', 'Kestrel Bay', 'F1 ferry or Coastline rail'], ['Fairfield', 'Hollins Park', 'Bus 12'], ['Tannery Row', 'North Quay', 'Bus 8 or T2'], ['University', 'Airport', 'Bus 40X express']];
+  const HELP = [
+    ['How does daily capping work?', 'Once your fares in a day reach the cap (adult €7.00, child €3.50) the rest of that day is free. Caps apply per card.'],
+    ['Why was a journey free?', 'Transfers within 60 minutes of your first tap are free, and journeys after you reach the daily cap cost nothing.'],
+    ['When are journeys charged?', 'We add up each day’s journeys and charge your account overnight.'],
+    ['Can I move money between cards?', 'Not directly. Top up the card you want to use, or contact us to move a balance from a lost card.'],
+    ['What happens if I unlink a card?', 'The card keeps its own balance and works as a standalone card, but its journeys no longer appear here.'],
+    ['How do I get a refund for a disrupted journey?', 'Open the journey in Journey history and choose “Report a problem”. We reply within 5 working days.'],
+  ];
+  const route = () => location.hash.replace(/^#\/?/, '') || 'overview';
+
+  // ---------------------------------------------------------------- pages
+  function tiles(withManage = true) {
+    return `<div class="tiles">${st.cards.map((c) => `<div class="tile ${tileClass(c)}" data-card-tile="${c.id}">
+      <span class="chip">${c.status === 'paused' ? 'Paused' : c.primary ? 'Primary' : 'Active'}</span>
+      <div class="nick">${esc(c.nick)}</div><div class="holder">${esc(c.holder)} · ${esc(c.type)}</div><div class="num">•••• •••• ${esc(c.id)}</div>
+      <div class="bal">${eur(c.bal)}</div>
+      <div class="acts"><a href="#/topup/${c.id}">Top up</a>${withManage ? `<a href="#/cards/${c.id}">Manage</a>` : ''}</div></div>`).join('')}</div>`;
+  }
+  function pOverview() {
+    const sep = sumFares(inMonth('2026-09')), aug = sumFares(inMonth('2026-08')), jul = sumFares(inMonth('2026-07'));
+    const recent = st.journeys.slice(0, 6);
+    const deps = DEPS[st.dep];
+    return `<h1>Good morning, Marta</h1><p class="sub">Thursday 24 September 2026 · ${st.cards.length} cards linked to your account</p>
+      <div class="grid"><div>
+        <div class="panel"><h2>Your cards</h2>${tiles()}</div>
+        <div class="panel"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Recent journeys</h2><a href="#/journeys">See all journeys</a></div>
+          <table style="margin-top:8px"><thead><tr><th>When</th><th>Card</th><th>Route</th><th class="num">Fare</th><th></th></tr></thead><tbody>
+          ${recent.map((j) => `<tr><td>${esc(fmtDate(j.date))}, ${esc(j.time)}</td><td>${esc(cardLabel(j.card))}</td><td class="route"><span class="mode m-${j.mode}"><i aria-hidden="true">${ICON[j.mode]}</i></span> <b>${esc(j.line)}</b> ${esc(j.from)} → ${esc(j.to)}</td><td class="num">€${esc(j.fare)}</td><td><button type="button" class="btn sm" data-jd="${j.id}">Details</button></td></tr>`).join('')}
+          </tbody></table></div>
+        <div class="panel"><h2>Plan a journey</h2><div class="row">
+          <div class="field"><label for="pl-from">From</label><input type="text" id="pl-from" placeholder="Stop or station" list="stops"></div>
+          <button type="button" class="btn sm" id="pl-swap" aria-label="Swap from and to" style="margin-top:14px">⇅</button>
+          <div class="field"><label for="pl-to">To</label><input type="text" id="pl-to" placeholder="Stop or station" list="stops"></div>
+          <div class="field"><label for="pl-when">When</label><select id="pl-when" style="min-width:130px"><option>Leave now</option><option>Leave at…</option><option>Arrive by…</option></select></div>
+          <button type="button" class="btn pri" id="pl-go" style="margin-top:14px">Plan</button></div>
+          <datalist id="stops">${[...new Set(st.journeys.flatMap((j) => [j.from, j.to]))].sort().map((s) => `<option value="${esc(s)}">`).join('')}</datalist>
+          <div id="pl-out">${st.planner || ''}</div></div>
+        <div class="panel"><h2>Favourite routes</h2><table><tbody>${FAVS.map(([a, b, note], i) => `<tr><td><b>${esc(a)}</b> → <b>${esc(b)}</b><div class="muted">${esc(note)}</div></td><td class="num" style="white-space:nowrap"><button type="button" class="btn sm" data-fav="${i}">Plan</button> <a class="btn sm" href="#/timetables">Timetable</a></td></tr>`).join('')}</tbody></table></div>
+        <div class="panel"><h2>Help with your account</h2>${HELP.map(([qq, a]) => `<details style="border-bottom:1px solid var(--line);padding:8px 0"><summary style="cursor:pointer;font-weight:600">${esc(qq)}</summary><p class="muted" style="margin:8px 0 0">${esc(a)}</p></details>`).join('')}</div>
+      </div><div>
+        <div class="panel"><h2>Spending</h2><div class="kpi"><div><b>${eur(sep)}</b><span>September so far</span></div><div><b>${eur(aug)}</b><span>August</span></div><div><b>${eur(jul)}</b><span>July</span></div></div>
+          <p class="muted" style="margin:10px 0 0">All cards on your account, all types of travel. Daily caps: adult €7.00, child €3.50.</p>
+          <table style="margin-top:10px"><tbody>${st.cards.map((c) => `<tr><td>${esc(c.nick)} <span class="muted">••${c.id}</span></td><td class="num">${eur(sumFares(inMonth('2026-09').filter((j) => j.card === c.id)))}</td><td class="num"><a href="#/journeys" data-card-filter="${c.id}" data-month="2026-09">View</a></td></tr>`).join('')}</tbody></table><p class="muted" style="margin:6px 0 0">September so far, by card.</p></div>
+        <div class="panel"><h2>Auto top-up</h2>
+          <label class="switch"><input type="checkbox" id="at-on" ${st.auto.on ? 'checked' : ''} aria-label="Auto top-up"><span class="tr"></span><span>Top up automatically</span></label>
+          <div class="field" style="margin-top:12px"><label for="at-below">When a card balance falls below</label><select id="at-below">${['5', '10', '15'].map((v) => `<option value="${v}" ${st.auto.below === v ? 'selected' : ''}>€${v}.00</option>`).join('')}</select></div>
+          <div class="field"><label for="at-amount">Add</label><select id="at-amount">${['10', '20', '30', '50'].map((v) => `<option value="${v}" ${st.auto.amount === v ? 'selected' : ''}>€${v}.00</option>`).join('')}</select></div>
+          <p class="muted">Paid with Visa ending 4417.</p><button type="button" class="btn pri" id="at-save">Save auto top-up</button></div>
+        <div class="panel status"><h2>Service status</h2><ul>${LINES.map(([l, c, s]) => `<li><span class="ln" style="background:${c}">${l}</span><span class="st">${esc(s)}</span><a href="#/status/${l}">Details</a></li>`).join('')}</ul></div>
+        <div class="panel dep"><h2>Departures</h2><div class="row" role="tablist" aria-label="Stop">${Object.keys(DEPS).map((s) => `<button type="button" role="tab" class="btn sm" aria-selected="${s === st.dep}" data-dep="${esc(s)}" ${s === st.dep ? 'style="background:var(--gl);border-color:var(--g)"' : ''}>${esc(s)}</button>`).join('')}</div>
+          <ul style="margin-top:8px">${deps.map(([l, to, m]) => `<li><span class="when">${m} min</span><b style="width:40px">${l}</b><span style="flex:1">${esc(to)}</span><a href="#/status/${l}">Line info</a></li>`).join('')}</ul></div>
+        <div class="panel"><h2>Save with a pass</h2><p class="muted">A 30-day tram &amp; bus pass costs €56.00 — cheaper if you travel more than 27 times a month.</p><a class="btn" href="#/passes">Compare passes</a></div>
+        <div class="panel"><h2>Travel news</h2><ul style="margin:0;padding-left:18px;line-height:1.9"><li><a href="#/status/T2">T2 replacement buses on Sunday 27 September</a></li><li><a href="#/timetables">Autumn timetables started 31 August</a></li><li><a href="#/fares">Child daily cap cut to €3.50</a></li><li><a href="#/status/F1">Harbour ferry winter hours from 1 November</a></li></ul></div>
+        <div class="panel"><h2>Assistance</h2><ul style="margin:0;padding-left:18px;line-height:1.9"><li><a href="#/accessibility">Step-free travel</a></li><li><a href="#/lost">Lost property</a></li><li><a href="#/contact">Chat with us</a></li></ul></div>
+      </div></div>`;
+  }
+
+  function filteredJourneys() {
+    return st.journeys.filter((j) => (st.jf.card === 'all' || j.card === st.jf.card) && (st.jf.month === 'all' || monthKey(j.date) === st.jf.month));
+  }
+  function pJourneys() {
+    const list = filteredJourneys();
+    const per = 10, pages = Math.max(1, Math.ceil(list.length / per));
+    if (st.jf.page > pages) st.jf.page = pages;
+    const p = st.jf.page, start = (p - 1) * per, rows = list.slice(start, start + per);
+    const cardOpts = [...new Set(st.journeys.map((j) => j.card))];
+    return `<h1>Journey history</h1><p class="sub">Journeys charged to your account in the last 90 days. Fares are charged the night after you travel.</p>
+      <div class="panel">
+        <div class="filters">
+          <div><label for="f-card">Card</label><select id="f-card"><option value="all">All cards</option>${cardOpts.map((id) => `<option value="${id}" ${st.jf.card === id ? 'selected' : ''}>${esc(cardLabel(id))}</option>`).join('')}</select></div>
+          <div><label for="f-month">Month</label><select id="f-month"><option value="all">All months</option>${[['2026-09', 'September 2026'], ['2026-08', 'August 2026'], ['2026-07', 'July 2026']].map(([v, l]) => `<option value="${v}" ${st.jf.month === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+          <button type="button" class="btn" id="f-reset">Reset filters</button>
+          <div style="margin-left:auto;text-align:right"><div class="muted">Total for these journeys</div><div style="font-size:20px;font-weight:800">${eur(sumFares(list))}</div></div>
+        </div>
+        <table><thead><tr><th>Date</th><th>Time</th><th>Card</th><th>Mode</th><th>Route</th><th class="num">Fare</th><th>Notes</th><th></th></tr></thead><tbody>
+        ${rows.length ? rows.map((j) => `<tr data-jid="${j.id}"><td>${esc(fmtDate(j.date))}</td><td>${esc(j.time)}</td><td>${esc(cardLabel(j.card))}</td><td><span class="mode m-${j.mode}"><i aria-hidden="true">${ICON[j.mode]}</i>${esc(j.mode)}</span></td><td class="route"><b>${esc(j.line)}</b>: ${esc(j.from)} → ${esc(j.to)}</td><td class="num">€${esc(j.fare)}</td><td class="muted">${esc(j.note)}</td><td><button type="button" class="btn sm" data-jd="${j.id}">Details</button></td></tr>`).join('') : '<tr><td colspan="8" class="muted">No journeys match these filters.</td></tr>'}
+        </tbody></table>
+        <nav class="pager" aria-label="Pagination"><button type="button" data-pg="prev" ${p === 1 ? 'disabled' : ''}>‹ Prev</button>${Array.from({ length: pages }, (_, i) => `<button type="button" data-pg="${i + 1}" ${i + 1 === p ? 'aria-current="page"' : ''} aria-label="Page ${i + 1}">${i + 1}</button>`).join('')}<button type="button" data-pg="next" ${p === pages ? 'disabled' : ''}>Next ›</button><span class="count">Showing ${list.length ? start + 1 : 0}–${start + rows.length} of ${list.length}</span></nav>
+      </div>
+      <p class="muted">Missing a journey or charged the wrong fare? Open the journey's details to report a problem within 30 days.</p>`;
+  }
+
+  function pCards() {
+    return `<h1>Cards</h1><p class="sub">Cards linked to your account are charged for their journeys and can be topped up from here.</p>
+      <div class="panel">${tiles()}</div>
+      <div class="panel"><h2>Link another card</h2><p class="muted">You'll find the 12-digit card number and 3-digit security code on the back of the card.</p>
+        <div class="row"><div class="field"><label for="lk-num">Card number</label><input type="text" id="lk-num" inputmode="numeric" placeholder="0000 0000 0000"></div>
+        <div class="field"><label for="lk-cvc">Security code</label><input type="text" id="lk-cvc" inputmode="numeric" style="min-width:90px;width:90px"></div>
+        <button type="button" class="btn pri" id="lk-go" style="margin-top:12px">Link card</button></div><div id="lk-err" class="muted" style="color:var(--red)" role="alert"></div></div>`;
+  }
+
+  function pCard(id) {
+    const c = cardById(id);
+    if (!c) return `<h1>Card not found</h1><p>This card isn't linked to your account. <a href="#/cards">Back to cards</a></p>`;
+    const js = st.journeys.filter((j) => j.card === id).slice(0, 6);
+    return `<p><a href="#/cards">‹ All cards</a></p><h1>${esc(c.nick)} <span class="muted" style="font-size:16px">•••• ${esc(c.id)}</span></h1><p class="sub">${esc(c.holder)} · ${esc(c.type)} ${c.primary ? '· <span class="chip">Primary card</span>' : ''} ${c.status === 'paused' ? '<span class="chip warn">Paused</span>' : ''}</p>
+      <div class="grid"><div>
+        <div class="panel"><div class="row" style="justify-content:space-between"><div><div class="muted">Balance</div><div style="font-size:28px;font-weight:800">${eur(c.bal)}</div></div><a class="btn pri" href="#/topup/${c.id}">Top up this card</a></div></div>
+        <div class="panel"><h2>Recent journeys on this card</h2><table><tbody>${js.map((j) => `<tr><td>${esc(fmtDate(j.date))}, ${esc(j.time)}</td><td>${esc(j.mode)} ${esc(j.line)}: ${esc(j.from)} → ${esc(j.to)}</td><td class="num">€${esc(j.fare)}</td></tr>`).join('') || '<tr><td class="muted">No journeys yet.</td></tr>'}</tbody></table><p><a href="#/journeys" data-card-filter="${c.id}">All journeys for this card</a></p></div>
+      </div><div>
+        <div class="panel"><h2>Card details</h2><div class="field"><label for="cd-nick">Nickname</label><input type="text" id="cd-nick" value="${esc(c.nick)}"></div><button type="button" class="btn" id="cd-save-nick">Save nickname</button>
+          ${c.primary ? '' : '<p style="margin-top:14px"><button type="button" class="btn" id="cd-primary">Make this my primary card</button></p>'}</div>
+        <div class="danger-zone"><h2>Card actions</h2>
+          <div class="it"><div><b>${c.status === 'paused' ? 'Resume card' : 'Pause card'}</b><div class="muted">${c.status === 'paused' ? 'Allow journeys on this card again.' : 'Temporarily stop journeys on this card. You can resume it at any time.'}</div></div><button type="button" class="btn" id="cd-pause">${c.status === 'paused' ? 'Resume card' : 'Pause card'}</button></div>
+          <div class="it"><div><b>Report lost or stolen</b><div class="muted">We'll block this card and move its balance to a replacement.</div></div><button type="button" class="btn warn" id="cd-lost">Report lost or stolen</button></div>
+          <div class="it"><div><b>Unlink card</b><div class="muted">${c.primary ? 'This is your primary card. Make another card primary before you unlink it.' : 'Remove this card from your account. The card keeps working with its own balance.'}</div></div><button type="button" class="btn danger" id="cd-unlink" ${c.primary ? 'disabled' : ''}>Unlink card</button></div>
+        </div>
+      </div></div>`;
+  }
+
+  function pTopup(id) {
+    const c = cardById(id) || st.cards[0];
+    return `<h1>Top up</h1><p class="sub">Money is usually available on the card within 10 minutes.</p><div class="panel" style="max-width:640px">
+      <div class="field"><label for="tu-card">Card</label><select id="tu-card">${st.cards.map((x) => `<option value="${x.id}" ${x.id === c.id ? 'selected' : ''}>${esc(x.nick)} ••${x.id} (${eur(x.bal)})</option>`).join('')}</select></div>
+      <fieldset style="border:0;padding:0;margin:0 0 14px"><legend style="font-weight:600;margin-bottom:6px">Amount</legend><div class="amounts">${['5', '10', '20', '30', '50'].map((v) => `<label><input type="radio" name="tu-amt" value="${v}" ${v === '10' ? 'checked' : ''}>€${v}</label>`).join('')}</div></fieldset>
+      <div class="field"><label for="tu-pay">Pay with</label><select id="tu-pay"><option>Visa ending 4417</option><option>Mastercard ending 0925</option></select></div>
+      <button type="button" class="btn pri" id="tu-go">Pay and top up</button></div>`;
+  }
+
+  const PASSES = [['p7', '7-day tram & bus', 'Adult · unlimited trams and buses', '18.00'], ['p30', '30-day tram & bus', 'Adult · unlimited trams and buses', '56.00'], ['p30c', '30-day child', 'Ages 5–15 · trams and buses', '22.00'], ['pcl', 'Coastline rail 30-day', 'Rail between any Coastline stations', '89.00'], ['pf10', 'Ferry 10-trip', 'F1 Harbour ferry, valid 6 months', '28.00']];
+  function pPasses() {
+    return `<h1>Passes</h1><p class="sub">Passes are loaded onto a card and start the first time you tap.</p><div class="panel"><table><thead><tr><th>Pass</th><th>Covers</th><th class="num">Price</th><th></th></tr></thead><tbody>
+      ${PASSES.map(([id, n, d, p]) => `<tr><td><b>${esc(n)}</b></td><td class="muted">${esc(d)}</td><td class="num">€${p}</td><td class="num"><button type="button" class="btn sm" data-buy="${id}">Buy</button></td></tr>`).join('')}</tbody></table></div>`;
+  }
+
+  function pSettings() {
+    const s = st.settings;
+    const sw = (id, on, label, hint) => `<div class="row" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><div><b>${label}</b><div class="muted">${hint}</div></div><label class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${esc(label)}"><span class="tr"></span></label></div>`;
+    return `<h1>Settings</h1><p class="sub">Manage notifications and your account.</p><div class="grid"><div>
+      <div class="panel"><h2>Notifications</h2>${sw('s-lowbal', s.lowbal, 'Low balance alerts', 'Email me when a card falls below €3.00')}${sw('s-receipts', s.receipts, 'Journey receipts', 'Email a receipt after every charge')}${sw('s-disruption', s.disruption, 'Disruption alerts', 'Tell me about problems on lines I use')}${sw('s-marketing', s.marketing, 'Offers and news', 'Occasional emails about new passes and offers')}
+        <div class="field" style="margin-top:14px"><label for="s-lang">Language</label><select id="s-lang">${['English', 'Português', 'Polski', 'Español'].map((l) => `<option ${l === s.language ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <button type="button" class="btn pri" id="s-save">Save settings</button></div>
+      </div><div><div class="panel"><h2>Account</h2><p>Marta Quintela<br><span class="muted">marta.quintela@caravela.pt · +351 912 448 107</span></p><a href="#/contact">Update contact details</a></div>
+      <div class="danger-zone"><h2>Close account</h2><p class="muted">Your cards keep working as standalone cards. Journey history is deleted after 30 days.</p><button type="button" class="btn warn" id="s-close">Close my account</button></div></div></div>`;
+  }
+
+  const INFO = {
+    help: ['Help & support', 'Answers to common questions about cards, fares, capping and refunds.'], accessibility: ['Accessibility', 'All trams and buses are step-free. Ask any driver for help boarding.'],
+    fares: ['Fares and capping', 'Adult tram €2.10, bus €1.80, ferry €3.50, Coastline rail from €2.60. Children pay half. Daily caps: adult €7.00, child €3.50. Transfers within 60 minutes are free.'],
+    maps: ['Network maps', 'Download the tram, bus and ferry maps.'], timetables: ['Timetables', 'Timetables for every line, updated for the autumn schedule from 31 August.'],
+    refunds: ['Refunds', 'Report a problem with a journey from its details in Journey history within 30 days.'], lost: ['Lost property', 'Call 0300 555 0142 or visit the Harbour Gate travel centre.'],
+    contact: ['Contact us', 'Webchat 7am–10pm every day, or call 0300 555 0100.'], app: ['Tapline app', 'Scan the QR code at any stop to download the app.'],
+    privacy: ['Privacy', 'We keep journey history for 13 months.'], terms: ['Terms of use', 'Cards remain the property of Harbourline Transport Authority.'],
+    status: ['Service status', LINES.map(([l, , s]) => `${l}: ${s}`).join(' · ')],
+  };
+
+  function render() {
+    const r = route();
+    const [a, b] = r.split('/');
+    qa('#mainnav a').forEach((x) => x.classList.toggle('on', x.dataset.r === a || (a === 'cards' && x.dataset.r === 'cards')));
+    let h;
+    if (a === 'overview') h = pOverview();
+    else if (a === 'journeys') h = pJourneys();
+    else if (a === 'cards' && b) h = pCard(b);
+    else if (a === 'cards') h = pCards();
+    else if (a === 'topup') h = pTopup(b);
+    else if (a === 'passes') h = pPasses();
+    else if (a === 'settings') h = pSettings();
+    else if (a === 'status' && b) { const l = LINES.find((x) => x[0] === b); h = `<p><a href="#/overview">‹ Overview</a></p><h1>Line ${esc(b)}</h1><div class="panel">${esc(l ? l[2] : 'No information')}. ${b === 'T2' ? 'On Sunday 27 September replacement buses run between Old Market and Westgate every 10 minutes from 06:00 to 23:30.' : 'Services are running to the normal timetable.'}</div>`; }
+    else if (INFO[a]) h = `<h1>${esc(INFO[a][0])}</h1><div class="panel">${esc(INFO[a][1])}</div>`;
+    else h = `<h1>Page not found</h1><p><a href="#/overview">Go to your overview</a></p>`;
+    q('#main').innerHTML = h;
+    closeDrawer();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', render);
+
+  // ---------------------------------------------------------------- drawer & modals
+  function closeDrawer() { q('#drawer-root').innerHTML = ''; }
+  function openJourney(id) {
+    const j = st.journeys.find((x) => x.id === id); if (!j) return;
+    q('#drawer-root').innerHTML = `<aside class="drawer" role="dialog" aria-label="Journey details"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Journey details</h2><button type="button" class="btn sm" data-dclose>Close</button></div><div class="skeleton"></div><div class="skeleton" style="width:70%"></div><div class="skeleton" style="width:85%"></div></aside>`;
+    setTimeout(() => {
+      if (!q('#drawer-root .drawer')) return;
+      const [h, m] = j.time.split(':').map(Number);
+      const dur = { Tram: 14, Bus: 19, Rail: 27, Ferry: 22 }[j.mode] + (Number(j.id.slice(2)) % 9);
+      const off = `${String((h + Math.floor((m + dur) / 60)) % 24).padStart(2, '0')}:${String((m + dur) % 60).padStart(2, '0')}`;
+      q('#drawer-root').innerHTML = `<aside class="drawer" role="dialog" aria-label="Journey details"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Journey details</h2><button type="button" class="btn sm" data-dclose>Close</button></div>
+        <p class="muted">Reference ${esc(j.id)}</p><dl><dt>Date</dt><dd>${esc(fmtDate(j.date))}</dd><dt>Card</dt><dd>${esc(cardLabel(j.card))}</dd><dt>Mode</dt><dd>${esc(j.mode)} · ${esc(j.line)}</dd><dt>Tap on</dt><dd>${esc(j.from)}, ${esc(j.time)}</dd><dt>${j.mode === 'Tram' || j.mode === 'Bus' ? 'Alighted' : 'Tap off'}</dt><dd>${esc(j.to)}, ${off}</dd><dt>Fare</dt><dd>€${esc(j.fare)}</dd>${j.note ? `<dt>Note</dt><dd>${esc(j.note)}</dd>` : ''}</dl>
+        <div id="rp-box"><button type="button" class="btn" id="rp-open">Report a problem with this journey</button></div></aside>`;
+      q('#rp-open').addEventListener('click', () => {
+        q('#rp-box').innerHTML = `<div class="field"><label for="rp-reason">What went wrong?</label><select id="rp-reason"><option value="">Choose a reason</option><option value="overcharged">I was charged the wrong fare</option><option value="not-travelled">I didn't make this journey</option><option value="no-tap-off">I forgot to tap off</option><option value="disruption">My journey was disrupted</option></select></div><div class="field"><label for="rp-msg">Details</label><textarea id="rp-msg" rows="3" style="width:100%"></textarea></div><button type="button" class="btn pri" id="rp-send">Send report</button>`;
+        q('#rp-send').addEventListener('click', async (e) => {
+          const reason = q('#rp-reason').value; if (!reason) { toast('Choose a reason.'); return; }
+          busy(e.currentTarget, 'Sending…'); await sleep(700);
+          await post({ event: 'journey_dispute', journey: j.id, reason, details: q('#rp-msg').value.trim() });
+          q('#rp-box').innerHTML = '<p class="chip">Report sent — we reply within 5 working days.</p>';
+        });
+      });
+    }, 350);
+  }
+  q('#drawer-root').addEventListener('click', (e) => { if (e.target.closest('[data-dclose]')) closeDrawer(); });
+
+  function modal(html) { q('#modal-root').innerHTML = `<div class="overlay">${html}</div>`; return q('#modal-root .dialog'); }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmDialog(title, body, okLabel, okClass, onOk) {
+    const d = modal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cf-h"><h2 id="cf-h">${esc(title)}</h2><p>${esc(body)}</p><div class="acts"><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn ${okClass}" data-ok>${esc(okLabel)}</button></div></div>`);
+    d.querySelector('[data-cancel]').addEventListener('click', closeModal);
+    d.querySelector('[data-ok]').addEventListener('click', async (e) => { busy(e.currentTarget, 'Working…'); await sleep(700); await onOk(); closeModal(); });
+    d.querySelector('[data-cancel]').focus();
+  }
+  function openUnlink(c) {
+    const d = modal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ul-h"><h2 id="ul-h">Unlink this card?</h2>
+      <p>Unlink ${esc(c.holder)}'s card (••${esc(c.id)})? Its balance of ${eur(c.bal)} stays on the card and journeys will no longer be charged to your account. You can't undo this from your account.</p>
+      <div class="field"><label for="ul-confirm">Type UNLINK to confirm</label><input type="text" id="ul-confirm" autocomplete="off"></div>
+      <div class="acts"><button type="button" class="btn" id="ul-keep">Keep card linked</button><button type="button" class="btn danger" id="ul-go" disabled>Unlink card</button></div></div>`);
+    const inp = d.querySelector('#ul-confirm'), go = d.querySelector('#ul-go');
+    inp.addEventListener('input', () => { go.disabled = inp.value.trim().toUpperCase() !== 'UNLINK'; });
+    d.querySelector('#ul-keep').addEventListener('click', closeModal);
+    d.querySelector('#ul-keep').focus();
+    go.addEventListener('click', async () => {
+      if (go.disabled) return;
+      busy(go, 'Unlinking…'); d.querySelector('#ul-keep').disabled = true; inp.disabled = true;
+      await sleep(800);
+      await post({ event: 'card_unlink', card: c.id, holder: c.holder.normalize('NFC'), nickname: c.nick });
+      st.cards = st.cards.filter((x) => x !== c);
+      closeModal();
+      location.hash = '#/cards';
+      toast(`${c.nick} (••${c.id}) has been unlinked from your account.`);
+    });
+  }
+
+  // ---------------------------------------------------------------- events
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const jd = t.closest('[data-jd]'); if (jd) { openJourney(jd.dataset.jd); return; }
+    const pg = t.closest('[data-pg]');
+    if (pg && !pg.disabled) { const v = pg.dataset.pg; st.jf.page = v === 'prev' ? st.jf.page - 1 : v === 'next' ? st.jf.page + 1 : +v; render(); return; }
+    if (t.closest('#f-reset')) { st.jf = { card: 'all', month: 'all', page: 1 }; render(); return; }
+    const cf = t.closest('[data-card-filter]'); if (cf) { st.jf = { card: cf.dataset.cardFilter, month: cf.dataset.month || 'all', page: 1 }; return; }
+    const fav = t.closest('[data-fav]');
+    if (fav) { const [a, b] = FAVS[+fav.dataset.fav]; q('#pl-from').value = a; q('#pl-to').value = b; q('#pl-go').click(); q('#pl-from').scrollIntoView({ block: 'center' }); return; }
+    const dep = t.closest('[data-dep]'); if (dep) { st.dep = dep.dataset.dep; render(); return; }
+    if (t.closest('#pl-swap')) { const a = q('#pl-from'), b = q('#pl-to'); [a.value, b.value] = [b.value, a.value]; return; }
+    if (t.closest('#pl-go')) {
+      const a = q('#pl-from').value.trim(), b = q('#pl-to').value.trim();
+      if (!a || !b) { toast('Enter where you are travelling from and to.'); return; }
+      q('#pl-out').innerHTML = '<div class="skeleton"></div><div class="skeleton" style="width:60%"></div>';
+      await sleep(600);
+      st.planner = `<table><tbody><tr><td><b>09:12 → 09:31</b></td><td>Tram T1 then walk 4 min</td><td class="num">€2.10</td></tr><tr><td><b>09:20 → 09:44</b></td><td>Bus 8 then tram T2</td><td class="num">€1.80</td></tr></tbody></table><p class="muted">From ${esc(a)} to ${esc(b)} · leave now</p>`;
+      q('#pl-out').innerHTML = st.planner;
+      return;
+    }
+    if (t.closest('#at-save')) {
+      const b = t.closest('#at-save'); busy(b, 'Saving…'); await sleep(600);
+      const on = q('#at-on').checked, below = q('#at-below').value, amount = q('#at-amount').value;
+      await post({ event: 'autotopup_update', enabled: on ? 'yes' : 'no', threshold: below + '.00', amount: amount + '.00' });
+      st.auto = { on, below, amount }; unbusy(b); toast('Auto top-up saved.');
+      return;
+    }
+    if (t.closest('#lk-go')) {
+      const num = q('#lk-num').value.replace(/\s+/g, ''), cvc = q('#lk-cvc').value.trim();
+      if (!/^\d{12}$/.test(num) || !/^\d{3}$/.test(cvc)) { q('#lk-err').textContent = 'Enter the 12-digit card number and 3-digit security code from the back of the card.'; return; }
+      const b = t.closest('#lk-go'); busy(b, 'Checking…'); await sleep(900); unbusy(b);
+      q('#lk-err').textContent = "We couldn't find a card with those details. Check the numbers and try again.";
+      return;
+    }
+    const c = cardById(route().split('/')[1]);
+    if (t.closest('#cd-save-nick') && c) {
+      const v = q('#cd-nick').value.trim().replace(/\s+/g, ' ');
+      if (!v || v === c.nick) { toast('No changes to save.'); return; }
+      const b = t.closest('#cd-save-nick'); busy(b, 'Saving…'); await sleep(500);
+      await post({ event: 'card_rename', card: c.id, nickname: v }); c.nick = v; render(); toast('Nickname saved.');
+      return;
+    }
+    if (t.closest('#cd-primary') && c) {
+      confirmDialog('Make this your primary card?', `${c.nick} (••${c.id}) will be used for account notices and can't be unlinked while it's primary.`, 'Make primary', 'pri', async () => {
+        await post({ event: 'card_make_primary', card: c.id });
+        st.cards.forEach((x) => (x.primary = x === c)); render(); toast('Primary card updated.');
+      });
+      return;
+    }
+    if (t.closest('#cd-pause') && c) {
+      const pausing = c.status !== 'paused';
+      confirmDialog(pausing ? 'Pause this card?' : 'Resume this card?', pausing ? `Journeys on ${c.nick} (••${c.id}) will be refused at the reader until you resume it.` : `${c.nick} (••${c.id}) will work again straight away.`, pausing ? 'Pause card' : 'Resume card', 'pri', async () => {
+        await post({ event: pausing ? 'card_pause' : 'card_resume', card: c.id });
+        c.status = pausing ? 'paused' : 'active'; render(); toast(pausing ? 'Card paused.' : 'Card resumed.');
+      });
+      return;
+    }
+    if (t.closest('#cd-lost') && c) {
+      confirmDialog('Report this card lost or stolen?', `We'll block ${c.nick} (••${c.id}) immediately and post a replacement to your address. The balance of ${eur(c.bal)} moves to the new card.`, 'Block card', 'danger', async () => {
+        await post({ event: 'card_report_lost', card: c.id }); c.status = 'paused'; render(); toast('Card blocked. A replacement is on its way.');
+      });
+      return;
+    }
+    if (t.closest('#cd-unlink') && c && !c.primary) { openUnlink(c); return; }
+    if (t.closest('#tu-go')) {
+      const card = q('#tu-card').value, amt = (document.querySelector('input[name=tu-amt]:checked') || {}).value;
+      const b = t.closest('#tu-go'); busy(b, 'Paying…'); await sleep(900);
+      await post({ event: 'topup', card, amount: Number(amt).toFixed(2), payment: q('#tu-pay').value });
+      const cc = cardById(card); cc.bal += Number(amt) * 100; unbusy(b); toast(`€${amt}.00 added to ${cc.nick}.`);
+      return;
+    }
+    const buy = t.closest('[data-buy]');
+    if (buy) {
+      const p = PASSES.find((x) => x[0] === buy.dataset.buy);
+      const d = modal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="bp-h"><h2 id="bp-h">Buy ${esc(p[1])}</h2><div class="field"><label for="bp-card">Load onto</label><select id="bp-card">${st.cards.map((x) => `<option value="${x.id}">${esc(x.nick)} ••${x.id}</option>`).join('')}</select></div><p class="muted">€${p[3]} will be charged to Visa ending 4417.</p><div class="acts"><button type="button" class="btn" data-cancel>Cancel</button><button type="button" class="btn pri" data-ok>Pay €${p[3]}</button></div></div>`);
+      d.querySelector('[data-cancel]').addEventListener('click', closeModal);
+      d.querySelector('[data-ok]').addEventListener('click', async (ev) => { busy(ev.currentTarget, 'Paying…'); await sleep(900); await post({ event: 'pass_purchase', pass: p[0], card: d.querySelector('#bp-card').value, price: p[3] }); closeModal(); toast(`${p[1]} bought.`); });
+      return;
+    }
+    if (t.closest('#s-save')) {
+      const s = { lowbal: q('#s-lowbal').checked, receipts: q('#s-receipts').checked, disruption: q('#s-disruption').checked, marketing: q('#s-marketing').checked, language: q('#s-lang').value };
+      const b = t.closest('#s-save'); busy(b, 'Saving…'); await sleep(600);
+      await post({ event: 'settings_update', low_balance: s.lowbal ? 'on' : 'off', receipts: s.receipts ? 'on' : 'off', disruption: s.disruption ? 'on' : 'off', marketing: s.marketing ? 'on' : 'off', language: s.language });
+      st.settings = s; unbusy(b); toast('Settings saved.');
+      return;
+    }
+    if (t.closest('#s-close')) { confirmDialog('Close your Tapline account?', 'Your cards will be unlinked and your journey history deleted after 30 days.', 'Close account', 'danger', async () => { await post({ event: 'account_close' }); toast('Your account will close in 30 days.'); }); return; }
+  });
+  q('#main').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'f-card') { st.jf.card = t.value; st.jf.page = 1; render(); }
+    if (t.id === 'f-month') { st.jf.month = t.value; st.jf.page = 1; render(); }
+  });
+  q('#signout').addEventListener('click', () => confirmDialog('Sign out?', 'You will need your email and password to sign back in.', 'Sign out', 'pri', async () => { toast('Demo account — you are still signed in.'); }));
+  q('#lang-btn').addEventListener('click', () => toast('Other languages are available in the Tapline app.'));
+
+  render();
+})();
+</script>
+</body>
+</html>

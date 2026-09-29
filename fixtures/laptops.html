@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Laptops · Brightbyte</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ph{height:90px;border-radius:6px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);margin-bottom:8px}
+.price{font-size:18px;font-weight:700}
+.specs td:first-child{width:180px;color:#475569}
+</style></head>
+<body><header><strong>Brightbyte</strong><a href="#/">Laptops</a><a href="#/">Monitors</a><a href="#/">Accessories</a><span id="cartn" style="margin-left:auto">Cart (0)</span></header>
+<main id="view"><p class="muted">Loading…</p></main>
+<script>
+const P = [
+  { id: 'corvane-air-14', name: 'Corvane Air 14', price: 1199, tag: 'Featherweight aluminium chassis, all-day battery.',
+    specs: { Processor: 'Corvane C3 (10-core)', 'Memory (RAM)': '16 GB LPDDR5X', Storage: '512 GB SSD', Display: '14.2" 2880×1864, 120 Hz', Graphics: 'Integrated 10-core', Weight: '1.24 kg', Battery: 'Up to 18 h' } },
+  { id: 'nimbus-flex-15', name: 'Nimbus Flex 15', price: 1349, tag: 'Creator-grade graphics in a 2-in-1 body.',
+    specs: { Processor: 'Ryzen 7 8845HS', 'Memory (RAM)': '24 GB DDR5-5600', Storage: '1 TB SSD', Display: '15.6" OLED touch, 2.8K', Graphics: 'RTX 4060 Laptop, 8 GB GDDR6 (dedicated video memory)', Weight: '1.89 kg', Battery: 'Up to 11 h' } },
+  { id: 'kestrel-studio-14', name: 'Kestrel Studio 14', price: 1529, tag: 'Studio-calibrated display for photo and video work.',
+    specs: { Processor: 'Core Ultra 9 185H', 'Memory (RAM)': '48 GB LPDDR5X', Storage: '1 TB SSD', Display: '14.5" 3K mini-LED', Graphics: 'Intel Arc (integrated)', Weight: '1.52 kg', Battery: 'Up to 13 h' } },
+  { id: 'lumio-book-13', name: 'Lumio Book 13', price: 949, tag: 'Expandable up to 64 GB with our memory upgrade kit (sold separately).',
+    specs: { Processor: 'Core Ultra 5 125U', 'Memory (RAM)': '8 GB DDR5 (1 free SO-DIMM slot, max 64 GB)', Storage: '256 GB SSD', Display: '13.3" 1920×1200', Graphics: 'Intel Graphics', Weight: '1.19 kg', Battery: 'Up to 14 h' } },
+  { id: 'tessellate-x15', name: 'Tessellate X15', price: 1479, tag: 'Workstation-class performance for developers.',
+    specs: { Processor: 'Ryzen 9 8945HS', 'Memory (RAM)': '32 GB DDR5-5600', Storage: '1 TB SSD', Display: '15.3" 2560×1600, 165 Hz', Graphics: 'Radeon 780M (integrated)', Weight: '1.78 kg', Battery: 'Up to 10 h' } },
+  { id: 'corvane-pro-16', name: 'Corvane Pro 16', price: 1849, tag: 'Our most powerful laptop.',
+    specs: { Processor: 'Corvane C3 Max (16-core)', 'Memory (RAM)': '64 GB unified', Storage: '2 TB SSD', Display: '16.2" XDR 3456×2234', Graphics: 'Integrated 40-core', Weight: '2.14 kg', Battery: 'Up to 22 h' } },
+];
+let cart = 0, seq = 0;
+const fmt = (n) => '$' + n.toLocaleString('en-US') + '.00';
+const list = () => `<h1>Laptops</h1><p class="muted">${P.length} products · Free shipping over $50</p><div id="grid">${P.map((p) => `<div class="card"><div class="ph" aria-hidden="true"></div><h3 style="margin:4px 0">${p.name}</h3><p class="muted">${p.tag}</p><p class="price">${fmt(p.price)}</p><a class="btn" href="#/p/${p.id}">View details</a></div>`).join('')}</div>`;
+const detail = (p) => `<p><a href="#/">← Back to laptops</a></p><h1>${p.name}</h1><p class="price">${fmt(p.price)}</p><p>${p.tag}</p>
+  <h2>Tech specs</h2><table class="specs">${Object.entries(p.specs).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>
+  <div class="row" style="margin-top:14px"><label for="qty" style="margin:0">Qty</label><select id="qty" style="width:70px"><option>1</option><option>2</option><option>3</option></select><button class="primary" id="add">Add to cart</button><button id="wish">Save to wishlist</button></div><p id="msg" role="status"></p>`;
+async function route() {
+  const m = location.hash.match(/^#\/p\/([\w-]+)/);
+  const my = ++seq;
+  q('#view').innerHTML = '<p class="muted">Loading…</p>';
+  await later(m ? 400 : 200);
+  if (my !== seq) return;
+  const p = m && P.find((x) => x.id === m[1]);
+  q('#view').innerHTML = p ? detail(p) : list();
+  if (p) {
+    q('#add').onclick = async () => { const qty = q('#qty').value, btn = q('#add'), msg = q('#msg'); btn.disabled = true; await later(250); await rec({ event: 'cart', id: p.id, name: p.name, price: p.price, qty }); cart += +qty; q('#cartn').textContent = `Cart (${cart})`; msg.textContent = `Added ${p.name} to your cart.`; btn.disabled = false; };
+    q('#wish').onclick = () => { rec({ event: 'wishlist', id: p.id }); q('#msg').textContent = 'Saved to wishlist.'; };
+  }
+}
+addEventListener('hashchange', route);
+route();
+</script></body></html>

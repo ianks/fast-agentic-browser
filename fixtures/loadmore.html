@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Kitchen · HomeGoods</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}</style></head>
+<body><header><strong>HomeGoods</strong><a href="#">Kitchen</a><a href="#">Bath</a></header>
+<main><h1>Kitchen</h1><p class="muted" id="count"></p><div id="grid"></div><p><button id="more">Load more</button></p></main>
+<script>
+const ALL = ['Chef Knife','Cast Iron Skillet','Bamboo Board','Salad Spinner','Pepper Mill','Dutch Oven','Mixing Bowls','Whisk Set','Garlic Press','Spatula Trio','Colander','Measuring Cups',
+ 'Stand Mixer','Hand Blender','Toaster Duo','Rice Cooker','Espresso Maker','Milk Frother','Juicer Pro','Food Processor','Air Fryer XL','Slow Cooker','Waffle Iron','Popcorn Maker',
+ 'Glass Kettle','Tea Infuser','Quantum Kettle','Pour-Over Set','Coffee Grinder','French Press','Moka Pot','Cold Brew Jar','Travel Mug','Water Filter','Soda Maker','Ice Tray Set'];
+let shown = 0;
+const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const more = () => {
+  const next = ALL.slice(shown, shown + 12); shown += next.length;
+  q('#grid').insertAdjacentHTML('beforeend', next.map((t) => `<div class="card tile"><strong>${t}</strong><p class="muted">$${(t.length * 3.7).toFixed(2)}</p><a href="#${slug(t)}" data-s="${slug(t)}">View details</a></div>`).join(''));
+  q('#count').textContent = `Showing ${shown} of ${ALL.length}`;
+  if (shown >= ALL.length) q('#more').remove();
+};
+q('#more').onclick = async () => { q('#more').disabled = true; await later(200); q('#more').disabled = false; more(); };
+q('#grid').onclick = (e) => { const a = e.target.closest('a'); if (a) rec({ event: 'view', id: a.dataset.s }); };
+more();
+</script></body></html>

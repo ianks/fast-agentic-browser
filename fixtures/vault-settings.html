@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Integrations</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<h1>Integrations</h1>
+<form id="f">
+  <label>Stripe secret key <input name="key"></label>
+  <label>Webhook URL <input name="hook"></label>
+  <button type="submit">Save</button>
+</form>
+<p id="out" role="status"></p>
+<script>
+  f.onsubmit = (e) => {
+    e.preventDefault();
+    out.textContent = "Saved. Key " + f.key.value + " will receive events at " + f.hook.value;
+  };
+</script>
+</main></body></html>

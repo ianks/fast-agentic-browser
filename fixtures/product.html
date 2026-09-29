@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Oxford Shirt · Threads</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>.sw input{position:absolute;opacity:0;width:0;height:0}.sw label{display:inline-block;padding:6px 12px;border:2px solid #ccc;border-radius:16px;margin-right:6px;font-weight:400;cursor:pointer}.sw input:checked+label{border-color:#2563eb}</style></head>
+<body>
+<header><strong>Threads</strong><a href="#">Men</a><a href="#">Women</a><a href="#" id="cartlink">Cart (0)</a></header>
+<main>
+  <div class="row" style="align-items:flex-start;gap:32px">
+    <div style="width:240px;height:280px;background:#dbeafe;border-radius:8px"></div>
+    <div>
+      <h1>Oxford Shirt</h1><p class="muted">Classic button-down in breathable cotton.</p><p><strong>$59.00</strong></p>
+      <fieldset class="sw" style="border:0;padding:0"><legend><strong>Color</strong></legend>
+        <input type="radio" name="color" id="c1" value="White" checked><label for="c1">White</label>
+        <input type="radio" name="color" id="c2" value="Blue"><label for="c2">Blue</label>
+        <input type="radio" name="color" id="c3" value="Pink"><label for="c3">Pink</label>
+      </fieldset>
+      <label for="size">Size</label>
+      <select id="size"><option value="">Select a size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option></select>
+      <label for="qty">Quantity</label><input id="qty" type="number" value="1" min="1" style="width:80px">
+      <div class="row" style="margin-top:14px"><button class="primary" id="add">Add to cart</button><button onclick="rec({event:'wishlist',product:'Oxford Shirt',color:q('input[name=color]:checked').value,size:q('#size').value})">Add to wishlist</button></div>
+      <p id="err" style="color:#b91c1c"></p>
+    </div>
+  </div>
+  <h2>You may also like</h2>
+  <div class="row">
+    <div class="card product"><strong>Linen Shirt</strong><p>$69.00</p><button onclick="rec({event:'cart',product:'Linen Shirt'})">Add to cart</button></div>
+    <div class="card product"><strong>Chino Pants</strong><p>$79.00</p><button onclick="rec({event:'cart',product:'Chino Pants'})">Add to cart</button></div>
+    <div class="card product"><strong>Blue Denim Shirt</strong><p>$64.00</p><button onclick="rec({event:'cart',product:'Blue Denim Shirt'})">Add to cart</button></div>
+  </div>
+</main>
+<script>
+q('#add').onclick = async () => {
+  const size = q('#size').value;
+  if (!size) { q('#err').textContent = 'Please select a size.'; return; }
+  q('#err').textContent = '';
+  const color = q('input[name=color]:checked').value, qty = q('#qty').value;
+  await rec({ event: 'cart', product: 'Oxford Shirt', color, size, qty });
+  q('#cartlink').textContent = 'Cart (' + qty + ')';
+  const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status');
+  t.textContent = `Added ${qty} × Oxford Shirt (${color}, ${size}) to your cart`; document.body.append(t);
+};
+</script></body></html>

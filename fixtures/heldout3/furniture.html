@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Oakhaven Home · Cart</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Futura", "Century Gothic", "Segoe UI", sans-serif; color: #26221e; background: #fbf9f6; }
+  a { color: #7c4a1e; }
+  button, input, select { font: inherit; }
+  .announce { background: #26221e; color: #f3e9dc; text-align: center; font-size: 13px; padding: 6px; }
+  header { background: #fff; border-bottom: 1px solid #ece4d9; }
+  header .in { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 14px 24px; }
+  .logo { font-size: 22px; letter-spacing: .18em; text-transform: uppercase; color: #26221e; text-decoration: none; }
+  header nav a { color: #26221e; text-decoration: none; margin-right: 14px; font-size: 14px; }
+  header .sp { flex: 1; }
+  header .icons a { margin-left: 14px; text-decoration: none; color: #26221e; font-size: 14px; }
+  main { max-width: 1160px; margin: 0 auto; padding: 24px 24px 60px; }
+  h1 { font-weight: 400; font-size: 30px; margin: 0 0 8px; }
+  h2 { font-weight: 400; font-size: 21px; margin: 24px 0 10px; }
+  .sub { color: #7d7468; font-size: 14px; margin: 0 0 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; }
+  .item { display: grid; grid-template-columns: 110px 1fr auto; gap: 16px; background: #fff; border: 1px solid #ece4d9; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .thumb { height: 90px; border-radius: 8px; }
+  .item .name { font-weight: 600; }
+  .item .meta { color: #7d7468; font-size: 13px; }
+  .item .acts { font-size: 13px; margin-top: 8px; }
+  .item .acts button { border: 0; background: none; color: #7c4a1e; text-decoration: underline; cursor: pointer; padding: 0; margin-right: 14px; }
+  .addon { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-top: 6px; }
+  .price { font-weight: 600; text-align: right; }
+  .panel { background: #fff; border: 1px solid #ece4d9; border-radius: 10px; padding: 16px 18px; }
+  .panel ul { list-style: none; padding: 0; margin: 8px 0; }
+  .panel li { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
+  .panel .tot { border-top: 1px solid #ece4d9; margin-top: 6px; padding-top: 8px; font-weight: 700; font-size: 16px; }
+  .btn { border: 1px solid #26221e; background: #fff; color: #26221e; border-radius: 2px; padding: 10px 18px; cursor: pointer; text-decoration: none; display: inline-block; letter-spacing: .04em; }
+  .btn.primary { background: #26221e; color: #fff; }
+  .btn.full { width: 100%; text-align: center; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .round { display: flex; gap: 8px; align-items: flex-start; background: #f4f1ea; border-radius: 8px; padding: 10px; font-size: 13px; margin: 10px 0; }
+  .steps { display: flex; gap: 6px; margin-bottom: 16px; }
+  .steps span { flex: 1; text-align: center; padding: 6px; font-size: 13px; border-bottom: 3px solid #ece4d9; color: #9a9185; letter-spacing: .06em; text-transform: uppercase; }
+  .steps span.on { border-color: #26221e; color: #26221e; font-weight: 600; }
+  .methods { display: grid; gap: 10px; }
+  .method { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; border: 1.5px solid #ece4d9; border-radius: 10px; padding: 12px 14px; background: #fff; cursor: pointer; }
+  .method.sel { border-color: #26221e; box-shadow: inset 0 0 0 1px #26221e; }
+  .method.off { opacity: .45; cursor: not-allowed; }
+  .method small { display: block; color: #7d7468; }
+  .err { color: #a3261d; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #f0e9df; font-size: 14px; }
+  th { color: #7d7468; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+  td.num, th.num { text-align: right; }
+  .pill { font-size: 12px; border-radius: 9px; padding: 1px 8px; background: #efe9e0; }
+  .pill.bad { background: #fde8e8; color: #9b1c1c; }
+  .pill.ok { background: #e3f1e6; color: #1f6b35; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; }
+  .pager button[aria-current=page] { background: #26221e; color: #fff; }
+  .loading { padding: 50px; text-align: center; color: #7d7468; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #26221e; color: #fff; padding: 10px 18px; border-radius: 2px; z-index: 60; }
+  footer { background: #f1ece4; padding: 26px 24px; font-size: 13px; color: #7d7468; text-align: center; }
+  .acct-nav a { display: inline-block; margin-right: 14px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="announce">Free curbside delivery on orders over $2,500 · 100-night comfort trial on sofas</div>
+<header><div class="in"><a class="logo" href="#/shop">Oakhaven</a><nav aria-label="Shop"><a href="#/shop">Living</a><a href="#/shop">Dining</a><a href="#/shop">Bedroom</a><a href="#/shop">Outdoor</a><a href="#/shop">Sale</a></nav><span class="sp"></span><span class="icons"><a href="#/account/orders">Account</a><a href="#/cart" id="cart-link">Cart (<span id="cart-n">2</span>)</a></span></div></header>
+<main id="view"></main>
+<footer>Oakhaven Home Co. · Portland, Oregon · Questions? 1-800-555-0177 · <a href="#/shop">Returns</a> · <a href="#/shop">Protection plans</a></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const usd = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const st = {
+    cart: [
+      { id: 'sundby', name: 'Sundby 3-seat sofa — Oat bouclé', price: 1499, qty: 1, large: true, color: '#d8cdbd', addons: [{ id: 'prot5', label: '5-year protection plan', price: 149, on: true }] },
+      { id: 'tarn', name: 'Tarn side table — Walnut', price: 189, qty: 1, large: false, color: '#7a5436', addons: [{ id: 'asm', label: 'Add assembly', price: 39, on: true }, { id: 'prot3', label: '3-year protection plan', price: 19, on: false }] },
+    ],
+    saved: [{ id: 'lamp', name: 'Fjord floor lamp — Brass', price: 229, qty: 1, large: false, color: '#c9a35b', addons: [] }],
+    roundUp: true, step: 0, method: '', pay: 'visa-4418', busy: false, err: '', done: null, opage: 1,
+  };
+  const METHODS = [['parcel', 'Parcel delivery', 'Small items only · 3–6 business days', 19], ['curbside', 'Curbside delivery', 'To your curb, 5–10 business days', 49], ['room', 'Room of choice', 'Carried to the room you choose', 99], ['whiteglove', 'White glove', 'Room of choice + assembly + packaging removal', 179]];
+  const addonsTotal = () => st.cart.reduce((a, it) => a + it.addons.filter((x) => x.on).reduce((b, x) => b + x.price, 0) * it.qty, 0);
+  const subtotal = () => st.cart.reduce((a, it) => a + it.price * it.qty, 0);
+  const hasLarge = () => st.cart.some((it) => it.large);
+  const fee = () => { const m = METHODS.find((x) => x[0] === st.method); return m ? m[3] : 0; };
+  const preRound = () => subtotal() + addonsTotal() + fee();
+  const roundAmt = () => { const p = preRound(); const r = Math.ceil(p) - p; return st.roundUp ? Math.round((r === 0 ? 1 : r) * 100) / 100 : 0; };
+  const total = () => Math.round((preRound() + roundAmt()) * 100) / 100;
+
+  function itemHtml(it, saved) {
+    return `<div class="item"><div class="thumb" style="background:linear-gradient(135deg,${it.color},#fff)"></div><div><div class="name">${esc(it.name)}</div><div class="meta">${it.large ? 'Ships by freight · ' : 'Ships in a box · '}In stock</div>
+      ${!saved ? it.addons.map((a) => `<label class="addon"><input type="checkbox" data-addon="${it.id}:${a.id}" ${a.on ? 'checked' : ''}> ${esc(a.label)} (+${usd(a.price)})</label>`).join('') : ''}
+      <div class="acts">${saved ? `<button type="button" data-movecart="${it.id}">Move to cart</button><button type="button" data-rmsaved="${it.id}">Remove</button>` : `<button type="button" data-save="${it.id}">Save for later</button><button type="button" data-rm="${it.id}">Remove</button>`}</div></div><div class="price">${usd(it.price)}${!saved ? `<div class="meta" style="display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:6px"><button class="btn" type="button" data-qty="${it.id}:-1" aria-label="Decrease quantity of ${esc(it.name)}" style="padding:2px 9px">−</button><span>Qty ${it.qty}</span><button class="btn" type="button" data-qty="${it.id}:1" aria-label="Increase quantity of ${esc(it.name)}" style="padding:2px 9px">+</button></div>` : ''}</div></div>`;
+  }
+  function summary(stage) {
+    return `<div class="panel" aria-label="Order summary"><strong>Order summary</strong><ul><li><span>Subtotal (${st.cart.length} item${st.cart.length === 1 ? '' : 's'})</span><span>${usd(subtotal())}</span></li>${addonsTotal() ? `<li><span>Services &amp; protection</span><span>${usd(addonsTotal())}</span></li>` : ''}<li><span>Delivery</span><span>${st.method ? usd(fee()) : 'Calculated at checkout'}</span></li><li><span>Estimated tax (OR)</span><span>$0.00</span></li>${st.roundUp ? `<li><span>Reforestation round-up</span><span>${usd(roundAmt())}</span></li>` : ''}<li class="tot"><span>Total</span><span>${usd(total())}</span></li></ul>
+      <label class="round"><input type="checkbox" id="roundup" ${st.roundUp ? 'checked' : ''}><span><strong>Round up for the Oakhaven Reforestation Fund</strong><br>We plant a tree for every dollar donated.</span></label>
+      ${stage === 'cart' ? `<button class="btn primary full" type="button" id="to-checkout" ${st.cart.length ? '' : 'disabled'}>Checkout</button>` : ''}</div>`;
+  }
+  function cartPage() {
+    if (st.done) return `<h1>Thank you, Marisol</h1><p>Order <strong>${esc(st.done)}</strong> is confirmed. A receipt is on its way to marisol.trevino@fastmail.com.</p><a class="btn" href="#/account/orders">View your orders</a>`;
+    const RECS = [['Tarn side table — Oak', 189, '#c19a6b'], ['Sundby ottoman — Oat bouclé', 399, '#d8cdbd'], ['Fjord floor lamp — Black', 229, '#333'], ['Linen cushion cover — Rust', 39, '#b5542f'], ['Nest rug 5×8 — Oat', 399, '#e3d8c6'], ['Moss armchair — Sage velvet', 899, '#8a9a5b'], ['Brink coffee table — Oak', 549, '#b08a5a'], ['Sol table lamp', 129, '#e0c080']];
+    return `<h1>Your cart</h1><div class="grid"><div>${st.cart.map((it) => itemHtml(it, false)).join('') || '<p class="sub">Your cart is empty.</p>'}
+      <div class="panel" style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label for="promo" style="font-size:14px">Promo code</label><input type="text" id="promo" style="padding:7px;border:1px solid #d9cfc2;border-radius:2px"><button class="btn" type="button" id="promo-apply">Apply</button><span style="flex:1"></span><button class="btn" type="button" id="gift-note">Add a gift note</button><button class="btn" type="button" id="share-cart">Share cart</button></div>
+      <h2>Saved for later (${st.saved.length})</h2>${st.saved.map((it) => itemHtml(it, true)).join('') || '<p class="sub">Nothing saved.</p>'}
+      <h2>Goes well with your cart</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${RECS.map(([n, p, c], i) => `<div class="panel" style="padding:10px"><div class="thumb" style="height:70px;background:linear-gradient(135deg,${c},#fff)"></div><a href="#/shop" style="display:block;font-size:13px;margin:6px 0 2px">${esc(n)}</a><div class="meta" style="font-size:13px">${usd(p)}</div><button class="btn" type="button" data-rec="${i}" style="padding:4px 10px;font-size:12px;margin-top:6px" aria-label="Add ${esc(n)} to cart">Add to cart</button></div>`).join('')}</div></div>${summary('cart')}</div>`;
+  }
+  function checkoutPage() {
+    if (!st.cart.length) return cartPage();
+    const L = ['Delivery', 'Payment', 'Review'];
+    let body = '';
+    if (st.step === 1) body = `<h2 style="margin-top:0">Delivery</h2><p>Marisol Treviño · 2214 SE Alder Street, Portland, OR 97214 · <a href="#/checkout">Change</a></p><div class="methods" role="radiogroup" aria-label="Delivery method">${METHODS.map(([k, n, d, p]) => { const off = k === 'parcel' && hasLarge(); return `<label class="method ${st.method === k ? 'sel' : ''} ${off ? 'off' : ''}"><input type="radio" name="method" value="${k}" ${st.method === k ? 'checked' : ''} ${off ? 'disabled' : ''}><span><strong>${n}</strong><small>${d}${off ? ' · not available for sofas' : ''}</small></span><strong>${usd(p)}</strong></label>`; }).join('')}</div>`;
+    else if (st.step === 2) body = `<h2 style="margin-top:0">Payment</h2><div class="methods" role="radiogroup" aria-label="Payment method">${[['visa-4418', 'Visa ending 4418', 'Expires 03/28 · saved'], ['amex-1009', 'American Express ending 1009', 'Expires 11/27 · saved'], ['oakhaven-card', 'Oakhaven credit card', '0% APR for 12 months on qualifying purchases (apply now)']].map(([k, n, d]) => `<label class="method ${st.pay === k ? 'sel' : ''}"><input type="radio" name="pay" value="${k}" ${st.pay === k ? 'checked' : ''}><span><strong>${n}</strong><small>${d}</small></span><span></span></label>`).join('')}</div>`;
+    else body = `<h2 style="margin-top:0">Review</h2><table><tbody>${st.cart.map((it) => `<tr><td>${esc(it.name)} × ${it.qty}${it.addons.filter((a) => a.on).map((a) => `<br><span class="sub">+ ${esc(a.label)}</span>`).join('')}</td><td class="num">${usd(it.price * it.qty + it.addons.filter((a) => a.on).reduce((b, a) => b + a.price, 0) * it.qty)}</td></tr>`).join('')}<tr><td>${esc((METHODS.find((m) => m[0] === st.method) || [0, '—'])[1])}</td><td class="num">${usd(fee())}</td></tr></tbody></table><p class="sub">Paying with ${{ 'visa-4418': 'Visa ending 4418', 'amex-1009': 'American Express ending 1009', 'oakhaven-card': 'Oakhaven credit card' }[st.pay]}</p>`;
+    return `<p class="sub"><a href="#/cart">Cart</a> › Checkout</p><div class="steps">${L.map((l, i) => `<span class="${st.step === i + 1 ? 'on' : ''}">${i + 1}. ${l}</span>`).join('')}</div><div class="grid"><div class="panel">${body}<p class="err" role="alert">${esc(st.err)}</p><p><button class="btn" type="button" id="co-back">Back</button> ${st.step < 3 ? '<button class="btn primary" type="button" id="co-next">Continue</button>' : `<button class="btn primary" type="button" id="co-place" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Placing order…' : 'Place order · ' + usd(total())}</button>`}</p></div>${summary('checkout')}</div>`;
+  }
+  const ORDERS = [
+    ['OH-56110', '2026-09-05', 'Processing', [['Fjord pendant — Smoke', 1, 149]], 0, 'Free delivery (promo FALL26)'],
+    ['OH-55702', '2026-07-19', 'Delivered', [['Varde dining table — Oak', 1, 1290], ['Varde bench', 1, 390]], 179, 'White glove'],
+    ['OH-55240', '2026-03-02', 'Delivered', [['Sten bookcase — Ash', 1, 649]], 99, 'Room of choice'],
+    ['OH-54990', '2026-01-12', 'Delivered', [['Linen throw — Sage', 2, 59]], 19, 'Parcel delivery'],
+    ['OH-54876', '2025-12-30', 'Delivered', [['Tove wall shelf — Walnut', 2, 119]], 24.95, 'Parcel delivery (2 boxes) · delivered 6 Jan 2026'],
+    ['OH-54133', '2025-10-27', 'Delivered', [['Moss armchair — Rust velvet', 1, 899]], 99, 'Room of choice'],
+    ['OH-53590', '2025-08-09', 'Delivered', [['Havn sectional — Fog', 1, 2890]], 179, 'White glove'],
+    ['OH-53012', '2025-06-18', 'Cancelled', [['Lark bed frame — Queen', 1, 1150]], 99, 'Room of choice · fee refunded'],
+    ['OH-52377', '2025-04-03', 'Delivered', [['Sol table lamp', 1, 129]], 19, 'Parcel delivery'],
+    ['OH-51820', '2025-02-11', 'Delivered', [['Brink coffee table — Walnut', 1, 549]], 49, 'Curbside delivery'],
+    ['OH-51544', '2024-12-28', 'Delivered', [['Nest rug 8×10 — Oat', 1, 699]], 49, 'Curbside delivery'],
+    ['OH-50021', '2024-09-14', 'Delivered', [['Arlo dresser — Oak', 1, 1180]], 99, 'Room of choice'],
+  ].map(([id, date, status, items, fee, note]) => ({ id, date, status, items, fee, note }));
+  const oTotal = (o) => o.items.reduce((a, [, q, p]) => a + q * p, 0) + o.fee;
+  function ordersPage() {
+    const per = 5, pages = Math.ceil(ORDERS.length / per);
+    return `<h1>Your orders</h1><nav class="acct-nav" aria-label="Account"><a href="#/account/orders">Orders</a><a href="#/account/profile">Profile</a><a href="#/account/addresses">Addresses</a></nav><div class="panel" style="margin-top:14px"><table><thead><tr><th>Order</th><th>Placed</th><th>Status</th><th class="num">Total</th><th></th></tr></thead><tbody>${ORDERS.slice((st.opage - 1) * per, st.opage * per).map((o) => `<tr><td>${o.id}</td><td>${new Date(o.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</td><td><span class="pill ${o.status === 'Cancelled' ? 'bad' : o.status === 'Delivered' ? 'ok' : ''}">${o.status}</span></td><td class="num">${usd(o.status === 'Cancelled' ? 0 : oTotal(o))}</td><td><a href="#/account/orders/${o.id}">Order details</a></td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-opage="${st.opage - 1}" ${st.opage === 1 ? 'disabled' : ''}>Previous</button>${Array.from({ length: pages }, (_, i) => `<button class="btn" type="button" data-opage="${i + 1}" ${st.opage === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button class="btn" type="button" data-opage="${st.opage + 1}" ${st.opage === pages ? 'disabled' : ''}>Next</button></div></div>`;
+  }
+  async function orderDetail(id) {
+    const o = ORDERS.find((x) => x.id === id); if (!o) return '<p>Not found</p>';
+    await new Promise((r) => setTimeout(r, 400 + (id.charCodeAt(7) % 5) * 90));
+    const d = await (await fetch('data:application/json,' + encodeURIComponent(JSON.stringify({ ...o, subtotal: o.items.reduce((a, [, q, p]) => a + q * p, 0) })))).json();
+    return `<p class="sub"><a href="#/account/orders">Orders</a> › ${d.id}</p><h1>Order ${d.id}</h1><p class="sub">Placed ${new Date(d.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} · <span class="pill ${d.status === 'Cancelled' ? 'bad' : d.status === 'Delivered' ? 'ok' : ''}">${d.status}</span></p>
+      <div class="grid"><div class="panel"><table><thead><tr><th>Item</th><th>Qty</th><th class="num">Price</th></tr></thead><tbody>${d.items.map(([n, q, p]) => `<tr><td>${esc(n)}</td><td>${q}</td><td class="num">${usd(q * p)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="panel"><strong>Payment summary</strong><ul><li><span>Subtotal</span><span>${usd(d.subtotal)}</span></li><li><span>Delivery fee</span><span>${usd(d.fee)}</span></li><li><span>Sales tax (OR)</span><span>$0.00</span></li><li class="tot"><span>Order total</span><span>${usd(d.subtotal + d.fee)}</span></li></ul><p class="sub">${esc(d.note)}${d.status === 'Cancelled' ? ' · Order cancelled 20 Jun 2025; you were not charged.' : ''}</p></div></div>`;
+  }
+  let tok = 0;
+  async function route() {
+    const p = (location.hash || '#/cart').slice(2).split('/');
+    $('#cart-n').textContent = st.cart.length;
+    const v = $('#view'); const my = ++tok;
+    if (p[0] === 'checkout') { if (!st.step) st.step = 1; v.innerHTML = checkoutPage(); }
+    else if (p[0] === 'account' && p[1] === 'orders' && p[2]) { v.innerHTML = '<div class="loading">Loading order…</div>'; const h = await orderDetail(p[2]); if (my === tok) v.innerHTML = h; }
+    else if (p[0] === 'account' && p[1] === 'orders') v.innerHTML = ordersPage();
+    else if (p[0] === 'account') v.innerHTML = `<h1>${p[1] === 'profile' ? 'Profile' : 'Addresses'}</h1><div class="panel">Marisol Treviño · 2214 SE Alder Street, Portland, OR 97214</div>`;
+    else if (p[0] === 'shop') v.innerHTML = `<h1>Living room</h1><p class="sub">New autumn fabrics are here.</p>`;
+    else { st.step = 0; v.innerHTML = cartPage(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const view = $('#view');
+  view.addEventListener('change', async (e) => {
+    const t = e.target;
+    if (t.dataset.addon) { const [iid, aid] = t.dataset.addon.split(':'); const a = st.cart.find((x) => x.id === iid).addons.find((x) => x.id === aid); a.on = t.checked; rerender(); }
+    if (t.id === 'roundup') { st.roundUp = t.checked; rerender(); }
+    if (t.name === 'method') { st.method = t.value; st.err = ''; rerender(); }
+    if (t.name === 'pay') { st.pay = t.value; rerender(); }
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const q = t.closest('[data-qty]'); if (q) { const [iid, d] = q.dataset.qty.split(':'); const it = st.cart.find((x) => x.id === iid); const nq = Math.max(1, it.qty + +d); if (nq !== it.qty) { await later(250); await rec({ event: 'cart_qty', item: it.name, qty: String(nq) }); it.qty = nq; rerender(); } return; }
+    const rc = t.closest('[data-rec]'); if (rc) { await later(300); await rec({ event: 'cart_add', item_index: rc.dataset.rec }); toast('Added to cart — see it after checkout refresh'); return; }
+    if (t.closest('#promo-apply')) { const c = ($('#promo').value || '').trim(); toast(c ? `“${c}” isn't a valid promo code.` : 'Enter a promo code.'); return; }
+    if (t.closest('#gift-note') || t.closest('#share-cart')) { toast(t.closest('#gift-note') ? 'Gift notes can be added at checkout review.' : 'Cart link copied'); return; }
+    const sv = t.closest('[data-save]'); if (sv) { const it = st.cart.find((x) => x.id === sv.dataset.save); await later(350); await rec({ event: 'cart_save_for_later', item: it.name }); st.cart = st.cart.filter((x) => x !== it); it.addons.forEach((a) => (a.on = false)); st.saved.unshift(it); rerender(); toast('Saved for later'); return; }
+    const rm = t.closest('[data-rm]'); if (rm) { const it = st.cart.find((x) => x.id === rm.dataset.rm); await later(300); await rec({ event: 'cart_remove', item: it.name }); st.cart = st.cart.filter((x) => x !== it); rerender(); toast('Removed from cart'); return; }
+    const mc = t.closest('[data-movecart]'); if (mc) { const it = st.saved.find((x) => x.id === mc.dataset.movecart); await later(300); await rec({ event: 'cart_move_from_saved', item: it.name }); st.saved = st.saved.filter((x) => x !== it); st.cart.push(it); rerender(); return; }
+    const rs = t.closest('[data-rmsaved]'); if (rs) { const it = st.saved.find((x) => x.id === rs.dataset.rmsaved); await later(300); await rec({ event: 'saved_remove', item: it.name }); st.saved = st.saved.filter((x) => x !== it); rerender(); return; }
+    if (t.closest('#to-checkout')) { st.step = 1; st.method = hasLarge() ? 'whiteglove' : 'room'; location.hash = '#/checkout'; return; }
+    if (t.closest('#co-back')) { if (st.step <= 1) location.hash = '#/cart'; else { st.step--; rerender(); } return; }
+    if (t.closest('#co-next')) { if (st.step === 1 && !st.method) { st.err = 'Choose a delivery method.'; rerender(); return; } st.step++; st.err = ''; rerender(); return; }
+    if (t.closest('#co-place')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(1000);
+      const id = 'OH-' + (56200 + st.cart.length * 11);
+      await rec({ event: 'order_place', order: id, items: st.cart.map((it) => `${it.name} x${it.qty}`).join('; '), services: st.cart.flatMap((it) => it.addons.filter((a) => a.on).map((a) => a.label)).join('; ') || 'none', delivery: st.method, delivery_fee: fee().toFixed(2), donation: roundAmt().toFixed(2), payment: st.pay, subtotal: subtotal().toFixed(2), total: total().toFixed(2) });
+      ORDERS.unshift({ id, date: '2026-09-24', status: 'Processing', items: st.cart.map((it) => [it.name, it.qty, it.price]), fee: fee(), note: (METHODS.find((m) => m[0] === st.method) || [0, ''])[1] });
+      st.done = id; st.cart = []; st.busy = false; location.hash = '#/cart'; toast('Order placed');
+    }
+    const op = t.closest('[data-opage]'); if (op && !op.disabled) { st.opage = +op.dataset.opage; rerender(); return; }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

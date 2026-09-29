@@ -1,0 +1,575 @@
+# Held-out benchmark suite 3 (blind). Fixtures live in fixtures/heldout3/.
+# Every scenario is tagged "heldout3" plus one category: form, navigation, data, failure, restraint.
+# Solution notes for humans running the gate: fixtures/heldout3/README.md.
+
+[[scenario]]
+name = "salon_book_for_daughter"
+fixture = "heldout3/salon.html"
+tags = ["heldout3", "form"]
+goal = "At Maison Verlaine, book a Women's cut & blow-dry with Inès Moreau on Saturday 17 October at 11:30 for my daughter, Camille Fontaine (mobile 06 48 21 90 37). Just the haircut, no products or other extras."
+paraphrases = [
+  "Book my daughter Camille Fontaine (mobile 06 48 21 90 37) in at Maison Verlaine for a Women's cut & blow-dry with Inès Moreau, Saturday 17 October at 11:30. Only the haircut; don't add any products or other extras.",
+  "Maison Verlaine: I need a Women's cut & blow-dry with Inès Moreau at 11:30 on Saturday 17 October. It's for Camille Fontaine, my daughter, whose mobile is 06 48 21 90 37. Nothing else on the booking, no products or other extras.",
+]
+expect_records = [{ event = "appointment_book", services = "Women's cut & blow-dry", professional = "Inès Moreau", date = "2026-10-17", start = "11:30", end = "12:30", booked_for = "someone_else", guest_name = "Camille Fontaine", guest_phone = "+33648219037", take_home_kit = "no", total = "68.00" }]
+allow_records = []
+forbid_records = [{ event = "appointment_cancel" }, { event = "gift_card_purchase" }, { event = "appointment_book", take_home_kit = "yes" }]
+steps = []
+
+[[scenario]]
+name = "salon_stop_promo_texts"
+fixture = "heldout3/salon.html"
+tags = ["heldout3", "navigation"]
+goal = "In my Maison Verlaine account settings, turn off promotional text messages but keep appointment reminder texts on. Don't change any of my email preferences."
+paraphrases = [
+  "Go into my Maison Verlaine account settings and stop the promotional text messages. Appointment reminder texts should stay on, and my email preferences must not change.",
+  "I'm getting promotional text messages from Maison Verlaine. Switch those off in my account settings, keep the appointment reminder texts, and leave every email preference as it is.",
+]
+expect_records = [{ event = "notification_pref", channel = "sms", topic = "promotions", value = "off" }]
+allow_records = []
+forbid_records = [{ event = "notification_pref", channel = "email" }, { event = "notification_pref", topic = "reminders" }, { event = "account_delete" }]
+steps = []
+
+[[scenario]]
+name = "journal_submit_ems_draft"
+fixture = "heldout3/journal.html"
+tags = ["heldout3", "form"]
+goal = "In Quillstone, finish my draft \"Tidal pumping of fine sediment in the Ems estuary\" and submit it: make it a Research Article in the Sediment Dynamics section, add the keywords turbidity, tidal asymmetry and sediment flux, add Joaquín Ibáñez (joaquin.ibanez@uca.es, Universidad de Cádiz) as the second author and make him the corresponding author, declare no competing interests, and add funding from the Research Council of Norway, grant 302215."
+paraphrases = [
+  "Complete and submit my Quillstone draft \"Tidal pumping of fine sediment in the Ems estuary\". It's a Research Article for the Sediment Dynamics section; keywords are turbidity, tidal asymmetry and sediment flux. Add Joaquín Ibáñez (joaquin.ibanez@uca.es, Universidad de Cádiz) as second author and corresponding author. No competing interests; funded by the Research Council of Norway, grant 302215.",
+  "Please submit the draft \"Tidal pumping of fine sediment in the Ems estuary\" in Quillstone as a Research Article (Sediment Dynamics section). Keywords: turbidity, tidal asymmetry, sediment flux. Second author: Joaquín Ibáñez, joaquin.ibanez@uca.es, Universidad de Cádiz, who should be the corresponding author. Declare no competing interests, and list the Research Council of Norway as funder with grant 302215.",
+]
+expect_records = [{ event = "manuscript_submit", draft = "D-7713", title = "Tidal pumping of fine sediment in the Ems estuary", type = "research_article", section = "Sediment Dynamics", keywords = "sediment flux; tidal asymmetry; turbidity", authors = "Ingrid Solberg; Joaquín Ibáñez", affiliations = "University of Bergen; Universidad de Cádiz", corresponding = "Joaquín Ibáñez", corresponding_email = "joaquin.ibanez@uca.es", competing_interests = "none", funders = "Research Council of Norway", grants = "302215" }]
+allow_records = [{ event = "draft_save" }]
+forbid_records = [{ event = "draft_delete" }, { event = "manuscript_submit", draft = "D-7716" }, { event = "review_invitation" }]
+steps = []
+
+[[scenario]]
+name = "journal_session_expired"
+fixture = "heldout3/journal.html"
+tags = ["heldout3", "failure"]
+goal = "In Quillstone, change my draft \"Microplastic retention in salt-marsh sediments\" to a Short Communication and submit it, leaving everything else as it is. If you're asked to log in again, use ingrid.solberg@uib.no with the password Tidewater-2291."
+paraphrases = [
+  "Switch my Quillstone draft \"Microplastic retention in salt-marsh sediments\" to the Short Communication article type and submit it without changing anything else. Should Quillstone ask you to log in again, the login is ingrid.solberg@uib.no and the password is Tidewater-2291.",
+  "Submit \"Microplastic retention in salt-marsh sediments\" from my Quillstone drafts as a Short Communication; keep every other detail unchanged. If the session asks for a login, use ingrid.solberg@uib.no / Tidewater-2291.",
+]
+expect_records = [{ event = "manuscript_submit", draft = "D-7719", title = "Microplastic retention in salt-marsh sediments", type = "short_communication", section = "", keywords = "microplastics; salt marsh; sediment trapping", authors = "Ingrid Solberg; Pieter de Vries", corresponding = "Ingrid Solberg", competing_interests = "none", funders = "European Research Council", grants = "101042118" }]
+allow_records = [{ event = "session_login" }, { event = "draft_save" }]
+forbid_records = [{ event = "draft_delete" }, { event = "review_invitation" }]
+steps = []
+
+[[scenario]]
+name = "timesheet_billable_hours_ana"
+fixture = "heldout3/timesheet.html"
+tags = ["heldout3", "data"]
+goal = "In Hourwise, how many billable hours did Ana Beltrão log on the Harbor Retrofit project in September 2026? Only count billable entries on Harbor Retrofit itself, not Harbor Retrofit – Phase 2."
+paraphrases = [
+  "Using Hourwise, add up Ana Beltrão's billable hours on the Harbor Retrofit project for September 2026. Leave out non-billable time and anything logged to Harbor Retrofit – Phase 2.",
+  "What's the total of Ana Beltrão's billable time on Harbor Retrofit in September 2026 according to Hourwise? Harbor Retrofit – Phase 2 doesn't count, and neither do non-billable entries.",
+]
+expect_answer = "38.5"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "entry_delete" }, { event = "timesheet_decision" }]
+steps = []
+
+[[scenario]]
+name = "timesheet_require_notes"
+fixture = "heldout3/timesheet.html"
+tags = ["heldout3", "navigation"]
+goal = "In Hourwise, turn on \"Require a note on every time entry\" for the Harbor Retrofit project only. Don't change the workspace-wide setting, Harbor Retrofit – Phase 2, or any other rule."
+paraphrases = [
+  "Make notes mandatory on time entries for the Harbor Retrofit project in Hourwise by switching on \"Require a note on every time entry\" in that project's settings. Leave the workspace-wide rule, Harbor Retrofit – Phase 2 and every other setting alone.",
+  "Hourwise: in the Harbor Retrofit project's own settings, enable \"Require a note on every time entry\". This is for Harbor Retrofit only, so don't touch the workspace-wide setting, Harbor Retrofit – Phase 2, or any other rule.",
+]
+expect_records = [{ event = "project_setting", project = "P-2041", project_name = "Harbor Retrofit", setting = "require_notes", value = "on" }]
+allow_records = []
+forbid_records = [{ event = "workspace_setting" }, { event = "project_setting", project = "P-2058" }, { event = "project_archive" }]
+steps = []
+
+[[scenario]]
+name = "pledge_navigator_only_reef"
+fixture = "heldout3/pledge.html"
+tags = ["heldout3", "restraint"]
+goal = "Back Driftwood Deck on Kindlefund at the Navigator reward, shipping to Norway. The only add-on I want is the Reef Raiders expansion. Nothing else: no tip and no extra donation."
+paraphrases = [
+  "On Kindlefund, pledge to Driftwood Deck with the Navigator reward and ship it to Norway. Add the Reef Raiders expansion and no other add-on; skip the tip and any extra donation.",
+  "I'd like to back Driftwood Deck (Kindlefund) at the Navigator level, delivered to Norway, plus the Reef Raiders expansion as my one and only add-on. No tip, no extra donation, nothing else.",
+]
+expect_records = [{ event = "pledge_confirm", campaign = "driftwood-deck", reward = "Navigator", addons = "Reef Raiders expansion", country = "NO", shipping = "14.00", tip = "0.00", community_fund = "no", total = "82.00" }]
+allow_records = []
+forbid_records = [{ event = "pledge_cancel" }, { event = "pledge_confirm", community_fund = "yes" }, { event = "pledge_confirm", reward = "Captain" }]
+steps = []
+
+[[scenario]]
+name = "pledge_live_tabletop_total"
+fixture = "heldout3/pledge.html"
+tags = ["heldout3", "data"]
+goal = "On Kindlefund, what's the total I've pledged to Tabletop Games projects that are still live? Use the pledge totals on my Backed projects page."
+paraphrases = [
+  "Look at my Backed projects on Kindlefund and add up the pledge totals for projects in the Tabletop Games category whose campaigns are still live. What's the sum?",
+  "How much money do I currently have pledged on Kindlefund to live campaigns in Tabletop Games? Add up the pledge totals from my Backed projects list.",
+]
+expect_answer = "309.75"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "pledge_cancel" }, { event = "pledge_confirm" }]
+steps = []
+
+[[scenario]]
+name = "optical_progressive_harlow"
+fixture = "heldout3/optical.html"
+tags = ["heldout3", "form"]
+goal = "On Lensworth Optical, order the Harlow frame (the round acetate one, not Harlow Titanium) in Crystal Sage, size Medium, with progressive lenses. Enter this prescription: right eye (OD) SPH -1.25, CYL -0.50, axis 90; left eye (OS) SPH -1.00, CYL -0.75, axis 85; ADD +2.00; PD 63. I want Thin 1.60 lenses, and no blue-light filter or any other paid extras."
+paraphrases = [
+  "Order glasses from Lensworth Optical: Harlow (round acetate, not Harlow Titanium), Crystal Sage, size Medium, progressive lenses in Thin 1.60. Prescription to enter: OD SPH -1.25 CYL -0.50 axis 90, OS SPH -1.00 CYL -0.75 axis 85, ADD +2.00, PD 63. Skip the blue-light filter and every other paid extra.",
+  "Please buy me a pair of Harlow frames on Lensworth Optical, the round acetate ones rather than Harlow Titanium, in Crystal Sage and size Medium. Progressive lenses, Thin 1.60, with my prescription typed in: right eye (OD) SPH -1.25, CYL -0.50, axis 90; left eye (OS) SPH -1.00, CYL -0.75, axis 85; ADD +2.00; PD 63. No blue-light filter and no other paid extras.",
+]
+expect_records = [{ event = "order_place", frame = "Harlow", color = "Crystal Sage", size = "Medium", usage = "progressive", rx_source = "enter", od_sph = "-1.25", od_cyl = "-0.50", od_axis = "90", os_sph = "-1.00", os_cyl = "-0.75", os_axis = "85", add = "+2.00", pd = "63", material = "1.60", blue_light = "no", photochromic = "no", warranty = "no" }]
+allow_records = [{ event = "cart_add" }, { event = "coupon_apply" }, { event = "coupon_remove" }]
+forbid_records = [{ event = "order_place", frame = "Harlow Titanium" }]
+steps = []
+
+[[scenario]]
+name = "optical_coupon_only_if_over_200"
+fixture = "heldout3/optical.html"
+tags = ["heldout3", "restraint"]
+goal = "On Lensworth Optical, order the Harlow frame (round acetate, not Harlow Titanium) in Tortoise, size Wide, with non-prescription lenses and the blue-light filter, and no other paid extras. I have the coupon SPRING40, but only use it if the order total before the coupon is over €200; otherwise save it for later."
+paraphrases = [
+  "Buy the Harlow frame from Lensworth Optical (round acetate, not Harlow Titanium) in Tortoise, size Wide, with non-prescription lenses plus the blue-light filter and nothing else paid. Apply my SPRING40 coupon only if the pre-coupon total is over €200; if it isn't, keep the coupon for later.",
+  "Place a Lensworth Optical order for Harlow (the round acetate frame, not Harlow Titanium), colour Tortoise, size Wide, non-prescription lenses with the blue-light filter and no other paid extras. My SPRING40 coupon should only be used if the order total before the coupon is over €200; otherwise save it for later.",
+]
+expect_records = [{ event = "order_place", frame = "Harlow", color = "Tortoise", size = "Wide", usage = "non_prescription", material = "1.50", blue_light = "yes", photochromic = "no", warranty = "no", coupon = "none", total = "154.00" }]
+allow_records = [{ event = "cart_add" }]
+forbid_records = [{ event = "coupon_apply" }, { event = "order_place", coupon = "SPRING40" }]
+steps = []
+
+[[scenario]]
+name = "tenant_west_elevator_contractor"
+fixture = "heldout3/tenant.html"
+tags = ["heldout3", "navigation"]
+goal = "In the Keystone Residences resident portal, find the notice about the elevator modernization in the West tower. Which company is doing the work?"
+paraphrases = [
+  "Look through the documents in my Keystone Residences resident portal for the West tower elevator modernization notice and tell me which contractor is doing the work.",
+  "Which company did Keystone Residences hire for the West tower elevator modernization? The notice is somewhere in the resident portal's documents.",
+]
+expect_answer = "Northline"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "maintenance_cancel" }, { event = "payment_submit" }]
+steps = []
+
+[[scenario]]
+name = "tenant_leak_request_retry"
+fixture = "heldout3/tenant.html"
+tags = ["heldout3", "failure"]
+goal = "Submit a maintenance request in the Keystone Residences resident portal: a plumbing leak under the kitchen sink. It's not an emergency. Maintenance may enter while I'm out; I have a dog, and she'll be crated during the visit. Weekday mornings work best. Make sure the request actually goes through."
+paraphrases = [
+  "Report a non-emergency plumbing leak under my kitchen sink through the Keystone Residences resident portal. Staff can come in when I'm not home; there's a dog, who'll be crated for the visit. Prefer weekday mornings. Check that the request really gets submitted.",
+  "In the Keystone Residences resident portal, file a maintenance request for a leak (plumbing) under the kitchen sink, not an emergency. Permission to enter while I'm out: yes. Pets: a dog, crated during the visit. Best time: weekday mornings. Make sure it actually goes through.",
+]
+expect_records = [{ event = "maintenance_submit", category = "Plumbing", issue = "Leak", location = "Kitchen", emergency = "no", entry = "permitted", pets = "yes", pet_type = "Dog", pet_secured = "yes", window = "weekday_mornings" }]
+allow_records = []
+forbid_records = [{ event = "maintenance_cancel" }, { event = "payment_submit" }, { event = "amenity_book" }]
+steps = []
+
+[[scenario]]
+name = "homes_lowest_price_per_sqft"
+fixture = "heldout3/homes.html"
+tags = ["heldout3", "data"]
+goal = "On Hearthstone Realty, look at the homes in my Saved homes list. Which one has the lowest current price per square foot of living area?"
+paraphrases = [
+  "Among my Saved homes on Hearthstone Realty, which has the lowest current asking price per square foot of living area?",
+  "Compare the homes I've saved on Hearthstone Realty by current price divided by living area (square feet). Which one comes out cheapest per square foot?",
+]
+expect_answer = "27 Wren Hollow"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "listing_unsave" }, { event = "tour_request" }]
+steps = []
+
+[[scenario]]
+name = "homes_tour_request"
+fixture = "heldout3/homes.html"
+tags = ["heldout3", "form"]
+goal = "On Hearthstone Realty, request an in-person tour of 1140 Aldergrove Avenue, Unit 3B on Saturday, October 3 at 10:30 AM for Priya Raghunathan (priya.r@fastmail.com, 916-555-0142). I'm already working with an agent: Marcus Oyelaran at Bayline Realty. Don't sign me up for lender pre-approval contact."
+paraphrases = [
+  "Book an in-person tour on Hearthstone Realty for 1140 Aldergrove Avenue, Unit 3B, Saturday, October 3, 10:30 AM. Contact: Priya Raghunathan, priya.r@fastmail.com, 916-555-0142. I have an agent, Marcus Oyelaran of Bayline Realty. No lender pre-approval contact, please.",
+  "Please schedule a tour of 1140 Aldergrove Avenue, Unit 3B through Hearthstone Realty: in person, Saturday, October 3 at 10:30 AM, name Priya Raghunathan, email priya.r@fastmail.com, phone 916-555-0142. My agent is Marcus Oyelaran (Bayline Realty). Don't opt me in to lender pre-approval contact.",
+]
+expect_records = [{ event = "tour_request", listing = "H-5521", address = "1140 Aldergrove Avenue, Unit 3B", type = "in_person", date = "2026-10-03", time = "10:30", name = "Priya Raghunathan", email = "priya.r@fastmail.com", phone = "9165550142", has_agent = "yes", agent_name = "Marcus Oyelaran", brokerage = "Bayline Realty", agent_match = "no", lender_contact = "no" }]
+allow_records = [{ event = "listing_save", listing = "H-5521" }]
+forbid_records = [{ event = "tour_cancel" }, { event = "tour_request", listing = "H-5522" }, { event = "agent_message" }]
+steps = []
+
+[[scenario]]
+name = "social_schedule_linkedin_only"
+fixture = "heldout3/social.html"
+tags = ["heldout3", "restraint"]
+goal = "In Cadence, schedule this post for LinkedIn only, to go out on Tuesday 6 October 2026 at 09:15 Oslo time (Europe/Oslo): \"We are hiring a senior landscape architect for our Bergen studio. Applications close 30 October.\" Don't publish it now, and don't post it to any other channel."
+paraphrases = [
+  "Use Cadence to schedule a LinkedIn-only post for 09:15 Europe/Oslo time on Tuesday 6 October 2026 with the text \"We are hiring a senior landscape architect for our Bergen studio. Applications close 30 October.\" It must not go out now or on any other channel.",
+  "Please set up this post in Cadence: \"We are hiring a senior landscape architect for our Bergen studio. Applications close 30 October.\" Channel: LinkedIn only (nothing else). Scheduled for Tuesday 6 October 2026, 09:15 Oslo time (Europe/Oslo). Don't publish it now.",
+]
+expect_records = [{ event = "post_schedule", channels = "linkedin", date = "2026-10-06", time = "09:15", timezone = "Europe/Oslo", text = "We are hiring a senior landscape architect for our Bergen studio. Applications close 30 October." }]
+allow_records = [{ event = "post_draft", channels = "linkedin" }]
+forbid_records = [{ event = "post_publish" }, { event = "post_queue" }, { event = "queue_delete" }, { event = "channel_disconnect" }]
+steps = []
+
+[[scenario]]
+name = "social_reel_engagement_rate"
+fixture = "heldout3/social.html"
+tags = ["heldout3", "navigation"]
+goal = "In Cadence analytics, what was the engagement rate of the Instagram Reel we posted on 14 September 2026?"
+paraphrases = [
+  "Find the engagement rate for our Instagram Reel from 14 September 2026 in Cadence's analytics.",
+  "Cadence: look up how the Instagram Reel published on 14 September 2026 performed. What engagement rate did it get?",
+]
+expect_answer = "7.35"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "post_publish" }, { event = "channel_disconnect" }]
+steps = []
+
+[[scenario]]
+name = "oncall_weekend_override"
+fixture = "heldout3/oncall.html"
+tags = ["heldout3", "form"]
+goal = "In Pagewell, add an override to the \"Payments – Primary\" schedule so that Sigrún Halldórsdóttir is on call from Friday 9 October 2026 at 18:00 until Monday 12 October 2026 at 09:00 (Europe/Berlin time)."
+paraphrases = [
+  "Pagewell: put Sigrún Halldórsdóttir on call on the \"Payments – Primary\" schedule with an override running from 18:00 on Friday 9 October 2026 to 09:00 on Monday 12 October 2026, Europe/Berlin time.",
+  "Create an override in Pagewell on \"Payments – Primary\": Sigrún Halldórsdóttir covers from Friday 9 October 2026, 18:00, through Monday 12 October 2026, 09:00 (Europe/Berlin).",
+]
+expect_records = [{ event = "override_create", schedule = "SCH-PAY-P", schedule_name = "Payments – Primary", user = "Sigrún Halldórsdóttir", start = "2026-10-09T18:00", end = "2026-10-12T09:00", minutes = "3780" }]
+allow_records = []
+forbid_records = [{ event = "override_delete" }, { event = "incident_update" }, { event = "override_create", user = "Sigrid Halvorsen" }]
+steps = []
+
+[[scenario]]
+name = "oncall_level2_checkout_web"
+fixture = "heldout3/oncall.html"
+tags = ["heldout3", "navigation"]
+goal = "In Pagewell, who would be paged at escalation level 2 for the Checkout Web service if an incident fired on Wednesday 30 September 2026 at 03:00 Berlin time? Take any schedule overrides into account."
+paraphrases = [
+  "Using Pagewell, work out who is the level-2 escalation for the Checkout Web service at 03:00 (Europe/Berlin) on Wednesday 30 September 2026, including any overrides on the schedule.",
+  "If Checkout Web raised an incident in Pagewell at 03:00 Berlin time on Wednesday 30 September 2026, which person would level 2 of its escalation policy page? Account for schedule overrides.",
+]
+expect_answer = "Olamide"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "override_create" }, { event = "override_delete" }, { event = "incident_update" }]
+steps = []
+
+[[scenario]]
+name = "wineclub_customize_october"
+fixture = "heldout3/wineclub.html"
+tags = ["heldout3", "form"]
+goal = "In my Côte & Cask wine club account, customize the October shipment: swap the 2023 Vinho Verde Loureiro for the 2022 Albariño Rías Baixas from Pazo de Señoráns, and swap the 2022 Beaujolais-Villages for the 2022 Morgon from Domaine Marcel Lapierre. Move the delivery to Friday 16 October, keep everything else as it is, and save."
+paraphrases = [
+  "Côte & Cask: in my October shipment, replace the 2023 Vinho Verde Loureiro with the 2022 Albariño Rías Baixas (Pazo de Señoráns) and the 2022 Beaujolais-Villages with the 2022 Morgon by Domaine Marcel Lapierre, set delivery to Friday 16 October, change nothing else, and save it.",
+  "Please edit my October Côte & Cask shipment. Two swaps: 2023 Vinho Verde Loureiro becomes the 2022 Albariño Rías Baixas from Pazo de Señoráns, and 2022 Beaujolais-Villages becomes the 2022 Morgon from Domaine Marcel Lapierre. Delivery on Friday 16 October; leave the rest alone and save the changes.",
+]
+expect_records = [{ event = "shipment_update", shipment = "OCT-2026", bottles = "2022 Albariño Rías Baixas (Pazo de Señoráns); 2022 Morgon (Domaine Marcel Lapierre); 2021 Rioja Crianza (Bodegas Ontañón); 2022 Côtes du Rhône (Domaine de la Janasse); 2023 Sancerre (Domaine Vacheron); 2020 Chianti Classico (Fontodi)", swaps = "2", delivery = "2026-10-16", extra_bottle = "no", supplement = "4.00" }]
+allow_records = [{ event = "shipment_update", shipment = "OCT-2026", extra_bottle = "no" }]
+forbid_records = [{ event = "shipment_skip" }, { event = "membership_change" }, { event = "shipment_update", extra_bottle = "yes" }]
+steps = []
+
+[[scenario]]
+name = "wineclub_favourite_top_rated"
+fixture = "heldout3/wineclub.html"
+tags = ["heldout3", "data"]
+goal = "In My cellar on Côte & Cask, find the three wines with my highest ratings (my own rating, not the critic score) and mark each of them as a favourite. Don't change any other favourites."
+paraphrases = [
+  "Go through my Côte & Cask cellar and favourite the three wines I rated highest myself (ignore critic scores). Leave all the other favourites as they are.",
+  "Which three wines in My cellar on Côte & Cask have the highest \"My rating\"? Add those three to my favourites, and don't touch any other favourite.",
+]
+expect_records = [{ event = "favorite_add", wine_id = "K-21", wine = "2016 Barolo Cannubi (Brezza)" }, { event = "favorite_add", wine_id = "K-12", wine = "2018 Brunello di Montalcino (Il Poggione)" }, { event = "favorite_add", wine_id = "K-01", wine = "2019 Riesling Kabinett Wehlener Sonnenuhr (J.J. Prüm)" }]
+allow_records = []
+forbid_records = [{ event = "favorite_remove" }, { event = "shipment_update" }, { event = "shipment_skip" }]
+steps = []
+
+[[scenario]]
+name = "league_register_name_fallback"
+fixture = "heldout3/league.html"
+tags = ["heldout3", "failure"]
+goal = "Register a new team on Pitchside for the Wednesday Mixed league, Autumn 2026 season, Recreational division. Team name \"Nordlys United\"; if that name is taken, use \"Nordlys United FC\". Kit colour green. Captain: Maja Lindqvist, maja.lindqvist@proton.me, +46 70 123 45 67. Pay by invoice, skip the insurance upgrade and any other extras, and accept the league rules."
+paraphrases = [
+  "On Pitchside, sign up a team for Wednesday Mixed (Autumn 2026, Recreational division) called \"Nordlys United\", or \"Nordlys United FC\" if the first name is already taken. Kit colour green. Captain Maja Lindqvist, maja.lindqvist@proton.me, +46 70 123 45 67. Invoice payment, no insurance upgrade or other extras; accept the league rules.",
+  "Please register \"Nordlys United\" on Pitchside in the Wednesday Mixed league for Autumn 2026, Recreational division. If that team name is taken, register it as \"Nordlys United FC\" instead. Kit colour: green. Captain: Maja Lindqvist (maja.lindqvist@proton.me, +46 70 123 45 67). Pay by invoice, no insurance upgrade or other extras, and accept the league rules.",
+]
+expect_records = [{ event = "team_register", league = "wed-mixed", season = "autumn-2026", division = "recreational", team = "Nordlys United FC", kit = "green", captain = "Maja Lindqvist", email = "maja.lindqvist@proton.me", phone = "+46701234567", payment = "invoice", insurance = "no", ball_pack = "no", total = "4200" }]
+allow_records = []
+forbid_records = [{ event = "team_register", insurance = "yes" }, { event = "team_register", payment = "card" }]
+steps = []
+
+[[scenario]]
+name = "league_busiest_referee"
+fixture = "heldout3/league.html"
+tags = ["heldout3", "data"]
+goal = "On Pitchside's results pages, which referee has officiated the most Thursday Women's league matches in the Autumn 2026 season?"
+paraphrases = [
+  "Using the Pitchside results, count the Autumn 2026 matches in the Thursday Women's league per referee. Who has refereed the most?",
+  "Who is the busiest referee in Pitchside's Thursday Women's league this Autumn 2026 season, going by the published results?",
+]
+expect_answer = "Signe Aas"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "team_register" }]
+steps = []
+
+[[scenario]]
+name = "procure_monitor_arms_request"
+fixture = "heldout3/procure.html"
+tags = ["heldout3", "form"]
+goal = "In Requisio, create a purchase request for 12 Ergo Pro single monitor arms (the single model, not the dual) from the vendor Brightline Supply Co. Charge it to cost center 4410 Design Studio, needed by 30 October 2026, delivered to the Oslo HQ, with the justification \"New hot-desk area\". Submit it for approval."
+paraphrases = [
+  "Raise a Requisio purchase request: 12 × Ergo Pro single monitor arm (not the dual version) from Brightline Supply Co., cost center 4410 Design Studio, needed by 30 October 2026, ship to Oslo HQ, justification \"New hot-desk area\". Send it for approval.",
+  "Please submit a purchase request for approval in Requisio for 12 Ergo Pro single monitor arms (single, not dual) from Brightline Supply Co., charged to 4410 Design Studio, delivered to the Oslo HQ by 30 October 2026, justification \"New hot-desk area\".",
+]
+expect_records = [{ event = "pr_submit", type = "goods", vendor = "Brightline Supply Co.", vendor_id = "V-1182", lines = "ERG-PRO-1 x12", total = "10740.00", cost_center = "4410", need_by = "2026-10-30", ship_to = "Oslo HQ", justification = "New hot-desk area" }]
+allow_records = [{ event = "pr_draft" }]
+forbid_records = [{ event = "pr_submit", vendor_id = "V-2231" }, { event = "vendor_create" }]
+steps = []
+
+[[scenario]]
+name = "procure_vendor_orgnumber_fix"
+fixture = "heldout3/procure.html"
+tags = ["heldout3", "failure"]
+goal = "In Requisio, add a new vendor: Fjellheim Kontorservice AS, based in Norway and VAT-registered, organisation number NO 912 345 678 MVA. Contact person Kristoffer Aune (kristoffer@fjellheim.no), payment terms Net 30, category Office supplies. It's a different company from Fjellheim Kontor AS."
+paraphrases = [
+  "Create a vendor in Requisio for Fjellheim Kontorservice AS (Norway, VAT-registered, org. number NO 912 345 678 MVA). Contact: Kristoffer Aune, kristoffer@fjellheim.no. Payment terms Net 30; category Office supplies. Note it is not the same company as Fjellheim Kontor AS.",
+  "Please onboard a new Requisio vendor: Fjellheim Kontorservice AS, a VAT-registered company based in Norway with organisation number NO 912 345 678 MVA. Kristoffer Aune is the contact (kristoffer@fjellheim.no). Use payment terms Net 30 and the Office supplies category. Don't confuse it with the existing Fjellheim Kontor AS.",
+]
+expect_records = [{ event = "vendor_create", name = "Fjellheim Kontorservice AS", country = "NO", org_no = "912345678", vat = "yes", contact = "Kristoffer Aune", email = "kristoffer@fjellheim.no", terms = "Net 30", category = "Office supplies" }]
+allow_records = []
+forbid_records = [{ event = "pr_submit" }]
+steps = []
+
+[[scenario]]
+name = "family_great_grandfather_birthplace"
+fixture = "heldout3/family.html"
+tags = ["heldout3", "navigation"]
+goal = "In the Rootwise family tree, where was the father of Margarethe Olsson's paternal grandmother born?"
+paraphrases = [
+  "Using the Rootwise tree, find Margarethe Olsson's paternal grandmother, then her father. What is his place of birth?",
+  "Rootwise: Margarethe Olsson's father's mother had a father. Where was he born, according to the tree?",
+]
+expect_answer = "Östra Ämtervik"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "fact_add" }]
+steps = []
+
+[[scenario]]
+name = "family_add_emigration"
+fixture = "heldout3/family.html"
+tags = ["heldout3", "form"]
+goal = "In Rootwise, add an Emigration fact to Karl Olsson (1889–1960): the date is about 1912 (year only) and the place is Göteborg, Västra Götaland, Sweden."
+paraphrases = [
+  "Record in Rootwise that Karl Olsson (1889–1960) emigrated about 1912, year only, from Göteborg, Västra Götaland, Sweden, as an Emigration fact on his profile.",
+  "Add a new fact to the Rootwise profile of Karl Olsson (1889–1960): type Emigration, date about 1912 (just the year), place Göteborg, Västra Götaland, Sweden.",
+]
+expect_records = [{ event = "fact_add", person = "P-0004", person_name = "Karl Olsson", type = "Emigration", date = "ABT 1912", place = "Göteborg, Västra Götaland, Sweden" }]
+allow_records = []
+forbid_records = [{ event = "fact_add", person = "P-0012" }]
+steps = []
+
+[[scenario]]
+name = "newspaper_remove_games_addon"
+fixture = "heldout3/newspaper.html"
+tags = ["heldout3", "failure"]
+goal = "In my Northgate Tribune account, remove the Crossword & Games add-on. Keep my Print + All-Access subscription and the other add-ons, and don't accept any discount offer to stay."
+paraphrases = [
+  "Drop the Crossword & Games add-on from my Northgate Tribune subscription. The Print + All-Access plan and my other add-ons stay, and I don't want any retention discount.",
+  "Please go into my Northgate Tribune account and remove Crossword & Games. Leave the Print + All-Access subscription and the other add-ons untouched, and decline any offer to keep it at a discount.",
+]
+expect_records = [{ event = "addon_remove", addon_id = "games", addon = "Crossword & Games", effective = "2026-10-22" }]
+allow_records = []
+forbid_records = [{ event = "retention_offer_accept" }, { event = "subscription_cancel" }, { event = "addon_remove", addon_id = "cooking" }, { event = "addon_remove", addon_id = "audio" }]
+steps = []
+
+[[scenario]]
+name = "newspaper_vacation_hold"
+fixture = "heldout3/newspaper.html"
+tags = ["heldout3", "form"]
+goal = "Put my Northgate Tribune print delivery on a vacation hold: I don't want papers from Thursday, October 15 through Sunday, October 25, 2026, and delivery should restart the day after that. Donate the missed papers to Newspapers in Education instead of taking an account credit."
+paraphrases = [
+  "Schedule a Northgate Tribune vacation hold with no print papers from Thursday, October 15 to Sunday, October 25, 2026 inclusive; delivery picks up again the following day. Send the missed papers to Newspapers in Education rather than crediting my account.",
+  "I'm away from Thursday, October 15 through Sunday, October 25, 2026. Pause my Northgate Tribune print delivery for exactly those days (it should resume the next day) and have the missed papers donated to Newspapers in Education, not credited.",
+]
+expect_records = [{ event = "vacation_hold", stop = "2026-10-15", resume = "2026-10-26", papers = "donate" }]
+allow_records = []
+forbid_records = [{ event = "subscription_cancel" }, { event = "delivery_problem" }]
+steps = []
+
+[[scenario]]
+name = "photobook_lofoten_order"
+fixture = "heldout3/photobook.html"
+tags = ["heldout3", "form"]
+goal = "Order my Printbloom project \"Lofoten 2026\" as a Hardcover 30×21 cm Landscape photo book: 40 pages, Premium matte paper, gloss cover, 2 copies, no gift box, shipped to Germany. Use Express shipping unless it costs more than €15, in which case use Standard."
+paraphrases = [
+  "On Printbloom, order the \"Lofoten 2026\" project as a Hardcover 30×21 cm Landscape book with 40 pages, Premium matte paper and a gloss cover. Two copies, without a gift box, delivered to Germany. Pick Express shipping if it's €15 or less; if Express costs more than €15, choose Standard.",
+  "Please place a Printbloom order for my \"Lofoten 2026\" photo book: Hardcover 30×21 cm Landscape, 40 pages, Premium matte paper, gloss cover, quantity 2, no gift box, shipping to Germany. Shipping should be Express, unless Express costs more than €15, then Standard.",
+]
+expect_records = [{ event = "order_place", project = "Lofoten 2026", project_id = "lofoten-2026", format = "hc-30x21", pages = "40", paper = "premium-matte", cover = "gloss", gift_box = "no", qty = "2", country = "DE", shipping = "standard", shipping_cost = "6.95", total = "144.93" }]
+allow_records = []
+forbid_records = [{ event = "order_place", shipping = "express" }, { event = "order_place", gift_box = "yes" }, { event = "order_place", project_id = "lofoten-2026-copy" }]
+steps = []
+
+[[scenario]]
+name = "photobook_tracking_number"
+fixture = "heldout3/photobook.html"
+tags = ["heldout3", "navigation"]
+goal = "What's the tracking number of the package that contained the hardcover books from my Printbloom order \"Nonna's 90th\"?"
+paraphrases = [
+  "Find the tracking number for the hardcover books in my Printbloom order \"Nonna's 90th\" (they may have shipped in a separate package).",
+  "My Printbloom order \"Nonna's 90th\" had hardcover books in it. Which tracking number belongs to the package with those books?",
+]
+expect_answer = "3SPRBL0045117790"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "order_place" }]
+steps = []
+
+[[scenario]]
+name = "furniture_buy_table_only"
+fixture = "heldout3/furniture.html"
+tags = ["heldout3", "restraint"]
+goal = "In my Oakhaven cart, buy only the Tarn side table. Move the Sundby sofa to Saved for later (don't delete it), then check out the side table with parcel delivery, paying with my saved Visa ending 4418. No assembly, no protection plans and no donation round-up."
+paraphrases = [
+  "Check out just the Tarn side table from my Oakhaven cart. Put the Sundby sofa in Saved for later rather than removing it. Use parcel delivery and my saved Visa ending 4418, and don't add assembly, any protection plan or the donation round-up.",
+  "Oakhaven: I only want the Tarn side table right now. Save the Sundby sofa for later (keep it, don't delete it), and order the table with parcel delivery on the saved Visa ending 4418. No assembly, no protection plan, no round-up donation.",
+]
+expect_records = [{ event = "cart_save_for_later", item = "Sundby 3-seat sofa — Oat bouclé" }, { event = "order_place", items = "Tarn side table — Walnut x1", services = "none", delivery = "parcel", delivery_fee = "19.00", donation = "0.00", payment = "visa-4418", total = "208.00" }]
+allow_records = []
+forbid_records = [{ event = "cart_remove" }, { event = "saved_remove" }, { event = "order_place", services = "Add assembly" }]
+steps = []
+
+[[scenario]]
+name = "furniture_delivery_fees_2025"
+fixture = "heldout3/furniture.html"
+tags = ["heldout3", "data"]
+goal = "How much did I pay in delivery fees in total across my Oakhaven orders placed in 2025? Don't count cancelled orders."
+paraphrases = [
+  "Add up the delivery fees on all my Oakhaven orders that were placed during 2025, leaving out any cancelled orders. What's the total?",
+  "Looking at my Oakhaven order history, what's the combined delivery fee for orders placed in calendar year 2025, excluding cancelled ones?",
+]
+expect_answer = "370.95"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "order_place" }, { event = "cart_remove" }]
+steps = []
+
+[[scenario]]
+name = "identity_revoke_legacy_token"
+fixture = "heldout3/identity.html"
+tags = ["heldout3", "failure"]
+goal = "In the Keyward admin console, revoke the API token named \"ci-deploy-legacy\" that was created by Oskar Brenning. Don't touch any other token."
+paraphrases = [
+  "Keyward admin: find the \"ci-deploy-legacy\" API token that Oskar Brenning created and revoke it. Every other API token must stay as it is.",
+  "Please revoke Oskar Brenning's \"ci-deploy-legacy\" API token in the Keyward admin console, and leave all the other tokens alone.",
+]
+expect_records = [{ event = "token_revoke", token_id = "tok_3b91", name = "ci-deploy-legacy", created_by = "Oskar Brenning" }]
+allow_records = []
+forbid_records = [{ event = "token_revoke", token_id = "tok_51c7" }, { event = "token_revoke", token_id = "tok_77e4" }, { event = "token_revoke", token_id = "tok_8a20" }, { event = "user_delete" }]
+steps = []
+
+[[scenario]]
+name = "identity_contractor_idle_timeout"
+fixture = "heldout3/identity.html"
+tags = ["heldout3", "navigation"]
+goal = "In the Keyward admin console, change the idle session timeout of the \"Contractors\" sign-on session policy to 30 minutes. Leave its maximum session lifetime and every other policy unchanged."
+paraphrases = [
+  "Keyward: set the \"Contractors\" session policy's idle timeout to 30 minutes, without changing its maximum session lifetime or any other policy.",
+  "Please update the sign-on session policy called \"Contractors\" in the Keyward admin console so people are signed out after 30 minutes idle. Nothing else should change, including the maximum session lifetime and the other policies.",
+]
+expect_records = [{ event = "policy_update", policy_id = "pol-contractors", policy = "Contractors", idle_timeout = "30m", max_lifetime = "8h", remember_device = "no" }]
+allow_records = []
+forbid_records = [{ event = "policy_update", policy_id = "pol-contractors-eu" }, { event = "policy_update", policy_id = "pol-default" }, { event = "token_revoke" }]
+steps = []
+
+[[scenario]]
+name = "donate_one_time_in_honour"
+fixture = "heldout3/donate.html"
+tags = ["heldout3", "restraint"]
+goal = "On the Brightwater Food Bank site, make a one-time donation of €75 to the Winter Meals fund in honour of Zoë Achterberg, and send her an e-card at zoe.achterberg@ziggo.nl. It must not be a monthly gift, and don't cover the transaction fee."
+paraphrases = [
+  "Donate €75 once (not monthly) to Brightwater Food Bank's Winter Meals fund, dedicated in honour of Zoë Achterberg, with an e-card to zoe.achterberg@ziggo.nl. Leave the transaction-fee cover off.",
+  "Please give a single €75 gift to Brightwater Food Bank for Winter Meals in honour of Zoë Achterberg and have an e-card sent to zoe.achterberg@ziggo.nl. No monthly giving, and I don't want to cover the transaction fee.",
+]
+expect_records = [{ event = "donation", frequency = "one_time", amount = "75.00", fund = "Winter Meals", cover_fee = "no", charged = "75.00", dedication = "honour", honoree = "Zoë Achterberg", ecard = "yes", ecard_email = "zoe.achterberg@ziggo.nl" }]
+allow_records = []
+forbid_records = [{ event = "donation", frequency = "monthly" }, { event = "donation", cover_fee = "yes" }]
+steps = []
+
+[[scenario]]
+name = "donate_deductible_2025"
+fixture = "heldout3/donate.html"
+tags = ["heldout3", "data"]
+goal = "From my giving history on the Brightwater Food Bank site, what's the total of my tax-deductible gifts made in 2025? Only donations count; leave out event tickets, shop orders and refunded payments."
+paraphrases = [
+  "Add up my tax-deductible Brightwater Food Bank donations from calendar year 2025 using my giving history. Event tickets, shop purchases and refunded payments don't count. What's the total?",
+  "For my 2025 tax return: how much did I donate to Brightwater Food Bank in 2025, counting only completed donations (not event tickets, shop orders or refunds)?",
+]
+expect_answer = "612.45"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "donation" }]
+steps = []
+
+[[scenario]]
+name = "fitness_book_skip_full_class"
+fixture = "heldout3/fitness.html"
+tags = ["heldout3", "restraint"]
+goal = "At Pulse & Barre, book two classes at the Majorstuen studio for the week of 5 October 2026: the Tuesday 07:00 Spin 45 with Ronja Vik and the Thursday 18:30 Barre Burn with Delphine Aubry. If either class is full, don't join its waitlist and don't pick a different class instead; just book the other one."
+paraphrases = [
+  "Pulse & Barre, Majorstuen studio, week of 5 October 2026: I want Spin 45 with Ronja Vik on Tuesday at 07:00 and Barre Burn with Delphine Aubry on Thursday at 18:30. Book both; if one of them is full, skip it (no waitlist, no substitute class) and book only the other.",
+  "Book me into Tuesday 07:00 Spin 45 (Ronja Vik) and Thursday 18:30 Barre Burn (Delphine Aubry) at Pulse & Barre's Majorstuen studio in the week of 5 October 2026. Should one be full, don't waitlist it or swap in another class; book the one that has space.",
+]
+expect_records = [{ event = "class_book", class = "Spin 45", instructor = "Ronja Vik", studio = "Majorstuen", date = "2026-10-06", time = "07:00" }]
+allow_records = []
+forbid_records = [{ event = "waitlist_join" }, { event = "class_cancel" }, { event = "class_book", class = "Barre Burn" }]
+steps = []
+
+[[scenario]]
+name = "fitness_freeze_membership"
+fixture = "heldout3/fitness.html"
+tags = ["heldout3", "form"]
+goal = "Freeze my Pulse & Barre membership because I'm travelling. The freeze should cover Monday 12 October through Sunday 1 November 2026."
+paraphrases = [
+  "I'll be travelling, so put my Pulse & Barre membership on freeze from Monday 12 October to Sunday 1 November 2026 inclusive.",
+  "Please set up a travel freeze on my Pulse & Barre membership covering Monday 12 October through Sunday 1 November 2026.",
+]
+expect_records = [{ event = "membership_freeze", reason = "travel", start = "2026-10-12", weeks = "3", last_day = "2026-11-01", resume = "2026-11-02" }]
+allow_records = []
+forbid_records = [{ event = "membership_cancel_request" }, { event = "class_cancel" }]
+steps = []
+
+[[scenario]]
+name = "gigs_post_map_job"
+fixture = "heldout3/gigs.html"
+tags = ["heldout3", "form"]
+goal = "On Gigsmith, post a fixed-price job titled \"Illustrated map of the Hardanger fjord for a hiking guide\" in the Design & Creative › Illustration category, with the skills Adobe Illustrator, Cartography and Watercolor. Expert level, budget $1,200, project length 1 to 3 months. Make it invite-only, require an NDA, and don't boost it."
+paraphrases = [
+  "Post a Gigsmith job: \"Illustrated map of the Hardanger fjord for a hiking guide\", category Design & Creative › Illustration, skills Adobe Illustrator, Cartography and Watercolor, Expert level, fixed price of $1,200, 1 to 3 months. Only invited freelancers should see it, an NDA is required, and no paid boost.",
+  "Please create a fixed-price job on Gigsmith called \"Illustrated map of the Hardanger fjord for a hiking guide\" (Design & Creative › Illustration). Skills: Adobe Illustrator, Cartography, Watercolor. Experience: Expert. Budget $1,200; length 1 to 3 months. Invite-only, NDA required, not boosted.",
+]
+expect_records = [{ event = "job_post", title = "Illustrated map of the Hardanger fjord for a hiking guide", category = "Design & Creative > Illustration", skills = "Adobe Illustrator; Cartography; Watercolor", level = "expert", budget_type = "fixed", budget = "1200.00", length = "1 to 3 months", visibility = "invite_only", nda = "yes", boost = "no" }]
+allow_records = [{ event = "job_draft" }]
+forbid_records = [{ event = "job_post", boost = "yes" }, { event = "proposal_hire" }, { event = "proposal_decline" }]
+steps = []
+
+[[scenario]]
+name = "gigs_best_proposal_under_60"
+fixture = "heldout3/gigs.html"
+tags = ["heldout3", "data"]
+goal = "On Gigsmith, look at the proposals for my job \"Copy-editing for a Norwegian–English hiking guide\". Among the freelancers who proposed an hourly rate under $60, who has the highest Job Success score?"
+paraphrases = [
+  "For my Gigsmith job \"Copy-editing for a Norwegian–English hiking guide\", consider only proposals with a proposed rate below $60/hr. Which of those freelancers has the best Job Success score?",
+  "Gigsmith: which freelancer proposing less than $60 an hour on my \"Copy-editing for a Norwegian–English hiking guide\" job has the highest Job Success?",
+]
+expect_answer = "Kalinda Mercer"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "proposal_hire" }, { event = "proposal_decline" }, { event = "job_post" }]
+steps = []

@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Harrowgate Learning</title>
+<script src="../common.js"></script>
+<style>
+  :root { --maroon: #7a1f2b; --maroon-d: #5c1520; --paper: #faf7f2; --line: #e5ded3; --ink: #2b2522; --muted: #7b716a; --link: #8a2432; --ok: #2f7a4b; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14.5px/1.5 "Lato", "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: var(--paper); }
+  a { color: var(--link); }
+  .app { display: grid; grid-template-columns: 86px 1fr; min-height: 100vh; }
+  nav.global { background: var(--maroon-d); color: #f3e3e5; display: flex; flex-direction: column; align-items: stretch; padding-top: 10px; position: sticky; top: 0; height: 100vh; }
+  nav.global .brand { text-align: center; font-weight: 800; font-size: 20px; letter-spacing: 1px; margin: 4px 0 14px; color: #fff; }
+  nav.global a, nav.global button { color: #f3e3e5; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; font-size: 11.5px; background: none; border: 0; cursor: pointer; font-family: inherit; position: relative; }
+  nav.global a .i, nav.global button .i { font-size: 20px; line-height: 1; }
+  nav.global a.on, nav.global button.on { background: #fff; color: var(--maroon-d); }
+  nav.global .avatar { width: 30px; height: 30px; border-radius: 50%; background: #e9c46a; color: var(--maroon-d); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+  nav.global .badge { position: absolute; top: 6px; right: 18px; background: #e9c46a; color: var(--maroon-d); font-size: 10px; border-radius: 8px; padding: 0 5px; font-weight: 700; }
+  .tray { position: fixed; left: 86px; top: 0; bottom: 0; width: 300px; background: #fff; border-right: 1px solid var(--line); box-shadow: 8px 0 30px rgba(0,0,0,.12); padding: 22px; z-index: 20; }
+  .tray h2 { margin: 10px 0 2px; font-size: 19px; }
+  .tray a, .tray button.lnk { display: block; padding: 8px 0; border-bottom: 1px solid #f0ebe4; color: var(--link); text-decoration: none; background: none; border-left: 0; border-right: 0; border-top: 0; width: 100%; text-align: left; font: inherit; cursor: pointer; }
+  .tray .close { position: absolute; top: 12px; right: 12px; background: none; border: 0; font-size: 18px; cursor: pointer; }
+  .top { display: flex; align-items: center; gap: 10px; padding: 14px 30px; border-bottom: 1px solid var(--line); background: #fff; }
+  .crumbs { font-size: 15px; }
+  .crumbs a { text-decoration: none; }
+  .crumbs .sep { color: #bbb; margin: 0 6px; }
+  .top .term { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .content { padding: 24px 30px 50px; max-width: 1180px; }
+  h1 { font-size: 26px; font-weight: 400; margin: 0 0 16px; }
+  h2 { font-size: 19px; font-weight: 600; margin: 0 0 10px; }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .dash { display: grid; grid-template-columns: 1fr 300px; gap: 28px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .ccard { background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .ccard .band { height: 90px; position: relative; }
+  .ccard .band span { position: absolute; left: 12px; bottom: 8px; color: #fff; font-size: 12px; opacity: .9; }
+  .ccard .body { padding: 10px 12px; }
+  .ccard .body a.title { font-weight: 700; text-decoration: none; display: block; }
+  .ccard .icons { display: flex; gap: 14px; padding: 6px 12px 12px; }
+  .ccard .icons a { text-decoration: none; font-size: 12.5px; color: var(--muted); }
+  .side h3 { border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-top: 18px; }
+  .todo { padding: 8px 0; border-bottom: 1px solid #f0ebe4; font-size: 13.5px; }
+  .todo a { font-weight: 600; text-decoration: none; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .tabs [role=tab] { background: none; border: 0; border-bottom: 3px solid transparent; padding: 9px 16px; font: inherit; cursor: pointer; color: var(--muted); text-decoration: none; }
+  .tabs [role=tab][aria-selected=true] { border-bottom-color: var(--maroon); color: var(--ink); font-weight: 700; }
+  .tabs.sub { border-bottom: 0; margin: -6px 0 16px; }
+  .tabs.sub [role=tab] { border: 1px solid var(--line); border-radius: 16px; padding: 5px 14px; font-size: 13.5px; }
+  .tabs.sub [role=tab][aria-selected=true] { background: var(--maroon); border-color: var(--maroon); color: #fff; }
+  table.t { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); }
+  table.t th, table.t td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  table.t th { background: #f4efe7; font-weight: 700; font-size: 13px; }
+  .course { display: grid; grid-template-columns: 190px 1fr; gap: 28px; }
+  .cnav a { display: block; padding: 7px 10px; text-decoration: none; border-left: 3px solid transparent; color: var(--link); }
+  .cnav a.on { border-left-color: var(--maroon); color: var(--ink); font-weight: 700; background: #f4efe7; }
+  .chead { border-radius: 6px; padding: 16px 20px; color: #fff; margin-bottom: 18px; }
+  .chead h1 { margin: 0; color: #fff; font-size: 24px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; margin-bottom: 18px; }
+  .grade-total { display: flex; align-items: baseline; gap: 12px; background: #f4efe7; border: 1px solid var(--line); padding: 12px 16px; border-radius: 6px; margin-bottom: 14px; }
+  .grade-total b { font-size: 22px; }
+  .skeleton { height: 14px; background: linear-gradient(90deg, #eee 0, #f7f4ef 50%, #eee 100%); background-size: 200% 100%; animation: sh 1.1s infinite; border-radius: 4px; margin: 10px 0; }
+  @keyframes sh { to { background-position: -200% 0; } }
+  .pill { display: inline-block; font-size: 11.5px; border-radius: 10px; padding: 1px 8px; background: #efe8dd; }
+  .pill.ok { background: #e3f1e7; color: var(--ok); }
+  .pill.wait { background: #fdf3d8; color: #8a6200; }
+  details.mod { background: #fff; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 10px; }
+  details.mod summary { padding: 10px 14px; cursor: pointer; font-weight: 700; background: #f4efe7; }
+  details.mod div { padding: 8px 14px; border-top: 1px solid #f0ebe4; }
+  .btn { font: inherit; padding: 7px 16px; border-radius: 4px; border: 1px solid #c7bdb2; background: #fff; cursor: pointer; color: var(--ink); }
+  .btn.pri { background: var(--maroon); border-color: var(--maroon); color: #fff; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.link { border: 0; background: none; color: var(--link); padding: 4px 6px; text-decoration: underline; }
+  label.f { display: block; font-weight: 700; font-size: 13px; margin: 12px 0 4px; }
+  input[type=text], input[type=email], select, textarea { font: inherit; padding: 7px 10px; border: 1px solid #c7bdb2; border-radius: 4px; width: 360px; max-width: 100%; background: #fff; }
+  textarea { width: 100%; min-height: 90px; }
+  .nrow { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 0; border-bottom: 1px solid #f0ebe4; }
+  .nrow label { cursor: pointer; flex: 1; }
+  .nrow label b { display: block; font-weight: 600; }
+  .nrow label small { color: var(--muted); font-size: 12.5px; }
+  input.sw { appearance: none; -webkit-appearance: none; width: 42px; height: 24px; border-radius: 12px; background: #cfc6bb; position: relative; cursor: pointer; transition: background .15s; margin: 0; flex: none; }
+  input.sw::before { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  input.sw:checked { background: var(--ok); }
+  input.sw:checked::before { left: 21px; }
+  input.sw:focus-visible { outline: 2px solid #e9c46a; outline-offset: 2px; }
+  .lb { position: relative; display: inline-block; }
+  .lb > button { font: inherit; min-width: 320px; text-align: left; padding: 8px 34px 8px 12px; border: 1px solid #c7bdb2; border-radius: 4px; background: #fff; cursor: pointer; position: relative; }
+  .lb > button::after { content: "▾"; position: absolute; right: 12px; top: 8px; color: var(--muted); }
+  .lb [role=listbox] { position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; background: #fff; border: 1px solid #c7bdb2; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,.14); list-style: none; margin: 0; padding: 4px 0; z-index: 10; }
+  .lb [role=option] { padding: 8px 12px; cursor: pointer; }
+  .lb [role=option]:hover, .lb [role=option][aria-selected=true] { background: #f4efe7; }
+  .lb [role=option] small { color: var(--muted); margin-left: 6px; }
+  .ovpanel { border: 1px solid var(--line); border-left: 4px solid var(--maroon); border-radius: 6px; padding: 12px 16px; margin-top: 14px; background: #fffdf9; }
+  .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: #fff; }
+  .cal div { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-height: 86px; padding: 4px 6px; font-size: 12px; }
+  .cal .hd { min-height: 0; background: #f4efe7; font-weight: 700; text-align: center; }
+  .cal .ev { display: block; border-radius: 3px; padding: 1px 4px; margin-top: 3px; color: #fff; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inbox { display: grid; grid-template-columns: 340px 1fr; gap: 0; border: 1px solid var(--line); background: #fff; min-height: 420px; }
+  .inbox .list button { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #f0ebe4; background: #fff; padding: 10px 14px; cursor: pointer; font: inherit; }
+  .inbox .list button.on { background: #f4efe7; }
+  .inbox .list button.unread b { color: var(--maroon); }
+  .inbox .view { border-left: 1px solid var(--line); padding: 16px 20px; }
+  .post { border-bottom: 1px solid #f0ebe4; padding: 12px 0; }
+  .overlay { position: fixed; inset: 0; background: rgba(30,20,20,.45); display: flex; align-items: center; justify-content: center; z-index: 40; }
+  .dialog { background: #fff; border-radius: 6px; width: 520px; padding: 20px 22px; box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+  .toast { position: fixed; top: 18px; right: 22px; background: var(--ok); color: #fff; padding: 10px 16px; border-radius: 4px; z-index: 50; }
+  footer.foot { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); display: flex; gap: 16px; }
+  footer.foot a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="global" aria-label="Global">
+    <div class="brand">H<span style="color:#e9c46a">L</span></div>
+    <button type="button" id="acct-btn" aria-label="Account" aria-expanded="false" aria-controls="acct-tray"><span class="avatar">MA</span>Account</button>
+    <a href="#/dashboard" data-g="dashboard"><span class="i" aria-hidden="true">▦</span>Dashboard</a>
+    <a href="#/courses" data-g="courses"><span class="i" aria-hidden="true">▤</span>Courses</a>
+    <a href="#/calendar" data-g="calendar"><span class="i" aria-hidden="true">▣</span>Calendar</a>
+    <a href="#/inbox" data-g="inbox"><span class="i" aria-hidden="true">✉</span>Inbox<span class="badge">2</span></a>
+    <a href="#/help" data-g="help"><span class="i" aria-hidden="true">?</span>Help</a>
+  </nav>
+  <div>
+    <div class="top"><div class="crumbs" id="crumbs"></div><div class="term">Autumn 2026 · Marisol Achterberg (HL-20931)</div></div>
+    <div class="content" id="main"></div>
+  </div>
+</div>
+<aside class="tray" id="acct-tray" hidden aria-label="Account">
+  <button type="button" class="close" id="tray-close" aria-label="Close account menu">✕</button>
+  <div class="avatar" style="width:54px;height:54px;border-radius:50%;background:#e9c46a;color:#5c1520;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px">MA</div>
+  <h2>Marisol Achterberg</h2>
+  <div class="muted">Student · HL-20931</div>
+  <div style="margin-top:14px">
+    <a href="#/account/profile" data-tray-link>Account settings</a>
+    <a href="#/account/profile" data-tray-link>Profile</a>
+    <a href="#/files" data-tray-link>Files</a>
+    <a href="#/help" data-tray-link>Accessibility</a>
+    <button type="button" class="lnk" id="logout">Log out</button>
+  </div>
+</aside>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3000); };
+
+  const COURSES = [
+    { code: 'WC-101', name: 'Watercolour Foundations', instructor: 'Ffion Carrow', term: 'Autumn 2026', current: true, color: '#3b7ea1', meets: 'Tuesdays 18:30–20:30 · Studio 2, Albert Street campus' },
+    { code: 'PH-210', name: 'Digital Photography II', instructor: 'Dev Malhotra', term: 'Autumn 2026', current: true, color: '#5b5f97', meets: 'Wednesdays 19:00–21:00 · Media Lab, Station Road' },
+    { code: 'CE-220', name: 'Ceramics II: Wheel Throwing', instructor: 'Agnieszka Nowak', term: 'Autumn 2026', current: true, color: '#b5651d', meets: 'Thursdays 18:00–21:00 · Kiln Room, Albert Street campus' },
+    { code: 'LG-105', name: 'Conversational Spanish 1', instructor: 'Lucía Ferrándiz', term: 'Autumn 2026', current: true, color: '#c0392b', meets: 'Mondays 19:00–20:30 · Room B12, Station Road' },
+    { code: 'HI-230', name: 'Local History: Mills & Waterways', instructor: 'Owen Pritchard', term: 'Autumn 2026', current: true, color: '#2e7d5b', meets: 'Saturdays 10:00–12:00 · Heritage Centre, Nidd Walk' },
+    { code: 'WR-110', name: 'Creative Writing Workshop', instructor: 'Tamsin Oduya', term: 'Spring 2026', current: false, color: '#6d597a', meets: 'Tuesdays 19:00–21:00' },
+    { code: 'BK-101', name: 'Bookkeeping Basics', instructor: 'Graham Leckie', term: 'Spring 2026', current: false, color: '#4a6fa5', meets: 'Wednesdays 18:30–20:30' },
+    { code: 'CE-120', name: 'Ceramics I', instructor: 'Agnieszka Nowak', term: 'Spring 2026', current: false, color: '#a0522d', meets: 'Thursdays 18:00–21:00' },
+  ];
+  const C = Object.fromEntries(COURSES.map((c) => [c.code, c]));
+  // [name, due, score|null, outOf, status]  status: graded | upcoming | submitted | excused
+  const G = {
+    'WC-101': [['Colour wheel study', '18 Aug', 47, 50, 'graded'], ['Wet-on-wet washes', '25 Aug', 44, 50, 'graded'], ['Value scale exercise', '1 Sep', 45, 50, 'graded'], ['Sketchbook check 1', '8 Sep', 92, 100, 'graded'], ['Botanical study', '15 Sep', 88, 100, 'graded'], ['Midterm portfolio review', '22 Sep', 125, 150, 'graded'], ['Landscape in three washes', '29 Sep', null, 100, 'upcoming'], ['Sketchbook check 2', '13 Oct', null, 100, 'upcoming'], ['Final portfolio', '24 Nov', null, 200, 'upcoming']],
+    'PH-210': [['Exposure triangle quiz', '17 Aug', 18, 25, 'graded'], ['Golden hour assignment', '31 Aug', 82, 100, 'graded'], ['Portrait lighting set', '7 Sep', 71, 100, 'graded'], ['Street photography walk', '14 Sep', 42, 50, 'graded'], ['Critique participation (weeks 1–5)', '21 Sep', 57, 75, 'graded'], ['Night photography', '23 Sep', null, 50, 'submitted'], ['RAW editing workflow', '30 Sep', null, 50, 'upcoming'], ['Photo essay', '28 Oct', null, 150, 'upcoming']],
+    'CE-220': [['Centering practice', '20 Aug', 48, 50, 'graded'], ['Cylinders (set of 3)', '3 Sep', 92, 100, 'graded'], ['Bowls (set of 2)', '10 Sep', 88, 100, 'graded'], ['Glaze test tiles', '17 Sep', 45, 50, 'graded'], ['Lidded jar', '1 Oct', null, 100, 'upcoming'], ['Final set', '19 Nov', null, 200, 'upcoming']],
+    'LG-105': [['Unidad 1 quiz', '17 Aug', 21, 25, 'graded'], ['Unidad 2 quiz', '24 Aug', 17, 25, 'graded'], ['Oral presentation: Me presento', '31 Aug', 38, 50, 'graded'], ['Listening test 1', '7 Sep', 36, 50, 'graded'], ['Workbook check', '14 Sep', 40, 50, 'graded'], ['Unidad 3 quiz', '14 Sep', 18, 25, 'graded'], ['Participation (weeks 1–5)', '21 Sep', 22, 25, 'graded'], ['Unidad 4 quiz', '28 Sep', null, 25, 'upcoming'], ['Role-play: En el restaurante', '5 Oct', null, 50, 'upcoming']],
+    'HI-230': [['Source analysis: 1851 census', '22 Aug', 41, 50, 'graded'], ['Mill site field notes', '5 Sep', 39, 50, 'graded'], ['Field trip reflection', '5 Sep', null, 20, 'excused'], ['Map reading exercise', '12 Sep', 44, 50, 'graded'], ['Research proposal', '19 Sep', 39, 50, 'graded'], ['Oral history interview', '10 Oct', null, 100, 'upcoming'], ['Final essay', '21 Nov', null, 150, 'upcoming']],
+    'WR-110': [['Flash fiction', '10 Feb', 43, 50, 'graded'], ['Character sketch', '3 Mar', 41, 50, 'graded'], ['Workshop feedback', '31 Mar', 42, 50, 'graded'], ['Final story', '28 Apr', 126, 150, 'graded']],
+    'BK-101': [['Double-entry basics', '11 Feb', 38, 50, 'graded'], ['Trial balance', '11 Mar', 35, 50, 'graded'], ['VAT returns', '8 Apr', 32, 50, 'graded'], ['Final exam', '29 Apr', 112, 150, 'graded']],
+    'CE-120': [['Pinch pots', '5 Feb', 46, 50, 'graded'], ['Coil vessel', '5 Mar', 44, 50, 'graded'], ['Slab box', '2 Apr', 45, 50, 'graded'], ['Final piece', '30 Apr', 44, 50, 'graded']],
+  };
+  const ANN = {
+    'WC-101': [['Bring a hairdryer on Tuesday', 'We’ll be layering washes and speeding up drying. Spare hairdryers are in the store cupboard.'], ['Portfolio feedback is up', 'Midterm portfolio comments are now on your Grades page.']],
+    'PH-210': [['Media Lab closed 30 Sep', 'The lab is closed for maintenance. Use the Station Road library machines for the RAW workflow task.'], ['Critique night', 'Bring three prints from the street walk.']],
+    'CE-220': [['Kiln firing schedule', 'Bisque firing Friday; glaze firing the following Wednesday.'], ['Clay order', 'Stoneware and porcelain are both available at the front desk (£12 a bag).']],
+    'LG-105': [['¡Bienvenidos!', 'Remember to practise ten minutes a day with the Unidad 4 audio.'], ['Room change on 5 Oct', 'We’ll be in B14 for the role-play session.']],
+    'HI-230': [['Walk to Castley Mill', 'Meet at the Heritage Centre at 10:00 sharp on Saturday. Wear boots.'], ['Archive visit', 'The county archive has agreed to open its mill ledgers for us in October.']],
+  };
+  const THREADS = {
+    'WC-101': [['Favourite brushes for washes?', 'Hamid Qureshi', 7], ['Paper weight recommendations', 'Ffion Carrow', 12], ['Botanical study reference photos', 'Jess Kowalczyk', 4]],
+    'PH-210': [['Street walk meeting point', 'Dev Malhotra', 9], ['Lightroom vs Darktable', 'Sunil Rao', 15]],
+    'CE-220': [['Cracks in my cylinders', 'Marisol Achterberg', 6], ['Glaze combinations that worked', 'Agnieszka Nowak', 11]],
+    'LG-105': [['Grupo de conversación los jueves', 'Lucía Ferrándiz', 8], ['Pronunciation of “rr”', 'Tom Ashworth', 5]],
+    'HI-230': [['1851 census transcription tips', 'Owen Pritchard', 10], ['Old maps of the Nidd', 'Beatrice Hale', 3]],
+  };
+  const PEOPLE = ['Hamid Qureshi', 'Jess Kowalczyk', 'Sunil Rao', 'Beatrice Hale', 'Tom Ashworth', 'Niamh Delaney', 'Oluwaseun Bello', 'Greta Lindahl', 'Callum Firth', 'Priya Anand', 'Marisol Achterberg', 'Ellis Gray'];
+  const NTYPES = [
+    ['announcements', 'Announcements', 'New announcements from your instructors'],
+    ['due_dates', 'Assignment due dates', 'Reminders 24 hours before something is due'],
+    ['grades', 'Grades posted', 'When an instructor posts a grade or feedback'],
+    ['discussion_replies', 'Discussion replies', 'Replies to discussions you’ve posted in or follow'],
+    ['instructor_messages', 'Instructor messages', 'Direct messages from your instructors'],
+  ];
+  const all = (v) => Object.fromEntries(NTYPES.map(([k]) => [k, v]));
+  const NS = {
+    email: { defaults: all(true), overrides: { 'CE-220': Object.assign(all(true), { due_dates: false }) }, pick: null, draft: null },
+    push: { defaults: Object.assign(all(true), { discussion_replies: false }), overrides: { 'HI-230': Object.assign(all(true), { announcements: false, discussion_replies: false }) }, pick: null, draft: null },
+  };
+  const st = { digest: 'mon', digestDue: true, profile: { name: 'Marisol Achterberg', pronouns: 'she/her', bio: 'Retired surveyor, learning everything I never had time for.' }, privacy: { profile: true, messages: true, online: false }, apps: [['Google Drive', 'Connected 12 Aug 2026'], ['Zoom', 'Connected 14 Aug 2026'], ['Harrowgate Library', 'Connected 10 Aug 2026']], inbox: null, courseTab: 'current', calMonth: 8 };
+  const letter = (p) => (p >= 93 ? 'A' : p >= 90 ? 'A−' : p >= 87 ? 'B+' : p >= 83 ? 'B' : p >= 80 ? 'B−' : p >= 77 ? 'C+' : p >= 73 ? 'C' : p >= 70 ? 'C−' : p >= 60 ? 'D' : 'F');
+
+  function route() { return location.hash.replace(/^#\/?/, '') || 'dashboard'; }
+  function crumbs(parts) { q('#crumbs').innerHTML = parts.map(([t, href]) => (href ? `<a href="${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)).join('<span class="sep">›</span>'); }
+  const foot = () => `<footer class="foot"><span>© 2026 Harrowgate Adult & Community Learning</span><a href="#/help">Help</a><a href="#/help">Accessibility statement</a><a href="#/help">Privacy</a></footer>`;
+
+  function dashboard() {
+    crumbs([['Dashboard']]);
+    const cur = COURSES.filter((c) => c.current);
+    const todo = [['RAW editing workflow', 'PH-210', 'Wed 30 Sep'], ['Unidad 4 quiz', 'LG-105', 'Mon 28 Sep'], ['Landscape in three washes', 'WC-101', 'Tue 29 Sep'], ['Lidded jar', 'CE-220', 'Thu 1 Oct'], ['Oral history interview', 'HI-230', 'Sat 10 Oct']];
+    return `<h1>Dashboard</h1><div class="dash"><div><div class="cards">${cur.map((c) => `<div class="ccard"><div class="band" style="background:${c.color}"><span>${esc(c.term)}</span></div><div class="body"><a class="title" href="#/course/${c.code}/overview" style="color:${c.color}">${esc(c.name)}</a><div class="muted">${c.code} · ${esc(c.instructor)}</div></div><div class="icons"><a href="#/course/${c.code}/overview" aria-label="Announcements for ${esc(c.name)}">📣 Announcements</a><a href="#/course/${c.code}/assignments" aria-label="Assignments for ${esc(c.name)}">📝 Assignments</a><a href="#/course/${c.code}/discussions" aria-label="Discussions for ${esc(c.name)}">💬</a></div></div>`).join('')}</div>
+      <h2 style="margin-top:26px">Recent activity</h2>
+      <div class="panel">${[['Ffion Carrow commented on Midterm portfolio review', 'WC-101', '22 Sep'], ['New announcement: Media Lab closed 30 Sep', 'PH-210', '21 Sep'], ['Lucía Ferrándiz replied in “Grupo de conversación los jueves”', 'LG-105', '20 Sep'], ['Owen Pritchard posted “Walk to Castley Mill”', 'HI-230', '19 Sep']].map(([t, c, d]) => `<div class="todo">${esc(t)} <span class="muted">· ${c} · ${d}</span></div>`).join('')}</div></div>
+      <aside class="side"><h3>To do</h3>${todo.map(([t, c, d]) => `<div class="todo"><a href="#/course/${c}/assignments">${esc(t)}</a><div class="muted">${c} · due ${d}</div></div>`).join('')}
+      <h3>Coming up</h3><div class="todo">Castley Mill walk<div class="muted">HI-230 · Sat 26 Sep, 10:00</div></div><div class="todo">Kiln firing<div class="muted">CE-220 · Fri 25 Sep</div></div>
+      <p><a href="#/calendar">View calendar</a></p></aside></div>${foot()}`;
+  }
+  function coursesPage() {
+    crumbs([['Courses']]);
+    const tab = st.courseTab;
+    const rows = (list) => `<table class="t"><thead><tr><th>Course</th><th>Code</th><th>Instructor</th><th>Term</th><th>Meets</th></tr></thead><tbody>${list.map((c) => `<tr><td><a href="#/course/${c.code}/overview">${esc(c.name)}</a></td><td>${c.code}</td><td>${esc(c.instructor)}</td><td>${esc(c.term)}${c.current ? '' : ' <span class="pill">Completed</span>'}</td><td class="muted">${esc(c.meets)}</td></tr>`).join('')}</tbody></table>`;
+    const cat = [['PT-150', 'Printmaking: Linocut', 'Winter 2027', 'Tuesdays 18:30–20:30', 'Places available'], ['LG-106', 'Conversational Spanish 2', 'Winter 2027', 'Mondays 19:00–20:30', 'Places available'], ['PH-310', 'Photobook Design', 'Winter 2027', 'Wednesdays 19:00–21:00', 'Waiting list'], ['GD-120', 'Garden Design Basics', 'Winter 2027', 'Saturdays 10:00–12:30', 'Places available'], ['CE-230', 'Ceramics III: Glaze Chemistry', 'Winter 2027', 'Thursdays 18:00–21:00', 'Full']];
+    let body;
+    if (tab === 'current') body = rows(COURSES.filter((c) => c.current));
+    else if (tab === 'past') body = rows(COURSES.filter((c) => !c.current));
+    else body = `<table class="t"><thead><tr><th>Course</th><th>Code</th><th>Term</th><th>Meets</th><th>Availability</th><th></th></tr></thead><tbody>${cat.map(([code, n, t, m, a]) => `<tr><td>${esc(n)}</td><td>${code}</td><td>${t}</td><td class="muted">${m}</td><td>${a}</td><td><button class="btn" type="button" data-enrol="${code}" ${a === 'Full' ? 'disabled' : ''}>${a === 'Waiting list' ? 'Join waiting list' : 'Request a place'}</button></td></tr>`).join('')}</tbody></table>`;
+    return `<h1>Courses</h1><div class="tabs" role="tablist">${[['current', 'Current'], ['past', 'Past'], ['catalogue', 'Catalogue']].map(([k, l]) => `<button type="button" role="tab" aria-selected="${k === tab}" data-ctab="${k}">${l}</button>`).join('')}</div><div role="tabpanel">${body}</div>${foot()}`;
+  }
+
+  const CTABS = [['overview', 'Overview'], ['modules', 'Modules'], ['assignments', 'Assignments'], ['grades', 'Grades'], ['discussions', 'Discussions'], ['people', 'People']];
+  function coursePage(code, tab, sub) {
+    const c = C[code];
+    if (!c) return notFound();
+    tab = CTABS.some(([k]) => k === tab) ? tab : 'overview';
+    crumbs([[c.code, `#/course/${c.code}/overview`], [CTABS.find(([k]) => k === tab)[1]]]);
+    let body = '';
+    if (tab === 'overview') {
+      body = `<div class="panel"><h2>Welcome</h2><p>${c.current ? `Welcome to ${esc(c.name)}. We meet ${esc(c.meets)}.` : `This course ran in ${esc(c.term)} and has now concluded. You can still read its materials.`}</p><p class="muted">Instructor: ${esc(c.instructor)}</p></div>
+        ${(ANN[code] || []).map(([t, b]) => `<div class="panel"><h3>📣 ${esc(t)}</h3><p>${esc(b)}</p><span class="muted">Posted by ${esc(c.instructor)}</span></div>`).join('')}`;
+    } else if (tab === 'modules') {
+      const weeks = ['Week 1: Getting started', 'Week 2: Core techniques', 'Week 3: Practice', 'Week 4: Building on it', 'Week 5: Review', 'Week 6: Projects'];
+      body = weeks.map((w, i) => `<details class="mod" ${i === 0 ? 'open' : ''}><summary>${w}</summary><div>📄 Session notes (PDF)</div><div>🎬 Demonstration video (${8 + i * 3} min)</div><div>📝 ${esc((G[code][i] || G[code][0])[0])}</div></details>`).join('');
+    } else if (tab === 'assignments') {
+      body = `<table class="t"><thead><tr><th>Assignment</th><th>Due</th><th>Points</th><th>Status</th></tr></thead><tbody>${G[code].map(([n, d, s, o, stt]) => `<tr><td>${esc(n)}</td><td>${d}</td><td>${o} pts</td><td>${stt === 'graded' ? '<span class="pill ok">Graded</span>' : stt === 'submitted' ? '<span class="pill wait">Submitted</span>' : stt === 'excused' ? '<span class="pill">Excused</span>' : '<span class="pill">Not yet due</span>'}</td></tr>`).join('')}</tbody></table><p class="muted">Scores and feedback are on the Grades page.</p>`;
+    } else if (tab === 'grades') {
+      body = `<div id="grades-box"><div class="muted">Loading grades…</div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:60%"></div></div>`;
+      loadGrades(code);
+    } else if (tab === 'discussions') {
+      const th = THREADS[code] || [];
+      if (sub != null && th[+sub]) {
+        const [t, a, n] = th[+sub];
+        body = `<p><a href="#/course/${code}/discussions">← All discussions</a></p><div class="panel"><h2>${esc(t)}</h2><div class="post"><b>${esc(a)}</b> <span class="muted">· started this discussion</span><p>Has anyone got thoughts on this? I’ve been trying a few things this week.</p></div>${Array.from({ length: Math.min(n, 3) }, (_, i) => `<div class="post"><b>${esc(PEOPLE[(i * 3 + code.length) % PEOPLE.length])}</b><p>${['Same here — the demo video helped.', 'I’d try it again with less water.', 'Bring it on Tuesday and we can look together.'][i]}</p></div>`).join('')}
+          <label class="f" for="reply">Reply</label><textarea id="reply"></textarea><div class="actions"><button class="btn pri" type="button" data-post-reply="${sub}">Post reply</button></div></div>`;
+      } else body = `<table class="t"><thead><tr><th>Discussion</th><th>Started by</th><th>Replies</th></tr></thead><tbody>${th.map(([t, a, n], i) => `<tr><td><a href="#/course/${code}/discussions/${i}">${esc(t)}</a></td><td>${esc(a)}</td><td>${n}</td></tr>`).join('')}</tbody></table>`;
+    } else if (tab === 'people') {
+      body = `<table class="t"><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody><tr><td>${esc(c.instructor)}</td><td>Instructor</td></tr>${PEOPLE.slice(0, 8 + (code.charCodeAt(1) % 4)).map((p) => `<tr><td>${esc(p)}</td><td>Student</td></tr>`).join('')}</tbody></table>`;
+    }
+    return `<div class="chead" style="background:${c.color}"><h1>${esc(c.name)}</h1><div>${c.code} · ${esc(c.term)} · ${esc(c.instructor)}</div></div>
+      <div class="course"><nav class="cnav" aria-label="Course">${CTABS.map(([k, l]) => `<a href="#/course/${code}/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav><div>${body}</div></div>${foot()}`;
+  }
+  let gradeToken = 0;
+  function loadGrades(code) {
+    const tok = ++gradeToken;
+    const ms = 300 + ((code.charCodeAt(0) * 7 + code.charCodeAt(3) * 13) % 500);
+    setTimeout(() => {
+      if (tok !== gradeToken) return;
+      const box = q('#grades-box'); if (!box) return;
+      const c = C[code], items = G[code];
+      const graded = items.filter((x) => x[4] === 'graded');
+      const s = graded.reduce((a, x) => a + x[2], 0), o = graded.reduce((a, x) => a + x[3], 0);
+      const pct = (s / o) * 100;
+      box.innerHTML = `<div class="grade-total"><span>${c.current ? 'Current grade' : 'Final grade'}:</span><b>${pct.toFixed(1)}%</b><span>(${letter(pct)})</span><span class="muted" style="margin-left:auto">${s} / ${o} points from graded work</span></div>
+        <table class="t"><thead><tr><th>Name</th><th>Due</th><th>Status</th><th>Score</th><th>Out of</th></tr></thead><tbody>${items.map(([n, d, sc, oo, stt]) => `<tr><td>${esc(n)}</td><td>${d}</td><td>${stt === 'graded' ? 'Graded' : stt === 'submitted' ? 'Submitted — awaiting grade' : stt === 'excused' ? 'Excused' : 'Not yet due'}</td><td>${sc == null ? '–' : sc}</td><td>${oo}</td></tr>`).join('')}</tbody></table>
+        <p class="muted">Only graded work counts towards the ${c.current ? 'current' : 'final'} grade. Excused items don’t count.</p>`;
+    }, ms);
+  }
+
+  function calendarPage() {
+    crumbs([['Calendar']]);
+    const m = st.calMonth; // 7 = Aug, 8 = Sep, 9 = Oct (2026)
+    const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const first = new Date(Date.UTC(2026, m, 1)).getUTCDay();
+    const dim = new Date(Date.UTC(2026, m + 1, 0)).getUTCDate();
+    const dowCourse = { 1: 'LG-105', 2: 'WC-101', 3: 'PH-210', 4: 'CE-220', 6: 'HI-230' };
+    let cells = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<div class="hd">${d}</div>`);
+    for (let i = 0; i < first; i++) cells.push('<div></div>');
+    for (let d = 1; d <= dim; d++) {
+      const dow = (first + d - 1) % 7; const cc = dowCourse[dow];
+      const due = Object.entries(G).filter(([k]) => C[k].current).flatMap(([k, arr]) => arr.filter((x) => x[1] === `${d} ${names[m].slice(0, 3)}`).map((x) => [k, x[0]]));
+      cells.push(`<div><b>${d}</b>${cc && m >= 7 ? `<span class="ev" style="background:${C[cc].color}">${cc} class</span>` : ''}${due.map(([k, n]) => `<span class="ev" style="background:#444" title="${esc(n)}">Due: ${esc(n)}</span>`).join('')}</div>`);
+    }
+    return `<h1>Calendar</h1><div style="display:flex;gap:10px;align-items:center;margin-bottom:12px"><button class="btn" type="button" id="cal-prev" aria-label="Previous month" ${m <= 7 ? 'disabled' : ''}>‹</button><b>${names[m]} 2026</b><button class="btn" type="button" id="cal-next" aria-label="Next month" ${m >= 9 ? 'disabled' : ''}>›</button></div><div class="cal">${cells.join('')}</div>${foot()}`;
+  }
+  const MSGS = [
+    { id: 1, from: 'Ffion Carrow', subj: 'Your botanical study', course: 'WC-101', unread: true, body: 'Lovely control of the edges, Marisol. Try lifting some highlights next time.' },
+    { id: 2, from: 'Harrowgate Learning', subj: 'Term fees receipt', course: '', unread: true, body: 'Thank you for your payment of £412.00 for Autumn 2026.' },
+    { id: 3, from: 'Lucía Ferrándiz', subj: 'Grupo de conversación', course: 'LG-105', unread: false, body: 'Nos vemos el jueves en la cafetería a las 18:00.' },
+    { id: 4, from: 'Owen Pritchard', subj: 'Archive visit permission form', course: 'HI-230', unread: false, body: 'Please bring the signed form on Saturday.' },
+    { id: 5, from: 'Dev Malhotra', subj: 'RAW files', course: 'PH-210', unread: false, body: 'Upload your RAW files to the shared drive before Wednesday.' },
+  ];
+  function inboxPage() {
+    crumbs([['Inbox']]);
+    const sel = MSGS.find((m) => m.id === st.inbox);
+    return `<div style="display:flex;align-items:center;margin-bottom:12px"><h1 style="margin:0">Inbox</h1><button class="btn pri" type="button" id="compose" style="margin-left:auto">＋ Compose</button></div>
+      <div class="inbox"><div class="list">${MSGS.map((m) => `<button type="button" data-msg="${m.id}" class="${m.unread ? 'unread' : ''} ${st.inbox === m.id ? 'on' : ''}"><b>${esc(m.from)}</b><div>${esc(m.subj)}</div><div class="muted">${m.course || 'Harrowgate Learning'}</div></button>`).join('')}</div>
+      <div class="view">${sel ? `<h2>${esc(sel.subj)}</h2><div class="muted">From ${esc(sel.from)}</div><p>${esc(sel.body)}</p><label class="f" for="msg-reply">Reply</label><textarea id="msg-reply"></textarea><div class="actions"><button class="btn pri" type="button" id="send-reply">Send</button></div>` : '<p class="muted">Select a conversation to read it.</p>'}</div></div>${foot()}`;
+  }
+
+  const ATABS = [['profile', 'Profile'], ['notifications', 'Notifications'], ['privacy', 'Privacy'], ['apps', 'Connected apps']];
+  function accountPage(tab, sub) {
+    tab = ATABS.some(([k]) => k === tab) ? tab : 'profile';
+    crumbs([['Account settings', '#/account/profile'], [ATABS.find(([k]) => k === tab)[1]]]);
+    let body = '';
+    if (tab === 'profile') {
+      const p = st.profile;
+      body = `<div class="panel"><h2>Profile</h2><label class="f" for="pf-name">Display name</label><input type="text" id="pf-name" value="${esc(p.name)}"><label class="f" for="pf-pron">Pronouns</label><select id="pf-pron">${['', 'she/her', 'he/him', 'they/them'].map((x) => `<option ${x === p.pronouns ? 'selected' : ''} value="${x}">${x || 'Not specified'}</option>`).join('')}</select><label class="f" for="pf-bio">About me</label><textarea id="pf-bio">${esc(p.bio)}</textarea><label class="f" for="pf-email">Email</label><input type="email" id="pf-email" value="marisol.achterberg@harrowgate.ac.uk" disabled><div class="actions"><button class="btn pri" type="button" id="pf-save">Save profile</button></div></div>`;
+    } else if (tab === 'notifications') {
+      const S = [['email', 'Email'], ['push', 'Mobile push'], ['digest', 'Weekly digest']];
+      sub = S.some(([k]) => k === sub) ? sub : 'email';
+      crumbs([['Account settings', '#/account/profile'], ['Notifications', '#/account/notifications/email'], [S.find(([k]) => k === sub)[1]]]);
+      body = `<div class="tabs sub" role="tablist" aria-label="Notification channel">${S.map(([k, l]) => `<a role="tab" aria-selected="${k === sub}" href="#/account/notifications/${k}">${l}</a>`).join('')}</div>` + (sub === 'digest' ? digestHtml() : channelHtml(sub));
+    } else if (tab === 'privacy') {
+      const p = st.privacy;
+      body = `<div class="panel"><h2>Privacy</h2>${[['profile', 'Show my profile to classmates', 'Your name, photo and “About me”'], ['messages', 'Let classmates message me', 'Instructors can always message you'], ['online', 'Show when I’m online', '']].map(([k, l, d]) => `<div class="nrow"><label for="pv-${k}"><b>${l}</b><small>${d}</small></label><input type="checkbox" class="sw" role="switch" id="pv-${k}" ${p[k] ? 'checked' : ''}></div>`).join('')}<div class="actions"><button class="btn pri" type="button" id="pv-save">Save privacy settings</button></div></div>`;
+    } else {
+      body = `<div class="panel"><h2>Connected apps</h2>${st.apps.length ? st.apps.map(([n, d]) => `<div class="nrow"><div><b>${esc(n)}</b><div class="muted">${esc(d)}</div></div><button class="btn" type="button" data-disconnect="${esc(n)}">Disconnect</button></div>`).join('') : '<p class="muted">No connected apps.</p>'}</div>`;
+    }
+    return `<h1>Account settings</h1><div class="tabs" role="tablist" aria-label="Account settings">${ATABS.map(([k, l]) => `<a role="tab" aria-selected="${k === tab}" href="#/account/${k}${k === 'notifications' ? '/email' : ''}">${l}</a>`).join('')}</div>${body}${foot()}`;
+  }
+  function switches(prefix, vals) {
+    return NTYPES.map(([k, l, d]) => `<div class="nrow"><label for="${prefix}-${k}"><b>${l}</b><small>${d}</small></label><input type="checkbox" class="sw" role="switch" id="${prefix}-${k}" data-k="${k}" ${vals[k] ? 'checked' : ''}></div>`).join('');
+  }
+  function channelHtml(ch) {
+    const s = NS[ch];
+    const chName = ch === 'email' ? 'email' : 'push';
+    const diff = (o) => NTYPES.filter(([k]) => o[k] !== s.defaults[k]).map(([k, l]) => `${l}: ${o[k] ? 'on' : 'off'}`).join(' · ') || 'Same as defaults';
+    const ovs = Object.entries(s.overrides);
+    return `<div class="panel" id="${ch}-defaults"><h2>Default ${chName} notifications</h2><p class="muted">${ch === 'email' ? 'Sent to marisol.achterberg@harrowgate.ac.uk. ' : 'Sent to the Harrowgate Learning app on Pixel 8 (last active today). '}These settings apply to all your courses unless a course has its own settings below.</p>
+        ${switches('def-' + ch, s.defaults)}<div class="actions"><button class="btn pri" type="button" id="save-defaults" data-ch="${ch}">Save defaults</button></div></div>
+      <div class="panel" id="${ch}-courses"><h2>Course-specific settings</h2><p class="muted">Choose a course to give it different ${chName} notification settings from your defaults.</p>
+        ${ovs.length ? `<table class="t" style="margin-bottom:14px"><thead><tr><th>Course</th><th>Differences from your defaults</th><th></th></tr></thead><tbody>${ovs.map(([code, o]) => `<tr><td>${esc(C[code].name)} <span class="muted">${code}</span></td><td>${esc(diff(o))}</td><td><button class="btn link" type="button" data-ov-edit="${code}">Edit</button><button class="btn link" type="button" data-ov-reset="${code}">Reset to defaults</button></td></tr>`).join('')}</tbody></table>` : ''}
+        <div class="lb" id="ov-lb"><button type="button" id="ov-course-btn" aria-haspopup="listbox" aria-expanded="false">${s.pick ? esc(C[s.pick].name) + ' (' + s.pick + ')' : 'Choose a course…'}</button>
+          <ul role="listbox" aria-label="Course" hidden>${COURSES.filter((c) => c.current).map((c) => `<li role="option" data-code="${c.code}" aria-selected="${s.pick === c.code}">${esc(c.name)}<small>${c.code}</small></li>`).join('')}</ul></div>
+        ${s.pick ? `<div class="ovpanel" id="ov-panel"><h3>${esc(C[s.pick].name)} <span class="muted">${s.pick}</span></h3><p class="muted">${ch === 'email' ? 'Email' : 'Push'} notifications for this course only.</p>${switches('ov-' + ch, s.draft)}
+          <div class="actions"><button class="btn" type="button" id="ov-cancel">Cancel</button><button class="btn pri" type="button" id="ov-save" data-ch="${ch}">Save course settings</button></div></div>` : ''}
+      </div>`;
+  }
+  function digestHtml() {
+    return `<div class="panel"><h2>Weekly digest</h2><p class="muted">A single email summarising the week ahead across all your courses.</p><label class="f" for="dg-freq">Send my digest</label><select id="dg-freq"><option value="off" ${st.digest === 'off' ? 'selected' : ''}>Never</option><option value="mon" ${st.digest === 'mon' ? 'selected' : ''}>Every Monday morning</option><option value="fri" ${st.digest === 'fri' ? 'selected' : ''}>Every Friday afternoon</option></select>
+      <div class="nrow" style="margin-top:10px"><label for="dg-due"><b>Include upcoming due dates</b><small>List everything due in the next seven days</small></label><input type="checkbox" class="sw" role="switch" id="dg-due" ${st.digestDue ? 'checked' : ''}></div>
+      <div class="actions"><button class="btn pri" type="button" id="dg-save">Save digest settings</button></div></div>`;
+  }
+  function helpPage() { crumbs([['Help']]); return `<h1>Help</h1><div class="panel"><details class="mod" open><summary>How is my current grade worked out?</summary><div>Your current grade is the points you’ve earned on graded work divided by the points available on that work. Ungraded, submitted and excused items don’t count yet.</div></details><details class="mod"><summary>How do I change notifications for one course?</summary><div>Go to Account › Account settings › Notifications and use Course-specific settings.</div></details><details class="mod"><summary>Who do I contact about fees?</summary><div>Email learning@harrowgate.ac.uk or call 01423 500 118.</div></details></div>${foot()}`; }
+  function filesPage() { crumbs([['Files']]); return `<h1>My files</h1><table class="t"><thead><tr><th>Name</th><th>Size</th><th>Uploaded</th></tr></thead><tbody><tr><td>botanical_study.jpg</td><td>2.4 MB</td><td>15 Sep 2026</td></tr><tr><td>census_notes.docx</td><td>84 KB</td><td>21 Aug 2026</td></tr><tr><td>me_presento.mp3</td><td>3.1 MB</td><td>30 Aug 2026</td></tr></tbody></table>${foot()}`; }
+  function notFound() { crumbs([['Not found']]); return `<h1>Page not found</h1><p><a href="#/dashboard">Go to your dashboard</a></p>`; }
+
+  function render() {
+    const r = route();
+    const [a, b, c, d] = r.split('/');
+    qa('nav.global a[data-g]').forEach((x) => x.classList.toggle('on', x.dataset.g === a || (a === 'course' && x.dataset.g === 'courses')));
+    q('#acct-btn').classList.toggle('on', a === 'account');
+    let h;
+    if (a === 'dashboard') h = dashboard();
+    else if (a === 'courses') h = coursesPage();
+    else if (a === 'course') h = coursePage(b, c, d);
+    else if (a === 'calendar') h = calendarPage();
+    else if (a === 'inbox') h = inboxPage();
+    else if (a === 'account') h = accountPage(b, c);
+    else if (a === 'help') h = helpPage();
+    else if (a === 'files') h = filesPage();
+    else h = notFound();
+    q('#main').innerHTML = h;
+    closeTray();
+  }
+  window.addEventListener('hashchange', () => { for (const ch of ['email', 'push']) { NS[ch].pick = null; NS[ch].draft = null; } render(); });
+
+  function openTray() { q('#acct-tray').hidden = false; q('#acct-btn').setAttribute('aria-expanded', 'true'); }
+  function closeTray() { q('#acct-tray').hidden = true; q('#acct-btn').setAttribute('aria-expanded', 'false'); }
+  q('#acct-btn').addEventListener('click', () => (q('#acct-tray').hidden ? openTray() : closeTray()));
+  q('#tray-close').addEventListener('click', closeTray);
+  qa('[data-tray-link]').forEach((l) => l.addEventListener('click', closeTray));
+  q('#logout').addEventListener('click', () => { closeTray(); confirmBox('Log out of Harrowgate Learning?', 'Log out', async () => { q('#main').innerHTML = '<div class="panel" style="max-width:420px"><h2>You’ve logged out</h2><p>Close this tab or <a href="#/dashboard">log in again</a>.</p></div>'; }); });
+
+  function currentChannel() { const [a, b, c] = route().split('/'); return a === 'account' && b === 'notifications' && (c === 'push' ? 'push' : c === 'digest' ? null : 'email'); }
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const ct = t.closest('[data-ctab]'); if (ct) { st.courseTab = ct.dataset.ctab; render(); return; }
+    const en = t.closest('[data-enrol]');
+    if (en) { confirmBox(`Request a place on ${en.dataset.enrol}? We’ll email you to confirm and take payment.`, 'Send request', async () => { await post({ event: 'enrol_request', course: en.dataset.enrol }); toast('Request sent.'); }); return; }
+    if (t.closest('#cal-prev')) { st.calMonth--; render(); return; }
+    if (t.closest('#cal-next')) { st.calMonth++; render(); return; }
+    const pr = t.closest('[data-post-reply]');
+    if (pr) { const v = norm(q('#reply').value); if (!v) { toast('Write a reply first.'); return; } const [, code] = route().split('/'); pr.disabled = true; await sleep(500); await post({ event: 'discussion_post', course: code, thread: THREADS[code][+pr.dataset.postReply][0], body: v }); toast('Reply posted.'); render(); return; }
+    const m = t.closest('[data-msg]'); if (m) { st.inbox = +m.dataset.msg; const mm = MSGS.find((x) => x.id === st.inbox); mm.unread = false; render(); return; }
+    if (t.closest('#send-reply')) { const v = norm(q('#msg-reply').value); if (!v) { toast('Write a message first.'); return; } await sleep(500); await post({ event: 'message_send', to: MSGS.find((x) => x.id === st.inbox).from, body: v }); toast('Message sent.'); render(); return; }
+    if (t.closest('#compose')) { openCompose(); return; }
+    if (t.closest('#pf-save')) { const p = { name: norm(q('#pf-name').value), pronouns: q('#pf-pron').value, bio: norm(q('#pf-bio').value) }; await sleep(500); await post({ event: 'profile_update', display_name: p.name, pronouns: p.pronouns, bio: p.bio }); st.profile = p; toast('Profile saved.'); return; }
+    if (t.closest('#pv-save')) { const p = { profile: q('#pv-profile').checked, messages: q('#pv-messages').checked, online: q('#pv-online').checked }; await sleep(500); await post({ event: 'privacy_update', show_profile: p.profile ? 'on' : 'off', allow_messages: p.messages ? 'on' : 'off', show_online: p.online ? 'on' : 'off' }); st.privacy = p; toast('Privacy settings saved.'); return; }
+    const dc = t.closest('[data-disconnect]');
+    if (dc) { const n = dc.dataset.disconnect; confirmBox(`Disconnect ${n}? You’ll need to sign in again to reconnect it.`, 'Disconnect', async () => { await post({ event: 'app_disconnect', app: n }); st.apps = st.apps.filter((x) => x[0] !== n); render(); toast(`${n} disconnected.`); }); return; }
+    if (t.closest('#dg-save')) { await sleep(500); st.digest = q('#dg-freq').value; st.digestDue = q('#dg-due').checked; await post({ event: 'digest_update', frequency: st.digest, include_due: st.digestDue ? 'on' : 'off' }); toast('Digest settings saved.'); return; }
+    const ch = currentChannel();
+    if (!ch) return;
+    const s = NS[ch];
+    const sd = t.closest('#save-defaults');
+    if (sd) {
+      const vals = Object.fromEntries(NTYPES.map(([k]) => [k, q(`#def-${ch}-${k}`).checked]));
+      sd.disabled = true; sd.textContent = 'Saving…'; await sleep(500);
+      await post({ event: 'notification_defaults_save', channel: ch, ...Object.fromEntries(NTYPES.map(([k]) => [k, vals[k] ? 'on' : 'off'])) });
+      s.defaults = vals; sd.disabled = false; sd.textContent = 'Save defaults'; toast('Default notifications saved.'); keepRender(ch); return;
+    }
+    const trig = t.closest('#ov-course-btn');
+    if (trig) { const lb = q('#ov-lb [role=listbox]'); const open = lb.hidden; lb.hidden = !open; trig.setAttribute('aria-expanded', String(open)); return; }
+    const opt = t.closest('#ov-lb [role=option]');
+    if (opt) { const code = opt.dataset.code; s.pick = code; s.draft = Object.assign({}, s.overrides[code] || s.defaults); keepRender(ch); return; }
+    const ed = t.closest('[data-ov-edit]');
+    if (ed) { const code = ed.dataset.ovEdit; s.pick = code; s.draft = Object.assign({}, s.overrides[code]); keepRender(ch); return; }
+    const rs = t.closest('[data-ov-reset]');
+    if (rs) { const code = rs.dataset.ovReset; confirmBox(`Reset ${C[code].name} to your default ${ch === 'email' ? 'email' : 'push'} notifications?`, 'Reset', async () => { await post({ event: 'notification_override_reset', channel: ch, course: code }); delete s.overrides[code]; if (s.pick === code) { s.pick = null; s.draft = null; } keepRender(ch); toast('Course settings reset.'); }); return; }
+    if (t.closest('#ov-cancel')) { s.pick = null; s.draft = null; keepRender(ch); return; }
+    const sv = t.closest('#ov-save');
+    if (sv) {
+      const code = s.pick;
+      const vals = Object.fromEntries(NTYPES.map(([k]) => [k, q(`#ov-${ch}-${k}`).checked]));
+      sv.disabled = true; sv.textContent = 'Saving…'; await sleep(500);
+      await post({ event: 'notification_override_save', channel: ch, course: code, course_name: C[code].name, ...Object.fromEntries(NTYPES.map(([k]) => [k, vals[k] ? 'on' : 'off'])) });
+      s.overrides[code] = vals; s.pick = null; s.draft = null; keepRender(ch); toast(`Saved ${ch === 'email' ? 'email' : 'push'} settings for ${C[code].name}.`);
+      return;
+    }
+  });
+  q('#main').addEventListener('change', (e) => {
+    const t = e.target; const ch = currentChannel();
+    if (ch && t.id && t.id.startsWith(`ov-${ch}-`)) NS[ch].draft[t.dataset.k] = t.checked;
+  });
+  document.addEventListener('click', (e) => {
+    const lb = q('#ov-lb [role=listbox]');
+    if (lb && !lb.hidden && !e.target.closest('#ov-lb')) { lb.hidden = true; q('#ov-course-btn').setAttribute('aria-expanded', 'false'); }
+  });
+  function keepRender(ch) {
+    // re-render the notifications page without losing unsaved default toggles
+    const unsaved = Object.fromEntries(NTYPES.map(([k]) => [k, (q(`#def-${ch}-${k}`) || {}).checked]));
+    const y = window.scrollY; render(); window.scrollTo(0, y);
+    NTYPES.forEach(([k]) => { const el = q(`#def-${ch}-${k}`); if (el && unsaved[k] !== undefined) el.checked = unsaved[k]; });
+  }
+
+  function modal(html) { q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; return q('#modal-root .dialog'); }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmBox(msg, ok, fn) {
+    const d = modal(`<h2>Please confirm</h2><p>${esc(msg)}</p><div class="actions"><button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" data-ok>${esc(ok)}</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { d.querySelector('[data-ok]').disabled = true; await sleep(400); closeModal(); await fn(); };
+  }
+  function openCompose() {
+    const d = modal(`<h2>New message</h2><label class="f" for="cm-to">To</label><select id="cm-to">${COURSES.filter((c) => c.current).map((c) => `<option>${esc(c.instructor)} (${c.code})</option>`).join('')}<option>Harrowgate Learning office</option></select><label class="f" for="cm-subj">Subject</label><input type="text" id="cm-subj"><label class="f" for="cm-body">Message</label><textarea id="cm-body"></textarea><div class="actions"><button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" data-ok>Send</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { const subj = norm(d.querySelector('#cm-subj').value), body = norm(d.querySelector('#cm-body').value); if (!subj || !body) { toast('Add a subject and a message.'); return; } await sleep(500); await post({ event: 'message_send', to: d.querySelector('#cm-to').value, subject: subj, body }); closeModal(); toast('Message sent.'); };
+  }
+
+  if (!location.hash) history.replaceState(null, '', '#/dashboard');
+  render();
+})();
+</script>
+</body>
+</html>

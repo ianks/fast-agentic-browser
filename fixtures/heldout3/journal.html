@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quillstone · Coastal &amp; Estuarine Dynamics — Author Center</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif; color: #1d2733; background: #eef1f4; }
+  a { color: #1f5f99; }
+  button, input, select, textarea { font: inherit; }
+  .bar { background: #183b56; color: #fff; display: flex; align-items: center; gap: 18px; padding: 0 22px; height: 52px; }
+  .bar .logo { font-weight: 700; letter-spacing: .02em; font-size: 17px; }
+  .bar .journal { color: #b9d3e8; font-size: 13px; border-left: 1px solid #3c6180; padding-left: 16px; }
+  .bar nav { display: flex; gap: 2px; margin-left: 18px; }
+  .bar nav a { color: #d6e6f3; text-decoration: none; padding: 16px 12px; font-size: 13px; }
+  .bar nav a.on { background: #0f2a3f; color: #fff; }
+  .bar .sp { flex: 1; }
+  .bar .user { font-size: 13px; color: #d6e6f3; }
+  .bar button.link { background: none; border: 0; color: #9cc3e6; cursor: pointer; font-size: 13px; }
+  .crumbs { padding: 10px 22px; font-size: 12px; color: #5b6b7a; background: #fff; border-bottom: 1px solid #d9e0e7; }
+  .layout { display: grid; grid-template-columns: 230px 1fr; gap: 20px; padding: 18px 22px 40px; max-width: 1280px; }
+  .side { background: #fff; border: 1px solid #d9e0e7; border-radius: 6px; padding: 10px 0; align-self: start; }
+  .side h4 { margin: 8px 16px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #7b8a98; }
+  .side a { display: flex; justify-content: space-between; padding: 7px 16px; color: #1d2733; text-decoration: none; font-size: 13px; }
+  .side a.on { background: #e5eef7; border-left: 3px solid #1f5f99; padding-left: 13px; font-weight: 600; }
+  .side a .n { background: #dde5ec; border-radius: 9px; padding: 0 7px; font-size: 11px; }
+  .panel { background: #fff; border: 1px solid #d9e0e7; border-radius: 6px; padding: 18px 22px; margin-bottom: 16px; }
+  h1 { font-size: 22px; margin: 0 0 12px; font-weight: 600; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e3e8ed; vertical-align: top; font-size: 13px; }
+  th { background: #f5f7f9; font-weight: 600; color: #4a5a69; }
+  .btn { display: inline-block; border: 1px solid #b8c4cf; background: #fff; color: #1d2733; border-radius: 4px; padding: 6px 12px; cursor: pointer; text-decoration: none; font-size: 13px; }
+  .btn.primary { background: #1f5f99; border-color: #1f5f99; color: #fff; }
+  .btn.danger { color: #a4262c; border-color: #e3b7b9; }
+  .btn[disabled] { opacity: .55; cursor: not-allowed; }
+  .muted { color: #6a7988; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 9px; background: #e8edf2; color: #3b4b5a; }
+  .tag.warn { background: #fff1d6; color: #7a5200; }
+  .wiz { display: grid; grid-template-columns: 210px 1fr; gap: 18px; }
+  .wsteps { list-style: none; margin: 0; padding: 0; }
+  .wsteps a { display: block; padding: 9px 12px; border-left: 3px solid #d9e0e7; color: #4a5a69; text-decoration: none; }
+  .wsteps a.on { border-left-color: #1f5f99; color: #1d2733; font-weight: 600; background: #f3f7fb; }
+  .wsteps a .ok { color: #2e7d32; float: right; }
+  .f { margin: 14px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .f .hint { font-size: 12px; color: #6a7988; margin-top: 3px; }
+  input[type=text], input[type=email], input[type=password], textarea, select { border: 1px solid #b8c4cf; border-radius: 4px; padding: 7px 9px; width: 100%; max-width: 560px; background: #fff; }
+  textarea { min-height: 120px; }
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 300px)); gap: 10px; }
+  .rcard { display: block; border: 1px solid #c7d2dc; border-radius: 6px; padding: 12px 14px; cursor: pointer; background: #fff; }
+  .rcard input { margin-right: 6px; }
+  .rcard.sel { border-color: #1f5f99; background: #f1f6fb; box-shadow: inset 0 0 0 1px #1f5f99; }
+  .rcard small { display: block; color: #6a7988; margin-top: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; border: 1px solid #b8c4cf; border-radius: 4px; padding: 6px; max-width: 560px; background: #fff; }
+  .chip { background: #e5eef7; border-radius: 12px; padding: 2px 4px 2px 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+  .chip button { border: 0; background: none; cursor: pointer; color: #45617a; font-size: 14px; }
+  .chips input { border: 0; outline: 0; flex: 1; min-width: 160px; padding: 4px; }
+  .sugg button { border: 1px dashed #9fb3c6; background: #fff; border-radius: 12px; padding: 2px 10px; font-size: 12px; cursor: pointer; margin: 4px 4px 0 0; }
+  .err { color: #a4262c; font-size: 13px; }
+  .errbox { background: #fdecea; border: 1px solid #f3c1bd; color: #7f1d1d; border-radius: 4px; padding: 10px 12px; margin: 10px 0; }
+  .okbox { background: #e8f5e9; border: 1px solid #b9deba; color: #1b5e20; border-radius: 4px; padding: 10px 12px; margin: 10px 0; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(12, 28, 44, .45); display: flex; align-items: flex-start; justify-content: center; padding-top: 70px; z-index: 40; }
+  .modal { background: #fff; border-radius: 6px; width: 560px; padding: 18px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .combo { position: relative; max-width: 560px; }
+  .combo ul { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #b8c4cf; border-top: 0; list-style: none; margin: 0; padding: 0; max-height: 230px; overflow: auto; z-index: 5; box-shadow: 0 8px 18px rgba(0,0,0,.1); }
+  .combo li { padding: 7px 10px; cursor: pointer; border-bottom: 1px solid #eef1f4; }
+  .combo li:hover, .combo li[aria-selected=true] { background: #e5eef7; }
+  .combo li small { color: #6a7988; display: block; font-size: 11px; }
+  .combo .loading { padding: 7px 10px; color: #6a7988; font-size: 12px; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+  .login { max-width: 420px; margin: 50px auto; }
+  .toast { position: fixed; right: 20px; bottom: 20px; background: #183b56; color: #fff; padding: 10px 16px; border-radius: 4px; z-index: 60; }
+  footer { border-top: 1px solid #d9e0e7; padding: 14px 22px; font-size: 12px; color: #6a7988; background: #fff; }
+  footer a { margin-right: 14px; color: #4a5a69; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="logo">Quillstone</span>
+  <span class="journal">Coastal &amp; Estuarine Dynamics · ISSN 2753-0914</span>
+  <nav aria-label="Centers">
+    <a href="#/dashboard" id="nav-author">Author Center</a>
+    <a href="#/reviewer" id="nav-reviewer">Reviewer Center</a>
+    <a href="#/profile" id="nav-profile">My Profile</a>
+    <a href="#/help" id="nav-help">Instructions &amp; Forms</a>
+  </nav>
+  <span class="sp"></span>
+  <span class="user" id="who">Dr Ingrid Solberg</span>
+  <button class="link" type="button" id="logout">Log out</button>
+</div>
+<div class="crumbs" id="crumbs"></div>
+<div id="app"></div>
+<footer><a href="#/help">Author guidelines</a><a href="#/help">Publication ethics</a><a href="#/help">Open access &amp; APCs</a><a href="#/help">Contact the editorial office</a><span>© 2026 Quillstone Scholarly Systems</span></footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clean = (s) => String(s ?? '').trim().replace(/\s+/g, ' ');
+  const fold = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const TYPES = [
+    { id: 'research_article', name: 'Research Article', limit: 8000, note: 'Original research. Up to 8,000 words, 8 figures.' },
+    { id: 'short_communication', name: 'Short Communication', limit: 3000, note: 'Brief, timely findings. Up to 3,000 words, 3 figures.' },
+    { id: 'review', name: 'Review', limit: 10000, note: 'Critical synthesis of a field. Usually invited.' },
+    { id: 'data_paper', name: 'Data Paper', limit: 4000, note: 'Describes a dataset deposited in a public repository.' },
+  ];
+  const SECTIONS = ['Estuarine Hydrodynamics', 'Marine Biology & Ecology', 'Sediment Dynamics', 'Coastal Geomorphology', 'Policy & Management'];
+  const INSTITUTIONS = [
+    ['University of Bergen', 'Bergen, Norway'], ['Western Norway University of Applied Sciences', 'Bergen, Norway'], ['Institute of Marine Research', 'Bergen, Norway'],
+    ['Norwegian Institute for Water Research (NIVA)', 'Oslo, Norway'], ['University of Oslo', 'Oslo, Norway'], ['NTNU – Norwegian University of Science and Technology', 'Trondheim, Norway'],
+    ['UiT The Arctic University of Norway', 'Tromsø, Norway'], ['Universidad de Cádiz', 'Cádiz, Spain'], ['Escuela Politécnica Superior de Algeciras, Universidad de Cádiz', 'Algeciras, Spain'],
+    ['Instituto de Ciencias Marinas de Andalucía (ICMAN-CSIC)', 'Puerto Real, Spain'], ['Universidad de Córdoba', 'Córdoba, Spain'], ['Universidad de Cantabria', 'Santander, Spain'],
+    ['Universidad Católica de Valencia', 'Valencia, Spain'], ['Universidad de Sevilla', 'Sevilla, Spain'], ['Universidade de Vigo', 'Vigo, Spain'], ['Universidad de Málaga', 'Málaga, Spain'],
+    ['NIOZ Royal Netherlands Institute for Sea Research', 'Texel, Netherlands'], ['Deltares', 'Delft, Netherlands'], ['Delft University of Technology', 'Delft, Netherlands'],
+    ['Utrecht University', 'Utrecht, Netherlands'], ['Helmholtz-Zentrum Hereon', 'Geesthacht, Germany'], ['Leibniz Institute for Baltic Sea Research Warnemünde', 'Rostock, Germany'],
+    ['Federal Waterways Engineering and Research Institute (BAW)', 'Hamburg, Germany'], ['University of Hamburg', 'Hamburg, Germany'], ['Aarhus University', 'Aarhus, Denmark'],
+  ];
+  const FUNDERS = [
+    ['Research Council of Norway', 'Norges forskningsråd · Norway'], ['Research Council of Lithuania', 'Lietuvos mokslo taryba · Lithuania'], ['The Research Council of Oman', 'Oman'],
+    ['Norwegian Research Centre (NORCE)', 'Norway'], ['Norwegian Environment Agency', 'Miljødirektoratet · Norway'], ['European Research Council', 'European Union'],
+    ['Deutsche Forschungsgemeinschaft', 'DFG · Germany'], ['Dutch Research Council (NWO)', 'Netherlands'], ['Ministerio de Ciencia e Innovación', 'Spain'], ['Carlsberg Foundation', 'Denmark'],
+  ];
+  const ME = { first: 'Ingrid', last: 'Solberg', email: 'ingrid.solberg@uib.no', inst: 'University of Bergen', orcid: '0000-0002-7718-4410' };
+
+  const drafts = {
+    'D-7713': { id: 'D-7713', title: 'Tidal pumping of fine sediment in the Ems estuary', running: 'Tidal pumping in the Ems', type: null, section: '', words: 6420, created: '2026-08-02', edited: '2026-09-21',
+      abstract: 'Long-term deepening of the Ems estuary has shifted the tidal wave towards flood dominance. Using two years of moored ADCP and optical backscatter records we quantify the landward tidal pumping of fine sediment and show that net import has roughly doubled since 2010, sustaining hyper-turbid conditions upstream of Leer.',
+      keywords: [], authors: [{ ...ME }], corr: 0, competing: null, competingText: '', funding: null, funders: [], data: 'repository', attest: false },
+    'D-7716': { id: 'D-7716', title: 'Tidal pumping of fine sediment in the Weser estuary', running: 'Tidal pumping in the Weser', type: 'research_article', section: 'Sediment Dynamics', words: 5980, created: '2026-08-19', edited: '2026-09-10',
+      abstract: 'We compare turbidity maxima in the Weser with the neighbouring Ems and Elbe estuaries using a 3D sediment transport model validated against ship-borne surveys.',
+      keywords: ['turbidity maximum', 'weser'], authors: [{ ...ME }], corr: 0, competing: null, competingText: '', funding: null, funders: [], data: 'repository', attest: false },
+    'D-7719': { id: 'D-7719', title: 'Microplastic retention in salt-marsh sediments', running: 'Microplastics in salt marshes', type: 'research_article', section: 'Marine Biology & Ecology', words: 2840, created: '2026-09-01', edited: '2026-09-22',
+      abstract: 'Cores from three Wadden Sea salt marshes show microplastic concentrations that increase with marsh elevation, suggesting that vegetated platforms trap particles delivered during storm surges.',
+      keywords: ['microplastics', 'salt marsh', 'sediment trapping'],
+      authors: [{ ...ME }, { first: 'Pieter', last: 'de Vries', email: 'pieter.devries@nioz.nl', inst: 'NIOZ Royal Netherlands Institute for Sea Research', orcid: '' }], corr: 0,
+      competing: 'none', competingText: '', funding: 'funded', funders: [{ name: 'European Research Council', grant: '101042118' }], data: 'repository', attest: false },
+  };
+  const submitted = [
+    { id: 'CED-2026-0412', title: 'Wind-driven resuspension on intertidal flats of the Jade Bay', type: 'Research Article', date: '2026-07-14', status: 'Under review' },
+    { id: 'CED-2026-0377', title: 'A decade of dredging records in the Port of Bergen', type: 'Data Paper', date: '2026-06-02', status: 'Awaiting reviewer scores' },
+    { id: 'CED-2026-0198', title: 'Seasonal hypoxia in the inner Oslofjord', type: 'Research Article', date: '2026-03-20', status: 'Minor revision requested' },
+    { id: 'CED-2025-0931', title: 'Floc size variability in a hyper-turbid estuary', type: 'Short Communication', date: '2025-11-05', status: 'Accepted' },
+  ];
+  const invites = [
+    { id: 'CED-2026-0466', title: 'Mud flocculation under varying salinity gradients', due: '14 days', status: 'pending' },
+    { id: 'CED-2026-0471', title: 'Bedform migration in the Western Scheldt', due: '14 days', status: 'pending' },
+  ];
+  const st = { loggedIn: true, expiryArmed: true, lastSubmitted: null, err: '', busy: false, loginErr: '' };
+  const CREDS = { email: 'ingrid.solberg@uib.no', password: 'Tidewater-2291' };
+  const typeName = (id) => (TYPES.find((t) => t.id === id) || {}).name || '—';
+  const fullName = (a) => clean(a.first + ' ' + a.last);
+
+  function stepsDone(d) {
+    return {
+      type: !!d.type && (d.type !== 'research_article' || !!d.section) && d.words <= (TYPES.find((t) => t.id === d.type) || { limit: 1e9 }).limit,
+      details: !!clean(d.title) && !!clean(d.running) && d.running.length <= 60 && !!clean(d.abstract) && d.keywords.length >= 3,
+      authors: d.authors.length >= 1 && d.corr != null && d.corr < d.authors.length,
+      declarations: !!d.competing && (d.competing === 'none' || !!clean(d.competingText)) && !!d.funding && (d.funding === 'none' || (d.funders.length > 0 && d.funders.every((f) => f.name && clean(f.grant)))),
+    };
+  }
+  const STEPS = [['type', 'Article type'], ['details', 'Title, abstract & keywords'], ['authors', 'Authors & affiliations'], ['declarations', 'Declarations'], ['review', 'Review & submit']];
+
+  function crumbs(parts) { $('#crumbs').innerHTML = parts.map((p, i) => (p[1] && i < parts.length - 1 ? `<a href="${p[1]}">${esc(p[0])}</a>` : esc(p[0]))).join(' › '); }
+  function shell(active, inner) {
+    const nD = Object.keys(drafts).length;
+    return `<div class="layout"><aside class="side" aria-label="Author Center menu"><h4>My manuscripts</h4>
+      <a href="#/dashboard" class="${active === 'drafts' ? 'on' : ''}">Drafts <span class="n">${nD}</span></a>
+      <a href="#/submitted" class="${active === 'submitted' ? 'on' : ''}">Submitted manuscripts <span class="n">${submitted.length}</span></a>
+      <a href="#/revisions" class="${active === 'revisions' ? 'on' : ''}">Revisions requested <span class="n">1</span></a>
+      <a href="#/decisions" class="${active === 'decisions' ? 'on' : ''}">Decisions <span class="n">1</span></a>
+      <h4>Start</h4><a href="#/new" class="${active === 'new' ? 'on' : ''}">Begin a new submission</a>
+      <h4>Resources</h4><a href="#/help">Author guidelines</a><a href="#/help">LaTeX template</a><a href="#/help">Transfer from another journal</a></aside><main>${inner}</main></div>`;
+  }
+  function dashboard() {
+    crumbs([['Author Center', '#/dashboard'], ['Drafts']]);
+    const rows = Object.values(drafts).map((d) => `<tr><td><strong>${esc(d.title)}</strong><div class="muted">${esc(d.id)} · ${esc(typeName(d.type))}</div></td><td>${esc(d.created)}</td><td>${esc(d.edited)}</td><td><a class="btn" href="#/draft/${d.id}/type">Continue submission</a> <button class="btn danger" type="button" data-del="${d.id}">Delete</button></td></tr>`).join('');
+    return shell('drafts', `<div class="panel"><h1>Drafts</h1><p class="muted">Drafts are kept for 180 days. Only you can see them.</p>${st.lastSubmitted ? `<div class="okbox">Manuscript <strong>${esc(st.lastSubmitted)}</strong> was submitted. You'll find it under Submitted manuscripts.</div>` : ''}
+      <table><thead><tr><th>Manuscript</th><th>Created</th><th>Last edited</th><th>Actions</th></tr></thead><tbody>${rows || '<tr><td colspan="4" class="muted">No drafts.</td></tr>'}</tbody></table></div>
+      <div class="panel"><h2>Announcements</h2><p>Special issue: <em>Sediment budgets under sea-level rise</em> — submissions close 15 December 2026.</p><p class="muted">Data availability statements are now mandatory for all article types.</p></div>`);
+  }
+  function submittedPage() {
+    crumbs([['Author Center', '#/dashboard'], ['Submitted manuscripts']]);
+    return shell('submitted', `<div class="panel"><h1>Submitted manuscripts</h1><table><thead><tr><th>ID</th><th>Title</th><th>Type</th><th>Submitted</th><th>Status</th></tr></thead><tbody>${submitted.map((s) => `<tr><td>${esc(s.id)}</td><td>${esc(s.title)}</td><td>${esc(s.type)}</td><td>${esc(s.date)}</td><td><span class="tag">${esc(s.status)}</span></td></tr>`).join('')}</tbody></table></div>`);
+  }
+  function revisionsPage() {
+    crumbs([['Author Center', '#/dashboard'], ['Revisions requested']]);
+    return shell('revisions', `<div class="panel"><h1>Revisions requested</h1><table><tbody><tr><td><strong>Seasonal hypoxia in the inner Oslofjord</strong><div class="muted">CED-2026-0198 · Minor revision · due 30 October 2026</div></td><td><button class="btn" type="button" id="start-rev">Create a revision</button></td></tr></tbody></table></div>`);
+  }
+  function decisionsPage() {
+    crumbs([['Author Center', '#/dashboard'], ['Decisions']]);
+    return shell('decisions', `<div class="panel"><h1>Decisions</h1><p><strong>Floc size variability in a hyper-turbid estuary</strong> — Accepted 12 January 2026.</p></div>`);
+  }
+  function newPage() {
+    crumbs([['Author Center', '#/dashboard'], ['Begin a new submission']]);
+    return shell('new', `<div class="panel"><h1>Begin a new submission</h1><p>Before you start, have your manuscript file, figures, and all co-authors' email addresses ready.</p><div class="f"><label for="new-title">Working title</label><input type="text" id="new-title"></div><button class="btn primary" type="button" id="create-draft">Create draft</button></div>`);
+  }
+  function reviewerPage() {
+    crumbs([['Reviewer Center']]);
+    return `<div class="layout"><aside class="side"><h4>Reviewer Center</h4><a href="#/reviewer" class="on">Invitations <span class="n">${invites.filter((i) => i.status === 'pending').length}</span></a><a href="#/reviewer">Reviews in progress</a><a href="#/reviewer">Completed reviews</a></aside><main><div class="panel"><h1>Invitations to review</h1><table><tbody>${invites.map((i) => `<tr><td><strong>${esc(i.title)}</strong><div class="muted">${esc(i.id)} · review due ${esc(i.due)} after accepting</div></td><td>${i.status === 'pending' ? `<button class="btn primary" type="button" data-inv="${i.id}" data-ans="accept">Agree to review</button> <button class="btn" type="button" data-inv="${i.id}" data-ans="decline">Decline</button>` : `<span class="tag">${esc(i.status)}</span>`}</td></tr>`).join('')}</tbody></table></div></main></div>`;
+  }
+  function profilePage() {
+    crumbs([['My Profile']]);
+    return `<div class="layout"><aside class="side"><h4>Profile</h4><a class="on" href="#/profile">Personal details</a><a href="#/profile">Password &amp; security</a><a href="#/profile">Email preferences</a></aside><main><div class="panel"><h1>Personal details</h1><div class="row"><div class="f"><label>First name</label><input type="text" value="Ingrid" id="pr-first"></div><div class="f"><label>Last name</label><input type="text" value="Solberg" id="pr-last"></div></div><div class="f"><label>Primary institution</label><input type="text" value="University of Bergen" id="pr-inst"></div><div class="f"><label>ORCID iD</label><input type="text" value="0000-0002-7718-4410" id="pr-orcid"></div><button class="btn primary" type="button" id="pr-save">Save profile</button></div></main></div>`;
+  }
+  function helpPage() { crumbs([['Instructions & Forms']]); return `<div class="layout"><aside class="side"><h4>Help</h4><a class="on" href="#/help">Author guidelines</a></aside><main><div class="panel"><h1>Author guidelines</h1><p>Research Articles up to 8,000 words; Short Communications up to 3,000 words; Reviews up to 10,000 words; Data Papers up to 4,000 words.</p><p>All submissions need 3–6 keywords, a running title of at most 60 characters, a competing-interests statement and a funding statement.</p></div></main></div>`; }
+
+  function wizard(d, step) {
+    const done = stepsDone(d);
+    crumbs([['Author Center', '#/dashboard'], ['Drafts', '#/dashboard'], [d.id + ' · ' + d.title]]);
+    const nav = STEPS.map(([k, l], i) => `<li><a href="#/draft/${d.id}/${k}" class="${k === step ? 'on' : ''}">${i + 1}. ${esc(l)}${done[k] ? '<span class="ok" aria-label="complete">✓</span>' : ''}</a></li>`).join('');
+    let body = '';
+    const idx = STEPS.findIndex((s) => s[0] === step);
+    const next = STEPS[idx + 1] ? `#/draft/${d.id}/${STEPS[idx + 1][0]}` : null;
+    const prev = STEPS[idx - 1] ? `#/draft/${d.id}/${STEPS[idx - 1][0]}` : '#/dashboard';
+    const footer = `<p style="margin-top:20px;display:flex;gap:8px"><a class="btn" href="${prev}">Back</a><button class="btn" type="button" data-save="${d.id}">Save draft</button>${next ? `<a class="btn primary" href="${next}" id="continue">Continue</a>` : ''}</p>`;
+    if (step === 'type') {
+      body = `<h1>Article type</h1><p class="muted">Choose the type that best describes your manuscript. Current length: ${d.words.toLocaleString('en-US')} words.</p>
+        <div class="cards" role="radiogroup" aria-label="Article type">${TYPES.map((t) => `<label class="rcard ${d.type === t.id ? 'sel' : ''}"><input type="radio" name="atype" value="${t.id}" ${d.type === t.id ? 'checked' : ''}><strong>${esc(t.name)}</strong><small>${esc(t.note)}</small></label>`).join('')}</div>
+        ${d.type && d.words > TYPES.find((t) => t.id === d.type).limit ? `<div class="errbox">Your manuscript (${d.words.toLocaleString('en-US')} words) is longer than the ${TYPES.find((t) => t.id === d.type).limit.toLocaleString('en-US')}-word limit for this type.</div>` : ''}
+        ${d.type === 'research_article' ? `<div class="f"><label for="section">Journal section</label><select id="section"><option value="">Select a section…</option>${SECTIONS.map((s) => `<option ${d.section === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select><div class="hint">Research Articles are handled by the section editors.</div></div>` : ''}
+        ${d.type === 'review' ? `<div class="f"><span class="lab">Was this review invited by an editor?</span><label><input type="radio" name="invited" value="yes"> Yes</label> <label><input type="radio" name="invited" value="no"> No</label></div>` : ''}
+        ${d.type === 'data_paper' ? `<div class="f"><label for="repo">Repository DOI</label><input type="text" id="repo" placeholder="10.xxxx/xxxxx"></div>` : ''}${footer}`;
+    } else if (step === 'details') {
+      const sugg = ['estuarine turbidity maximum', 'sediment flux', 'flood dominance', 'ADCP'].filter((k) => !d.keywords.includes(k.toLowerCase()));
+      body = `<h1>Title, abstract &amp; keywords</h1>
+        <div class="f"><label for="title">Full title</label><input type="text" id="title" value="${esc(d.title)}"></div>
+        <div class="f"><label for="running">Running title</label><input type="text" id="running" value="${esc(d.running)}" maxlength="80"><div class="hint">At most 60 characters (${d.running.length}/60).</div></div>
+        <div class="f"><label for="abstract">Abstract</label><textarea id="abstract">${esc(d.abstract)}</textarea><div class="hint">Up to 250 words.</div></div>
+        <div class="f"><label for="kw-input">Keywords</label><div class="chips" id="chips">${d.keywords.map((k, i) => `<span class="chip">${esc(k)}<button type="button" data-kwdel="${i}" aria-label="Remove keyword ${esc(k)}">×</button></span>`).join('')}<input id="kw-input" type="text" placeholder="Type a keyword and press Enter" aria-describedby="kw-hint"></div><div class="hint" id="kw-hint">3–6 keywords. Press Enter or type a comma after each one.</div>
+        <div class="sugg" aria-label="Suggested keywords">${sugg.length ? '<span class="muted" style="font-size:12px">Suggested from your abstract: </span>' : ''}${sugg.map((k) => `<button type="button" data-kwadd="${esc(k)}">+ ${esc(k)}</button>`).join('')}</div></div>${footer}`;
+    } else if (step === 'authors') {
+      body = `<h1>Authors &amp; affiliations</h1><p class="muted">List authors in the order they should appear. Exactly one corresponding author handles all correspondence.</p>
+        <table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Affiliation</th><th>Corresponding</th><th>Order</th><th></th></tr></thead><tbody>${d.authors.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(fullName(a))}${i === 0 && a.email === ME.email ? ' <span class="tag">you</span>' : ''}</td><td>${esc(a.email)}</td><td>${esc(a.inst)}</td><td><label><input type="radio" name="corr" value="${i}" ${d.corr === i ? 'checked' : ''} aria-label="Make ${esc(fullName(a))} the corresponding author"> </label></td><td><button class="btn" type="button" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move ${esc(fullName(a))} up">↑</button> <button class="btn" type="button" data-down="${i}" ${i === d.authors.length - 1 ? 'disabled' : ''} aria-label="Move ${esc(fullName(a))} down">↓</button></td><td>${i === 0 && a.email === ME.email ? '' : `<button class="btn danger" type="button" data-rmauth="${i}">Remove</button>`}</td></tr>`).join('')}</tbody></table>
+        <p><button class="btn" type="button" id="add-author">+ Add co-author</button></p>${footer}`;
+    } else if (step === 'declarations') {
+      body = `<h1>Declarations</h1>
+        <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">Competing interests</legend>
+          <label style="display:block"><input type="radio" name="ci" value="none" ${d.competing === 'none' ? 'checked' : ''}> The authors declare no competing interests.</label>
+          <label style="display:block"><input type="radio" name="ci" value="declared" ${d.competing === 'declared' ? 'checked' : ''}> One or more authors have competing interests to declare.</label>
+          ${d.competing === 'declared' ? `<textarea id="ci-text" placeholder="Describe the competing interests">${esc(d.competingText)}</textarea>` : ''}</fieldset>
+        <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">Funding</legend>
+          <label style="display:block"><input type="radio" name="fund" value="none" ${d.funding === 'none' ? 'checked' : ''}> This research received no specific funding.</label>
+          <label style="display:block"><input type="radio" name="fund" value="funded" ${d.funding === 'funded' ? 'checked' : ''}> This research was funded (list every funder and grant number).</label>
+          ${d.funding === 'funded' ? `<div id="funders">${d.funders.map((f, i) => `<div class="row" style="align-items:end;margin-top:8px"><div><div class="lab" style="font-size:12px;font-weight:600">Funder</div><div class="combo" data-combo="funder" data-idx="${i}"><input type="text" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-label="Funder ${i + 1}" value="${esc(f.name || f.query || '')}" data-fq="${i}" autocomplete="off"><ul role="listbox" hidden></ul></div></div><div style="max-width:200px"><div class="lab" style="font-size:12px;font-weight:600">Grant number</div><input type="text" data-grant="${i}" aria-label="Grant number ${i + 1}" value="${esc(f.grant)}"></div><div style="max-width:90px"><button class="btn danger" type="button" data-rmfund="${i}">Remove</button></div></div>`).join('')}<p><button class="btn" type="button" id="add-funder">+ Add funder</button></p></div>` : ''}</fieldset>
+        <div class="f"><label for="data">Data availability</label><select id="data"><option value="repository" ${d.data === 'repository' ? 'selected' : ''}>Data are available in a public repository</option><option value="request" ${d.data === 'request' ? 'selected' : ''}>Data are available from the authors on request</option><option value="na" ${d.data === 'na' ? 'selected' : ''}>No data were generated</option></select></div>${footer}`;
+    } else {
+      const probs = Object.entries(done).filter(([, v]) => !v).map(([k]) => STEPS.find((s) => s[0] === k)[1]);
+      const corr = d.authors[d.corr];
+      body = `<h1>Review &amp; submit</h1>${st.err ? `<div class="errbox" role="alert">${esc(st.err)}</div>` : ''}
+        <table><tbody>
+        <tr><th style="width:190px">Title</th><td>${esc(d.title)}</td><td><a href="#/draft/${d.id}/details">Edit</a></td></tr>
+        <tr><th>Article type</th><td>${esc(typeName(d.type))}${d.type === 'research_article' ? ' · ' + esc(d.section || 'no section') : ''}</td><td><a href="#/draft/${d.id}/type">Edit</a></td></tr>
+        <tr><th>Keywords</th><td>${esc(d.keywords.join('; ')) || '<span class="muted">none</span>'}</td><td><a href="#/draft/${d.id}/details">Edit</a></td></tr>
+        <tr><th>Authors</th><td>${d.authors.map((a, i) => esc(fullName(a)) + ' (' + esc(a.inst) + ')' + (i === d.corr ? ' *' : '')).join('<br>')}<div class="muted">* corresponding author${corr ? ': ' + esc(corr.email) : ''}</div></td><td><a href="#/draft/${d.id}/authors">Edit</a></td></tr>
+        <tr><th>Competing interests</th><td>${d.competing === 'none' ? 'None declared' : d.competing === 'declared' ? esc(d.competingText) : '<span class="muted">not answered</span>'}</td><td><a href="#/draft/${d.id}/declarations">Edit</a></td></tr>
+        <tr><th>Funding</th><td>${d.funding === 'none' ? 'No specific funding' : d.funding === 'funded' ? d.funders.map((f) => esc(f.name || '?') + ', grant ' + esc(f.grant)).join('<br>') : '<span class="muted">not answered</span>'}</td><td><a href="#/draft/${d.id}/declarations">Edit</a></td></tr>
+        </tbody></table>
+        ${probs.length ? `<div class="errbox">Complete these sections before submitting: ${probs.map(esc).join(', ')}.</div>` : ''}
+        <label style="display:flex;gap:8px;margin:16px 0"><input type="checkbox" id="attest" ${d.attest ? 'checked' : ''}> All authors have approved this submission and agree to its publication in Coastal &amp; Estuarine Dynamics.</label>
+        <p style="display:flex;gap:8px"><a class="btn" href="#/draft/${d.id}/declarations">Back</a><button class="btn" type="button" data-save="${d.id}">Save draft</button><button class="btn primary" type="button" id="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Submitting…' : 'Submit manuscript'}</button></p>`;
+    }
+    return `<div class="layout" style="grid-template-columns:1fr"><div class="panel"><p class="muted" style="margin:0 0 6px">${esc(d.id)} · <strong>${esc(d.title)}</strong></p><div class="wiz"><ol class="wsteps">${nav}</ol><section>${body}</section></div></div></div>`;
+  }
+  function loginPage(next) {
+    crumbs([['Log in']]);
+    return `<div class="login panel"><h1>Log in to Quillstone</h1><div class="errbox">Your session has expired for security reasons. Log in again to continue — your draft has been saved.</div>${st.loginErr ? `<p class="err" role="alert">${esc(st.loginErr)}</p>` : ''}
+      <div class="f"><label for="li-email">Email</label><input type="email" id="li-email" autocomplete="username"></div><div class="f"><label for="li-pw">Password</label><input type="password" id="li-pw" autocomplete="current-password"></div>
+      <p><button class="btn primary" type="button" id="li-go" data-next="${esc(next)}">Log in</button> <a href="#/login">Forgot your password?</a></p><p class="muted" style="font-size:12px">Quillstone uses ORCID and institutional sign-in for editors only.</p></div>`;
+  }
+
+  let lastRoute = '';
+  function route() {
+    const h = location.hash || '#/dashboard';
+    const [path, qs] = h.slice(1).split('?');
+    const parts = path.split('/').filter(Boolean);
+    document.querySelectorAll('.bar nav a').forEach((a) => a.classList.remove('on'));
+    const app = $('#app');
+    $('#who').textContent = st.loggedIn ? 'Dr Ingrid Solberg' : 'Not logged in';
+    if (!st.loggedIn && parts[0] !== 'login') { location.hash = '#/login?next=' + encodeURIComponent(h); return; }
+    if (parts[0] === 'login') { app.innerHTML = loginPage(new URLSearchParams(qs || '').get('next') || '#/dashboard'); return; }
+    if (parts[0] === 'draft' && drafts[parts[1]]) {
+      $('#nav-author').classList.add('on');
+      if (lastRoute !== h) st.err = '';
+      app.innerHTML = wizard(drafts[parts[1]], parts[2] || 'type');
+    } else if (parts[0] === 'submitted') { $('#nav-author').classList.add('on'); app.innerHTML = submittedPage(); }
+    else if (parts[0] === 'revisions') { $('#nav-author').classList.add('on'); app.innerHTML = revisionsPage(); }
+    else if (parts[0] === 'decisions') { $('#nav-author').classList.add('on'); app.innerHTML = decisionsPage(); }
+    else if (parts[0] === 'new') { $('#nav-author').classList.add('on'); app.innerHTML = newPage(); }
+    else if (parts[0] === 'reviewer') { $('#nav-reviewer').classList.add('on'); app.innerHTML = reviewerPage(); }
+    else if (parts[0] === 'profile') { $('#nav-profile').classList.add('on'); app.innerHTML = profilePage(); }
+    else if (parts[0] === 'help') { $('#nav-help').classList.add('on'); app.innerHTML = helpPage(); }
+    else { $('#nav-author').classList.add('on'); app.innerHTML = dashboard(); }
+    lastRoute = h;
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const cur = () => { const m = (location.hash || '').match(/^#\/draft\/(D-\d+)/); return m ? drafts[m[1]] : null; };
+
+  function expire(d) {
+    // The session times out server-side; the first write on this draft after the timeout bounces to login.
+    if (d.id === 'D-7719' && st.expiryArmed) { st.expiryArmed = false; st.loggedIn = false; d.attest = false; location.hash = '#/login?next=' + encodeURIComponent('#/draft/' + d.id + '/review'); return true; }
+    return false;
+  }
+  async function saveDraft(d, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+    await later(500);
+    if (expire(d)) return;
+    await rec({ event: 'draft_save', draft: d.id });
+    d.edited = '2026-09-24';
+    if (btn) { btn.disabled = false; btn.textContent = 'Save draft'; }
+    toast('Draft saved');
+  }
+  async function submit(d) {
+    if (st.busy) return;
+    const done = stepsDone(d);
+    const probs = Object.entries(done).filter(([, v]) => !v).map(([k]) => STEPS.find((s) => s[0] === k)[1]);
+    if (probs.length) { st.err = 'This manuscript is not ready to submit. Incomplete: ' + probs.join(', ') + '.'; rerender(); return; }
+    if (!d.attest) { st.err = 'Confirm that all authors have approved this submission.'; rerender(); return; }
+    st.err = ''; st.busy = true; rerender();
+    await later(900);
+    st.busy = false;
+    if (expire(d)) return;
+    const ms = 'CED-2026-' + String(457 + submitted.length).padStart(4, '0');
+    await rec({
+      event: 'manuscript_submit', draft: d.id, manuscript: ms, title: clean(d.title), type: d.type, section: d.type === 'research_article' ? d.section : '',
+      keywords: [...d.keywords].sort().join('; '), authors: d.authors.map(fullName).join('; '), affiliations: d.authors.map((a) => a.inst).join('; '),
+      corresponding: fullName(d.authors[d.corr]), corresponding_email: d.authors[d.corr].email, competing_interests: d.competing,
+      funders: d.funding === 'funded' ? d.funders.map((f) => f.name).join('; ') : 'none', grants: d.funding === 'funded' ? d.funders.map((f) => clean(f.grant)).join('; ') : '',
+      data_availability: d.data,
+    });
+    submitted.unshift({ id: ms, title: d.title, type: typeName(d.type), date: '2026-09-24', status: 'Submitted' });
+    delete drafts[d.id];
+    st.lastSubmitted = ms;
+    location.hash = '#/dashboard';
+    toast('Submission received: ' + ms);
+  }
+
+  function addAuthorModal(d) {
+    const root = $('#modal-root');
+    root.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="am-h"><h2 id="am-h">Add co-author</h2>
+      <div class="row"><div class="f"><label for="am-first">First name</label><input type="text" id="am-first"></div><div class="f"><label for="am-last">Last name</label><input type="text" id="am-last"></div></div>
+      <div class="f"><label for="am-email">Email</label><input type="email" id="am-email"></div>
+      <div class="f"><label for="am-inst">Institution</label><div class="combo" data-combo="inst"><input type="text" id="am-inst" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Start typing to search institutions"><ul role="listbox" hidden></ul></div><div class="hint">Choose from the list so editors can verify the affiliation.</div></div>
+      <div class="f"><label for="am-orcid">ORCID iD (optional)</label><input type="text" id="am-orcid" placeholder="0000-0000-0000-0000"></div>
+      <p class="err" id="am-err" role="alert" hidden></p>
+      <p style="text-align:right"><button class="btn" type="button" id="am-cancel">Cancel</button> <button class="btn primary" type="button" id="am-add">Add author</button></p></div></div>`;
+    let chosen = null;
+    const close = () => (root.innerHTML = '');
+    setupCombo(root.querySelector('[data-combo=inst]'), INSTITUTIONS, (name) => { chosen = name; }, () => { chosen = null; });
+    $('#am-cancel').onclick = close;
+    $('#am-add').onclick = () => {
+      const first = clean($('#am-first').value), last = clean($('#am-last').value), email = clean($('#am-email').value).toLowerCase(); const err = $('#am-err');
+      const fail = (m) => { err.textContent = m; err.hidden = false; };
+      if (!first || !last) return fail('Enter the author\'s first and last name.');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('Enter a valid email address.');
+      if (!chosen || $('#am-inst').value !== chosen) return fail('Choose the institution from the list.');
+      const orcid = clean($('#am-orcid').value);
+      if (orcid && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(orcid)) return fail('ORCID iD must look like 0000-0000-0000-0000.');
+      d.authors.push({ first, last, email, inst: chosen, orcid });
+      close(); rerender(); toast('Co-author added');
+    };
+    $('#am-first').focus();
+  }
+  function setupCombo(box, list, onPick, onEdit) {
+    const inp = box.querySelector('input'); const ul = box.querySelector('ul'); let timer;
+    const show = (items, q) => {
+      ul.hidden = false; inp.setAttribute('aria-expanded', 'true');
+      ul.innerHTML = items.length ? items.map(([n, sub], i) => `<li role="option" id="${box.dataset.combo}-opt-${i}" data-name="${esc(n)}">${esc(n)}<small>${esc(sub)}</small></li>`).join('') : `<li class="loading" role="option" aria-disabled="true">No matches for “${esc(q)}”</li>`;
+    };
+    inp.addEventListener('input', () => {
+      onEdit && onEdit(inp.value);
+      clearTimeout(timer); const q = inp.value.trim();
+      if (q.length < 2) { ul.hidden = true; inp.setAttribute('aria-expanded', 'false'); return; }
+      ul.hidden = false; ul.innerHTML = '<li class="loading">Searching…</li>';
+      timer = setTimeout(() => { const f = fold(q); show(list.filter(([n, sub]) => fold(n + ' ' + sub).includes(f)).slice(0, 8), q); }, 280);
+    });
+    ul.addEventListener('mousedown', (e) => e.preventDefault());
+    ul.addEventListener('click', (e) => { const li = e.target.closest('li[data-name]'); if (!li) return; inp.value = li.dataset.name; ul.hidden = true; inp.setAttribute('aria-expanded', 'false'); onPick(li.dataset.name); });
+    inp.addEventListener('blur', () => setTimeout(() => { ul.hidden = true; inp.setAttribute('aria-expanded', 'false'); }, 150));
+  }
+
+  // --------- events ---------
+  const app = $('#app');
+  app.addEventListener('click', async (e) => {
+    const t = e.target; const d = cur();
+    const sv = t.closest('[data-save]'); if (sv) { saveDraft(drafts[sv.dataset.save], sv); return; }
+    if (t.closest('#submit')) { submit(d); return; }
+    if (t.closest('#add-author')) { addAuthorModal(d); return; }
+    const kd = t.closest('[data-kwdel]'); if (kd) { d.keywords.splice(+kd.dataset.kwdel, 1); rerender(); $('#kw-input').focus(); return; }
+    const ka = t.closest('[data-kwadd]'); if (ka) { addKw(d, ka.dataset.kwadd); return; }
+    const up = t.closest('[data-up]'); if (up) { const i = +up.dataset.up; const c = d.authors[d.corr]; [d.authors[i - 1], d.authors[i]] = [d.authors[i], d.authors[i - 1]]; d.corr = d.authors.indexOf(c); rerender(); return; }
+    const dn = t.closest('[data-down]'); if (dn) { const i = +dn.dataset.down; const c = d.authors[d.corr]; [d.authors[i + 1], d.authors[i]] = [d.authors[i], d.authors[i + 1]]; d.corr = d.authors.indexOf(c); rerender(); return; }
+    const rm = t.closest('[data-rmauth]'); if (rm) { const c = d.authors[d.corr]; d.authors.splice(+rm.dataset.rmauth, 1); d.corr = Math.max(0, d.authors.indexOf(c)); rerender(); return; }
+    if (t.closest('#add-funder')) { d.funders.push({ name: '', grant: '' }); rerender(); return; }
+    const rf = t.closest('[data-rmfund]'); if (rf) { d.funders.splice(+rf.dataset.rmfund, 1); rerender(); return; }
+    const del = t.closest('[data-del]');
+    if (del) {
+      const dd = drafts[del.dataset.del];
+      $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h2>Delete draft?</h2><p>“${esc(dd.title)}” (${esc(dd.id)}) will be permanently deleted.</p><p style="text-align:right"><button class="btn" type="button" id="dx">Cancel</button> <button class="btn danger" type="button" id="dok">Delete draft</button></p></div></div>`;
+      $('#dx').onclick = () => ($('#modal-root').innerHTML = '');
+      $('#dok').onclick = async () => { await later(400); await rec({ event: 'draft_delete', draft: dd.id }); delete drafts[dd.id]; $('#modal-root').innerHTML = ''; rerender(); toast('Draft deleted'); };
+      return;
+    }
+    const inv = t.closest('[data-inv]'); if (inv) { const i = invites.find((x) => x.id === inv.dataset.inv); await later(400); await rec({ event: 'review_invitation', manuscript: i.id, answer: inv.dataset.ans }); i.status = inv.dataset.ans === 'accept' ? 'Accepted' : 'Declined'; rerender(); return; }
+    if (t.closest('#pr-save')) { await later(400); await rec({ event: 'profile_update' }); toast('Profile saved'); return; }
+    if (t.closest('#create-draft')) { toast('Uploading a manuscript file is required to create a draft.'); return; }
+    if (t.closest('#start-rev')) { toast('Revision drafts open in the file-upload workspace.'); return; }
+    if (t.closest('#li-go')) {
+      const em = clean($('#li-email').value).toLowerCase(), pw = $('#li-pw').value; const next = t.closest('#li-go').dataset.next;
+      t.closest('#li-go').disabled = true; await later(600);
+      if (em !== CREDS.email || pw !== CREDS.password) { st.loginErr = 'The email or password is incorrect.'; rerender(); return; }
+      st.loginErr = ''; st.loggedIn = true;
+      await rec({ event: 'session_login', email: em });
+      location.hash = next; toast('Welcome back, Ingrid');
+    }
+  });
+  function addKws(d, arr, rest = '') {
+    for (const raw of arr) {
+      const k = clean(raw).replace(/[,;]+$/, '').toLowerCase();
+      if (!k) continue;
+      if (d.keywords.length >= 6) { toast('You can add at most 6 keywords.'); break; }
+      if (!d.keywords.includes(k)) d.keywords.push(k);
+    }
+    rerender(); const i = $('#kw-input'); if (i) { i.value = rest; i.focus(); }
+  }
+  const addKw = (d, raw) => addKws(d, [raw]);
+  app.addEventListener('keydown', (e) => {
+    const t = e.target; const d = cur();
+    if (t.id === 'kw-input') {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); const v = t.value; t.value = ''; addKws(d, v.split(/[,;]/)); }
+      else if (e.key === 'Backspace' && !t.value && d.keywords.length) { d.keywords.pop(); rerender(); $('#kw-input').focus(); }
+    }
+    if (t.id === 'li-pw' && e.key === 'Enter') $('#li-go').click();
+  });
+  app.addEventListener('input', (e) => {
+    const t = e.target; const d = cur(); if (!d) return;
+    if (t.id === 'title') d.title = t.value;
+    if (t.id === 'running') { d.running = t.value; const h = t.parentElement.querySelector('.hint'); h.textContent = `At most 60 characters (${t.value.length}/60).`; }
+    if (t.id === 'abstract') d.abstract = t.value;
+    if (t.id === 'ci-text') d.competingText = t.value;
+    if (t.dataset.grant != null) d.funders[+t.dataset.grant].grant = t.value;
+    if (t.id === 'kw-input' && /[,;]/.test(t.value)) { const parts = t.value.split(/[,;]/); const rest = parts.pop().replace(/^\s+/, ''); addKws(d, parts, rest); }
+  });
+  app.addEventListener('change', (e) => {
+    const t = e.target; const d = cur(); if (!d) return;
+    if (t.name === 'atype') { d.type = t.value; if (d.type !== 'research_article') d.section = ''; rerender(); }
+    if (t.id === 'section') d.section = t.value;
+    if (t.name === 'corr') d.corr = +t.value;
+    if (t.name === 'ci') { d.competing = t.value; rerender(); }
+    if (t.name === 'fund') { d.funding = t.value; if (t.value === 'funded' && !d.funders.length) d.funders.push({ name: '', grant: '' }); rerender(); }
+    if (t.id === 'data') d.data = t.value;
+    if (t.id === 'attest') d.attest = t.checked;
+  });
+  // funder comboboxes are re-created on each render
+  new MutationObserver(() => {
+    document.querySelectorAll('[data-combo=funder]:not([data-wired])').forEach((box) => {
+      box.dataset.wired = '1'; const d = cur(); const i = +box.dataset.idx;
+      setupCombo(box, FUNDERS, (name) => { d.funders[i].name = name; d.funders[i].query = ''; }, (v) => { d.funders[i].name = ''; d.funders[i].query = v; });
+    });
+  }).observe(app, { childList: true, subtree: true });
+  $('#logout').addEventListener('click', () => toast('You are logged in as Dr Ingrid Solberg.'));
+  route();
+})();
+</script>
+</body>
+</html>

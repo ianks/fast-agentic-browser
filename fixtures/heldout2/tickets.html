@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Loomis Live · Tickets for concerts, comedy &amp; theatre</title>
+<script src="../common.js"></script>
+<style>
+  :root { --bg: #150b1b; --bg2: #1f1127; --card: #26142f; --card2: #2f1a3a; --line: #3f2750; --ink: #f4eaf7; --muted: #b8a3c2; --mag: #e0218a; --mag2: #ff4fa8; --teal: #3ed1c5; --warn: #ffb547; --bad: #ff6b6b; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Futura", "Trebuchet MS", "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: var(--mag2); }
+  header.hd { background: #0f0714; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 22px; padding: 0 30px; height: 68px; position: sticky; top: 0; z-index: 20; }
+  .logo { font-weight: 900; font-size: 24px; color: #fff; text-decoration: none; letter-spacing: -1px; }
+  .logo span { color: var(--mag); }
+  .search { flex: 1; max-width: 420px; display: flex; }
+  .search input { flex: 1; background: var(--bg2); border: 1px solid var(--line); color: var(--ink); border-radius: 22px 0 0 22px; padding: 9px 16px; font: inherit; }
+  .search button { background: var(--mag); color: #fff; border: 0; border-radius: 0 22px 22px 0; padding: 0 16px; font: inherit; font-weight: 700; cursor: pointer; }
+  header select { background: var(--bg2); color: var(--ink); border: 1px solid var(--line); border-radius: 20px; padding: 8px 12px; font: inherit; }
+  header nav { display: flex; gap: 4px; }
+  header nav a { color: var(--muted); text-decoration: none; padding: 8px 10px; font-weight: 600; font-size: 14px; }
+  header nav a:hover, header nav a.on { color: #fff; }
+  .acct { margin-left: auto; display: flex; gap: 14px; align-items: center; font-size: 14px; }
+  .acct a { color: var(--ink); text-decoration: none; font-weight: 600; }
+  .acct .av { width: 32px; height: 32px; border-radius: 50%; background: var(--mag); display: grid; place-items: center; font-weight: 800; color: #fff; font-size: 13px; }
+  main { max-width: 1140px; margin: 0 auto; padding: 28px 30px 60px; }
+  h1 { font-size: 34px; margin: 0 0 6px; letter-spacing: -.5px; }
+  h2 { font-size: 21px; margin: 0 0 12px; }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .hero { border-radius: 18px; padding: 44px 46px; margin-bottom: 30px; background: radial-gradient(circle at 80% 20%, #6b1b58 0, transparent 50%), linear-gradient(120deg, #2c0f3c, #6d0f4a 60%, #e0218a); position: relative; overflow: hidden; }
+  .hero .kick { text-transform: uppercase; letter-spacing: 3px; font-size: 12px; color: #ffd0e8; font-weight: 700; }
+  .hero h1 { font-size: 44px; margin: 8px 0; }
+  .hero p { max-width: 560px; color: #f7d9ea; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-weight: 800; font-size: 14.5px; padding: 10px 22px; border-radius: 26px; border: 2px solid var(--mag); background: transparent; color: var(--ink); cursor: pointer; text-decoration: none; }
+  .btn.pri { background: var(--mag); color: #fff; }
+  .btn.pri:hover { background: var(--mag2); }
+  .btn.ghost { border-color: var(--line); }
+  .btn.sm { padding: 6px 14px; font-size: 13px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .ecard { background: var(--card); border-radius: 14px; overflow: hidden; text-decoration: none; color: var(--ink); display: block; border: 1px solid var(--line); }
+  .ecard:hover { border-color: var(--mag); }
+  .ecard .art { height: 120px; }
+  .ecard .body { padding: 14px 16px; }
+  .ecard .body b { display: block; font-size: 16px; }
+  .filters { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .filters button { background: var(--card); border: 1px solid var(--line); color: var(--ink); border-radius: 18px; padding: 6px 14px; font: inherit; font-size: 13.5px; cursor: pointer; }
+  .filters button[aria-pressed=true] { background: var(--mag); border-color: var(--mag); }
+  .ehero { border-radius: 18px; padding: 34px 38px; margin-bottom: 22px; }
+  .dates { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 20px; }
+  .dates button { background: var(--card); border: 2px solid var(--line); color: var(--ink); border-radius: 12px; padding: 10px 16px; font: inherit; cursor: pointer; text-align: left; }
+  .dates button[aria-pressed=true] { border-color: var(--mag); background: var(--card2); }
+  .dates button small { display: block; color: var(--muted); font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 13px 12px; border-bottom: 1px solid var(--line); font-size: 14.5px; vertical-align: middle; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+  .panel + .panel { margin-top: 16px; }
+  .av-ok { color: var(--teal); font-weight: 700; }
+  .av-few { color: var(--warn); font-weight: 700; }
+  .av-out { color: var(--bad); font-weight: 700; }
+  select, input[type=text], input[type=email] { background: var(--bg2); color: var(--ink); border: 1px solid #5a3d6b; border-radius: 8px; padding: 8px 10px; font: inherit; }
+  input:focus, select:focus, button:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 1px; }
+  label.f { display: block; font-weight: 700; margin: 14px 0 6px; }
+  .two { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+  .seatbar { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .hold { margin-left: auto; background: #3a1330; color: #ffd0e8; border-radius: 16px; padding: 5px 12px; font-size: 13.5px; font-weight: 700; }
+  .legend { display: flex; gap: 18px; font-size: 13px; color: var(--muted); margin: 10px 0; }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
+  .msg { min-height: 22px; color: var(--warn); font-weight: 700; margin: 8px 0; }
+  .opt { position: relative; display: block; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 12px 42px; margin: 8px 0; cursor: pointer; background: var(--bg2); }
+  .opt input { position: absolute; left: 14px; top: 15px; width: 17px; height: 17px; accent-color: var(--mag); }
+  .opt:has(input:checked) { border-color: var(--mag); }
+  .chk { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+  .chk input { width: 17px; height: 17px; margin-top: 3px; accent-color: var(--mag); }
+  .switch { display: flex; gap: 12px; align-items: center; background: none; border: 0; color: var(--ink); font: inherit; cursor: pointer; padding: 0; text-align: left; }
+  .switch .tr { flex: none; width: 44px; height: 24px; border-radius: 12px; background: #5a3d6b; position: relative; }
+  .switch .tr::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch[aria-checked=true] .tr { background: var(--teal); }
+  .switch[aria-checked=true] .tr::after { left: 23px; }
+  .sum .ln { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; }
+  .sum .tot { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 10px; font-size: 19px; font-weight: 900; }
+  .err { background: #3b1420; border: 1px solid var(--bad); color: #ffc9c9; border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .overlay { position: fixed; inset: 0; background: rgba(5,0,8,.7); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .dialog { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 26px; width: 460px; }
+  .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); background: var(--teal); color: #07201e; font-weight: 800; padding: 11px 20px; border-radius: 24px; z-index: 60; }
+  footer.ft { border-top: 1px solid var(--line); background: #0f0714; padding: 32px 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; color: var(--muted); font-size: 13.5px; }
+  footer.ft b { color: var(--ink); display: block; margin-bottom: 8px; }
+  footer.ft a { color: var(--muted); display: block; padding: 2px 0; }
+  .ok { background: linear-gradient(120deg, #1d3b39, #26142f); border: 1px solid var(--teal); border-radius: 16px; padding: 26px 28px; }
+</style>
+</head>
+<body>
+<header class="hd">
+  <a class="logo" href="#/">loomis<span>·</span>live</a>
+  <form class="search" role="search" id="searchform"><input type="search" id="q" aria-label="Search artists, venues and events" placeholder="Search artists, venues, events"><button type="submit">Search</button></form>
+  <select id="city" aria-label="City"><option value="">All cities</option><option>Wexbridge</option><option>Harlow Cross</option><option>Pennington</option><option>Marlow Bay</option></select>
+  <nav aria-label="Categories"><a href="#/category/concerts" data-cat="concerts">Concerts</a><a href="#/category/comedy" data-cat="comedy">Comedy</a><a href="#/category/theatre" data-cat="theatre">Theatre</a><a href="#/category/festivals" data-cat="festivals">Festivals</a><a href="#/gift-cards" data-cat="gift-cards">Gift cards</a></nav>
+  <div class="acct"><a href="#/account">My tickets</a><span class="av" aria-hidden="true">CB</span><span>Cathal Brennan</span></div>
+</header>
+<main id="main"></main>
+<footer class="ft">
+  <div><b>loomis·live</b>Independent ticketing for independent venues since 2011.</div>
+  <div><b>Help</b><a href="#/help">Help centre</a><a href="#/help">Refunds &amp; exchanges</a><a href="#/help">Accessible tickets</a></div>
+  <div><b>Company</b><a href="#/help">About us</a><a href="#/help">Sell tickets with us</a><a href="#/help">Terms of sale</a><a href="#/help">Privacy</a></div>
+  <div><b>Presale alerts</b><span>Get tickets before anyone else.</span><div style="display:flex;gap:6px;margin-top:8px"><input type="email" id="nl-email" aria-label="Email for presale alerts" placeholder="Email address" style="flex:1"><button type="button" class="btn sm pri" id="nl-go">Sign up</button></div></div>
+</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3800); };
+  const gbp = (n) => '£' + (Math.round(n * 100) / 100).toFixed(2);
+  const r2 = (n) => Math.round(n * 100) / 100;
+  const FEE = 2.25;
+  const main = q('#main');
+  const ACCOUNT = { name: 'Cathal Brennan', email: 'cathal.brennan@postmark.ie' };
+
+  // ------------------------------------------------------------------ catalogue
+  const seatSec = (id, name, price, rows, seats, note) => ({ id, name, price, rows, seats, note });
+  const gaSec = (id, name, price, note) => ({ id, name, price, ga: true, note });
+  const EVENTS = [
+    { slug: 'maren-solveig', title: 'Maren Solveig — The Salt Year Tour', cat: 'concerts', venue: 'Corn Exchange', city: 'Wexbridge', art: 'linear-gradient(135deg,#1c3f5e,#8a2c6b 60%,#f07aa8)',
+      about: 'Norwegian-Scottish songwriter Maren Solveig brings her third album, The Salt Year, to the Corn Exchange for three nights, with a full band and string section.',
+      good: ['Age 14+ (under-16s with an adult)', 'Doors 18:30 · show approx. 19:30–22:15 (Sun 18:00)', 'Step-free access to Stalls and Balcony Front', 'Booking fee £2.25 per ticket'],
+      dates: [
+        { iso: '2026-11-13', day: 'Fri 13 Nov 2026', time: '19:30', avail: { stalls: 'ok', 'balcony-front': 'out', 'balcony-rear': 'ok', standing: 'out' } },
+        { iso: '2026-11-14', day: 'Sat 14 Nov 2026', time: '19:30', avail: { stalls: 'ok', 'balcony-front': 'few', 'balcony-rear': 'ok', standing: 'ok' } },
+        { iso: '2026-11-15', day: 'Sun 15 Nov 2026', time: '18:00', avail: { stalls: 'ok', 'balcony-front': 'ok', 'balcony-rear': 'ok', standing: 'ok' } },
+      ],
+      sections: [seatSec('stalls', 'Stalls', 64.5, 'ABCDEFGHIJKLMNOP', 24, 'Rows A–P · allocated seating'), seatSec('balcony-front', 'Balcony Front', 72, 'ABCD', 18, 'Rows A–D · best view in the house'),
+        seatSec('balcony-rear', 'Balcony Rear', 48, 'ABCDEF', 20, 'Rows A–F · allocated seating, steep rake'), gaSec('standing', 'Standing (Pit)', 39.5, 'Standing in front of the stage')] },
+    { slug: 'maren-solveig-acoustic', title: 'Maren Solveig: An Acoustic Evening', cat: 'concerts', venue: 'Harlow Cross Arena Studio', city: 'Harlow Cross', art: 'linear-gradient(135deg,#3b2a1a,#8a2c6b)',
+      about: 'An intimate solo set with stories behind the songs.', good: ['Age 12+', 'Doors 19:00'],
+      dates: [{ iso: '2026-12-02', day: 'Wed 2 Dec 2026', time: '19:30', avail: { studio: 'few' } }], sections: [seatSec('studio', 'Studio seated', 45, 'ABCDEFGH', 14, 'Rows A–H')] },
+    { slug: 'the-lamplighters', title: 'The Lamplighters — Harbour Lights Tour', cat: 'concerts', venue: 'Harlow Cross Arena', city: 'Harlow Cross', art: 'linear-gradient(135deg,#0e3b43,#1f8a7a 60%,#f2c14e)',
+      about: 'Stadium-sized indie anthems from the Harlow Cross five-piece.', good: ['Age 14+', 'Doors 18:00'],
+      dates: [{ iso: '2026-11-20', day: 'Fri 20 Nov 2026', time: '19:00', avail: { floor: 'ok', lower: 'ok', upper: 'ok' } }, { iso: '2026-11-21', day: 'Sat 21 Nov 2026', time: '19:00', avail: { floor: 'out', lower: 'few', upper: 'ok' } }],
+      sections: [gaSec('floor', 'Floor standing', 34), seatSec('lower', 'Lower tier', 46.5, 'ABCDEFGH', 22, 'Rows A–H'), seatSec('upper', 'Upper tier', 38, 'ABCDEFGHIJ', 26, 'Rows A–J')] },
+    { slug: 'ines-okafor', title: 'Inès Okafor: Small Talk', cat: 'comedy', venue: 'Pennington Playhouse', city: 'Pennington', art: 'linear-gradient(135deg,#402218,#c9602e 60%,#ffd166)',
+      about: 'The award-winning stand-up on neighbours, group chats and her mum’s WhatsApp voice notes.', good: ['Age 16+', 'Contains strong language'],
+      dates: [{ iso: '2026-10-07', day: 'Wed 7 Oct 2026', time: '20:00', avail: { stalls: 'few', circle: 'ok' } }, { iso: '2026-10-08', day: 'Thu 8 Oct 2026', time: '20:00', avail: { stalls: 'ok', circle: 'ok' } }],
+      sections: [seatSec('stalls', 'Stalls', 22, 'ABCDEFGHIJKLM', 20, 'Rows A–M'), seatSec('circle', 'Circle', 18, 'ABCDEF', 18, 'Rows A–F')] },
+    { slug: 'marlow-bay-folk', title: 'Marlow Bay Folk Weekender', cat: 'festivals', venue: 'Marlow Bay Pavilion', city: 'Marlow Bay', art: 'linear-gradient(135deg,#123524,#3e7c4f 60%,#e9d985)',
+      about: 'Three days of folk, roots and ceilidh on the seafront.', good: ['All ages · under-12s free with an adult', 'Camping sold separately'],
+      dates: [{ iso: '2026-10-16', day: 'Fri 16 – Sun 18 Oct 2026', time: '12:00', avail: { weekend: 'ok', saturday: 'ok' } }],
+      sections: [gaSec('weekend', 'Weekend pass', 55), gaSec('saturday', 'Saturday day ticket', 32)] },
+    { slug: 'kestrel-quartet', title: 'Kestrel String Quartet: Late Beethoven', cat: 'concerts', venue: 'St Anne’s Hall', city: 'Wexbridge', art: 'linear-gradient(135deg,#2b2b3f,#6b5b95)',
+      about: 'Opus 131 and the Grosse Fuge by candlelight.', good: ['All ages', 'Unreserved pews in the nave are not available'],
+      dates: [{ iso: '2026-10-03', day: 'Sat 3 Oct 2026', time: '19:30', avail: { nave: 'ok', gallery: 'ok' } }],
+      sections: [seatSec('nave', 'Nave', 18, 'ABCDEFGHIJKL', 16, 'Rows A–L'), seatSec('gallery', 'Gallery', 12, 'ABC', 14, 'Rows A–C · restricted view')] },
+    { slug: 'neon-harbour', title: 'Neon Harbour + Glasshouse Kids', cat: 'concerts', venue: 'The Foundry Rooms', city: 'Wexbridge', art: 'linear-gradient(135deg,#0b1e3f,#2f6fed 60%,#3ed1c5)',
+      about: 'Synth-pop double bill.', good: ['Age 18+', 'Standing only'],
+      dates: [{ iso: '2026-10-30', day: 'Fri 30 Oct 2026', time: '19:00', avail: { ga: 'ok' } }], sections: [gaSec('ga', 'General admission', 26.5)] },
+    { slug: 'gilded-age', title: 'The Gilded Age — a new musical', cat: 'theatre', venue: 'Pennington Playhouse', city: 'Pennington', art: 'linear-gradient(135deg,#3a2b0a,#b8860b 60%,#fff3b0)',
+      about: 'Ambition, scandal and a very large staircase. Runs to 15 November.', good: ['Age 10+', 'Running time 2 h 40 min including interval'],
+      dates: [{ iso: '2026-10-01', day: 'Thu 1 Oct 2026', time: '19:30', avail: { stalls: 'ok', circle: 'ok' } }, { iso: '2026-10-02', day: 'Fri 2 Oct 2026', time: '19:30', avail: { stalls: 'few', circle: 'ok' } }, { iso: '2026-10-03', day: 'Sat 3 Oct 2026', time: '14:30', avail: { stalls: 'ok', circle: 'ok' } }],
+      sections: [seatSec('stalls', 'Stalls', 42, 'ABCDEFGHIJKLM', 20, 'Rows A–M'), seatSec('circle', 'Circle', 34, 'ABCDEFG', 18, 'Rows A–G')] },
+    { slug: 'sable-juno', title: 'Sable b2b Juno', cat: 'concerts', venue: 'The Foundry Rooms', city: 'Wexbridge', art: 'linear-gradient(135deg,#111,#5b2a86 60%,#e0218a)',
+      about: 'All-night back-to-back set.', good: ['Age 18+', 'ID required'],
+      dates: [{ iso: '2026-10-24', day: 'Sat 24 Oct 2026', time: '22:00', avail: { ga: 'ok' } }], sections: [gaSec('ga', 'General admission', 19.5)] },
+    { slug: 'winter-lights', title: 'Winter Lights with the Wexbridge Philharmonic', cat: 'concerts', venue: 'Corn Exchange', city: 'Wexbridge', art: 'linear-gradient(135deg,#0d2a3f,#3c6e91 60%,#d6ecf3)',
+      about: 'Festive favourites, carols and a sing-along finale.', good: ['All ages'],
+      dates: [{ iso: '2026-12-12', day: 'Sat 12 Dec 2026', time: '19:30', avail: { stalls: 'ok', balcony: 'ok' } }], sections: [seatSec('stalls', 'Stalls', 36, 'ABCDEFGHIJKLMNOP', 24, 'Rows A–P'), seatSec('balcony', 'Balcony', 28, 'ABCDEF', 20, 'Rows A–F')] },
+  ];
+  const AV = { ok: ['Available', 'av-ok'], few: ['Few left', 'av-few'], out: ['Sold out', 'av-out'] };
+
+  // deterministic seat availability
+  const hashStr = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+  const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const TAKEN = {};
+  function takenFor(ev, iso, sec) {
+    const key = `${ev.slug}|${iso}|${sec.id}`;
+    if (TAKEN[key]) return TAKEN[key];
+    const set = new Set();
+    const av = ev.dates.find((d) => d.iso === iso).avail[sec.id];
+    const R = rng(hashStr(key));
+    const p = av === 'out' ? 1 : av === 'few' ? 0.93 : 0.5;
+    for (const r of sec.rows) for (let n = 1; n <= sec.seats; n++) if (R() < p) set.add(r + n);
+    if (ev.slug === 'maren-solveig' && iso === '2026-11-14' && sec.id === 'balcony-rear') {
+      set.clear();
+      const T = { A: [...range(1, 3), ...range(10, 20)], B: [...range(1, 6), ...range(9, 20)], C: [...range(1, 4), 9, 10, ...range(15, 20)], D: [...range(1, 6), ...range(12, 20)], E: range(3, 17), F: range(8, 13) };
+      for (const [r, ns] of Object.entries(T)) ns.forEach((n) => set.add(r + n));
+    }
+    if (ev.slug === 'maren-solveig' && iso !== '2026-11-14' && sec.id === 'balcony-rear') { range(11, 13).forEach((n) => set.delete('C' + n)); }
+    if (ev.slug === 'maren-solveig' && iso === '2026-11-14' && sec.id === 'stalls') { range(9, 12).forEach((n) => set.delete('C' + n)); }
+    if (ev.slug === 'maren-solveig' && iso === '2026-11-14' && sec.id === 'balcony-front') { set.clear(); for (const r of sec.rows) for (let n = 1; n <= sec.seats; n++) set.add(r + n); ['D2', 'D3', 'D17'].forEach((s) => set.delete(s)); }
+    TAKEN[key] = set;
+    return set;
+  }
+
+  // ------------------------------------------------------------------ seat map web component
+  class LoomisSeatmap extends HTMLElement {
+    constructor() { super(); this.attachShadow({ mode: 'open' }); this.cfg = null; this.sel = []; }
+    configure(cfg) { this.cfg = cfg; this.sel = (cfg.selected || []).slice(); this.render(); }
+    get selected() { return this.sel.slice(); }
+    setMax(n) { this.cfg.max = n; }
+    setSelection(list) { this.sel = list.slice(); this.render(); this.emit(); }
+    emit() { this.dispatchEvent(new CustomEvent('seatchange', { detail: { seats: this.selected }, bubbles: true, composed: true })); }
+    render() {
+      const { rows, seats, taken, price, name } = this.cfg;
+      const aisle = Math.floor(seats / 2);
+      this.shadowRoot.innerHTML = `<style>
+          :host { display: block; background: #1a0d21; border: 1px solid #3f2750; border-radius: 14px; padding: 18px 16px 20px; overflow-x: auto; }
+          .stage { margin: 0 auto 18px; width: 60%; text-align: center; font: 700 12px/1 system-ui, sans-serif; letter-spacing: 6px; color: #b8a3c2; border-top: 4px solid #e0218a; border-radius: 50% 50% 0 0 / 14px 14px 0 0; padding-top: 10px; }
+          .r { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 5px 0; }
+          .rl { width: 18px; text-align: center; font: 700 12px system-ui, sans-serif; color: #b8a3c2; }
+          button { width: 26px; height: 26px; border-radius: 7px 7px 4px 4px; border: 1px solid #3ed1c5; background: #123a37; color: #bff5ef; font: 600 10.5px system-ui, sans-serif; cursor: pointer; padding: 0; }
+          button:hover { background: #1c5a55; }
+          button[aria-pressed=true] { background: #e0218a; border-color: #ff4fa8; color: #fff; }
+          button:disabled { background: #2b2233; border-color: #2b2233; color: #5c4c66; cursor: not-allowed; }
+          button:focus-visible { outline: 2px solid #ffb547; outline-offset: 1px; }
+          .gap { margin-left: 16px; }
+        </style>
+        <div class="stage">STAGE</div>
+        <div class="map" role="group" aria-label="${name} seating plan">${rows.split('').map((r) => `<div class="r"><span class="rl" aria-hidden="true">${r}</span>${range(1, seats).map((n) => {
+          const id = r + n, tk = taken.has(id), on = this.sel.includes(id);
+          return `<button type="button" data-seat="${id}" class="${n === aisle + 1 ? 'gap' : ''}" ${tk ? 'disabled' : ''} aria-pressed="${on}" aria-label="Row ${r}, seat ${n}, ${tk ? 'unavailable' : gbp(price) + ', available'}">${n}</button>`;
+        }).join('')}<span class="rl" aria-hidden="true">${r}</span></div>`).join('')}</div>`;
+      this.shadowRoot.querySelector('.map').addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-seat]'); if (!b || b.disabled) return;
+        const id = b.dataset.seat;
+        if (this.sel.includes(id)) { this.sel = this.sel.filter((x) => x !== id); b.setAttribute('aria-pressed', 'false'); this.emit(); return; }
+        if (this.sel.length >= this.cfg.max) { this.dispatchEvent(new CustomEvent('seatlimit', { detail: { count: this.sel.length }, bubbles: true, composed: true })); return; }
+        this.sel.push(id); b.setAttribute('aria-pressed', 'true'); this.emit();
+      });
+    }
+  }
+  customElements.define('loomis-seatmap', LoomisSeatmap);
+
+  // ------------------------------------------------------------------ state
+  const st = { cat: '', city: '', q: '', qty: {}, cart: null, orders: [
+    { ref: 'LL-5K2P8', title: 'Kestrel String Quartet: Late Beethoven', when: 'Sat 3 Oct 2026, 19:30', venue: 'St Anne’s Hall, Wexbridge', what: '2 × Nave, row F seats 7–8' },
+  ], checkout: null };
+  let holdTimer = null;
+
+  const route = () => location.hash.replace(/^#\/?/, '');
+  function render() {
+    const r = route(); const p = r.split('/');
+    qa('header nav a').forEach((a) => a.classList.toggle('on', p[0] === 'category' && a.dataset.cat === p[1]));
+    window.scrollTo(0, 0);
+    if (!r) { st.cat = ''; return renderHome(); }
+    if (p[0] === 'category') { st.cat = p[1] || ''; return renderHome(); }
+    if (p[0] === 'event') return renderEvent(p[1], p[2]);
+    if (p[0] === 'seats') return renderSeats();
+    if (p[0] === 'checkout') return renderCheckout();
+    if (p[0] === 'order') return renderOrder(p[1]);
+    if (p[0] === 'account') return renderAccount();
+    if (p[0] === 'gift-cards' || p[0] === 'help') return renderStatic(p[0]);
+    main.innerHTML = '<h1>Page not found</h1><p><a href="#/">Back to Loomis Live</a></p>';
+  }
+  window.addEventListener('hashchange', render);
+
+  // ------------------------------------------------------------------ home / listing
+  function evRange(ev) { const f = ev.dates[0], l = ev.dates[ev.dates.length - 1]; return ev.dates.length > 1 ? `${f.day.replace(/ \d{4}$/, '')} – ${l.day}` : f.day; }
+  const fromPrice = (ev) => Math.min(...ev.sections.map((s) => s.price));
+  function renderHome() {
+    const list = EVENTS.filter((e) => (!st.cat || e.cat === st.cat) && (!st.city || e.city === st.city) && (!st.q || `${e.title} ${e.venue} ${e.city}`.toLowerCase().includes(st.q.toLowerCase())));
+    const heading = st.q ? `Results for “${esc(st.q)}”` : st.cat ? st.cat[0].toUpperCase() + st.cat.slice(1) : 'On sale now';
+    main.innerHTML = `${!st.cat && !st.q ? `<section class="hero"><div class="kick">On sale now · Corn Exchange, Wexbridge · 13–15 November</div><h1>Maren Solveig — The Salt Year Tour</h1><p>Three nights only, with a full band and string section. Stalls, Balcony and a standing pit.</p><a class="btn pri" href="#/event/maren-solveig">Find tickets</a></section>` : ''}
+      <div class="filters">${st.cat || st.q ? `<h1 style="margin:0 12px 0 0;font-size:28px">${heading}</h1>` : `<h2 style="margin:0 12px 0 0">${heading}</h2>`}${[['', 'All'], ['concerts', 'Concerts'], ['comedy', 'Comedy'], ['theatre', 'Theatre'], ['festivals', 'Festivals']].map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${st.cat === k}">${l}</button>`).join('')}
+        ${st.city ? `<span class="muted">in ${esc(st.city)}</span>` : ''}</div>
+      ${!st.cat && !st.q ? `<div class="filters"><span class="muted">Popular venues:</span>${[['Corn Exchange', 'Wexbridge'], ['The Foundry Rooms', 'Wexbridge'], ['Harlow Cross Arena', 'Harlow Cross'], ['Pennington Playhouse', 'Pennington'], ['Marlow Bay Pavilion', 'Marlow Bay'], ['St Anne’s Hall', 'Wexbridge']].map(([v, c]) => `<button type="button" data-venue="${esc(v)}" data-vcity="${esc(c)}">${esc(v)}</button>`).join('')}</div>` : ''}
+      <div class="grid">${list.map((e) => `<a class="ecard" href="#/event/${e.slug}"><div class="art" style="background:${e.art}"></div><div class="body"><b>${esc(e.title)}</b><span class="muted">${esc(e.venue)}, ${esc(e.city)}</span><div class="muted">${esc(evRange(e))} · from ${gbp(fromPrice(e))}</div></div></a>`).join('') || '<p class="muted">No events match. Try another search.</p>'}</div>`;
+    qa('.filters button[data-cat]').forEach((b) => b.addEventListener('click', () => { location.hash = b.dataset.cat ? '#/category/' + b.dataset.cat : '#/'; }));
+    qa('.filters button[data-venue]').forEach((b) => b.addEventListener('click', () => { st.q = b.dataset.venue; q('#q').value = b.dataset.venue; renderHome(); }));
+  }
+  q('#searchform').addEventListener('submit', (e) => { e.preventDefault(); st.q = norm(q('#q').value); if (route() === '') renderHome(); else location.hash = '#/'; });
+  q('#city').addEventListener('change', () => { st.city = q('#city').value; if (route() === '' || route().startsWith('category')) renderHome(); else location.hash = '#/'; });
+
+  // ------------------------------------------------------------------ event page
+  function renderEvent(slug, iso) {
+    const ev = EVENTS.find((e) => e.slug === slug);
+    if (!ev) { main.innerHTML = '<h1>Event not found</h1><p><a href="#/">Browse events</a></p>'; return; }
+    const d = ev.dates.find((x) => x.iso === iso) || ev.dates[0];
+    main.innerHTML = `<div class="muted"><a href="#/">Home</a> › <a href="#/category/${ev.cat}">${ev.cat[0].toUpperCase() + ev.cat.slice(1)}</a> › ${esc(ev.title)}</div>
+      <section class="ehero" style="background:${ev.art}"><h1>${esc(ev.title)}</h1><div style="font-size:17px">${esc(ev.venue)}, ${esc(ev.city)}</div></section>
+      <div class="two"><div>
+        <h2>Choose a date</h2>
+        <div class="dates" role="group" aria-label="Dates">${ev.dates.map((x) => `<button type="button" data-date="${x.iso}" aria-pressed="${x.iso === d.iso}">${esc(x.day)} · ${x.time}<small>${Object.values(x.avail).every((a) => a === 'out') ? 'Sold out' : Object.values(x.avail).some((a) => a === 'out' || a === 'few') ? 'Selling fast' : 'Available'}</small></button>`).join('')}</div>
+        <div class="panel"><h2>Tickets for ${esc(d.day)}, ${d.time}</h2>
+          <table><thead><tr><th>Section</th><th>Price per ticket</th><th>Availability</th><th>Quantity</th><th></th></tr></thead><tbody>
+          ${ev.sections.map((s) => {
+            const a = d.avail[s.id]; const out = a === 'out'; const qk = `${ev.slug}|${d.iso}|${s.id}`;
+            const qty = st.qty[qk] || 2;
+            return `<tr><td><b>${esc(s.name)}</b><div class="muted">${esc(s.note || (s.ga ? 'Unreserved' : ''))}</div></td><td>${gbp(s.price)} <span class="muted">+ ${gbp(FEE)} fee</span></td><td><span class="${AV[a][1]}">${AV[a][0]}</span></td>
+              <td><select data-qty="${qk}" aria-label="Number of tickets, ${esc(s.name)}" ${out ? 'disabled' : ''}>${range(1, 8).map((n) => `<option ${n === qty ? 'selected' : ''}>${n}</option>`).join('')}</select></td>
+              <td>${out ? `<button type="button" class="btn sm ghost" data-wait="${s.id}" aria-label="Join waitlist for ${esc(s.name)}">Join waitlist</button>` : s.ga ? `<button type="button" class="btn sm pri" data-add="${s.id}" aria-label="Add ${esc(s.name)} tickets">Add tickets</button>` : `<button type="button" class="btn sm pri" data-seats="${s.id}" aria-label="Choose seats in ${esc(s.name)}">Choose seats</button>`}</td></tr>`;
+          }).join('')}</tbody></table>
+          <p class="muted" style="margin-bottom:0">Maximum 8 tickets per customer per performance. Prices include VAT; a booking fee of ${gbp(FEE)} applies per ticket.</p></div>
+      </div>
+      <aside><div class="panel"><h3>About</h3><p style="margin-top:0">${esc(ev.about)}</p></div><div class="panel"><h3>Good to know</h3><ul style="margin:0;padding-left:18px">${ev.good.map((g) => `<li>${esc(g)}</li>`).join('')}</ul></div>
+        <div class="panel"><h3>Venue</h3><p style="margin:0">${esc(ev.venue)}<br><span class="muted">${esc(ev.city)}</span></p></div></aside></div>`;
+    qa('.dates button').forEach((b) => b.addEventListener('click', () => { location.hash = `#/event/${ev.slug}/${b.dataset.date}`; }));
+    qa('select[data-qty]').forEach((s) => s.addEventListener('change', () => { st.qty[s.dataset.qty] = +s.value; }));
+    qa('[data-seats],[data-add]').forEach((b) => b.addEventListener('click', () => {
+      const sid = b.dataset.seats || b.dataset.add;
+      const qty = st.qty[`${ev.slug}|${d.iso}|${sid}`] || 2;
+      st.cart = { slug: ev.slug, iso: d.iso, section: sid, qty, seats: [], holdEnds: Date.now() + 15 * 60 * 1000 };
+      st.checkout = null;
+      location.hash = b.dataset.add ? '#/checkout' : '#/seats';
+    }));
+    qa('[data-wait]').forEach((b) => b.addEventListener('click', () => openWaitlist(ev, d, ev.sections.find((s) => s.id === b.dataset.wait))));
+  }
+  function openWaitlist(ev, d, s) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="wl-t"><h2 id="wl-t">Join the waitlist</h2>
+      <p class="muted" style="margin-top:0">${esc(s.name)} · ${esc(d.day)}, ${d.time} · ${esc(ev.title)}</p>
+      <label class="f" for="wl-email">Email</label><input type="email" id="wl-email" value="${esc(ACCOUNT.email)}" style="width:100%">
+      <label class="f" for="wl-qty">Tickets wanted</label><select id="wl-qty">${range(1, 4).map((n) => `<option ${n === 2 ? 'selected' : ''}>${n}</option>`).join('')}</select>
+      <p class="muted">We'll email you if tickets are released. Joining the waitlist doesn't guarantee tickets.</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" class="btn ghost" id="wl-cancel">Cancel</button><button type="button" class="btn pri" id="wl-go">Join waitlist</button></div></div></div>`;
+    q('#wl-cancel').addEventListener('click', () => (q('#modal-root').innerHTML = ''));
+    q('#wl-go').addEventListener('click', async () => {
+      q('#wl-go').disabled = true; await sleep(600);
+      await post({ event: 'waitlist_join', show: `${ev.slug}-${d.iso}`, section: s.id, qty: q('#wl-qty').value, email: norm(q('#wl-email').value).toLowerCase() });
+      q('#modal-root').innerHTML = ''; toast("You're on the waitlist. We'll email you if tickets come up.");
+    });
+  }
+
+  // ------------------------------------------------------------------ seat selection
+  const ctx = () => { const c = st.cart; if (!c) return null; const ev = EVENTS.find((e) => e.slug === c.slug); return { c, ev, d: ev.dates.find((x) => x.iso === c.iso), s: ev.sections.find((x) => x.id === c.section) }; };
+  function renderSeats() {
+    const x = ctx();
+    if (!x || x.s.ga) { main.innerHTML = '<h1>No seats held</h1><p class="muted">Your basket is empty. <a href="#/">Find an event</a></p>'; return; }
+    const { c, ev, d, s } = x;
+    main.innerHTML = `<div class="muted"><a href="#/event/${ev.slug}/${d.iso}">← Back to ${esc(ev.title)}</a></div>
+      <h1>Choose your seats</h1>
+      <div class="seatbar"><span><b>${esc(ev.title)}</b><br><span class="muted">${esc(d.day)}, ${d.time} · ${esc(ev.venue)}, ${esc(ev.city)}</span></span>
+        <span><b>${esc(s.name)}</b><br><span class="muted">${gbp(s.price)} + ${gbp(FEE)} fee per ticket</span></span>
+        <label for="seat-qty" class="muted">Tickets</label><select id="seat-qty">${range(1, 8).map((n) => `<option ${n === c.qty ? 'selected' : ''}>${n}</option>`).join('')}</select>
+        <span class="hold" id="hold" aria-live="off"></span></div>
+      <div id="map-host"></div>
+      <div class="legend"><span><i style="background:#123a37;border:1px solid #3ed1c5"></i>Available</span><span><i style="background:#e0218a"></i>Your seats</span><span><i style="background:#2b2233"></i>Unavailable</span></div>
+      <div class="panel"><div class="row" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span>Your seats: <b id="picked">None selected</b></span>
+        <button type="button" class="btn sm ghost" id="best">Best available</button>
+        <button type="button" class="btn pri" id="to-checkout" disabled>Continue to checkout</button></div>
+        <div class="msg" id="seat-msg" role="status" aria-live="polite"></div></div>`;
+    const sm = document.createElement('loomis-seatmap');
+    q('#map-host').appendChild(sm);
+    sm.configure({ rows: s.rows, seats: s.seats, taken: takenFor(ev, d.iso, s), price: s.price, name: s.name, max: c.qty, selected: c.seats });
+    updatePicked();
+    tickHold();
+    sm.addEventListener('seatchange', (e) => { c.seats = e.detail.seats; q('#seat-msg').textContent = ''; updatePicked(); });
+    sm.addEventListener('seatlimit', (e) => { q('#seat-msg').textContent = `You've selected ${e.detail.count} seat${e.detail.count === 1 ? '' : 's'}. Deselect one to choose another, or change the number of tickets.`; });
+    q('#seat-qty').addEventListener('change', () => {
+      c.qty = +q('#seat-qty').value; sm.setMax(c.qty);
+      if (c.seats.length > c.qty) { sm.setSelection([]); q('#seat-msg').textContent = `Choose ${c.qty} seat${c.qty === 1 ? '' : 's'}.`; }
+      updatePicked();
+    });
+    q('#best').addEventListener('click', () => {
+      const taken = takenFor(ev, d.iso, s);
+      for (const r of s.rows) {
+        for (let n = 1; n + c.qty - 1 <= s.seats; n++) {
+          const block = range(n, n + c.qty - 1).map((k) => r + k);
+          if (block.every((id) => !taken.has(id))) { sm.setSelection(block); q('#seat-msg').textContent = `We found ${c.qty} seats together in row ${r}.`; return; }
+        }
+      }
+      q('#seat-msg').textContent = `Sorry, we couldn't find ${c.qty} seats together in ${s.name}.`;
+    });
+    q('#to-checkout').addEventListener('click', () => { if (c.seats.length === c.qty) location.hash = '#/checkout'; });
+  }
+  const seatSort = (a, b) => a[0].localeCompare(b[0]) || Number(a.slice(1)) - Number(b.slice(1));
+  function updatePicked() {
+    const c = st.cart; const p = q('#picked'); if (!p) return;
+    const seats = c.seats.slice().sort(seatSort);
+    p.textContent = seats.length ? seats.map((id) => `${id[0]}${id.slice(1)}`).join(', ') + ` (${seats.length} of ${c.qty})` : `None selected (choose ${c.qty})`;
+    q('#to-checkout').disabled = seats.length !== c.qty;
+  }
+  function tickHold() {
+    clearInterval(holdTimer);
+    const upd = () => {
+      const el = q('#hold'); if (!el || !st.cart) { clearInterval(holdTimer); return; }
+      let left = st.cart.holdEnds - Date.now();
+      if (left <= 0) { st.cart.holdEnds = Date.now() + 10 * 60 * 1000; left = 10 * 60 * 1000; toast('We’ve extended your seat hold by 10 minutes.'); }
+      const m = Math.floor(left / 60000), sec = Math.floor((left % 60000) / 1000);
+      el.textContent = `Seats held for ${m}:${String(sec).padStart(2, '0')}`;
+    };
+    upd(); holdTimer = setInterval(upd, 1000);
+  }
+
+  // ------------------------------------------------------------------ checkout
+  const protEach = (price) => r2(price * 0.0667);
+  function co() {
+    const x = ctx(); if (!x) return null;
+    if (!st.checkout) st.checkout = { name: ACCOUNT.name, delivery: 'mobile', protection: '', roundup: false, marketing: true, payment: 'visa-4417', err: '', busy: false };
+    return { ...x, k: st.checkout };
+  }
+  function money(x) {
+    const { c, s, k } = x;
+    const tickets = r2(c.qty * s.price), fees = r2(c.qty * FEE), del = k.delivery === 'post' ? 2.5 : 0, prot = k.protection === 'yes' ? r2(c.qty * protEach(s.price)) : 0;
+    const base = r2(tickets + fees + del + prot);
+    const up = Math.ceil(base - 1e-9) === base ? base + 1 : Math.ceil(base);
+    const donation = k.roundup ? r2(up - base) : 0;
+    return { tickets, fees, del, prot, base, up, donation, total: r2(base + donation) };
+  }
+  function renderCheckout() {
+    const x = co();
+    if (!x) { main.innerHTML = '<h1>Your basket is empty</h1><p><a href="#/">Find an event</a></p>'; return; }
+    const { c, ev, d, s, k } = x;
+    if (!s.ga && c.seats.length !== c.qty) { location.hash = '#/seats'; return; }
+    const pe = protEach(s.price);
+    main.innerHTML = `<div class="muted">${s.ga ? `<a href="#/event/${ev.slug}/${d.iso}">← Back to event</a>` : '<a href="#/seats">← Back to seats</a>'}</div><h1>Checkout</h1>
+      <div class="two"><section>
+        <div class="panel"><h2>Ticket holder</h2><label class="f" for="co-name" style="margin-top:0">Name on tickets</label><input type="text" id="co-name" value="${esc(k.name)}" style="width:100%" autocomplete="name">
+          <p class="muted" style="margin-bottom:0">The lead booker may be asked for photo ID matching this name.</p></div>
+        <fieldset class="panel"><legend><h2 style="margin:0">Delivery</h2></legend>
+          <label class="opt"><input type="radio" name="co-del" value="mobile" ${k.delivery === 'mobile' ? 'checked' : ''}><b>Mobile tickets (free)</b><div class="muted">In the Loomis Live app, available 48 hours before the show</div></label>
+          <label class="opt"><input type="radio" name="co-del" value="print" ${k.delivery === 'print' ? 'checked' : ''}><b>Print at home (free)</b></label>
+          <label class="opt"><input type="radio" name="co-del" value="post" ${k.delivery === 'post' ? 'checked' : ''}><b>Post (+£2.50)</b><div class="muted">Royal Mail Signed For, sent 3 weeks before the show</div></label></fieldset>
+        <fieldset class="panel"><legend><h2 style="margin:0">Ticket protection</h2></legend><p class="muted" style="margin-top:0">Get a full refund if you can't go because of illness, travel disruption, jury service and more. Provided by Harbourline Insurance.</p>
+          <label class="opt"><input type="radio" name="co-prot" value="yes" ${k.protection === 'yes' ? 'checked' : ''}><b>Yes, protect my order for ${gbp(r2(c.qty * pe))} (${c.qty} × ${gbp(pe)})</b></label>
+          <label class="opt"><input type="radio" name="co-prot" value="no" ${k.protection === 'no' ? 'checked' : ''}><b>No, I'll take the risk</b></label></fieldset>
+        <div class="panel"><button type="button" class="switch" role="switch" id="co-round" aria-checked="${k.roundup}"><span class="tr"></span><span id="co-round-label"></span></button>
+          <p class="muted" style="margin-bottom:0">The Loomis Foundation funds free music lessons in state schools.</p></div>
+        <div class="panel"><label class="chk"><input type="checkbox" id="co-mkt" ${k.marketing ? 'checked' : ''}><span>Email me about ${esc(ev.title.split(/ — |: /)[0])} and similar artists</span></label></div>
+        <fieldset class="panel"><legend><h2 style="margin:0">Payment</h2></legend>
+          <label class="opt"><input type="radio" name="co-pay" value="visa-4417" ${k.payment === 'visa-4417' ? 'checked' : ''}><b>Visa ending 4417 (saved)</b><div class="muted">Expires 08/28</div></label>
+          <label class="opt"><input type="radio" name="co-pay" value="mc-0092" ${k.payment === 'mc-0092' ? 'checked' : ''}><b>Mastercard ending 0092 (saved)</b><div class="muted">Expires 01/27</div></label></fieldset>
+        <div id="co-err"></div>
+        <button type="button" class="btn pri" id="co-place" style="margin-top:8px;padding:13px 34px">Place order</button>
+      </section>
+      <aside class="panel sum" id="co-sum"></aside></div>`;
+    updateCheckout();
+  }
+  function updateCheckout() {
+    const x = co(); if (!x) return;
+    const { c, ev, d, s, k } = x; const m = money(x);
+    const lab = q('#co-round-label'); if (lab) lab.textContent = `Round up to ${gbp(m.up)} for the Loomis Foundation`;
+    const seats = c.seats.slice().sort(seatSort);
+    q('#co-sum').innerHTML = `<h2>Order summary</h2><div><b>${esc(ev.title)}</b></div><div class="muted">${esc(d.day)}, ${d.time}<br>${esc(ev.venue)}, ${esc(ev.city)}</div>
+      <div class="muted" style="margin:8px 0">${esc(s.name)}${seats.length ? ` · ${seats.map((id) => `Row ${id[0]} seat ${id.slice(1)}`).join(', ')}` : ''}</div>
+      <div class="ln"><span>${c.qty} × ${gbp(s.price)}</span><span>${gbp(m.tickets)}</span></div>
+      <div class="ln"><span>Booking fee (${c.qty} × ${gbp(FEE)})</span><span>${gbp(m.fees)}</span></div>
+      ${m.del ? `<div class="ln"><span>Postage</span><span>${gbp(m.del)}</span></div>` : ''}
+      ${m.prot ? `<div class="ln"><span>Ticket protection</span><span>${gbp(m.prot)}</span></div>` : ''}
+      ${m.donation ? `<div class="ln"><span>Loomis Foundation round-up</span><span>${gbp(m.donation)}</span></div>` : ''}
+      <div class="ln tot"><span>Total</span><span>${gbp(m.total)}</span></div>`;
+  }
+  main.addEventListener('input', (e) => { if (route() === 'checkout' && e.target.id === 'co-name' && st.checkout) st.checkout.name = e.target.value; });
+  main.addEventListener('change', (e) => {
+    if (route() !== 'checkout' || !st.checkout) return;
+    const t = e.target, k = st.checkout;
+    if (t.name === 'co-del') k.delivery = t.value;
+    if (t.name === 'co-prot') k.protection = t.value;
+    if (t.name === 'co-pay') k.payment = t.value;
+    if (t.id === 'co-mkt') k.marketing = t.checked;
+    updateCheckout();
+  });
+  main.addEventListener('click', async (e) => {
+    if (route() !== 'checkout' || !st.checkout) return;
+    const k = st.checkout;
+    const sw = e.target.closest('#co-round');
+    if (sw) { k.roundup = !k.roundup; sw.setAttribute('aria-checked', String(k.roundup)); updateCheckout(); return; }
+    if (!e.target.closest('#co-place') || k.busy) return;
+    k.name = q('#co-name').value;
+    const errs = [];
+    if (norm(k.name).length < 2) errs.push('Enter the name to print on the tickets.');
+    if (!k.protection) errs.push('Choose whether to protect your order.');
+    q('#co-err').innerHTML = errs.length ? `<div class="err" role="alert">${errs.map(esc).join('<br>')}</div>` : '';
+    if (errs.length) return;
+    k.busy = true; const btn = q('#co-place'); btn.disabled = true; btn.textContent = 'Placing order…';
+    await sleep(1000);
+    const x = co(); const { c, ev, d, s } = x; const m = money(x);
+    const seats = c.seats.slice().sort(seatSort);
+    const rows = [...new Set(seats.map((id) => id[0]))];
+    const nums = seats.map((id) => Number(id.slice(1)));
+    const adjacent = s.ga ? 'n/a' : rows.length === 1 && nums.every((n, i) => i === 0 || n === nums[i - 1] + 1) ? 'yes' : 'no';
+    await post({
+      event: 'ticket_order', show: `${ev.slug}-${d.iso}`, event_id: ev.slug, date: d.iso, section: s.id, row: s.ga ? '' : rows.length === 1 ? rows[0] : 'mixed', seats: seats.join(','),
+      qty: String(c.qty), adjacent, unit_price: s.price.toFixed(2), holder: norm(k.name), delivery: k.delivery, protection: k.protection, donation: m.donation.toFixed(2),
+      marketing: k.marketing ? 'yes' : 'no', payment: k.payment, total: m.total.toFixed(2),
+    });
+    const set = takenFor(ev, d.iso, s); seats.forEach((id) => set.add(id));
+    const ref = 'LL-' + (hashStr(ev.slug + d.iso + seats.join('') + st.orders.length) % 1e6).toString(36).toUpperCase().padStart(5, 'Q');
+    st.orders.unshift({ ref, title: ev.title, when: `${d.day}, ${d.time}`, venue: `${ev.venue}, ${ev.city}`, what: `${c.qty} × ${s.name}${seats.length ? ', ' + seats.join(', ') : ''}`, total: m.total, holder: norm(k.name) });
+    st.cart = null; st.checkout = null;
+    location.hash = '#/order/' + ref;
+  });
+  function renderOrder(ref) {
+    const o = st.orders.find((x) => x.ref === ref);
+    if (!o) { main.innerHTML = '<h1>Order not found</h1><p><a href="#/account">My tickets</a></p>'; return; }
+    main.innerHTML = `<div class="ok"><div class="muted">Order ${esc(o.ref)}</div><h1>You're going!</h1><p style="font-size:17px;margin:4px 0">${esc(o.title)}</p><p class="muted">${esc(o.when)} · ${esc(o.venue)}<br>${esc(o.what)} · tickets in the name of ${esc(o.holder)} · total ${gbp(o.total)}</p>
+      <div style="display:flex;gap:10px;margin-top:14px"><a class="btn pri" href="#/account">View my tickets</a><button type="button" class="btn ghost" id="cal">Add to calendar</button></div></div>`;
+    q('#cal').addEventListener('click', () => toast('Calendar file downloaded.'));
+  }
+  function renderAccount() {
+    main.innerHTML = `<h1>My tickets</h1><p class="muted">Signed in as ${esc(ACCOUNT.name)} (${esc(ACCOUNT.email)})</p>${st.orders.map((o) => `<div class="panel"><div class="muted">${esc(o.ref)}</div><h3>${esc(o.title)}</h3><div class="muted">${esc(o.when)} · ${esc(o.venue)}</div><div>${esc(o.what)}</div></div>`).join('')}`;
+  }
+  function renderStatic(k) {
+    main.innerHTML = k === 'gift-cards' ? '<h1>Gift cards</h1><div class="panel"><p style="margin:0">Loomis Live gift cards are available in any amount from £10 to £250 and never expire. Buy them at any partner venue box office.</p></div>'
+      : '<h1>Help centre</h1><div class="panel"><p style="margin:0">Tickets can be exchanged up to 48 hours before an event for a £3 fee. Refunds are only given if an event is cancelled or moved, unless you bought ticket protection.</p></div>';
+  }
+  q('#nl-go').addEventListener('click', async () => {
+    const em = norm(q('#nl-email').value).toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return toast('Enter a valid email address.');
+    await sleep(500); await post({ event: 'newsletter_signup', email: em }); q('#nl-email').value = ''; toast("You're signed up for presale alerts.");
+  });
+  render();
+})();
+</script>
+</body>
+</html>

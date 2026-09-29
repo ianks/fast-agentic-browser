@@ -1,0 +1,78 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Fieldnote · Internal wiki</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+.shell{display:flex;min-height:calc(100vh - 44px)}
+aside.tree{width:290px;border-right:1px solid #e5e7eb;padding:12px 8px;background:#fafafa}
+aside.tree ul{list-style:none;margin:0;padding-left:14px}aside.tree>ul{padding-left:0}
+aside.tree button.fold{border:0;background:none;padding:3px 4px;text-align:left;font-weight:600}
+aside.tree a{display:inline-block;padding:3px 4px;color:#1d4ed8;text-decoration:none}
+aside.tree a[aria-current=page]{background:#dbeafe}
+.shell main{flex:1;max-width:760px;margin:20px 28px}
+.meta td:first-child{width:170px;color:#475569}
+</style></head>
+<body><header><strong>Fieldnote</strong><span style="color:#94a3b8">Lattice Systems wiki</span><input id="search" type="search" placeholder="Search docs" style="margin-left:auto;width:220px"><button id="sgo">Search</button></header>
+<div class="shell">
+<aside class="tree" aria-label="Documents"><ul role="tree" id="tree"></ul></aside>
+<main id="doc"><h1>Welcome to Fieldnote</h1><p>Browse the spaces on the left. Pages are organised by team, then by topic.</p><p class="muted">Tip: folders load their contents when expanded.</p></main>
+</div>
+<script>
+// Folder: {t, c:[...]} ; Doc: {t, id}
+const TREE = [
+  { t: 'Engineering', c: [
+    { t: 'Architecture', c: [{ t: 'Service map', id: 'service-map' }, { t: 'ADR index', id: 'adr-index' }] },
+    { t: 'Onboarding', c: [{ t: 'Dev environment setup', id: 'dev-env' }, { t: 'On-call primer', id: 'oncall-primer' }] },
+    { t: 'Runbooks', c: [
+      { t: 'Networking', c: [{ t: 'DNS cutover', id: 'dns-cutover' }, { t: 'Load balancer drain', id: 'lb-drain' }] },
+      { t: 'Queues', c: [{ t: 'Kafka partition reassignment', id: 'kafka-reassign' }] },
+      { t: 'Databases', c: [{ t: 'MySQL replica rebuild', id: 'mysql-rebuild' }, { t: 'Postgres vacuum tuning', id: 'pg-vacuum' }, { t: 'Redis failover', id: 'redis-failover' }, { t: 'Postgres failover', id: 'pg-failover' }] },
+    ] },
+  ] },
+  { t: 'Product', c: [{ t: 'Roadmap 2026', id: 'roadmap' }, { t: 'Archive', c: [{ t: 'Runbooks (legacy)', c: [{ t: 'Postgres failover (2023, deprecated)', id: 'pg-failover-legacy' }] }] }] },
+  { t: 'People Ops', c: [{ t: 'Holiday calendar', id: 'holidays' }, { t: 'On-call compensation', id: 'oncall-comp' }] },
+  { t: 'Security', c: [{ t: 'Incident response', c: [{ t: 'Credential rotation', id: 'cred-rotation' }, { t: 'Postgres access review', id: 'pg-access' }] }] },
+];
+const DOCS = {
+  'pg-failover': { owner: 'Kwame Asante', reviewed: '2026-08-04', sev: 'SEV-1', esc: 'Signe Halvorsrud (#db-oncall)',
+    body: '<h2>When to use</h2><p>The primary in eu-west-1 is unreachable for more than 90 seconds, or replication lag on all replicas exceeds 5 minutes.</p><h2>Steps</h2><ol><li>Freeze deploys in #release-train.</li><li>Promote the most caught-up replica with <code>patronictl failover --candidate</code>.</li><li>Repoint pgbouncer and verify writes.</li><li>Open an incident review.</li></ol><p>If the escalation contact does not acknowledge within 10 minutes, page the secondary, Mateo Ferrante.</p>' },
+  'pg-failover-legacy': { owner: 'Nadia Karim', reviewed: '2023-02-17', sev: 'SEV-1', esc: 'Rafael Quintero (#dba)', body: '<p><strong>Deprecated.</strong> This page describes the pre-Patroni setup and is kept for reference only.</p>' },
+  'redis-failover': { owner: 'Aiko Tanabe', reviewed: '2026-06-30', sev: 'SEV-2', esc: 'Aiko Tanabe (#cache-oncall)', body: '<p>Sentinel promotes automatically. Verify clients reconnect.</p>' },
+  'pg-vacuum': { owner: 'Kwame Asante', reviewed: '2026-05-12', sev: 'SEV-3', esc: 'Kwame Asante', body: '<p>Autovacuum thresholds for large tables.</p>' },
+  'mysql-rebuild': { owner: 'Oren Shapiro', reviewed: '2026-01-22', sev: 'SEV-3', esc: 'Oren Shapiro (#legacy-billing)', body: '<p>Rebuild a replica from the nightly snapshot.</p>' },
+  'pg-access': { owner: 'Hye-jin Park', reviewed: '2026-07-01', sev: 'SEV-2', esc: 'Hye-jin Park (#security)', body: '<p>Quarterly review of Postgres roles.</p>' },
+};
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+let uid = 0;
+const node = (n) => {
+  if (n.id) return `<li role="treeitem"><a href="#/doc/${n.id}" data-doc="${n.id}">${esc(n.t)}</a></li>`;
+  const k = 'n' + uid++; FOLDERS[k] = n;
+  return `<li role="treeitem" aria-expanded="false" data-k="${k}"><button class="fold">▸ ${esc(n.t)}</button><ul role="group" hidden></ul></li>`;
+};
+const FOLDERS = {};
+q('#tree').innerHTML = TREE.map(node).join('');
+q('#tree').onclick = async (e) => {
+  const b = e.target.closest('button.fold');
+  if (!b) return;
+  const li = b.parentElement, ul = li.querySelector(':scope > ul'), open = li.getAttribute('aria-expanded') === 'true';
+  if (open) { li.setAttribute('aria-expanded', 'false'); ul.hidden = true; b.textContent = '▸ ' + FOLDERS[li.dataset.k].t; return; }
+  if (!ul.dataset.loaded) { ul.innerHTML = '<li class="muted">Loading…</li>'; ul.hidden = false; await later(200); ul.innerHTML = FOLDERS[li.dataset.k].c.map(node).join(''); ul.dataset.loaded = '1'; }
+  li.setAttribute('aria-expanded', 'true'); ul.hidden = false; b.textContent = '▾ ' + FOLDERS[li.dataset.k].t;
+};
+const title = (id) => { let t = null; const walk = (ns) => ns.forEach((n) => { if (n.id === id) t = n.t; else if (n.c) walk(n.c); }); walk(TREE); return t; };
+let seq = 0;
+async function route() {
+  const id = (location.hash.match(/^#\/doc\/([\w-]+)/) || [])[1];
+  if (!id) return;
+  qa('#tree a').forEach((a) => a.dataset.doc === id ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  const my = ++seq; q('#doc').innerHTML = '<p class="muted">Loading…</p>';
+  await later(300); if (my !== seq) return;
+  const t = title(id), d = DOCS[id];
+  rec({ event: 'open_doc', id });
+  q('#doc').innerHTML = !t ? '<h1>Page not found</h1>' : d
+    ? `<h1>${esc(t)}</h1><table class="meta"><tr><td>Owner</td><td>${d.owner}</td></tr><tr><td>Last reviewed</td><td>${d.reviewed}</td></tr><tr><td>Severity</td><td>${d.sev}</td></tr><tr><td>Escalation contact</td><td>${d.esc}</td></tr></table>${d.body}`
+    : `<h1>${esc(t)}</h1><p class="muted">This page has no content yet.</p>`;
+}
+const doSearch = async () => { q('#doc').innerHTML = '<p class="muted">Searching…</p>'; await later(500); q('#doc').innerHTML = '<h1>Search unavailable</h1><p>The search index is being rebuilt. Please browse the sidebar instead.</p>'; };
+q('#sgo').onclick = doSearch;
+q('#search').onkeydown = (e) => { if (e.key === 'Enter') doSearch(); };
+addEventListener('hashchange', route);
+route();
+</script></body></html>

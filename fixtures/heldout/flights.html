@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Corvina Air · Operations</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #0b1324; color: #e2e8f0; }
+  header { background: #111c33; }
+  main { max-width: 900px; }
+  .tabs { display: flex; gap: 6px; margin: 12px 0; }
+  .tabs [role=tab] { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+  .tabs [role=tab][aria-selected=true] { background: #facc15; color: #111827; border-color: #facc15; font-weight: 700; }
+  table { background: #0f1a30; }
+  td, th { border-bottom: 1px solid #1e293b; }
+  .st-ontime { color: #4ade80; } .st-delayed { color: #fbbf24; } .st-cancelled { color: #f87171; text-decoration: line-through; }
+  .mono { font-family: ui-monospace, Menlo, monospace; }
+  .muted { color: #94a3b8; }
+</style>
+</head>
+<body>
+<header><strong style="color:#facc15">Corvina Air</strong><span>Operations · Departures</span><span style="margin-left:auto" class="muted">Network ops console</span></header>
+<main>
+  <h1>Departures by day</h1>
+  <p class="muted">Delays are measured against the scheduled departure time. Times are local (WEST).</p>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="panel" role="tabpanel"></div>
+</main>
+<script>
+(() => {
+  const FLIGHTS = /*DATA*/[
+    {"date": "2026-06-01", "flight": "CV1400", "orig": "LIS", "dest": "OPO", "sched": "06:40", "delay": 0},
+    {"date": "2026-06-01", "flight": "CV1402", "orig": "LIS", "dest": "OPO", "sched": "09:15", "delay": 36},
+    {"date": "2026-06-01", "flight": "CV1404", "orig": "LIS", "dest": "OPO", "sched": "13:30", "delay": 12},
+    {"date": "2026-06-01", "flight": "CV1406", "orig": "LIS", "dest": "OPO", "sched": "18:05", "delay": 45},
+    {"date": "2026-06-01", "flight": "CV1520", "orig": "OPO", "dest": "LIS", "sched": "10:10", "delay": 90},
+    {"date": "2026-06-01", "flight": "CV1522", "orig": "OPO", "dest": "LIS", "sched": "12:00", "delay": 55},
+    {"date": "2026-06-01", "flight": "CV1524", "orig": "OPO", "dest": "LIS", "sched": "14:10", "delay": 90},
+    {"date": "2026-06-01", "flight": "CV1540", "orig": "LIS", "dest": "FAO", "sched": "21:40", "delay": 0},
+    {"date": "2026-06-01", "flight": "CV1542", "orig": "LIS", "dest": "FAO", "sched": "12:10", "delay": 10},
+    {"date": "2026-06-01", "flight": "CV1560", "orig": "LIS", "dest": "FNC", "sched": "16:10", "delay": 35},
+    {"date": "2026-06-01", "flight": "CV1562", "orig": "LIS", "dest": "FNC", "sched": "12:10", "delay": 70},
+    {"date": "2026-06-01", "flight": "CV1580", "orig": "OPO", "dest": "FNC", "sched": "06:10", "delay": 0},
+    {"date": "2026-06-01", "flight": "CV1582", "orig": "OPO", "dest": "FNC", "sched": "18:25", "delay": 10},
+    {"date": "2026-06-01", "flight": "CV1600", "orig": "LIS", "dest": "PDL", "sched": "15:10", "delay": 48},
+    {"date": "2026-06-01", "flight": "CV1602", "orig": "LIS", "dest": "PDL", "sched": "08:00", "delay": 10},
+    {"date": "2026-06-01", "flight": "CV1604", "orig": "LIS", "dest": "PDL", "sched": "20:10", "delay": 48},
+    {"date": "2026-06-02", "flight": "CV1400", "orig": "LIS", "dest": "OPO", "sched": "06:40", "delay": 30},
+    {"date": "2026-06-02", "flight": "CV1402", "orig": "LIS", "dest": "OPO", "sched": "09:15", "delay": 0},
+    {"date": "2026-06-02", "flight": "CV1404", "orig": "LIS", "dest": "OPO", "sched": "13:30", "delay": 95},
+    {"date": "2026-06-02", "flight": "CV1406", "orig": "LIS", "dest": "OPO", "sched": "18:05", "delay": null},
+    {"date": "2026-06-02", "flight": "CV1520", "orig": "OPO", "dest": "LIS", "sched": "21:00", "delay": 32},
+    {"date": "2026-06-02", "flight": "CV1522", "orig": "OPO", "dest": "LIS", "sched": "12:25", "delay": 41},
+    {"date": "2026-06-02", "flight": "CV1540", "orig": "LIS", "dest": "FAO", "sched": "14:10", "delay": 48},
+    {"date": "2026-06-02", "flight": "CV1542", "orig": "LIS", "dest": "FAO", "sched": "16:00", "delay": null},
+    {"date": "2026-06-02", "flight": "CV1544", "orig": "LIS", "dest": "FAO", "sched": "14:40", "delay": 70},
+    {"date": "2026-06-02", "flight": "CV1560", "orig": "LIS", "dest": "FNC", "sched": "13:10", "delay": null},
+    {"date": "2026-06-02", "flight": "CV1562", "orig": "LIS", "dest": "FNC", "sched": "06:00", "delay": null},
+    {"date": "2026-06-02", "flight": "CV1580", "orig": "OPO", "dest": "FNC", "sched": "14:40", "delay": 10},
+    {"date": "2026-06-02", "flight": "CV1582", "orig": "OPO", "dest": "FNC", "sched": "15:00", "delay": 10},
+    {"date": "2026-06-02", "flight": "CV1600", "orig": "LIS", "dest": "PDL", "sched": "19:00", "delay": 0},
+    {"date": "2026-06-02", "flight": "CV1602", "orig": "LIS", "dest": "PDL", "sched": "08:00", "delay": 22},
+    {"date": "2026-06-02", "flight": "CV1604", "orig": "LIS", "dest": "PDL", "sched": "06:55", "delay": 35},
+    {"date": "2026-06-03", "flight": "CV1400", "orig": "LIS", "dest": "OPO", "sched": "06:40", "delay": 31},
+    {"date": "2026-06-03", "flight": "CV1402", "orig": "LIS", "dest": "OPO", "sched": "09:15", "delay": 5},
+    {"date": "2026-06-03", "flight": "CV1404", "orig": "LIS", "dest": "OPO", "sched": "13:30", "delay": 0},
+    {"date": "2026-06-03", "flight": "CV1406", "orig": "LIS", "dest": "OPO", "sched": "18:05", "delay": 18},
+    {"date": "2026-06-03", "flight": "CV1520", "orig": "OPO", "dest": "LIS", "sched": "19:40", "delay": 90},
+    {"date": "2026-06-03", "flight": "CV1522", "orig": "OPO", "dest": "LIS", "sched": "16:00", "delay": 32},
+    {"date": "2026-06-03", "flight": "CV1540", "orig": "LIS", "dest": "FAO", "sched": "09:25", "delay": 22},
+    {"date": "2026-06-03", "flight": "CV1542", "orig": "LIS", "dest": "FAO", "sched": "13:55", "delay": 0},
+    {"date": "2026-06-03", "flight": "CV1544", "orig": "LIS", "dest": "FAO", "sched": "11:00", "delay": 0},
+    {"date": "2026-06-03", "flight": "CV1560", "orig": "LIS", "dest": "FNC", "sched": "13:10", "delay": 35},
+    {"date": "2026-06-03", "flight": "CV1562", "orig": "LIS", "dest": "FNC", "sched": "20:40", "delay": null},
+    {"date": "2026-06-03", "flight": "CV1564", "orig": "LIS", "dest": "FNC", "sched": "12:00", "delay": 0},
+    {"date": "2026-06-03", "flight": "CV1580", "orig": "OPO", "dest": "FNC", "sched": "08:40", "delay": null},
+    {"date": "2026-06-03", "flight": "CV1582", "orig": "OPO", "dest": "FNC", "sched": "07:25", "delay": 22},
+    {"date": "2026-06-03", "flight": "CV1600", "orig": "LIS", "dest": "PDL", "sched": "19:10", "delay": 35},
+    {"date": "2026-06-03", "flight": "CV1602", "orig": "LIS", "dest": "PDL", "sched": "21:10", "delay": 48},
+    {"date": "2026-06-04", "flight": "CV1400", "orig": "LIS", "dest": "OPO", "sched": "06:40", "delay": 0},
+    {"date": "2026-06-04", "flight": "CV1402", "orig": "LIS", "dest": "OPO", "sched": "09:15", "delay": 62},
+    {"date": "2026-06-04", "flight": "CV1404", "orig": "LIS", "dest": "OPO", "sched": "13:30", "delay": 29},
+    {"date": "2026-06-04", "flight": "CV1406", "orig": "LIS", "dest": "OPO", "sched": "18:05", "delay": 0},
+    {"date": "2026-06-04", "flight": "CV1520", "orig": "OPO", "dest": "LIS", "sched": "14:00", "delay": 90},
+    {"date": "2026-06-04", "flight": "CV1522", "orig": "OPO", "dest": "LIS", "sched": "11:10", "delay": 90},
+    {"date": "2026-06-04", "flight": "CV1540", "orig": "LIS", "dest": "FAO", "sched": "11:00", "delay": 10},
+    {"date": "2026-06-04", "flight": "CV1542", "orig": "LIS", "dest": "FAO", "sched": "09:10", "delay": 22},
+    {"date": "2026-06-04", "flight": "CV1544", "orig": "LIS", "dest": "FAO", "sched": "18:10", "delay": 22},
+    {"date": "2026-06-04", "flight": "CV1560", "orig": "LIS", "dest": "FNC", "sched": "12:00", "delay": 10},
+    {"date": "2026-06-04", "flight": "CV1562", "orig": "LIS", "dest": "FNC", "sched": "09:40", "delay": 0},
+    {"date": "2026-06-04", "flight": "CV1580", "orig": "OPO", "dest": "FNC", "sched": "19:25", "delay": null},
+    {"date": "2026-06-04", "flight": "CV1582", "orig": "OPO", "dest": "FNC", "sched": "17:25", "delay": 0},
+    {"date": "2026-06-04", "flight": "CV1584", "orig": "OPO", "dest": "FNC", "sched": "09:55", "delay": 10},
+    {"date": "2026-06-04", "flight": "CV1600", "orig": "LIS", "dest": "PDL", "sched": "08:40", "delay": 48},
+    {"date": "2026-06-04", "flight": "CV1602", "orig": "LIS", "dest": "PDL", "sched": "15:40", "delay": 22},
+    {"date": "2026-06-05", "flight": "CV1400", "orig": "LIS", "dest": "OPO", "sched": "06:40", "delay": 40},
+    {"date": "2026-06-05", "flight": "CV1402", "orig": "LIS", "dest": "OPO", "sched": "09:15", "delay": 0},
+    {"date": "2026-06-05", "flight": "CV1404", "orig": "LIS", "dest": "OPO", "sched": "13:30", "delay": 0},
+    {"date": "2026-06-05", "flight": "CV1406", "orig": "LIS", "dest": "OPO", "sched": "18:05", "delay": 33},
+    {"date": "2026-06-05", "flight": "CV1520", "orig": "OPO", "dest": "LIS", "sched": "13:25", "delay": 90},
+    {"date": "2026-06-05", "flight": "CV1522", "orig": "OPO", "dest": "LIS", "sched": "06:40", "delay": 55},
+    {"date": "2026-06-05", "flight": "CV1540", "orig": "LIS", "dest": "FAO", "sched": "10:40", "delay": 10},
+    {"date": "2026-06-05", "flight": "CV1542", "orig": "LIS", "dest": "FAO", "sched": "21:00", "delay": 0},
+    {"date": "2026-06-05", "flight": "CV1560", "orig": "LIS", "dest": "FNC", "sched": "12:55", "delay": 35},
+    {"date": "2026-06-05", "flight": "CV1562", "orig": "LIS", "dest": "FNC", "sched": "11:40", "delay": 10},
+    {"date": "2026-06-05", "flight": "CV1564", "orig": "LIS", "dest": "FNC", "sched": "08:00", "delay": 0},
+    {"date": "2026-06-05", "flight": "CV1580", "orig": "OPO", "dest": "FNC", "sched": "09:55", "delay": 0},
+    {"date": "2026-06-05", "flight": "CV1582", "orig": "OPO", "dest": "FNC", "sched": "20:00", "delay": 35},
+    {"date": "2026-06-05", "flight": "CV1600", "orig": "LIS", "dest": "PDL", "sched": "13:10", "delay": 0},
+    {"date": "2026-06-05", "flight": "CV1602", "orig": "LIS", "dest": "PDL", "sched": "11:25", "delay": 0}
+  ]/*END*/;
+  const DAYS = [['2026-06-01', 'Mon 1 Jun'], ['2026-06-02', 'Tue 2 Jun'], ['2026-06-03', 'Wed 3 Jun'], ['2026-06-04', 'Thu 4 Jun'], ['2026-06-05', 'Fri 5 Jun']];
+  const CITY = { LIS: 'Lisbon', OPO: 'Porto', FAO: 'Faro', FNC: 'Funchal', PDL: 'Ponta Delgada' };
+  const st = { day: null };
+  const fmtDelay = (d) => d >= 60 ? `${Math.floor(d / 60)} h ${String(d % 60).padStart(2, '0')} min` : `${d} min`;
+  const status = (f) => f.delay === null ? '<span class="st-cancelled">Cancelled</span>' : f.delay === 0 ? '<span class="st-ontime">On time</span>' : `<span class="st-delayed">Delayed ${fmtDelay(f.delay)}</span>`;
+  q('#tabs').innerHTML = DAYS.map(([d, l]) => `<button type="button" role="tab" data-day="${d}" aria-selected="false">${l}</button>`).join('');
+  async function show(day) {
+    st.day = day;
+    qa('[role=tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.day === day)));
+    const p = q('#panel'); p.innerHTML = '<p class="muted" role="status">Fetching departures…</p>';
+    const tok = {}; show.tok = tok; await later(400); if (show.tok !== tok) return;
+    const rows = FLIGHTS.filter((f) => f.date === day).sort((a, b) => a.sched.localeCompare(b.sched));
+    p.innerHTML = `<table><thead><tr><th>Flight</th><th>Route</th><th>Scheduled</th><th>Status</th></tr></thead><tbody>${rows.map((f) => `<tr><td class="mono">${f.flight}</td><td>${CITY[f.orig]} (${f.orig}) → ${CITY[f.dest]} (${f.dest})</td><td class="mono">${f.sched}</td><td>${status(f)}</td></tr>`).join('')}</tbody></table><p class="muted">${rows.length} departures</p>`;
+  }
+  q('#tabs').addEventListener('click', (e) => { const t = e.target.closest('[data-day]'); if (t) show(t.dataset.day); });
+  q('#panel').innerHTML = '<p class="muted">Choose a day to load its departures.</p>';
+})();
+</script>
+</body>
+</html>

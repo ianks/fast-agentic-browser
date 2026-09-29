@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Your orders · Stackhouse Outfitters</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fbfaf8; }
+  header { background: #3f2d20; }
+  main { max-width: 960px; }
+  .order { background: #fff; border: 1px solid #e7e2da; border-radius: 12px; margin: 14px 0; }
+  .order-h { display: flex; gap: 28px; padding: 12px 16px; background: #f5f1eb; border-radius: 12px 12px 0 0; font-size: 13px; color: #57534e; }
+  .order-h b { display: block; color: #1c1917; font-size: 14px; }
+  .order-b { padding: 12px 16px; }
+  .line { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; }
+  .line:last-child { border-bottom: 0; }
+  .sw { width: 48px; height: 48px; border-radius: 8px; }
+  .tag { font-size: 12px; background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 8px; }
+  .wiz { background: #fff; border: 1px solid #e7e2da; border-radius: 12px; padding: 20px 24px; }
+  .wiz h2 { margin-top: 0; }
+  .progress { display: flex; gap: 8px; margin-bottom: 16px; }
+  .progress span { flex: 1; height: 6px; border-radius: 3px; background: #e7e5e4; }
+  .progress span.on { background: #b45309; }
+  .pick { display: grid; grid-template-columns: 28px 56px 1fr 120px; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f1f1; }
+  .pick select { width: 110px; }
+  .reason { border: 1px solid #eee; border-radius: 10px; padding: 12px; margin: 10px 0; }
+  .reason select { width: 260px; }
+  .opts label { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .err { color: #b91c1c; font-size: 13px; }
+  .methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .method { border: 1px solid #d6d3d1; border-radius: 10px; padding: 12px; font-weight: 400; margin: 0; }
+</style>
+</head>
+<body>
+<header><strong>Stackhouse Outfitters</strong><a href="#/orders">Your orders</a><a href="#" data-dead>Shop</a><a href="#" data-dead>Stores</a><span style="margin-left:auto">Hi, Niamh</span></header>
+<main id="view"></main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0">Submit this return?</h3>
+    <div id="dlg-b"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="dlg-no">Go back</button><button type="button" class="primary" id="dlg-yes">Confirm return</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const ORDERS = [
+    { id: 'SO-77120', placed: '2026-02-26', delivered: '2026-03-02', total: 318.00, lines: [
+      { sku: 'HTC-SLT-34', name: 'Harbor Twill Chino', variant: 'Slate · W34 L32', qty: 2, price: 68.00, color: '#64748b' },
+      { sku: 'HTC-SLT-32', name: 'Harbor Twill Chino', variant: 'Slate · W32 L32', qty: 1, price: 68.00, color: '#64748b' },
+      { sku: 'FMC-OAT-L', name: 'Fellside Merino Crew', variant: 'Oatmeal · L', qty: 1, price: 96.00, color: '#d6c7a1', sizes: ['XS', 'S', 'M', 'L', 'XL'], soldOut: ['XS'] },
+      { sku: 'TWS-3PK', name: 'Tarn Wool Socks (3-pack)', variant: 'Charcoal · M', qty: 1, price: 18.00, color: '#374151', finalSale: true },
+    ] },
+    { id: 'SO-77102', placed: '2026-02-11', delivered: '2026-02-16', total: 164.00, lines: [
+      { sku: 'HTC-NVY-34', name: 'Harbor Twill Chino', variant: 'Navy · W34 L32', qty: 1, price: 68.00, color: '#1e3a8a' },
+      { sku: 'FMC-OAT-M', name: 'Fellside Merino Crew', variant: 'Oatmeal · M', qty: 1, price: 96.00, color: '#d6c7a1', sizes: ['XS', 'S', 'M', 'L', 'XL'] },
+    ] },
+    { id: 'SO-76954', placed: '2025-12-03', delivered: '2025-12-08', total: 142.00, returnClosed: '2026-01-07', lines: [
+      { sku: 'CPB-RST', name: 'Cragside Packable Beanie', variant: 'Rust', qty: 1, price: 24.00, color: '#b45309' },
+      { sku: 'HTC-SLT-34', name: 'Harbor Twill Chino', variant: 'Slate · W34 L32', qty: 1, price: 68.00, color: '#64748b' },
+      { sku: 'DGL-OLV', name: 'Dunmore Gloves', variant: 'Olive · M/L', qty: 1, price: 50.00, color: '#4d7c0f' },
+    ] },
+  ];
+  const REASONS = [['', 'Choose a reason…'], ['too_big', 'Too big'], ['too_small', 'Too small'], ['not_as_described', 'Not as described'], ['changed_mind', 'Changed my mind'], ['defective', 'Damaged or defective'], ['arrived_late', 'Arrived too late']];
+  const st = { order: null, step: 1, sel: {}, reasons: {}, res: {}, exch: {}, method: '', refundTo: 'credit', done: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const gbp = (n) => '£' + n.toFixed(2);
+  const fd = (s) => { const [y, m, d] = s.split('-').map(Number); return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`; };
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const view = q('#view');
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+
+  function route() {
+    const p = (location.hash || '#/orders').slice(2).split('/');
+    if (p[0] === 'return' && ORDERS.find((o) => o.id === p[1])) { if (!st.order || st.order.id !== p[1]) { Object.assign(st, { order: ORDERS.find((o) => o.id === p[1]), step: 1, sel: {}, reasons: {}, res: {}, exch: {}, method: '', refundTo: 'credit', done: false }); } return renderWizard(); }
+    renderOrders();
+  }
+  function renderOrders() {
+    view.innerHTML = `<h1>Your orders</h1><p class="muted">Most items can be returned within 30 days of delivery. Final-sale items can't be returned.</p>` + ORDERS.map((o) => `
+      <section class="order" aria-label="Order ${o.id}"><div class="order-h"><div>Order placed<b>${fd(o.placed)}</b></div><div>Total<b>${gbp(o.total)}</b></div><div>Order number<b>${o.id}</b></div><div style="margin-left:auto;align-self:center">${o.returnClosed ? `<span class="muted">Return window closed on ${fd(o.returnClosed)}</span>` : `<a class="btn" href="#/return/${o.id}">Return or exchange items</a>`}</div></div>
+      <div class="order-b"><div class="muted">Delivered ${fd(o.delivered)}</div>${o.lines.map((l) => `<div class="line"><div class="sw" style="background:${l.color}"></div><div><strong>${esc(l.name)}</strong><div class="muted">${esc(l.variant)} · Qty ${l.qty} ${l.finalSale ? '<span class="tag">Final sale</span>' : ''}</div></div><div>${gbp(l.price * l.qty)}</div></div>`).join('')}
+      <div class="row" style="margin-top:8px"><button type="button" data-again="${o.id}">Buy it again</button><button type="button" data-dead>Track package</button></div></div></section>`).join('');
+    view.onclick = async (e) => { const b = e.target.closest('[data-again]'); if (b) { b.disabled = true; await rec({ event: 'buy_again', order: b.dataset.again }); toast('Items added to your bag.'); } };
+  }
+  const prog = () => `<div class="progress" aria-hidden="true">${[1, 2, 3, 4].map((i) => `<span class="${i <= st.step ? 'on' : ''}"></span>`).join('')}</div>`;
+  const chosen = () => st.order.lines.filter((l) => st.sel[l.sku] > 0);
+  function renderWizard() {
+    const o = st.order;
+    if (st.done) { view.innerHTML = `<div class="wiz"><h2>Return started</h2><p>${st.done}</p><p><a href="#/orders">Back to your orders</a></p></div>`; return; }
+    let body = '';
+    if (st.step === 1) {
+      body = `<h2>Which items are you returning?</h2><p class="muted">Order ${o.id} · delivered ${fd(o.delivered)}</p>` + o.lines.map((l) => `<div class="pick"><input type="checkbox" id="cb-${l.sku}" data-pick="${l.sku}" ${st.sel[l.sku] ? 'checked' : ''} ${l.finalSale ? 'disabled' : ''} aria-label="Return ${esc(l.name)}, ${esc(l.variant)}"><div class="sw" style="background:${l.color}"></div><label for="cb-${l.sku}" style="margin:0;font-weight:400"><strong>${esc(l.name)}</strong><br><span class="muted">${esc(l.variant)} · ${gbp(l.price)} each${l.finalSale ? ' · Final sale — not returnable' : ''}</span></label>
+        <div>${l.qty > 1 ? `<select data-qty="${l.sku}" aria-label="Quantity to return for ${esc(l.name)}, ${esc(l.variant)}" ${st.sel[l.sku] ? '' : 'disabled'}>${Array.from({ length: l.qty }, (_, i) => `<option value="${i + 1}" ${(st.sel[l.sku] || 1) === i + 1 ? 'selected' : ''}>Return ${i + 1} of ${l.qty}</option>`).join('')}</select>` : ''}</div></div>`).join('') + `<div class="err" id="err" role="alert" hidden></div><div class="row" style="margin-top:14px"><a class="btn" href="#/orders">Cancel</a><button type="button" class="primary" id="next">Continue</button></div>`;
+    } else if (st.step === 2) {
+      body = `<h2>Tell us why</h2>` + chosen().map((l) => `<div class="reason" role="group" aria-label="${esc(l.name)}, ${esc(l.variant)}"><strong>${esc(l.name)}</strong> <span class="muted">${esc(l.variant)} · returning ${st.sel[l.sku]}</span>
+        <label for="rs-${l.sku}">Reason for ${esc(l.name)} (${esc(l.variant)})</label><select id="rs-${l.sku}" data-reason="${l.sku}">${REASONS.map(([v, t]) => `<option value="${v}" ${st.reasons[l.sku] === v ? 'selected' : ''}>${t}</option>`).join('')}</select>
+        <div class="opts" role="radiogroup" aria-label="What would you like for ${esc(l.name)}?"><label><input type="radio" name="res-${l.sku}" value="refund" data-res="${l.sku}" ${st.res[l.sku] !== 'exchange' ? 'checked' : ''}> Refund</label>${l.sizes ? `<label><input type="radio" name="res-${l.sku}" value="exchange" data-res="${l.sku}" ${st.res[l.sku] === 'exchange' ? 'checked' : ''}> Exchange for another size</label>` : '<span class="muted">Exchanges aren\'t available for this item.</span>'}</div>
+        ${l.sizes && st.res[l.sku] === 'exchange' ? `<label for="ex-${l.sku}">New size</label><select id="ex-${l.sku}" data-exch="${l.sku}" style="width:180px"><option value="">Choose a size…</option>${l.sizes.map((s) => `<option value="${s}" ${st.exch[l.sku] === s ? 'selected' : ''} ${(l.soldOut || []).includes(s) || l.variant.endsWith('· ' + s) ? 'disabled' : ''}>${s}${(l.soldOut || []).includes(s) ? ' (sold out)' : l.variant.endsWith('· ' + s) ? ' (your current size)' : ''}</option>`).join('')}</select>` : ''}</div>`).join('') + `<div class="err" id="err" role="alert" hidden></div><div class="row" style="margin-top:14px"><button type="button" id="back">Back</button><button type="button" class="primary" id="next">Continue</button></div>`;
+    } else if (st.step === 3) {
+      const anyRefund = chosen().some((l) => st.res[l.sku] !== 'exchange');
+      body = `<h2>How will you send it back?</h2><div class="methods" role="radiogroup" aria-label="Return method">
+        <label class="method"><input type="radio" name="method" value="dropoff" ${st.method === 'dropoff' ? 'checked' : ''}> <strong>Drop off at a Parcelbay locker or shop</strong><br><span class="muted">Free · print-free QR code</span></label>
+        <label class="method"><input type="radio" name="method" value="courier" ${st.method === 'courier' ? 'checked' : ''}> <strong>Courier collection from your door</strong><br><span class="muted">£3.95 deducted from your refund</span></label></div>
+        ${anyRefund ? `<fieldset style="border:0;padding:0;margin-top:14px"><legend style="font-weight:600">Refund to</legend><div class="opts"><label><input type="radio" name="refund" value="credit" ${st.refundTo === 'credit' ? 'checked' : ''}> Stackhouse store credit (+10% bonus)</label><label><input type="radio" name="refund" value="original" ${st.refundTo === 'original' ? 'checked' : ''}> Original payment method (Visa ••4410)</label></div></fieldset>` : ''}
+        <div class="err" id="err" role="alert" hidden></div><div class="row" style="margin-top:14px"><button type="button" id="back">Back</button><button type="button" class="primary" id="next">Review return</button></div>`;
+    } else {
+      const lines = chosen();
+      body = `<h2>Review your return</h2><table><thead><tr><th>Item</th><th>Qty</th><th>Reason</th><th>Outcome</th></tr></thead><tbody>${lines.map((l) => `<tr><td>${esc(l.name)} <span class="muted">${esc(l.variant)}</span></td><td>${st.sel[l.sku]}</td><td>${REASONS.find((r) => r[0] === st.reasons[l.sku])[1]}</td><td>${st.res[l.sku] === 'exchange' ? 'Exchange for size ' + st.exch[l.sku] : 'Refund'}</td></tr>`).join('')}</tbody></table>
+        <p>Return method: <strong>${st.method === 'dropoff' ? 'Drop off (free)' : 'Courier collection (£3.95)'}</strong>${lines.some((l) => st.res[l.sku] !== 'exchange') ? ` · Refund to: <strong>${st.refundTo === 'credit' ? 'store credit (+10%)' : 'original payment method'}</strong>` : ''}</p>
+        <div class="row" style="margin-top:14px"><button type="button" id="back">Back</button><button type="button" class="primary" id="submit">Submit return</button></div>`;
+    }
+    view.innerHTML = `<p><a href="#/orders">← Your orders</a></p><div class="wiz">${prog()}${body}</div>`;
+    view.onclick = null;
+    const err = (m) => { const e = q('#err'); if (e) { e.textContent = m; e.hidden = !m; } };
+    view.onchange = (e) => {
+      const t = e.target;
+      if (t.dataset.pick) { if (t.checked) st.sel[t.dataset.pick] = 1; else delete st.sel[t.dataset.pick]; renderWizard(); }
+      else if (t.dataset.qty) st.sel[t.dataset.qty] = +t.value;
+      else if (t.dataset.reason) st.reasons[t.dataset.reason] = t.value;
+      else if (t.dataset.res) { st.res[t.dataset.res] = t.value; renderWizard(); }
+      else if (t.dataset.exch) st.exch[t.dataset.exch] = t.value;
+      else if (t.name === 'method') st.method = t.value;
+      else if (t.name === 'refund') st.refundTo = t.value;
+    };
+    const back = q('#back'); if (back) back.onclick = () => { st.step--; renderWizard(); };
+    const next = q('#next');
+    if (next) next.onclick = () => {
+      if (st.step === 1 && !chosen().length) return err('Choose at least one item to return.');
+      if (st.step === 2) {
+        for (const l of chosen()) {
+          if (!st.reasons[l.sku]) return err(`Choose a reason for ${l.name} (${l.variant}).`);
+          if (st.res[l.sku] === 'exchange' && !st.exch[l.sku]) return err(`Choose the new size for ${l.name}.`);
+        }
+      }
+      if (st.step === 3 && !st.method) return err('Choose how you\'ll send the items back.');
+      st.step++; renderWizard();
+    };
+    const sub = q('#submit');
+    if (sub) sub.onclick = () => {
+      const lines = chosen();
+      q('#dlg-b').innerHTML = `<p>You're returning ${lines.reduce((a, l) => a + st.sel[l.sku], 0)} item(s) from order ${o.id}. Once submitted, you'll get a QR code by email.</p>`;
+      q('#dlg').hidden = false;
+    };
+  }
+  q('#dlg-no').addEventListener('click', () => { q('#dlg').hidden = true; });
+  q('#dlg-yes').addEventListener('click', async () => {
+    const o = st.order; const lines = chosen();
+    q('#dlg-yes').disabled = true; await later(500); q('#dlg-yes').disabled = false;
+    const anyRefund = lines.some((l) => st.res[l.sku] !== 'exchange');
+    await rec({
+      event: 'return_submit', order: o.id,
+      items: lines.map((l) => `${l.sku}:${st.sel[l.sku]}:${st.reasons[l.sku]}:${st.res[l.sku] === 'exchange' ? 'exchange-' + st.exch[l.sku] : 'refund'}`).sort().join('; '),
+      method: st.method, refund_to: anyRefund ? st.refundTo : 'n/a',
+    });
+    q('#dlg').hidden = true;
+    st.done = `Return RMA-40${o.id.slice(-3)} was created for order ${o.id}. We've emailed your ${st.method === 'dropoff' ? 'drop-off QR code' : 'courier booking'}.`;
+    renderWizard();
+  });
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

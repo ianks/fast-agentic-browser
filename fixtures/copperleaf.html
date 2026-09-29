@@ -1,0 +1,92 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Members · Copperleaf Studio</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+main{max-width:960px}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:340px;background:#fff;border-left:1px solid #ddd;box-shadow:-6px 0 18px rgba(0,0,0,.08);padding:20px;display:none;z-index:8}
+#drawer.open{display:block}
+#drawer fieldset{border:0;padding:0}#drawer fieldset label{display:flex;gap:8px;font-weight:400}
+.toast button{margin-left:12px;background:#fff;color:#065f46;border:0;font-weight:700}
+.role{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:#e5e7eb}
+</style></head>
+<body><header><strong>Copperleaf Studio</strong><a href="#">Projects</a><a href="#" style="color:#fff">Members</a><a href="#">Billing</a><a href="#">Settings</a></header>
+<main><h1>Members</h1><p class="muted" id="count"></p>
+<div class="row"><input id="filter" type="search" placeholder="Filter by name or email" aria-label="Filter members"><button id="invite">Invite member</button></div>
+<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Last active</th><th>Actions</th></tr></thead><tbody id="tb"></tbody></table>
+</main>
+<aside id="drawer" role="dialog" aria-labelledby="dh"><h2 id="dh">Edit member</h2><p id="dsub" class="muted"></p>
+  <fieldset><legend><strong>Role</strong></legend>
+  <label><input type="radio" name="role" value="Viewer">Viewer — read-only access</label>
+  <label><input type="radio" name="role" value="Member">Member — edit projects</label>
+  <label><input type="radio" name="role" value="Admin">Admin — manage members and billing</label>
+  <label><input type="radio" name="role" value="Owner">Owner — full control, including deleting the workspace</label></fieldset>
+  <p id="dwarn" class="muted"></p>
+  <div class="row"><button id="dcancel">Cancel</button><button class="primary" id="dsave">Save changes</button></div></aside>
+<dialog id="confirm"><h2 id="ch">Remove member?</h2><p id="cm"></p><div class="row"><button id="cno">Cancel</button><button class="primary" id="cyes" style="background:#b91c1c;border-color:#b91c1c">Remove</button></div></dialog>
+<div id="toasts"></div>
+<script>
+const M = [
+  ['Aurelio Bianchi', 'aurelio@copperleaf.studio', 'Owner', '2 min ago'],
+  ['Birte Lindahl', 'birte@copperleaf.studio', 'Admin', '1 hour ago'],
+  ['Chidi Okonkwo', 'chidi@copperleaf.studio', 'Member', 'Yesterday'],
+  ['Delphine Arnaud', 'delphine@copperleaf.studio', 'Member', '3 days ago'],
+  ['Emeka Nwosu', 'emeka@copperleaf.studio', 'Viewer', '2 weeks ago'],
+  ['Freya Holt', 'freya@copperleaf.studio', 'Member', 'Today'],
+  ['Jonas Bergman', 'jonas.bergman@copperleaf.studio', 'Member', 'Today'],
+  ['Jonas Berg', 'jonas.berg@copperleaf.studio', 'Member', '5 hours ago'],
+  ['Kaito Mori', 'kaito@copperleaf.studio', 'Viewer', 'Last month'],
+  ['Lea Novak', 'lea@copperleaf.studio', 'Admin', 'Today'],
+  ['Mateo Salas', 'mateo@copperleaf.studio', 'Member', '4 days ago'],
+  ['Nour Haddad', 'nour@copperleaf.studio', 'Member', 'Yesterday'],
+  ['Priya Ramanathan', 'priya.ramanathan@copperleaf.studio', 'Member', 'Today'],
+  ['Priya Raman', 'priya.raman@copperleaf.studio', 'Viewer', '3 weeks ago'],
+  ['Rui Tavares', 'rui@copperleaf.studio', 'Member', '6 days ago'],
+  ['Sunniva Dahl', 'sunniva@copperleaf.studio', 'Member', 'Today'],
+  ['Tariq Aziz', 'tariq@copperleaf.studio', 'Viewer', 'Last week'],
+  ['Wanjiru Kamau', 'wanjiru@copperleaf.studio', 'Member', '2 days ago'],
+].map(([name, email, role, seen]) => ({ name, email, role, seen }));
+let editing = null, removing = null, undoTimer = null;
+function render() {
+  const f = q('#filter').value.trim().toLowerCase();
+  const rows = M.filter((m) => !f || m.name.toLowerCase().includes(f) || m.email.includes(f));
+  q('#tb').innerHTML = rows.map((m) => `<tr><td>${m.name}</td><td class="muted">${m.email}</td><td><span class="role">${m.role}</span></td><td>${m.seen}</td><td><button data-edit="${m.email}" aria-label="Edit ${m.name}">Edit</button> <button data-rm="${m.email}" aria-label="Remove ${m.name}">Remove</button></td></tr>`).join('');
+  q('#count').textContent = `${M.length} members`;
+}
+const find = (email) => M.find((m) => m.email === email);
+function toast(html, ms = 3000) { const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.innerHTML = html; q('#toasts').replaceChildren(t); setTimeout(() => t.remove(), ms); return t; }
+q('#filter').oninput = render;
+q('#invite').onclick = () => toast('Invites are disabled on the Starter plan.');
+q('#tb').onclick = (e) => {
+  const ed = e.target.closest('[data-edit]'), rm = e.target.closest('[data-rm]');
+  if (ed) {
+    editing = find(ed.dataset.edit);
+    q('#dh').textContent = `Edit ${editing.name}`; q('#dsub').textContent = editing.email;
+    qa('input[name=role]').forEach((r) => r.checked = r.value === editing.role);
+    q('#dwarn').textContent = ''; q('#drawer').classList.add('open');
+  }
+  if (rm) {
+    removing = find(rm.dataset.rm);
+    q('#cm').textContent = `${removing.name} (${removing.email}) will lose access to all Copperleaf Studio projects.`;
+    q('#ch').textContent = `Remove ${removing.name}?`;
+    q('#confirm').showModal();
+  }
+};
+q('#drawer').onchange = (e) => { if (e.target.name === 'role') q('#dwarn').textContent = e.target.value === 'Owner' ? 'Owners can delete the workspace. There must always be at least one owner.' : e.target.value === 'Admin' ? 'Admins can invite and remove members and see invoices.' : ''; };
+q('#dcancel').onclick = () => q('#drawer').classList.remove('open');
+q('#dsave').onclick = async () => {
+  const r = (q('input[name=role]:checked') || {}).value;
+  if (!r || !editing) return;
+  q('#dsave').disabled = true; await later(300); q('#dsave').disabled = false;
+  if (r !== editing.role) { await rec({ event: 'role', member: editing.name, email: editing.email, from: editing.role, role: r }); editing.role = r; }
+  q('#drawer').classList.remove('open'); render(); toast(`${editing.name}'s role is now ${r}.`);
+};
+q('#cno').onclick = () => q('#confirm').close();
+q('#cyes').onclick = async () => {
+  const m = removing; q('#confirm').close();
+  await later(300);
+  const idx = M.indexOf(m); if (idx < 0) return;
+  M.splice(idx, 1); render();
+  await rec({ event: 'remove', member: m.name, email: m.email });
+  const t = toast(`${m.name} was removed. <button id="undo">Undo</button>`, 5000);
+  q('#undo', t).onclick = async () => { t.remove(); if (M.includes(m)) return; M.splice(idx, 0, m); render(); await rec({ event: 'undo_remove', member: m.name, email: m.email }); };
+};
+render();
+</script></body></html>

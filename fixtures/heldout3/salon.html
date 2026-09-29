@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Maison Verlaine · Hair, nails &amp; beauty · Lyon</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  :root { --ink: #2b2320; --muted: #7a6e68; --line: #e9e1db; --bg: #fbf8f5; --accent: #9c4a35; --accent-2: #f3e3dc; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 Georgia, "Iowan Old Style", serif; color: var(--ink); background: var(--bg); }
+  a { color: var(--accent); }
+  button, input, select, textarea { font: 14px/1.3 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  button { cursor: pointer; }
+  .top { display: flex; align-items: center; gap: 22px; padding: 14px 32px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+  .brand { font-size: 22px; letter-spacing: .04em; text-decoration: none; color: var(--ink); }
+  .brand small { display: block; font-size: 11px; letter-spacing: .2em; color: var(--muted); text-transform: uppercase; }
+  .top nav { display: flex; gap: 18px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 14px; }
+  .top nav a { color: var(--ink); text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; }
+  .top nav a.on { border-bottom-color: var(--accent); }
+  .spacer { flex: 1; }
+  .btn { display: inline-block; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 8px 16px; border-radius: 999px; text-decoration: none; font: 14px -apple-system, "Segoe UI", sans-serif; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .acct { position: relative; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--accent-2); color: var(--accent); font-weight: 600; }
+  .menu { position: absolute; right: 0; top: 44px; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.08); min-width: 210px; padding: 6px; font-family: -apple-system, sans-serif; }
+  .menu a, .menu button { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 0; background: none; color: var(--ink); text-decoration: none; border-radius: 6px; font-size: 14px; }
+  .menu a:hover, .menu button:hover { background: var(--bg); }
+  .menu .who { padding: 8px 10px; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 26px 32px 60px; min-height: 70vh; }
+  h1 { font-weight: 400; font-size: 34px; margin: 6px 0 12px; }
+  h2 { font-weight: 400; font-size: 24px; margin: 26px 0 10px; }
+  h3 { font-size: 17px; margin: 0 0 6px; }
+  .muted { color: var(--muted); }
+  .sans { font-family: -apple-system, "Segoe UI", sans-serif; }
+  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 34px; }
+  .hero .art { height: 220px; border-radius: 14px; background: radial-gradient(circle at 30% 30%, #f6d8c9, #c98b74 60%, #7f3b2a); }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .team { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .team .ph { height: 96px; border-radius: 10px; margin-bottom: 10px; }
+  .acc { border-top: 1px solid var(--line); }
+  .acc > button { width: 100%; display: flex; justify-content: space-between; align-items: center; background: none; border: 0; padding: 14px 4px; font: 16px Georgia, serif; color: var(--ink); text-align: left; }
+  .acc .panel { padding: 0 4px 12px; }
+  .svc { display: grid; grid-template-columns: 1fr 90px 70px 110px; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px dashed var(--line); font-family: -apple-system, sans-serif; }
+  .svc:last-child { border-bottom: 0; }
+  .svc .d { font-size: 12px; color: var(--muted); }
+  .svc button[aria-pressed=true] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .wizard { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+  .steps { display: flex; gap: 8px; margin-bottom: 18px; font-family: -apple-system, sans-serif; }
+  .steps button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; color: var(--muted); }
+  .steps button[aria-current=step] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .steps button[disabled] { opacity: .5; cursor: default; }
+  .summary { position: sticky; top: 90px; }
+  .summary ul { list-style: none; padding: 0; margin: 8px 0; font-family: -apple-system, sans-serif; font-size: 14px; }
+  .summary li { display: flex; justify-content: space-between; padding: 4px 0; }
+  .summary .tot { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 8px; font-weight: 600; }
+  .pros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .pro { position: relative; display: block; border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 12px 14px; font-family: -apple-system, sans-serif; cursor: pointer; }
+  .pro input { position: absolute; opacity: 0; pointer-events: none; }
+  .pro.sel { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-2); }
+  .pro.off { opacity: .45; cursor: not-allowed; }
+  .pro .role { font-size: 12px; color: var(--muted); }
+  .dates { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; font-family: -apple-system, sans-serif; }
+  .dates button { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 12px; min-width: 78px; text-align: center; }
+  .dates button[aria-pressed=true] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .dates button[disabled] { opacity: .4; cursor: not-allowed; }
+  .times { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; font-family: -apple-system, sans-serif; }
+  .times button { border: 1px solid #d9cbc3; background: #fff; border-radius: 8px; padding: 7px 0; }
+  .times button[disabled] { color: #c9bdb6; text-decoration: line-through; background: #f5f0ec; border-color: #eee4de; cursor: not-allowed; }
+  .times button[aria-pressed=true] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .field { display: block; margin: 12px 0; font-family: -apple-system, sans-serif; }
+  .field > span { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .field input[type=text], .field input[type=tel], .field input[type=email], .field textarea, .field select { width: 100%; max-width: 420px; padding: 9px 10px; border: 1px solid #d6cbc4; border-radius: 8px; background: #fff; }
+  .radios { display: flex; gap: 10px; font-family: -apple-system, sans-serif; }
+  .radios label { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: #fff; display: flex; gap: 8px; align-items: center; }
+  .check { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin: 10px 0; font-family: -apple-system, sans-serif; }
+  .check.upsell { border-color: #e7c7b9; background: #fff8f4; }
+  .err { color: #b3261e; font-family: -apple-system, sans-serif; font-size: 13px; margin: 8px 0; }
+  .note { background: #fff; border: 1px dashed #d8c7bd; border-radius: 10px; padding: 10px 12px; font-family: -apple-system, sans-serif; font-size: 13px; color: var(--muted); }
+  .acct-layout { display: grid; grid-template-columns: 210px 1fr; gap: 28px; }
+  .side a { display: block; padding: 8px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; font-family: -apple-system, sans-serif; }
+  .side a.on { background: var(--accent-2); color: var(--accent); font-weight: 600; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 16px; font-family: -apple-system, sans-serif; }
+  .tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 9px 14px; color: var(--muted); }
+  .tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .subtabs { display: inline-flex; background: #f1ebe6; border-radius: 999px; padding: 3px; margin-bottom: 14px; font-family: -apple-system, sans-serif; }
+  .subtabs button { border: 0; background: none; padding: 6px 14px; border-radius: 999px; color: var(--muted); }
+  .subtabs button[aria-selected=true] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .pref { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); font-family: -apple-system, sans-serif; }
+  .pref small { display: block; color: var(--muted); }
+  .switch { width: 46px; height: 26px; border-radius: 999px; border: 0; background: #cfc5bf; position: relative; flex: none; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch[aria-checked=true] { background: var(--accent); }
+  .switch[aria-checked=true]::after { left: 23px; }
+  .switch[disabled] { opacity: .6; }
+  .appt { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; font-family: -apple-system, sans-serif; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(30,20,15,.45); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .modal { background: #fff; border-radius: 14px; padding: 22px 24px; width: 440px; font-family: -apple-system, sans-serif; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; font-family: -apple-system, sans-serif; font-size: 14px; z-index: 60; }
+  footer { background: #2b2320; color: #d9ccc5; padding: 34px 32px; font-family: -apple-system, sans-serif; font-size: 13px; }
+  footer .cols { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  footer a { color: #d9ccc5; display: block; text-decoration: none; margin: 4px 0; }
+  footer h4 { color: #fff; margin: 0 0 8px; font-weight: 600; }
+  table.prices { width: 100%; border-collapse: collapse; font-family: -apple-system, sans-serif; font-size: 14px; }
+  table.prices td, table.prices th { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/">Maison Verlaine<small>Hair · Nails · Beauty — Lyon 2e</small></a>
+  <nav aria-label="Main">
+    <a href="#/" data-nav="home">Home</a>
+    <a href="#/services" data-nav="services">Services &amp; prices</a>
+    <a href="#/team" data-nav="team">Our team</a>
+    <a href="#/gift" data-nav="gift">Gift cards</a>
+    <a href="#/visit" data-nav="visit">Visit us</a>
+  </nav>
+  <span class="spacer"></span>
+  <a class="btn primary" href="#/book" id="book-cta">Book now</a>
+  <div class="acct">
+    <button class="avatar" id="acct-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu for Léa Fontaine">LF</button>
+    <div class="menu" id="acct-menu" role="menu" hidden>
+      <div class="who">Signed in as <strong>Léa Fontaine</strong></div>
+      <a role="menuitem" href="#/account/appointments">My appointments</a>
+      <a role="menuitem" href="#/account/loyalty">Loyalty &amp; rewards</a>
+      <a role="menuitem" href="#/account/giftcards">My gift cards</a>
+      <a role="menuitem" href="#/account/settings">Account settings</a>
+      <button role="menuitem" type="button" id="signout">Sign out</button>
+    </div>
+  </div>
+</header>
+<main id="view"></main>
+<footer>
+  <div class="cols">
+    <div><h4>Maison Verlaine</h4>14 rue Mercière, 69002 Lyon<br>+33 4 78 42 17 60<br>Tue–Sat 09:00–19:00</div>
+    <div><h4>Salon</h4><a href="#/services">Services &amp; prices</a><a href="#/team">Our team</a><a href="#/visit">Visit us</a><a href="#/careers">Careers</a></div>
+    <div><h4>Help</h4><a href="#/faq">FAQ</a><a href="#/policy">Cancellation policy</a><a href="#/gift">Gift cards</a><a href="#/contact">Contact</a></div>
+    <div><h4>Follow</h4><a href="#/ig">Instagram</a><a href="#/pin">Pinterest</a><a href="#/news">Newsletter</a><a href="#/legal">Legal notice</a></div>
+  </div>
+</footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const TODAY = '2026-10-14'; const NOW_MIN = 15 * 60 + 20; // Wed 14 Oct 2026, 15:20
+  const SERVICES = [
+    { id: 'wcut', cat: 'Cuts & styling', name: "Women's cut & blow-dry", min: 60, price: 68, hair: true },
+    { id: 'mcut', cat: 'Cuts & styling', name: "Men's cut", min: 30, price: 38, hair: true },
+    { id: 'blow', cat: 'Cuts & styling', name: 'Blow-dry', min: 45, price: 42, hair: true },
+    { id: 'beard', cat: 'Cuts & styling', name: 'Beard trim', min: 20, price: 18, hair: false },
+    { id: 'bal', cat: 'Colour', name: 'Balayage', min: 150, price: 165, hair: true },
+    { id: 'root', cat: 'Colour', name: 'Root colour', min: 90, price: 85, hair: true },
+    { id: 'gloss', cat: 'Colour', name: 'Toner & gloss', min: 30, price: 35, hair: true },
+    { id: 'cond', cat: 'Hair treatments', name: 'Deep conditioning', min: 20, price: 18, hair: true },
+    { id: 'scalp', cat: 'Hair treatments', name: 'Scalp ritual', min: 30, price: 29, hair: true },
+    { id: 'gelm', cat: 'Nails', name: 'Gel manicure', min: 45, price: 39, hair: false },
+    { id: 'clm', cat: 'Nails', name: 'Classic manicure', min: 30, price: 28, hair: false },
+    { id: 'ped', cat: 'Nails', name: 'Spa pedicure', min: 60, price: 52, hair: false },
+    { id: 'gelr', cat: 'Nails', name: 'Gel removal', min: 15, price: 12, hair: false },
+    { id: 'brow', cat: 'Brows & lashes', name: 'Brow shaping', min: 20, price: 22, hair: false },
+    { id: 'lash', cat: 'Brows & lashes', name: 'Lash lift', min: 50, price: 58, hair: false },
+  ];
+  const CATS = ['Cuts & styling', 'Colour', 'Hair treatments', 'Nails', 'Brows & lashes'];
+  const PROS = [
+    { id: 'theo', name: 'Théo Garnier', role: 'Senior stylist', does: ['wcut', 'mcut', 'blow', 'beard'], hue: '#d9b8a5' },
+    { id: 'ines', name: 'Inès Moreau', role: 'Creative director', does: ['wcut', 'blow', 'bal', 'root', 'cond', 'scalp'], hue: '#c99a86' },
+    { id: 'mathilde', name: 'Mathilde Roux', role: 'Colour specialist', does: ['bal', 'root', 'gloss', 'blow', 'cond', 'scalp'], hue: '#b98372' },
+    { id: 'anais', name: 'Anaïs Lefèvre', role: 'Nail artist', does: ['gelm', 'clm', 'ped', 'gelr'], hue: '#e2c3b8' },
+    { id: 'chloe', name: 'Chloé Dubois', role: 'Beauty therapist', does: ['gelm', 'ped', 'brow', 'lash'], hue: '#d4a99b' },
+  ];
+  const DAYS = [
+    ['2026-10-14', 'Wed', '14 Oct'], ['2026-10-15', 'Thu', '15 Oct'], ['2026-10-16', 'Fri', '16 Oct'], ['2026-10-17', 'Sat', '17 Oct'],
+    ['2026-10-18', 'Sun', '18 Oct'], ['2026-10-19', 'Mon', '19 Oct'], ['2026-10-20', 'Tue', '20 Oct'], ['2026-10-21', 'Wed', '21 Oct'],
+  ];
+  const CLOSED = new Set(['2026-10-18', '2026-10-19']);
+  const BUSY = {
+    '2026-10-14': { theo: ['15:30-17:00'], ines: ['15:00-18:00'], mathilde: ['16:00-19:00'], anais: ['15:30-16:30'], chloe: ['17:00-18:00'] },
+    '2026-10-15': { theo: ['09:00-11:00', '14:00-15:00'], ines: ['10:00-13:00', '16:00-17:30'], mathilde: ['09:00-11:30'], anais: ['13:00-15:00'], chloe: ['09:30-10:30', '15:00-16:00'] },
+    '2026-10-16': { theo: ['10:00-12:00', '16:00-17:00'], ines: ['09:00-12:30', '14:00-16:30'], mathilde: ['12:00-14:30'], anais: ['09:30-10:30', '11:00-12:00', '15:00-16:15'], chloe: ['13:00-13:45'] },
+    '2026-10-17': { theo: ['09:00-10:00', '13:00-14:30'], ines: ['09:00-10:30', '12:30-14:00', '15:00-16:00', '17:30-19:00'], mathilde: ['10:00-12:30'], anais: ['09:00-11:00'], chloe: ['14:00-15:00'] },
+    '2026-10-20': { theo: ['11:00-12:00'], ines: ['09:00-11:00', '15:00-17:00'], mathilde: ['13:00-16:00'], anais: ['10:00-12:00'], chloe: ['09:00-10:00'] },
+    '2026-10-21': { theo: ['14:00-16:00'], ines: ['10:00-12:00'], mathilde: ['09:00-10:30'], anais: ['16:00-18:00'], chloe: ['11:00-12:00'] },
+  };
+  const OPEN = 9 * 60, CLOSE = 19 * 60, KIT = 24;
+  const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const toM = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + (Number.isInteger(n) ? n : n.toFixed(2));
+  const $ = (s, r = document) => r.querySelector(s);
+  const view = $('#view');
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const normPhone = (s) => { let d = String(s).replace(/[^\d+]/g, ''); if (/^0\d{9}$/.test(d)) d = '+33' + d.slice(1); if (/^0033/.test(d)) d = '+' + d.slice(2); return d; };
+  const clean = (s) => String(s).trim().replace(/\s+/g, ' ');
+
+  const st = {
+    services: new Set(), pro: 'any', date: TODAY, time: null, forWho: 'me', guestName: '', guestPhone: '', kit: true, sms: true, notes: '', step: 1, busy: false, done: null, err: '',
+    appts: [
+      { id: 'MV-57120', services: 'Gel manicure', pro: 'Anaïs Lefèvre', date: '2026-10-22', label: 'Thu 22 Oct', start: '17:00', end: '17:45' },
+      { id: 'MV-56984', services: 'Root colour + Blow-dry', pro: 'Mathilde Roux', date: '2026-11-07', label: 'Sat 7 Nov', start: '10:00', end: '12:15' },
+    ],
+    prefs: { email: { reminders: true, waitlist: true, promotions: true, birthday: true, news: false }, sms: { reminders: true, waitlist: false, promotions: true } },
+    settingsTab: 'profile', notifTab: 'email',
+  };
+  const selSvcs = () => SERVICES.filter((s) => st.services.has(s.id));
+  const dur = () => selSvcs().reduce((a, s) => a + s.min, 0);
+  const capable = () => PROS.filter((p) => selSvcs().every((s) => p.does.includes(s.id)));
+  const kitOffered = () => selSvcs().some((s) => s.hair);
+  function freeAt(pro, date, start, len) {
+    if (CLOSED.has(date)) return false;
+    if (start < OPEN || start + len > CLOSE) return false;
+    if (date === TODAY && start < NOW_MIN + 10) return false;
+    const busy = ((BUSY[date] || {})[pro.id] || []).concat(st.appts.filter((a) => a.date === date && a.pro === pro.name).map((a) => a.start + '-' + a.end));
+    return !busy.some((iv) => { const [a, z] = iv.split('-').map(toM); return start < z && start + len > a; });
+  }
+  function assigned() {
+    if (st.time == null) return null;
+    const list = st.pro === 'any' ? capable() : capable().filter((p) => p.id === st.pro);
+    return list.find((p) => freeAt(p, st.date, st.time, dur())) || null;
+  }
+  const total = () => selSvcs().reduce((a, s) => a + s.price, 0) + (kitOffered() && st.kit ? KIT : 0);
+
+  function modal(html, onMount) {
+    const root = $('#modal-root');
+    root.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+    const close = () => (root.innerHTML = '');
+    root.querySelector('.modal-bg').addEventListener('click', (e) => { if (e.target.classList.contains('modal-bg')) close(); });
+    onMount && onMount(root.querySelector('.modal'), close);
+  }
+
+  // ---------- views ----------
+  function home() {
+    return `<section class="hero"><div><p class="muted sans">Salon de coiffure &amp; institut · Presqu'île</p><h1>Hair, nails &amp; beauty in the heart of Lyon</h1>
+      <p>Five specialists, one calm room above rue Mercière. Book online in under a minute, or give the gift of a slow afternoon.</p>
+      <p><a class="btn primary" href="#/book">Book an appointment</a> <a class="btn" href="#/services">See prices</a> <a class="btn" href="#/gift">Buy a gift card</a></p></div><div class="art" role="img" aria-label="Salon interior"></div></section>
+      <h2>This season</h2><div class="grid3">
+      <div class="card"><h3>Autumn gloss</h3><p class="muted sans">A 30-minute toner &amp; gloss to revive colour after summer.</p><a class="btn" href="#/book?svc=gloss">Book gloss</a></div>
+      <div class="card"><h3>Lash lift week</h3><p class="muted sans">Chloé's lash lifts now include a tint at no extra cost.</p><a class="btn" href="#/book?svc=lash">Book lash lift</a></div>
+      <div class="card"><h3>Loyalty</h3><p class="muted sans">Every tenth visit, your blow-dry is on us.</p><a class="btn" href="#/account/loyalty">View my points</a></div></div>
+      <h2>Frequently asked</h2>${faq()}`;
+  }
+  function faq() {
+    const items = [['How late can I cancel?', 'Free cancellation up to 24 hours before your appointment. Later cancellations are charged 50% of the service price.'],
+      ['Do I need a patch test for colour?', 'For first-time colour clients we ask for a quick patch test at least 48 hours before. Reception can book it for you.'],
+      ['Can I book for someone else?', 'Yes — choose "Someone else" on the details step and give their name and mobile.'],
+      ['Is there parking nearby?', 'Parking Célestins and Parking Saint-Antoine are both a 4-minute walk away.']];
+    return `<div class="faq">${items.map(([q, a], i) => `<div class="acc"><button type="button" aria-expanded="false" data-acc="faq${i}">${esc(q)}<span>+</span></button><div class="panel sans muted" id="faq${i}" hidden>${esc(a)}</div></div>`).join('')}</div>`;
+  }
+  function servicesPage() {
+    return `<h1>Services &amp; prices</h1><p class="muted sans">Prices include tax. Durations are approximate.</p>${CATS.map((c) => `<h2>${esc(c)}</h2><table class="prices"><tbody>${SERVICES.filter((s) => s.cat === c).map((s) => `<tr><td>${esc(s.name)}</td><td>${s.min} min</td><td>${eur(s.price)}</td><td style="text-align:right"><a class="btn" href="#/book?svc=${s.id}">Book</a></td></tr>`).join('')}</tbody></table>`).join('')}`;
+  }
+  function teamPage() {
+    return `<h1>Our team</h1><div class="team">${PROS.map((p) => `<div class="card"><div class="ph" style="background:linear-gradient(135deg,${p.hue},#7f3b2a)"></div><h3>${esc(p.name)}</h3><div class="muted sans" style="font-size:13px">${esc(p.role)}</div><p class="sans" style="font-size:13px">${p.does.map((d) => esc(SERVICES.find((s) => s.id === d).name)).join(', ')}</p><a class="btn" href="#/book?pro=${p.id}">Book with ${esc(p.name.split(' ')[0])}</a></div>`).join('')}</div>`;
+  }
+  function giftPage() {
+    return `<h1>Gift cards</h1><div class="card sans" style="max-width:560px"><p>Digital gift cards are emailed instantly and valid for 12 months on any service.</p>
+      <div class="radios" role="radiogroup" aria-label="Amount">${[50, 100, 150].map((v, i) => `<label><input type="radio" name="gc" value="${v}" ${i === 1 ? 'checked' : ''}> €${v}</label>`).join('')}</div>
+      <label class="field"><span>Recipient's email</span><input type="email" id="gc-to"></label><label class="field"><span>Message</span><textarea id="gc-msg" rows="3"></textarea></label>
+      <button class="btn primary" type="button" id="gc-buy">Buy gift card</button> <span class="err" id="gc-err" hidden></span></div>`;
+  }
+  function visitPage() {
+    return `<h1>Visit us</h1><div class="grid3"><div class="card"><h3>Presqu'île</h3><p class="sans">14 rue Mercière, 69002 Lyon<br>Tue–Sat 09:00–19:00<br>Closed Sunday &amp; Monday</p></div><div class="card"><h3>Croix-Rousse</h3><p class="sans muted">Opening spring 2027. Online booking isn't available yet.</p></div><div class="card"><h3>Getting here</h3><p class="sans">Metro A — Cordeliers (3 min)<br>Parking Célestins (4 min)</p></div></div>`;
+  }
+  function stepBar() {
+    const lab = ['Services', 'Professional', 'Date & time', 'Your details'];
+    const can = [true, st.services.size > 0, st.services.size > 0, st.services.size > 0 && st.time != null && !!assigned()];
+    return `<div class="steps" role="list">${lab.map((l, i) => `<button type="button" role="listitem" data-step="${i + 1}" ${st.step === i + 1 ? 'aria-current="step"' : ''} ${can[i] ? '' : 'disabled'}>${i + 1}. ${l}</button>`).join('')}</div>`;
+  }
+  function summary() {
+    const s = selSvcs(); const a = assigned(); const pro = st.pro === 'any' ? null : PROS.find((p) => p.id === st.pro);
+    const d = DAYS.find((x) => x[0] === st.date);
+    return `<aside class="card summary" aria-label="Booking summary"><h3>Your appointment</h3>
+      ${s.length ? `<ul>${s.map((x) => `<li><span>${esc(x.name)}</span><span>${eur(x.price)}</span></li>`).join('')}${kitOffered() && st.kit && st.step === 4 ? `<li><span>Take-home kit</span><span>${eur(KIT)}</span></li>` : ''}<li class="tot"><span>Total · ${dur()} min</span><span>${eur(st.step === 4 ? total() : s.reduce((q, x) => q + x.price, 0))}</span></li></ul>` : '<p class="muted sans">No services selected yet.</p>'}
+      <p class="sans" style="font-size:13px;margin:6px 0">${pro ? 'With ' + esc(pro.name) : a ? 'With ' + esc(a.name) + ' (first available)' : 'Any professional'}</p>
+      ${st.time != null ? `<p class="sans" style="font-size:13px;margin:6px 0">${d[1]} ${d[2]} 2026 · ${hm(st.time)}–${hm(st.time + dur())}</p>` : ''}
+      <p class="muted sans" style="font-size:12px">Free cancellation up to 24 h before.</p></aside>`;
+  }
+  function bookPage() {
+    if (st.done) {
+      const b = st.done;
+      return `<div class="card" style="max-width:640px"><p class="muted sans">Reference ${esc(b.ref)}</p><h1>You're booked.</h1><p class="sans">${esc(b.services)} with ${esc(b.pro)} on ${esc(b.when)}.</p><p class="sans muted">A confirmation has been sent to lea.fontaine@orange.fr.</p><p><a class="btn" href="#/account/appointments">View my appointments</a> <button class="btn" type="button" id="book-another">Book another</button></p></div>`;
+    }
+    let body = '';
+    if (st.step === 1) {
+      body = `<h1>Choose services</h1><p class="muted sans">Pick one or more. Services are done back-to-back by the same professional.</p>${CATS.map((c, ci) => {
+        const open = ci === 0 || SERVICES.some((s) => s.cat === c && st.services.has(s.id));
+        return `<div class="acc"><button type="button" aria-expanded="${open}" data-acc="cat${ci}">${esc(c)}<span>${open ? '−' : '+'}</span></button><div class="panel" id="cat${ci}" ${open ? '' : 'hidden'}>${SERVICES.filter((s) => s.cat === c).map((s) => `<div class="svc"><div>${esc(s.name)}<div class="d">${s.hair ? 'Hair' : 'Beauty'} · ${s.min} min</div></div><div class="muted">${s.min} min</div><div>${eur(s.price)}</div><div><button type="button" class="btn" data-svc="${s.id}" aria-pressed="${st.services.has(s.id)}" aria-label="${st.services.has(s.id) ? 'Remove' : 'Add'} ${esc(s.name)}">${st.services.has(s.id) ? 'Added ✓' : 'Add'}</button></div></div>`).join('')}</div></div>`;
+      }).join('')}<p style="margin-top:18px"><button class="btn primary" type="button" id="to2" ${st.services.size ? '' : 'disabled'}>Continue</button></p>`;
+    } else if (st.step === 2) {
+      const cap = capable();
+      body = `<h1>Choose a professional</h1><div class="pros" role="radiogroup" aria-label="Professional">
+        <label class="pro ${st.pro === 'any' ? 'sel' : ''}"><input type="radio" name="pro" value="any" ${st.pro === 'any' ? 'checked' : ''}><strong>Any professional</strong><div class="role">We'll pick whoever is free first</div></label>
+        ${PROS.map((p) => { const ok = cap.includes(p); return `<label class="pro ${st.pro === p.id ? 'sel' : ''} ${ok ? '' : 'off'}"><input type="radio" name="pro" value="${p.id}" ${st.pro === p.id ? 'checked' : ''} ${ok ? '' : 'disabled'}><strong>${esc(p.name)}</strong><div class="role">${esc(p.role)}</div>${ok ? '' : '<div class="role">Doesn\'t offer all selected services</div>'}</label>`; }).join('')}</div>
+        <p style="margin-top:18px"><button class="btn" type="button" data-step="1">Back</button> <button class="btn primary" type="button" id="to3">Continue</button></p>`;
+    } else if (st.step === 3) {
+      const len = dur(); const cap = st.pro === 'any' ? capable() : capable().filter((p) => p.id === st.pro);
+      const times = []; for (let m = OPEN; m + len <= CLOSE; m += 15) times.push(m);
+      body = `<h1>Pick a date &amp; time</h1><p class="muted sans">${len} minutes · ${st.pro === 'any' ? 'any professional' : esc(PROS.find((p) => p.id === st.pro).name)}</p>
+        <div class="dates" role="group" aria-label="Date">${DAYS.map(([v, w, d]) => `<button type="button" data-date="${v}" aria-pressed="${st.date === v}" ${CLOSED.has(v) ? 'disabled title="Closed"' : ''}><div style="font-size:12px">${w}${v === TODAY ? ' · today' : ''}</div><strong>${d}</strong></button>`).join('')}</div>
+        <div class="times" role="group" aria-label="Start time">${times.map((m) => { const ok = cap.some((p) => freeAt(p, st.date, m, len)); return `<button type="button" data-time="${m}" aria-pressed="${st.time === m}" ${ok ? '' : 'disabled'} aria-label="${hm(m)} ${ok ? 'available' : 'unavailable'}">${hm(m)}</button>`; }).join('')}</div>
+        <p class="note" style="margin-top:14px">Can't find a time? Call reception on +33 4 78 42 17 60 — we keep a few slots for phone bookings.</p>
+        <p style="margin-top:18px"><button class="btn" type="button" data-step="2">Back</button> <button class="btn primary" type="button" id="to4" ${st.time != null && assigned() ? '' : 'disabled'}>Continue</button></p>`;
+    } else {
+      const a = assigned();
+      body = `<h1>Your details</h1><p class="sans">${esc(selSvcs().map((s) => s.name).join(' + '))} with <strong>${esc(a.name)}</strong> · ${DAYS.find((x) => x[0] === st.date).slice(1).join(' ')} · ${hm(st.time)}–${hm(st.time + dur())}</p>
+        <fieldset style="border:0;padding:0;margin:14px 0"><legend class="sans" style="font-weight:600;font-size:13px;margin-bottom:6px">Who is this appointment for?</legend><div class="radios">
+          <label><input type="radio" name="forwho" value="me" ${st.forWho === 'me' ? 'checked' : ''}> Me (Léa Fontaine)</label>
+          <label><input type="radio" name="forwho" value="else" ${st.forWho === 'else' ? 'checked' : ''}> Someone else</label></div></fieldset>
+        <div id="guest" ${st.forWho === 'else' ? '' : 'hidden'}>
+          <label class="field"><span>Guest's full name</span><input type="text" id="g-name" value="${esc(st.guestName)}" autocomplete="off"></label>
+          <label class="field"><span>Guest's mobile</span><input type="tel" id="g-phone" value="${esc(st.guestPhone)}" autocomplete="off"></label>
+          <p class="muted sans" style="font-size:12px">We'll text the confirmation to your guest. You stay responsible for late cancellations.</p></div>
+        ${kitOffered() ? `<label class="check upsell"><input type="checkbox" id="kit" ${st.kit ? 'checked' : ''}><span><strong>Add the Kérastase Nutritive take-home kit (+€${KIT})</strong><br><span class="muted" style="font-size:13px">Shampoo, masque and serum picked by your stylist · Recommended</span></span></label>` : ''}
+        <label class="check"><input type="checkbox" id="sms" ${st.sms ? 'checked' : ''}><span>Text me a reminder 24 hours before</span></label>
+        <label class="field"><span>Notes for your professional (optional)</span><textarea id="notes" rows="2">${esc(st.notes)}</textarea></label>
+        <p class="muted sans" style="font-size:12px">By booking you accept our cancellation policy: free up to 24 h before, 50% after.</p>
+        <div class="err" id="bk-err" role="alert" ${st.err ? '' : 'hidden'}>${esc(st.err)}</div>
+        <p style="margin-top:14px"><button class="btn" type="button" data-step="3">Back</button> <button class="btn primary" type="button" id="confirm" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Booking…' : 'Confirm booking · ' + eur(total())}</button></p>`;
+    }
+    return `${stepBar()}<div class="wizard"><section>${body}</section>${summary()}</div>`;
+  }
+  function accountShell(active, inner) {
+    const L = [['appointments', 'My appointments'], ['loyalty', 'Loyalty & rewards'], ['giftcards', 'My gift cards'], ['settings', 'Account settings']];
+    return `<p class="muted sans"><a href="#/">Home</a> › <a href="#/account/appointments">My account</a> › ${esc(L.find((x) => x[0] === active)[1])}</p><div class="acct-layout"><nav class="side" aria-label="Account">${L.map(([k, l]) => `<a href="#/account/${k}" class="${k === active ? 'on' : ''}">${esc(l)}</a>`).join('')}</nav><section>${inner}</section></div>`;
+  }
+  function apptsPage() {
+    return accountShell('appointments', `<h1>My appointments</h1>${st.appts.length ? st.appts.map((a) => `<div class="appt"><div><strong>${esc(a.services)}</strong><div class="muted">${esc(a.pro)} · ${esc(a.label)}, ${a.start}–${a.end} · ${esc(a.id)}</div></div><div><button class="btn" type="button" data-resched="${a.id}">Reschedule</button> <button class="btn" type="button" data-cancel="${a.id}">Cancel</button></div></div>`).join('') : '<p class="muted sans">No upcoming appointments.</p>'}<p class="sans"><a href="#/book">Book a new appointment</a></p>`);
+  }
+  function loyaltyPage() { return accountShell('loyalty', `<h1>Loyalty &amp; rewards</h1><div class="card sans"><p><strong>7 of 10</strong> visits towards your free blow-dry.</p><div style="height:10px;background:#eee4de;border-radius:6px"><div style="width:70%;height:10px;background:var(--accent);border-radius:6px"></div></div><p class="muted">Birthday treat: 15% off in your birthday month (March).</p></div>`); }
+  function giftcardsPage() { return accountShell('giftcards', `<h1>My gift cards</h1><div class="card sans"><p>MV-GC-3381 · balance €32.00 · expires 3 Feb 2027</p><button class="btn" type="button" id="gc-redeem">Add a gift card</button></div>`); }
+  const PREF_LABELS = { reminders: ['Appointment reminders', 'The day before each appointment'], waitlist: ['Waitlist alerts', 'When an earlier slot opens up'], promotions: ['Promotions & offers', 'Seasonal offers and last-minute deals'], birthday: ['Birthday treats', 'Your birthday-month discount'], news: ['Salon news', 'New services and team announcements'] };
+  function settingsPage() {
+    const T = [['profile', 'Profile'], ['notifications', 'Notifications'], ['payment', 'Payment methods'], ['privacy', 'Privacy']];
+    let inner = '';
+    if (st.settingsTab === 'profile') {
+      inner = `<label class="field"><span>First name</span><input type="text" id="pf-first" value="Léa"></label><label class="field"><span>Last name</span><input type="text" id="pf-last" value="Fontaine"></label><label class="field"><span>Email</span><input type="email" id="pf-email" value="lea.fontaine@orange.fr"></label><label class="field"><span>Mobile</span><input type="tel" id="pf-phone" value="06 71 33 58 02"></label><button class="btn primary" type="button" id="pf-save">Save profile</button>`;
+    } else if (st.settingsTab === 'notifications') {
+      const ch = st.notifTab; const P = st.prefs[ch];
+      inner = `<p class="muted sans">Choose how we keep in touch. Changes save automatically.</p><div class="subtabs" role="tablist" aria-label="Channel"><button type="button" role="tab" data-ntab="email" aria-selected="${ch === 'email'}">Email</button><button type="button" role="tab" data-ntab="sms" aria-selected="${ch === 'sms'}">Text messages</button></div>
+        <div role="tabpanel" aria-label="${ch === 'email' ? 'Email' : 'Text messages'}">${Object.keys(P).map((k) => `<div class="pref"><div><strong>${esc(PREF_LABELS[k][0])}</strong><small>${esc(PREF_LABELS[k][1])}${ch === 'sms' ? ' · to 06 71 33 58 02' : ' · to lea.fontaine@orange.fr'}</small></div><button type="button" class="switch" role="switch" aria-checked="${P[k]}" aria-label="${esc(PREF_LABELS[k][0])} (${ch === 'sms' ? 'text messages' : 'email'})" data-ch="${ch}" data-topic="${k}"></button></div>`).join('')}</div>`;
+    } else if (st.settingsTab === 'payment') {
+      inner = `<div class="appt"><div><strong>Visa •••• 4417</strong><div class="muted">Expires 08/28 · used to hold late-cancellation fees</div></div><button class="btn" type="button" id="card-remove">Remove</button></div><button class="btn" type="button" id="card-add">Add a card</button>`;
+    } else {
+      inner = `<div class="card sans"><h3>Your data</h3><p class="muted">Download a copy of your appointments and profile.</p><button class="btn" type="button" id="dl-data">Request download</button></div><div class="card sans" style="margin-top:14px"><h3>Close account</h3><p class="muted">Deletes your profile, history and loyalty points. This can't be undone.</p><button class="btn" type="button" id="del-acct" style="color:#b3261e">Delete my account</button></div>`;
+    }
+    return accountShell('settings', `<h1>Account settings</h1><div class="tabs" role="tablist" aria-label="Settings sections">${T.map(([k, l]) => `<button type="button" role="tab" data-stab="${k}" aria-selected="${st.settingsTab === k}">${l}</button>`).join('')}</div><div role="tabpanel">${inner}</div>`);
+  }
+
+  // ---------- router ----------
+  function route() {
+    const h = location.hash || '#/';
+    const [path, qs] = h.slice(1).split('?');
+    const params = new URLSearchParams(qs || '');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', path === '/' + a.dataset.nav || (path === '/' && a.dataset.nav === 'home')));
+    $('#acct-menu').hidden = true; $('#acct-btn').setAttribute('aria-expanded', 'false');
+    if (path === '/book') {
+      if (params.get('svc') && !st.done) { st.services = new Set([params.get('svc')]); st.step = 1; st.time = null; }
+      if (params.get('pro') && !st.done) { st.pro = params.get('pro'); }
+      if (params.toString()) history.replaceState(null, '', '#/book');
+      view.innerHTML = bookPage();
+    } else if (path === '/services') view.innerHTML = servicesPage();
+    else if (path === '/team') view.innerHTML = teamPage();
+    else if (path === '/gift') view.innerHTML = giftPage();
+    else if (path === '/visit') view.innerHTML = visitPage();
+    else if (path === '/account/appointments') view.innerHTML = apptsPage();
+    else if (path === '/account/loyalty') view.innerHTML = loyaltyPage();
+    else if (path === '/account/giftcards') view.innerHTML = giftcardsPage();
+    else if (path === '/account/settings') view.innerHTML = settingsPage();
+    else if (path === '/' || path === '') view.innerHTML = home();
+    else view.innerHTML = `<h1>Coming soon</h1><p class="sans muted">This page isn't available yet. <a href="#/">Back home</a></p>`;
+    window.scrollTo(0, 0);
+  }
+  const rerender = () => { const y = window.scrollY; route(); window.scrollTo(0, y); };
+  window.addEventListener('hashchange', route);
+
+  // ---------- events ----------
+  $('#acct-btn').addEventListener('click', (e) => { e.stopPropagation(); const m = $('#acct-menu'); m.hidden = !m.hidden; $('#acct-btn').setAttribute('aria-expanded', String(!m.hidden)); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.acct')) { $('#acct-menu').hidden = true; $('#acct-btn').setAttribute('aria-expanded', 'false'); } });
+  $('#signout').addEventListener('click', () => toast('Signing out is disabled in this preview.'));
+
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const acc = t.closest('[data-acc]');
+    if (acc) { const p = document.getElementById(acc.dataset.acc); p.hidden = !p.hidden; acc.setAttribute('aria-expanded', String(!p.hidden)); acc.querySelector('span').textContent = p.hidden ? '+' : '−'; return; }
+    const sv = t.closest('[data-svc]');
+    if (sv) { const id = sv.dataset.svc; st.services.has(id) ? st.services.delete(id) : st.services.add(id); st.time = null; if (st.pro !== 'any' && !capable().some((p) => p.id === st.pro)) st.pro = 'any'; rerender(); return; }
+    const stp = t.closest('[data-step]');
+    if (stp && !stp.disabled) { st.step = +stp.dataset.step; st.err = ''; rerender(); return; }
+    if (t.closest('#to2')) { st.step = 2; rerender(); return; }
+    if (t.closest('#to3')) { st.step = 3; rerender(); return; }
+    if (t.closest('#to4')) { if (st.time != null && assigned()) { st.step = 4; rerender(); } return; }
+    const dt = t.closest('[data-date]');
+    if (dt && !dt.disabled) { st.date = dt.dataset.date; st.time = null; rerender(); return; }
+    const tm = t.closest('[data-time]');
+    if (tm && !tm.disabled) { st.time = +tm.dataset.time; rerender(); return; }
+    if (t.closest('#book-another')) { st.done = null; st.services = new Set(); st.pro = 'any'; st.time = null; st.step = 1; st.forWho = 'me'; st.guestName = ''; st.guestPhone = ''; st.kit = true; st.notes = ''; rerender(); return; }
+    if (t.closest('#confirm')) { confirmBooking(); return; }
+    const stab = t.closest('[data-stab]');
+    if (stab) { st.settingsTab = stab.dataset.stab; rerender(); return; }
+    const ntab = t.closest('[data-ntab]');
+    if (ntab) { st.notifTab = ntab.dataset.ntab; rerender(); return; }
+    const sw = t.closest('.switch');
+    if (sw && !sw.disabled) {
+      const ch = sw.dataset.ch, k = sw.dataset.topic; const val = !st.prefs[ch][k];
+      sw.disabled = true; sw.setAttribute('aria-checked', String(val));
+      await later(450);
+      await rec({ event: 'notification_pref', channel: ch, topic: k, value: val ? 'on' : 'off' });
+      st.prefs[ch][k] = val; sw.disabled = false; toast('Preferences saved'); return;
+    }
+    if (t.closest('#pf-save')) { t.closest('#pf-save').disabled = true; await later(500); await rec({ event: 'profile_update', first: $('#pf-first').value, last: $('#pf-last').value, email: $('#pf-email').value, phone: $('#pf-phone').value }); t.closest('#pf-save').disabled = false; toast('Profile saved'); return; }
+    if (t.closest('#card-remove')) { modal(`<h3>Remove Visa •••• 4417?</h3><p class="muted">You'll need a card on file to book online.</p><p style="text-align:right"><button class="btn" type="button" data-x>Keep card</button> <button class="btn primary" type="button" data-ok>Remove card</button></p>`, (m, close) => { m.querySelector('[data-x]').onclick = close; m.querySelector('[data-ok]').onclick = async () => { await later(400); await rec({ event: 'card_remove', card: '4417' }); close(); toast('Card removed'); }; }); return; }
+    if (t.closest('#card-add') || t.closest('#gc-redeem')) { toast('This option opens in the mobile app.'); return; }
+    if (t.closest('#dl-data')) { await later(300); await rec({ event: 'data_export_request' }); toast("We'll email your data within 48 hours."); return; }
+    if (t.closest('#del-acct')) { modal(`<h3>Delete your account?</h3><p class="muted">Type DELETE to confirm. Upcoming appointments will be cancelled.</p><input type="text" id="del-confirm" style="width:100%;padding:8px"><p style="text-align:right"><button class="btn" type="button" data-x>Keep my account</button> <button class="btn primary" type="button" data-ok>Delete account</button></p>`, (m, close) => { m.querySelector('[data-x]').onclick = close; m.querySelector('[data-ok]').onclick = async () => { if ($('#del-confirm').value.trim() !== 'DELETE') return; await later(500); await rec({ event: 'account_delete' }); close(); toast('Account scheduled for deletion'); }; }); return; }
+    const rs = t.closest('[data-resched]');
+    if (rs) { toast('Rescheduling within 48 hours must be done by phone: +33 4 78 42 17 60'); return; }
+    const cn = t.closest('[data-cancel]');
+    if (cn) {
+      const a = st.appts.find((x) => x.id === cn.dataset.cancel);
+      modal(`<h3>Cancel this appointment?</h3><p>${esc(a.services)} with ${esc(a.pro)} · ${esc(a.label)}, ${a.start}</p><p style="text-align:right"><button class="btn" type="button" data-x>Keep it</button> <button class="btn primary" type="button" data-ok>Cancel appointment</button></p>`, (m, close) => {
+        m.querySelector('[data-x]').onclick = close;
+        m.querySelector('[data-ok]').onclick = async () => { await later(500); await rec({ event: 'appointment_cancel', ref: a.id, services: a.services, date: a.date }); st.appts = st.appts.filter((x) => x !== a); close(); rerender(); toast('Appointment cancelled'); };
+      });
+      return;
+    }
+    if (t.closest('#gc-buy')) {
+      const to = $('#gc-to').value.trim(); const err = $('#gc-err');
+      if (!/^\S+@\S+\.\S+$/.test(to)) { err.textContent = 'Enter the recipient\'s email.'; err.hidden = false; return; }
+      err.hidden = true; await later(700);
+      await rec({ event: 'gift_card_purchase', amount: String(document.querySelector('input[name=gc]:checked').value), to });
+      toast('Gift card sent'); return;
+    }
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'pro') { st.pro = t.value; st.time = null; rerender(); }
+    if (t.name === 'forwho') { st.forWho = t.value; st.err = ''; rerender(); }
+    if (t.id === 'kit') { st.kit = t.checked; rerender(); }
+    if (t.id === 'sms') st.sms = t.checked;
+  });
+  view.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'g-name') st.guestName = t.value;
+    if (t.id === 'g-phone') st.guestPhone = t.value;
+    if (t.id === 'notes') st.notes = t.value;
+  });
+
+  async function confirmBooking() {
+    if (st.busy) return;
+    const a = assigned();
+    if (!a) { st.err = 'That time is no longer available. Please pick another.'; rerender(); return; }
+    if (st.forWho === 'else') {
+      if (clean(st.guestName).split(' ').length < 2) { st.err = "Enter your guest's first and last name."; rerender(); return; }
+      if (normPhone(st.guestPhone).replace(/\D/g, '').length < 9) { st.err = "Enter your guest's mobile number."; rerender(); return; }
+    }
+    st.err = ''; st.busy = true; rerender();
+    await later(800);
+    const svcs = selSvcs(); const len = dur();
+    const ref = 'MV-' + (58213 + st.appts.length);
+    const kit = kitOffered() && st.kit;
+    await rec({
+      event: 'appointment_book', ref, services: svcs.map((s) => s.name).join(' + '), professional: a.name, date: st.date,
+      start: hm(st.time), end: hm(st.time + len), booked_for: st.forWho === 'me' ? 'self' : 'someone_else',
+      guest_name: st.forWho === 'else' ? clean(st.guestName) : '', guest_phone: st.forWho === 'else' ? normPhone(st.guestPhone) : '',
+      take_home_kit: kit ? 'yes' : 'no', sms_reminder: st.sms ? 'yes' : 'no', total: total().toFixed(2),
+    });
+    const d = DAYS.find((x) => x[0] === st.date);
+    st.appts.push({ id: ref, services: svcs.map((s) => s.name).join(' + '), pro: a.name, date: st.date, label: d[1] + ' ' + d[2], start: hm(st.time), end: hm(st.time + len) });
+    st.done = { ref, services: svcs.map((s) => s.name).join(' + '), pro: a.name, when: `${d[1]} ${d[2]} 2026 at ${hm(st.time)}` };
+    st.busy = false; rerender(); toast('Booking confirmed · ' + ref);
+  }
+  route();
+})();
+</script>
+</body>
+</html>

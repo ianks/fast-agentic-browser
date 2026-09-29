@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tessellate AX3000 · Web Management</title>
+<script src="../common.js"></script>
+<style>
+  :root { --teal: #0f6e74; --teal-d: #0a4f54; --line: #e2e7ea; --muted: #66747d; --bg: #f3f6f7; --acc: #0e9aa0; --danger: #c0392b; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; color: #1d2830; background: var(--bg); }
+  a { color: var(--acc); }
+  .top { background: linear-gradient(90deg, var(--teal-d), var(--teal)); color: #fff; display: flex; align-items: stretch; gap: 18px; padding: 0 22px; height: 58px; }
+  .brand { display: flex; flex-direction: column; justify-content: center; }
+  .brand b { font-size: 18px; letter-spacing: .6px; }
+  .brand span { font-size: 11px; opacity: .75; }
+  .modes { display: flex; margin-left: 28px; }
+  .modes a { color: #cfe9eb; text-decoration: none; padding: 0 20px; display: flex; align-items: center; border-bottom: 3px solid transparent; font-size: 15px; }
+  .modes a.on { color: #fff; border-bottom-color: #8ae6ea; font-weight: 600; }
+  .top .right { margin-left: auto; display: flex; gap: 18px; align-items: center; font-size: 13px; }
+  .top .right button { color: #d9f1f2; background: none; border: 0; cursor: pointer; font: inherit; padding: 4px; }
+  .pill { background: rgba(255,255,255,.14); border-radius: 12px; padding: 2px 10px; }
+  .shell { display: grid; grid-template-columns: 236px 1fr; min-height: calc(100vh - 58px - 48px); }
+  nav.side { background: #fff; border-right: 1px solid var(--line); padding: 8px 0 20px; }
+  nav.side a, nav.side button.grp { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 18px; color: #2a3a44; text-decoration: none; background: none; border: 0; font: inherit; cursor: pointer; }
+  nav.side a:hover, nav.side button.grp:hover { background: #eef6f7; }
+  nav.side a.on { background: #e3f4f5; color: var(--teal-d); font-weight: 600; box-shadow: inset 3px 0 var(--acc); }
+  nav.side .sub a { padding-left: 44px; font-size: 13px; }
+  nav.side .ic { width: 18px; text-align: center; color: var(--acc); }
+  nav.side button.grp .car { margin-left: auto; font-size: 10px; color: #9aa7ae; transition: transform .15s; }
+  nav.side button.grp[aria-expanded=true] .car { transform: rotate(90deg); }
+  main { padding: 22px 30px 40px; max-width: 1080px; }
+  h1 { font-size: 21px; font-weight: 600; margin: 0 0 4px; }
+  .desc { color: var(--muted); margin: 0 0 18px; max-width: 760px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 18px 22px; margin-bottom: 18px; }
+  .panel h2 { font-size: 15px; margin: 0 0 12px; }
+  .frow { display: grid; grid-template-columns: 230px 1fr; align-items: center; gap: 12px; padding: 7px 0; }
+  .frow > label, .frow > .lbl { color: #3b4a53; }
+  input[type=text], input[type=number], select, textarea { font: inherit; padding: 6px 9px; border: 1px solid #c7d0d5; border-radius: 4px; width: 260px; background: #fff; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #9ad9dc; border-color: var(--acc); }
+  button.btn { font: inherit; padding: 7px 18px; border-radius: 4px; border: 1px solid #b8c4ca; background: #fff; cursor: pointer; color: #22323b; }
+  button.btn.pri { background: var(--acc); border-color: var(--acc); color: #fff; }
+  button.btn.danger { color: var(--danger); border-color: #e3b1ab; }
+  button.btn:disabled { opacity: .55; cursor: default; }
+  button.icon { background: none; border: 0; cursor: pointer; color: var(--acc); font-size: 15px; padding: 2px 6px; }
+  .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  th { color: var(--muted); font-weight: 600; background: #f8fafb; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  .tabs [role=tab] { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 18px; font: inherit; cursor: pointer; color: #4b5b64; }
+  .tabs [role=tab][aria-selected=true] { border-bottom-color: var(--acc); color: var(--teal-d); font-weight: 600; }
+  .switch { position: relative; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .track { width: 38px; height: 20px; border-radius: 10px; background: #c9d2d7; position: relative; transition: background .15s; }
+  .switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked + .track { background: var(--acc); }
+  .switch input:checked + .track::after { left: 20px; }
+  .muted { color: var(--muted); font-size: 12.5px; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; background: #e8f5f5; color: var(--teal-d); }
+  .tag.off { background: #f1f1f1; color: #888; }
+  .map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+  .node { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; font: inherit; color: inherit; }
+  .node[aria-pressed=true] { border-color: var(--acc); box-shadow: 0 0 0 2px #bfe8ea; }
+  .node .big { font-size: 26px; color: var(--acc); }
+  .overlay { position: fixed; inset: 0; background: rgba(20,32,38,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 70px; z-index: 20; }
+  .modal { background: #fff; border-radius: 8px; width: 600px; max-height: calc(100vh - 110px); overflow: auto; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+  .modal header { padding: 16px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: center; }
+  .modal header h3 { margin: 0; font-size: 16px; }
+  .modal header button { margin-left: auto; }
+  .modal .body { padding: 14px 22px; }
+  .modal footer { padding: 12px 22px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+  .steps { display: flex; gap: 6px; margin-bottom: 14px; }
+  .steps span { flex: 1; font-size: 12px; text-align: center; padding: 6px 0; border-bottom: 3px solid #dde4e7; color: #8a979e; }
+  .steps span.on { border-color: var(--acc); color: var(--teal-d); font-weight: 600; }
+  .steps span.done { border-color: #8ed3d6; color: #4d7f83; }
+  .err { color: var(--danger); font-size: 13px; margin-top: 8px; }
+  .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .rcard { border: 1px solid #cfd8dc; border-radius: 6px; padding: 10px 8px; text-align: center; cursor: pointer; font-size: 13px; }
+  .rcard input { margin: 0 0 6px; }
+  .rcard:has(input:checked) { border-color: var(--acc); background: #eef9f9; }
+  .days { display: flex; gap: 6px; }
+  .days label { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 32px; border: 1px solid #c8d1d6; border-radius: 16px; cursor: pointer; font-size: 12.5px; user-select: none; }
+  .days input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .days label:has(input:checked) { background: var(--acc); border-color: var(--acc); color: #fff; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: #eef3f5; border-radius: 12px; padding: 3px 10px; font-size: 12.5px; }
+  .devpick { border: 1px solid var(--line); border-radius: 6px; margin-top: 10px; max-height: 250px; overflow: auto; }
+  .devpick label, .devpick button.dv { display: flex; gap: 10px; align-items: center; padding: 7px 12px; border-bottom: 1px solid #f0f3f4; width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; font: inherit; text-align: left; cursor: pointer; }
+  .devpick button.dv:hover { background: #f1fafa; }
+  .toast { position: fixed; right: 24px; bottom: 60px; background: #17494d; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 30; }
+  .bar { height: 8px; background: #e7edf0; border-radius: 4px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--acc); }
+  footer.foot { height: 48px; display: flex; align-items: center; gap: 20px; padding: 0 22px; font-size: 12px; color: #7d8a91; border-top: 1px solid var(--line); background: #fff; }
+  footer.foot a { color: #5f8e92; }
+  .busy { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand"><b>TESSELLATE</b><span>AX3000 Mesh Wi-Fi 6 Router</span></div>
+  <nav class="modes" aria-label="Mode">
+    <a href="#/quick" id="mode-quick">Quick Setup</a>
+    <a href="#/basic/map" id="mode-basic">Basic</a>
+    <a href="#/advanced/status" id="mode-adv">Advanced</a>
+  </nav>
+  <div class="right">
+    <span class="pill">Cloud: connected</span>
+    <button type="button" id="btn-reboot-top" title="Reboot">⟳ Reboot</button>
+    <button type="button" id="btn-logout">Log out</button>
+  </div>
+</div>
+<div class="shell">
+  <nav class="side" id="side" aria-label="Settings menu"></nav>
+  <main id="main"></main>
+</div>
+<footer class="foot">
+  <span>Firmware Version: 1.4.12 Build 20260611 rel.60823</span>
+  <span>Hardware Version: AX3000 v2.0</span>
+  <a href="#/advanced/system/firmware">Check for updates</a>
+  <a href="#/support">Support</a>
+  <a href="#/app">Tessellate Home app</a>
+</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3500); };
+
+  const DEVICES = [
+    { name: 'lucia-desktop', ip: '192.168.0.117', mac: '5C:3A:45:1F:09:B2', conn: 'Wired', up: '1.2 Mbps', down: '14.8 Mbps' },
+    { name: 'lucia-laptop', ip: '192.168.0.143', mac: 'A4:83:E7:2C:51:0D', conn: '5 GHz', up: '0.3 Mbps', down: '2.1 Mbps' },
+    { name: 'Leo-iPad', ip: '192.168.0.151', mac: 'F0:18:98:6A:C3:21', conn: '5 GHz', up: '0.1 Mbps', down: '6.4 Mbps' },
+    { name: 'Leo-iPhone', ip: '192.168.0.152', mac: 'F0:18:98:7B:0E:94', conn: '5 GHz', up: '0.0 Mbps', down: '0.4 Mbps' },
+    { name: 'Leos-Switch', ip: '192.168.0.160', mac: '98:41:5C:A2:77:3F', conn: '2.4 GHz', up: '0.0 Mbps', down: '0.0 Mbps' },
+    { name: 'living-room-tv', ip: '192.168.0.120', mac: 'C8:D7:78:11:4E:6A', conn: 'Wired', up: '0.2 Mbps', down: '18.9 Mbps' },
+    { name: 'printer-office', ip: '192.168.0.130', mac: '3C:52:82:9D:10:EE', conn: '2.4 GHz', up: '0.0 Mbps', down: '0.0 Mbps' },
+    { name: 'nas-backup', ip: '192.168.0.110', mac: '00:11:32:8F:6B:02', conn: 'Wired', up: '4.6 Mbps', down: '0.8 Mbps' },
+    { name: 'front-doorbell', ip: '192.168.0.171', mac: '34:3E:A4:5B:90:1C', conn: '2.4 GHz', up: '0.9 Mbps', down: '0.1 Mbps' },
+    { name: 'hallway-thermostat', ip: '192.168.0.175', mac: '18:B4:30:2D:6E:47', conn: '2.4 GHz', up: '0.0 Mbps', down: '0.0 Mbps' },
+    { name: 'marek-phone', ip: '192.168.0.155', mac: 'E8:D5:2B:40:17:A9', conn: '5 GHz', up: '0.2 Mbps', down: '1.3 Mbps' },
+    { name: 'nina-tablet', ip: '192.168.0.158', mac: '2C:4D:79:C1:08:53', conn: '5 GHz', up: '0.0 Mbps', down: '0.9 Mbps' },
+  ];
+  const st = {
+    pf: [
+      { id: 1, name: 'NAS web', ip: '192.168.0.110', ext: '5001', int: '5001', proto: 'TCP', on: true },
+      { id: 2, name: 'Media server', ip: '192.168.0.110', ext: '32400', int: '32400', proto: 'TCP', on: true },
+      { id: 3, name: 'Doorbell RTSP', ip: '192.168.0.171', ext: '8554', int: '554', proto: 'All', on: false },
+    ],
+    pt: [{ id: 1, name: 'Game voice', trig: '3478', trigProto: 'UDP', ext: '3479-3481', extProto: 'UDP', on: true }],
+    upnp: true,
+    dmz: { on: false, ip: '' },
+    profiles: [{ id: 1, name: 'Nina', devices: ['nina-tablet'], filter: 'preteen', daily: false, bedtime: true, start: '20:30', mins: 600, days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] }],
+    blocked: [],
+    mapView: 'internet',
+    busy: false,
+  };
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const FILTERS = [['none', 'None', 'No filtering'], ['child', 'Child', '0–7'], ['preteen', 'Pre-teen', '8–12'], ['teen', 'Teen', '13–17'], ['adult', 'Adult', '18+']];
+  const BLOCKED_CATS = { child: ['Adult content', 'Gambling', 'Social media', 'Online chat', 'Downloads', 'Games', 'Media streaming'], preteen: ['Adult content', 'Gambling', 'Online chat', 'Downloads'], teen: ['Adult content', 'Gambling'], adult: ['Adult content'] };
+  const hm = (m) => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const toM = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  const durLabel = (m) => `${Math.floor(m / 60)} h${m % 60 ? ' ' + (m % 60) + ' min' : ''}`;
+
+  // ---------------------------------------------------------------- generic settings pages
+  const GENERIC = {
+    'basic/internet': { title: 'Internet', desc: 'Set up an internet connection with the service information provided by your ISP.', fields: [
+      { k: 'type', label: 'Internet Connection Type', type: 'select', options: ['Dynamic IP', 'Static IP', 'PPPoE', 'L2TP', 'PPTP'], value: 'PPPoE' },
+      { k: 'user', label: 'Username', type: 'text', value: 'northfibre-44817' },
+      { k: 'mtu', label: 'MTU Size (in bytes)', type: 'text', value: '1492' },
+      { k: 'mac', label: 'Router MAC Address', type: 'select', options: ['Use Default MAC Address', 'Clone Current Device MAC', 'Use Custom MAC Address'], value: 'Use Default MAC Address' } ] },
+    'basic/wireless': { title: 'Wireless', desc: 'Personalise the wireless network names and security.', fields: [
+      { k: 'smart', label: 'Smart Connect', type: 'toggle', value: false },
+      { k: 'ssid24', label: '2.4 GHz Network Name (SSID)', type: 'text', value: 'Zielinski-Home' },
+      { k: 'ssid5', label: '5 GHz Network Name (SSID)', type: 'text', value: 'Zielinski-Home-5G' },
+      { k: 'hide', label: 'Hide SSID', type: 'toggle', value: false } ] },
+    'basic/guest': { title: 'Guest Network', desc: 'Guests can access the internet but not your local network.', fields: [
+      { k: 'g24', label: '2.4 GHz Guest Network', type: 'toggle', value: false },
+      { k: 'g5', label: '5 GHz Guest Network', type: 'toggle', value: false },
+      { k: 'gname', label: 'Guest Network Name', type: 'text', value: 'Zielinski-Guest' },
+      { k: 'gsee', label: 'Allow guests to see each other', type: 'toggle', value: false } ] },
+    'advanced/network/internet': { alias: 'basic/internet' },
+    'advanced/network/lan': { title: 'LAN', desc: 'View and configure LAN settings.', fields: [
+      { k: 'ip', label: 'IP Address', type: 'text', value: '192.168.0.1' },
+      { k: 'mask', label: 'Subnet Mask', type: 'select', options: ['255.255.255.0', '255.255.0.0', '255.0.0.0', 'Custom'], value: '255.255.255.0' },
+      { k: 'igmp', label: 'IGMP Snooping', type: 'toggle', value: true },
+      { k: 'lag', label: 'Link Aggregation', type: 'toggle', value: false } ] },
+    'advanced/network/dhcp': { title: 'DHCP Server', desc: 'Dynamically assign IP addresses to the devices connected to the router.', fields: [
+      { k: 'on', label: 'DHCP Server', type: 'toggle', value: true },
+      { k: 'pool', label: 'IP Address Pool', type: 'text', value: '192.168.0.100 - 192.168.0.199' },
+      { k: 'lease', label: 'Address Lease Time (minutes)', type: 'text', value: '120' },
+      { k: 'gw', label: 'Default Gateway (optional)', type: 'text', value: '192.168.0.1' },
+      { k: 'dns1', label: 'Primary DNS (optional)', type: 'text', value: '' } ] },
+    'advanced/network/ddns': { title: 'Dynamic DNS', desc: 'Assign a fixed host name to the router for remote access.', fields: [
+      { k: 'provider', label: 'Service Provider', type: 'select', options: ['Tessellate', 'NO-IP', 'DynDNS'], value: 'Tessellate' },
+      { k: 'domain', label: 'Domain Name', type: 'text', value: '' } ] },
+    'advanced/network/ipv6': { title: 'IPv6', desc: 'Configure the IPv6 internet connection.', fields: [
+      { k: 'on', label: 'IPv6', type: 'toggle', value: false },
+      { k: 'type', label: 'Internet Connection Type', type: 'select', options: ['Dynamic IP (SLAAC/DHCPv6)', 'Static IP', 'PPPoE', '6to4 Tunnel', 'Pass-Through (Bridge)'], value: 'Dynamic IP (SLAAC/DHCPv6)' } ] },
+    'advanced/wireless/settings': { title: 'Wireless Settings', desc: 'Configure the band-specific wireless settings.', fields: [
+      { k: 'ch24', label: '2.4 GHz Channel', type: 'select', options: ['Auto', '1', '6', '11'], value: 'Auto' },
+      { k: 'w24', label: '2.4 GHz Channel Width', type: 'select', options: ['Auto', '20 MHz', '40 MHz'], value: 'Auto' },
+      { k: 'ch5', label: '5 GHz Channel', type: 'select', options: ['Auto', '36', '40', '44', '48', '149', '153', '157', '161'], value: 'Auto' },
+      { k: 'w5', label: '5 GHz Channel Width', type: 'select', options: ['Auto', '20 MHz', '40 MHz', '80 MHz', '160 MHz'], value: '80 MHz' },
+      { k: 'tx', label: 'Transmit Power', type: 'select', options: ['Low', 'Middle', 'High'], value: 'High' } ] },
+    'advanced/wireless/guest': { alias: 'basic/guest' },
+    'advanced/wireless/wps': { title: 'WPS', desc: 'Connect WPS-enabled devices by pushing a button or entering a PIN.', fields: [
+      { k: 'wps', label: 'WPS', type: 'toggle', value: true },
+      { k: 'pin', label: "Router's PIN", type: 'toggle', value: false } ] },
+    'advanced/wireless/schedule': { title: 'Wireless Schedule', desc: 'Turn off the wireless radios automatically during a set period.', fields: [
+      { k: 'on', label: 'Wireless Schedule', type: 'toggle', value: false },
+      { k: 'from', label: 'Radio off from', type: 'select', options: ['00:00', '01:00', '02:00', '23:00'], value: '01:00' },
+      { k: 'to', label: 'Radio off until', type: 'select', options: ['05:00', '06:00', '07:00'], value: '06:00' } ] },
+    'advanced/wireless/additional': { title: 'Additional Settings', desc: 'Advanced wireless options. Leave these at their defaults unless you know you need to change them.', fields: [
+      { k: 'wmm', label: 'WMM', type: 'toggle', value: true },
+      { k: 'ap', label: 'AP Isolation', type: 'toggle', value: false },
+      { k: 'airtime', label: 'Airtime Fairness', type: 'toggle', value: false },
+      { k: 'beacon', label: 'Beacon Interval', type: 'text', value: '100' } ] },
+    'advanced/qos': { title: 'QoS', desc: 'Prioritise the internet traffic of specific online activities.', fields: [
+      { k: 'on', label: 'QoS', type: 'toggle', value: false },
+      { k: 'up', label: 'Upload Bandwidth', type: 'text', value: '100 Mbps' },
+      { k: 'down', label: 'Download Bandwidth', type: 'text', value: '500 Mbps' },
+      { k: 'prio', label: 'Priority Application', type: 'select', options: ['None', 'Gaming', 'Streaming', 'Surfing', 'Chatting', 'Working from home'], value: 'None' } ] },
+    'advanced/security/firewall': { title: 'Firewall', desc: 'Protect your home network from cyber attacks.', fields: [
+      { k: 'spi', label: 'SPI Firewall', type: 'toggle', value: true },
+      { k: 'ping', label: 'Respond to pings from the internet', type: 'toggle', value: false } ] },
+    'advanced/security/access-control': { title: 'Access Control', desc: 'Control which devices can access your network.', fields: [
+      { k: 'on', label: 'Access Control', type: 'toggle', value: false },
+      { k: 'mode', label: 'Access Mode', type: 'select', options: ['Blacklist', 'Whitelist'], value: 'Blacklist' } ] },
+    'advanced/security/binding': { title: 'IP & MAC Binding', desc: 'Bind a device’s MAC address to an IP address to prevent ARP spoofing.', fields: [
+      { k: 'on', label: 'ARP Binding', type: 'toggle', value: false } ] },
+    'advanced/security/alg': { title: 'ALG', desc: 'Application Layer Gateway allows NAT traversal filters to be plugged into the gateway.', fields: [
+      { k: 'sip', label: 'SIP ALG', type: 'toggle', value: true },
+      { k: 'ftp', label: 'FTP ALG', type: 'toggle', value: true },
+      { k: 'pptp', label: 'PPTP Passthrough', type: 'toggle', value: true },
+      { k: 'l2tp', label: 'L2TP Passthrough', type: 'toggle', value: true },
+      { k: 'ipsec', label: 'IPSec Passthrough', type: 'toggle', value: true } ] },
+    'advanced/vpn/openvpn': { title: 'OpenVPN', desc: 'Allow remote devices to reach your home network securely.', fields: [
+      { k: 'on', label: 'OpenVPN Server', type: 'toggle', value: false },
+      { k: 'proto', label: 'Service Type', type: 'select', options: ['UDP', 'TCP'], value: 'UDP' },
+      { k: 'port', label: 'Service Port', type: 'text', value: '1194' } ] },
+    'advanced/vpn/pptp': { title: 'PPTP', desc: 'PPTP is supported for legacy clients only.', fields: [
+      { k: 'on', label: 'PPTP VPN Server', type: 'toggle', value: false } ] },
+    'advanced/system/admin': { title: 'Administration', desc: 'Manage local and remote access to the web management page.', fields: [
+      { k: 'https', label: 'Local Management via HTTPS', type: 'toggle', value: true },
+      { k: 'remote', label: 'Remote Management', type: 'toggle', value: false },
+      { k: 'timeout', label: 'Session Timeout (minutes)', type: 'select', options: ['5', '15', '30', '60'], value: '15' } ] },
+    'advanced/system/time': { title: 'Time & Language', desc: 'Set the router’s time zone and display language.', fields: [
+      { k: 'tz', label: 'Time Zone', type: 'select', options: ['(UTC+00:00) London, Dublin', '(UTC+01:00) Warsaw, Berlin', '(UTC+02:00) Helsinki'], value: '(UTC+01:00) Warsaw, Berlin' },
+      { k: 'ntp', label: 'NTP Server', type: 'text', value: 'time.tessellate.net' },
+      { k: 'dst', label: 'Daylight Saving Time', type: 'toggle', value: true },
+      { k: 'lang', label: 'Language', type: 'select', options: ['English', 'Polski', 'Deutsch', 'Français'], value: 'English' } ] },
+    'advanced/system/led': { title: 'LED Control', desc: 'Turn the router’s LEDs on or off.', fields: [
+      { k: 'led', label: 'LED Status', type: 'toggle', value: true },
+      { k: 'night', label: 'Night Mode', type: 'toggle', value: false } ] },
+  };
+  const INFO = {
+    'advanced/system/firmware': () => `<div class="panel"><h2>Online Update</h2><div class="frow"><span class="lbl">Firmware Version</span><span>1.4.12 Build 20260611 rel.60823</span></div><div class="frow"><span class="lbl">Hardware Version</span><span>AX3000 v2.0</span></div><div class="frow"><span class="lbl">Latest Firmware Version</span><span>Your firmware is up to date.</span></div><div class="actions"><button class="btn" type="button" data-noop="Checked just now — no new firmware available.">Check for updates</button></div></div><div class="panel"><h2>Local Update</h2><p class="muted">Update from a firmware file downloaded from the Tessellate support site.</p><div class="actions"><button class="btn" type="button" disabled>Browse…</button><button class="btn" type="button" disabled>Update</button></div></div>`,
+    'advanced/system/backup': () => `<div class="panel"><h2>Backup</h2><p class="muted">Save a copy of your current settings.</p><div class="actions"><button class="btn" type="button" data-noop="Backup file prepared (config-20260924.bin).">Back up</button></div></div><div class="panel"><h2>Restore</h2><p class="muted">Restore settings from a backup file.</p><div class="actions"><button class="btn" type="button" disabled>Browse…</button><button class="btn" type="button" disabled>Restore</button></div></div><div class="panel"><h2>Factory Default Restore</h2><p class="muted">Restore all settings to default values. All your settings will be lost.</p><div class="actions"><button class="btn danger" type="button" id="btn-factory">Factory Restore</button></div></div>`,
+    'advanced/system/log': () => `<div class="panel"><h2>System Log</h2><table><thead><tr><th>Time</th><th>Type</th><th>Level</th><th>Log Content</th></tr></thead><tbody>${[
+      ['2026-09-24 08:41:07', 'DHCPD', 'INFO', 'DHCPACK 192.168.0.151 F0:18:98:6A:C3:21 Leo-iPad'],
+      ['2026-09-24 08:12:55', 'WLAN', 'INFO', '5 GHz: marek-phone (E8:D5:2B:40:17:A9) associated'],
+      ['2026-09-24 07:58:30', 'NAT', 'NOTICE', 'Port forwarding rule "Media server" hit from 81.144.20.9'],
+      ['2026-09-24 03:00:02', 'SYSTEM', 'INFO', 'Scheduled check: firmware up to date'],
+      ['2026-09-23 22:14:18', 'PARENTAL', 'INFO', 'Profile "Nina": bedtime started (20:30)'],
+      ['2026-09-23 19:03:41', 'DHCPD', 'INFO', 'DHCPACK 192.168.0.117 5C:3A:45:1F:09:B2 lucia-desktop'],
+      ['2026-09-23 18:47:09', 'WAN', 'WARNING', 'PPPoE session re-established after 4 s'],
+      ['2026-09-23 12:30:00', 'MESH', 'INFO', 'Satellite "Upstairs" backhaul 5 GHz −58 dBm'],
+    ].map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table><div class="actions"><button class="btn" type="button" data-noop="Log refreshed.">Refresh</button><button class="btn" type="button" data-noop="Log file prepared.">Save Log</button></div></div>`,
+    'advanced/system/reboot': () => `<div class="panel"><h2>Reboot</h2><p class="muted">Rebooting disconnects every device for about 2 minutes.</p><div class="actions"><button class="btn danger" type="button" id="btn-reboot">Reboot Now</button></div></div><div class="panel"><h2>Reboot Schedule</h2><div class="frow"><span class="lbl">Reboot Schedule</span><span class="tag off">Off</span></div></div>`,
+    'advanced/status': () => `<div class="map"><div class="panel" style="margin:0"><h2>Internet</h2><div class="muted">PPPoE · Connected</div><div style="margin-top:8px">IPv4 81.23.114.9</div><div class="muted">Uptime 6 days 04:12:51</div></div><div class="panel" style="margin:0"><h2>Wireless</h2><div class="muted">2.4 GHz: Zielinski-Home</div><div class="muted">5 GHz: Zielinski-Home-5G</div><div class="muted">Guest: off</div></div><div class="panel" style="margin:0"><h2>CPU Load</h2><div class="bar"><i style="width:18%"></i></div><div class="muted">18%</div></div><div class="panel" style="margin:0"><h2>Memory Usage</h2><div class="bar"><i style="width:47%"></i></div><div class="muted">47%</div></div></div><div class="panel"><h2>Clients</h2><div class="muted">${DEVICES.length} connected · 3 wired, 5 on 5 GHz, 4 on 2.4 GHz</div><p><a href="#/basic/map">View on the Network Map</a></p></div><div class="panel"><h2>Mesh</h2><div class="frow"><span class="lbl">Satellite "Upstairs"</span><span>Connected · backhaul 5 GHz · firmware 1.4.12</span></div></div>`,
+    quick: () => `<div class="panel"><h2>Quick Setup</h2><p>Quick Setup walks you through time zone, internet connection type and wireless names. Your router is already set up — running it again will overwrite your current settings.</p><div class="actions"><button class="btn" type="button" data-noop="Quick Setup is unavailable while the mesh is syncing.">Let's get started</button></div></div>`,
+    support: () => `<div class="panel"><h2>Support</h2><p>Visit <b>support.tessellate.net</b> or call 0800 404 7788 (Mon–Fri 08:00–20:00).</p><p class="muted">Model: AX3000 · Serial: 22418A0093117</p></div>`,
+    app: () => `<div class="panel"><h2>Tessellate Home app</h2><p>Manage your network from your phone. Scan the QR code on the router’s label to pair.</p></div>`,
+  };
+
+  const BASIC_NAV = [
+    { r: 'basic/map', label: 'Network Map', ic: '◎' },
+    { r: 'basic/internet', label: 'Internet', ic: '🌐' },
+    { r: 'basic/wireless', label: 'Wireless', ic: '≋' },
+    { r: 'basic/guest', label: 'Guest Network', ic: '☺' },
+  ];
+  const ADV_NAV = [
+    { r: 'advanced/status', label: 'Status', ic: '▤' },
+    { g: 'network', label: 'Network', ic: '⌂', kids: [['internet', 'Internet'], ['lan', 'LAN'], ['dhcp', 'DHCP Server'], ['ddns', 'Dynamic DNS'], ['ipv6', 'IPv6']] },
+    { g: 'wireless', label: 'Wireless', ic: '≋', kids: [['settings', 'Wireless Settings'], ['guest', 'Guest Network'], ['wps', 'WPS'], ['schedule', 'Wireless Schedule'], ['additional', 'Additional Settings']] },
+    { r: 'advanced/nat/port-forwarding', match: 'advanced/nat', label: 'NAT Forwarding', ic: '⇄' },
+    { r: 'advanced/parental', label: 'Parental Controls', ic: '☂' },
+    { r: 'advanced/qos', label: 'QoS', ic: '⇅' },
+    { g: 'security', label: 'Security', ic: '⛨', kids: [['firewall', 'Firewall'], ['access-control', 'Access Control'], ['binding', 'IP & MAC Binding'], ['alg', 'ALG']] },
+    { g: 'vpn', label: 'VPN Server', ic: '⚿', kids: [['openvpn', 'OpenVPN'], ['pptp', 'PPTP']] },
+    { g: 'system', label: 'System', ic: '⚙', kids: [['firmware', 'Firmware Update'], ['backup', 'Backup & Restore'], ['admin', 'Administration'], ['log', 'System Log'], ['time', 'Time & Language'], ['reboot', 'Reboot'], ['led', 'LED Control']] },
+  ];
+  const openGroups = new Set();
+
+  function route() { return (location.hash.replace(/^#\/?/, '') || 'basic/map'); }
+  function renderSide(r) {
+    const mode = r.startsWith('advanced') ? 'adv' : r.startsWith('basic') ? 'basic' : 'none';
+    q('#mode-quick').classList.toggle('on', r === 'quick');
+    q('#mode-basic').classList.toggle('on', mode === 'basic');
+    q('#mode-adv').classList.toggle('on', mode === 'adv');
+    const side = q('#side');
+    if (mode === 'basic') {
+      side.innerHTML = BASIC_NAV.map((n) => `<a href="#/${n.r}" class="${r === n.r ? 'on' : ''}"><span class="ic">${n.ic}</span>${esc(n.label)}</a>`).join('');
+    } else if (mode === 'adv') {
+      side.innerHTML = ADV_NAV.map((n) => {
+        if (n.r) return `<a href="#/${n.r}" class="${r.startsWith(n.match || n.r) ? 'on' : ''}"><span class="ic">${n.ic}</span>${esc(n.label)}</a>`;
+        const active = r.startsWith(`advanced/${n.g}/`);
+        if (active) openGroups.add(n.g);
+        const open = openGroups.has(n.g);
+        return `<button type="button" class="grp" data-grp="${n.g}" aria-expanded="${open}"><span class="ic">${n.ic}</span>${esc(n.label)}<span class="car">▶</span></button>
+          <div class="sub" ${open ? '' : 'hidden'}>${n.kids.map(([k, l]) => `<a href="#/advanced/${n.g}/${k}" class="${r === `advanced/${n.g}/${k}` ? 'on' : ''}">${esc(l)}</a>`).join('')}</div>`;
+      }).join('');
+    } else side.innerHTML = `<a href="#/basic/map"><span class="ic">←</span>Back to Basic</a>`;
+  }
+  q('#side').addEventListener('click', (e) => {
+    const g = e.target.closest('button.grp'); if (!g) return;
+    const id = g.dataset.grp; openGroups.has(id) ? openGroups.delete(id) : openGroups.add(id);
+    renderSide(route());
+  });
+
+  function toggleHtml(id, on, label) { return `<label class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${esc(label)}"><span class="track"></span></label>`; }
+  function renderGeneric(key) {
+    let p = GENERIC[key]; if (p.alias) { key = p.alias; p = GENERIC[key]; }
+    const rows = p.fields.map((f) => {
+      const id = `f-${f.k}`;
+      let ctl;
+      if (f.type === 'select') ctl = `<select id="${id}">${f.options.map((o) => `<option ${o === f.value ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+      else if (f.type === 'toggle') ctl = toggleHtml(id, f.value, f.label);
+      else ctl = `<input type="text" id="${id}" value="${esc(f.value)}">`;
+      return `<div class="frow"><label for="${id}">${esc(f.label)}</label><div>${ctl}</div></div>`;
+    }).join('');
+    return `<h1>${esc(p.title)}</h1><p class="desc">${esc(p.desc)}</p><div class="panel" data-generic="${key}">${rows}<div class="actions"><button class="btn pri" type="button" id="generic-save">Save</button></div></div>`;
+  }
+  async function saveGeneric(key) {
+    const p = GENERIC[key];
+    const changes = [];
+    for (const f of p.fields) {
+      const el = q('#f-' + f.k);
+      const v = f.type === 'toggle' ? el.checked : el.value;
+      if (v !== f.value) changes.push([f, v]);
+    }
+    if (!changes.length) { toast('No changes to save.'); return; }
+    const b = q('#generic-save'); b.disabled = true; b.innerHTML = '<span class="busy"></span>Saving';
+    await sleep(600);
+    await post({ event: 'setting_change', section: key, changes: changes.map(([f, v]) => `${f.k}=${typeof v === 'boolean' ? (v ? 'on' : 'off') : v}`).join('; ') });
+    changes.forEach(([f, v]) => (f.value = v));
+    b.disabled = false; b.textContent = 'Save';
+    toast('Saved successfully.');
+  }
+
+  // ---------------------------------------------------------------- network map
+  function renderMap() {
+    const v = st.mapView;
+    const nodes = [['internet', '🌐', 'Internet', 'Connected'], ['router', '▣', 'Tessellate AX3000', 'Main router'], ['clients', '💻', 'Clients', `${DEVICES.length} online`], ['mesh', '⌂', 'Mesh', '1 satellite']];
+    let panel = '';
+    if (v === 'internet') panel = `<div class="panel"><h2>Internet</h2><div class="frow"><span class="lbl">Internet Connection Type</span><span>PPPoE</span></div><div class="frow"><span class="lbl">IP Address</span><span>81.23.114.9</span></div><div class="frow"><span class="lbl">Primary DNS</span><span>81.23.100.1</span></div><div class="frow"><span class="lbl">Online time</span><span>6 days 04:12:51</span></div><div class="frow"><span class="lbl">Downstream / Upstream</span><span>487 Mbps / 96 Mbps</span></div></div>`;
+    if (v === 'router') panel = `<div class="panel"><h2>Router</h2><div class="frow"><span class="lbl">LAN IP</span><span>192.168.0.1</span></div><div class="frow"><span class="lbl">MAC Address</span><span>60:A4:B7:3E:21:C0</span></div><div class="frow"><span class="lbl">2.4 GHz</span><span>Zielinski-Home · Channel 6</span></div><div class="frow"><span class="lbl">5 GHz</span><span>Zielinski-Home-5G · Channel 44</span></div></div>`;
+    if (v === 'mesh') panel = `<div class="panel"><h2>Mesh satellites</h2><table><thead><tr><th>Name</th><th>Location</th><th>Backhaul</th><th>Firmware</th></tr></thead><tbody><tr><td>AX3000 Satellite</td><td>Upstairs</td><td>5 GHz · Good</td><td>1.4.12</td></tr></tbody></table></div>`;
+    if (v === 'clients') panel = `<div class="panel"><h2>Online Clients</h2><table><thead><tr><th>Device Name</th><th>IP Address</th><th>MAC Address</th><th>Connection</th><th>Real-time Rate</th><th></th></tr></thead><tbody>${DEVICES.map((d) => `<tr><td><b>${esc(d.name)}</b></td><td>${d.ip}</td><td>${d.mac}</td><td>${d.conn}</td><td class="muted">↑ ${d.up} ↓ ${d.down}</td><td>${st.blocked.includes(d.mac) ? '<span class="tag off">Blocked</span>' : `<button class="btn" type="button" data-block="${d.mac}">Block</button>`}</td></tr>`).join('')}</tbody></table></div>`;
+    return `<h1>Network Map</h1><p class="desc">Select an item to view its details.</p><div class="map">${nodes.map(([k, ic, t, s]) => `<button type="button" class="node" data-view="${k}" aria-pressed="${v === k}"><div class="big">${ic}</div><b>${t}</b><div class="muted">${s}</div></button>`).join('')}</div>${panel}`;
+  }
+
+  // ---------------------------------------------------------------- NAT forwarding
+  function natTabs(tab) {
+    const T = [['port-forwarding', 'Port Forwarding'], ['port-triggering', 'Port Triggering'], ['upnp', 'UPnP'], ['dmz', 'DMZ']];
+    return `<div class="tabs" role="tablist">${T.map(([k, l]) => `<button type="button" role="tab" aria-selected="${k === tab}" data-href="#/advanced/nat/${k}">${l}</button>`).join('')}</div>`;
+  }
+  function renderNat(tab) {
+    let body = '';
+    if (tab === 'port-forwarding') body = `<div class="panel"><div style="display:flex;align-items:center"><h2 style="margin:0">Port Forwarding</h2><button class="btn" type="button" id="pf-add" style="margin-left:auto">＋ Add</button></div>
+      <p class="muted">Share local services (web servers, game servers and so on) with the internet.</p>
+      <table><thead><tr><th>Service Name</th><th>Device IP Address</th><th>External Port</th><th>Internal Port</th><th>Protocol</th><th>Status</th><th>Modify</th></tr></thead><tbody>
+      ${st.pf.map((p) => `<tr><td>${esc(p.name)}</td><td>${p.ip}</td><td>${p.ext}</td><td>${p.int}</td><td>${p.proto}</td><td>${toggleHtml('pf-on-' + p.id, p.on, 'Enable ' + p.name)}</td><td><button class="icon" type="button" data-pf-del="${p.id}" aria-label="Delete ${esc(p.name)}">🗑</button></td></tr>`).join('')}
+      </tbody></table></div>`;
+    if (tab === 'port-triggering') body = `<div class="panel"><div style="display:flex;align-items:center"><h2 style="margin:0">Port Triggering</h2><button class="btn" type="button" id="pt-add" style="margin-left:auto">＋ Add</button></div>
+      <p class="muted">Dynamically open external ports when a device sends traffic on a trigger port.</p>
+      <table><thead><tr><th>Application</th><th>Triggering Port</th><th>Triggering Protocol</th><th>External Port</th><th>External Protocol</th><th>Status</th></tr></thead><tbody>
+      ${st.pt.map((p) => `<tr><td>${esc(p.name)}</td><td>${p.trig}</td><td>${p.trigProto}</td><td>${p.ext}</td><td>${p.extProto}</td><td>${p.on ? '<span class="tag">On</span>' : '<span class="tag off">Off</span>'}</td></tr>`).join('')}
+      </tbody></table></div>`;
+    if (tab === 'upnp') body = `<div class="panel"><h2>UPnP</h2><p class="muted">Allows devices on your network to open ports automatically. Some games and voice apps need it.</p><div class="frow"><label for="upnp-on">UPnP</label><div>${toggleHtml('upnp-on', st.upnp, 'UPnP')}</div></div><h2 style="margin-top:16px">UPnP Service List</h2><table><thead><tr><th>Service Description</th><th>External Port</th><th>Protocol</th><th>Internal IP Address</th></tr></thead><tbody><tr><td>Leos-Switch (NAT traversal)</td><td>45123</td><td>UDP</td><td>192.168.0.160</td></tr><tr><td>living-room-tv (cast)</td><td>8009</td><td>TCP</td><td>192.168.0.120</td></tr></tbody></table></div>`;
+    if (tab === 'dmz') body = `<div class="panel"><h2>DMZ</h2><p class="muted">Expose one device to the internet completely. Use with caution.</p><div class="frow"><label for="dmz-on">DMZ</label><div>${toggleHtml('dmz-on', st.dmz.on, 'DMZ')}</div></div><div class="frow"><label for="dmz-ip">DMZ Host IP Address</label><div><input type="text" id="dmz-ip" value="${esc(st.dmz.ip)}"></div></div><div class="actions"><button class="btn pri" type="button" id="dmz-save">Save</button></div></div>`;
+    return `<h1>NAT Forwarding</h1><p class="desc">Configure how traffic from the internet reaches devices on your home network.</p>${natTabs(tab)}${body}`;
+  }
+
+  // ---------------------------------------------------------------- parental controls
+  function profileSummary(p) {
+    if (!p.bedtime) return 'No bedtime';
+    const every = p.days.length === 7 ? 'every day' : p.days.join(', ');
+    return `Bedtime ${p.start}–${hm(toM(p.start) + p.mins)} · ${every}`;
+  }
+  function renderParental() {
+    return `<h1>Parental Controls</h1><p class="desc">Create profiles for family members, set up content filters and pause the internet at bedtime.</p>
+      <div class="panel"><div style="display:flex;align-items:center"><h2 style="margin:0">Profiles</h2><button class="btn" type="button" id="pc-add" style="margin-left:auto">＋ Add</button></div>
+      <table style="margin-top:12px"><thead><tr><th>Name</th><th>Devices</th><th>Filter Level</th><th>Time Limits</th><th>Internet</th><th>Modify</th></tr></thead><tbody>
+      ${st.profiles.map((p) => `<tr><td><b>${esc(p.name)}</b></td><td>${p.devices.map(esc).join(', ')}</td><td>${FILTERS.find((f) => f[0] === p.filter)[1]}</td><td>${esc(profileSummary(p))}</td><td><span class="tag">Online</span></td><td><button class="icon" type="button" data-pc-del="${p.id}" aria-label="Delete profile ${esc(p.name)}">🗑</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="panel"><h2>Insights</h2><p class="muted">Most visited today (Nina): learning.example-school.org, video.kidsclips.tv, maps.tessellate.net</p></div>`;
+  }
+
+  function render() {
+    const r = route();
+    renderSide(r);
+    let h;
+    if (r === 'basic/map') h = renderMap();
+    else if (GENERIC[r]) h = renderGeneric(r);
+    else if (r.startsWith('advanced/nat')) h = renderNat(r.split('/')[2] || 'port-forwarding');
+    else if (r === 'advanced/parental') h = renderParental();
+    else if (INFO[r]) h = INFO[r]();
+    else h = `<h1>Page not found</h1><p class="desc">This page doesn’t exist. <a href="#/basic/map">Go to the Network Map</a></p>`;
+    q('#main').innerHTML = h;
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', render);
+
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const tab = t.closest('[role=tab][data-href]'); if (tab) { location.hash = tab.dataset.href; return; }
+    const node = t.closest('.node[data-view]'); if (node) { st.mapView = node.dataset.view; render(); return; }
+    const noop = t.closest('[data-noop]'); if (noop) { toast(noop.dataset.noop); return; }
+    if (t.closest('#generic-save')) { saveGeneric(q('[data-generic]').dataset.generic); return; }
+    if (t.closest('#pf-add')) { openPfModal(); return; }
+    if (t.closest('#pt-add')) { openPtModal(); return; }
+    if (t.closest('#pc-add')) { openProfileWizard(); return; }
+    const del = t.closest('[data-pf-del]');
+    if (del) {
+      const p = st.pf.find((x) => x.id === +del.dataset.pfDel);
+      confirmBox(`Delete the port forwarding entry “${p.name}”?`, 'Delete', async () => {
+        await post({ event: 'port_forward_delete', name: p.name, device_ip: p.ip, external_port: p.ext });
+        st.pf = st.pf.filter((x) => x !== p); render(); toast('Entry deleted.');
+      });
+      return;
+    }
+    const pdel = t.closest('[data-pc-del]');
+    if (pdel) {
+      const p = st.profiles.find((x) => x.id === +pdel.dataset.pcDel);
+      confirmBox(`Delete the profile “${p.name}”? Its devices will no longer be filtered or paused.`, 'Delete', async () => {
+        await post({ event: 'parental_profile_delete', name: p.name });
+        st.profiles = st.profiles.filter((x) => x !== p); render(); toast('Profile deleted.');
+      });
+      return;
+    }
+    const blk = t.closest('[data-block]');
+    if (blk) {
+      const d = DEVICES.find((x) => x.mac === blk.dataset.block);
+      confirmBox(`Block ${d.name}? It will be disconnected and can't rejoin until you unblock it.`, 'Block', async () => {
+        await post({ event: 'device_block', device: d.name, mac: d.mac });
+        st.blocked.push(d.mac); render(); toast(`${d.name} blocked.`);
+      });
+      return;
+    }
+    if (t.closest('#dmz-save')) {
+      const on = q('#dmz-on').checked, ip = q('#dmz-ip').value.trim();
+      if (on && !/^192\.168\.0\.(\d{1,3})$/.test(ip)) { toast('Enter a valid DMZ host IP address.'); return; }
+      await sleep(500);
+      await post({ event: 'dmz_update', enabled: on ? 'yes' : 'no', host: ip });
+      st.dmz = { on, ip }; toast('Saved successfully.');
+      return;
+    }
+    if (t.closest('#btn-factory')) { confirmBox('Restore factory defaults? All settings will be erased and the router will reboot.', 'Restore', async () => { await post({ event: 'factory_reset' }); toast('Restoring…'); }); return; }
+    if (t.closest('#btn-reboot')) { askReboot(); return; }
+  });
+  q('#main').addEventListener('change', async (e) => {
+    const t = e.target;
+    if (t.id && t.id.startsWith('pf-on-')) {
+      const p = st.pf.find((x) => x.id === +t.id.slice(6));
+      p.on = t.checked; await post({ event: 'port_forward_toggle', name: p.name, enabled: p.on ? 'yes' : 'no' }); toast(`${p.name} ${p.on ? 'enabled' : 'disabled'}.`);
+    }
+    if (t.id === 'upnp-on') { st.upnp = t.checked; await sleep(400); await post({ event: 'upnp_update', enabled: st.upnp ? 'yes' : 'no' }); toast(`UPnP ${st.upnp ? 'enabled' : 'disabled'}.`); }
+  });
+  function askReboot() { confirmBox('Reboot the router now? All devices will be disconnected for about 2 minutes.', 'Reboot', async () => { await post({ event: 'reboot' }); toast('Rebooting… (demo: the admin page stays available)'); }); }
+  q('#btn-reboot-top').addEventListener('click', askReboot);
+  q('#btn-logout').addEventListener('click', () => confirmBox('Log out of the web management page?', 'Log out', async () => {
+    q('#main').innerHTML = `<div class="panel" style="max-width:420px;margin:60px auto;text-align:center"><h2>You have logged out</h2><p class="muted">For your security, close the browser tab when you are done.</p><button class="btn pri" type="button" id="relog">Log in again</button></div>`;
+    q('#relog').addEventListener('click', render);
+  }));
+
+  // ---------------------------------------------------------------- modals
+  function modal(title, bodyHtml, footHtml) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h3>${esc(title)}</h3><button class="icon" type="button" data-x aria-label="Close">✕</button></header><div class="body">${bodyHtml}</div><footer>${footHtml}</footer></div></div>`;
+    const root = q('#modal-root .modal');
+    root.querySelector('[data-x]').addEventListener('click', closeModal);
+    return root;
+  }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmBox(msg, okLabel, onOk) {
+    const m = modal('Confirm', `<p>${esc(msg)}</p>`, `<button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" data-ok>${esc(okLabel)}</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    m.querySelector('[data-ok]').addEventListener('click', async () => { m.querySelector('[data-ok]').disabled = true; await sleep(400); closeModal(); await onOk(); });
+  }
+
+  function openPfModal() {
+    const m = modal('Add a Port Forwarding Entry', `
+      <div class="frow"><label for="pf-name">Service Name</label><div><input type="text" id="pf-name" maxlength="32"></div></div>
+      <div class="frow"><label for="pf-ip">Device IP Address</label><div><input type="text" id="pf-ip" placeholder="192.168.0.x" style="width:160px"> <button class="btn" type="button" id="pf-view">View Connected Devices</button></div></div>
+      <div id="pf-devs" class="devpick" hidden></div>
+      <div class="frow"><label for="pf-ext">External Port</label><div><input type="text" id="pf-ext" placeholder="XX-XX or XX" style="width:160px"></div></div>
+      <div class="frow"><label for="pf-int">Internal Port</label><div><input type="text" id="pf-int" placeholder="XX or blank (1-65535)" style="width:160px"></div></div>
+      <div class="frow"><label for="pf-proto">Protocol</label><div><select id="pf-proto" style="width:160px"><option value="All">All</option><option value="TCP">TCP</option><option value="UDP">UDP</option></select></div></div>
+      <div class="frow"><label for="pf-enable">Enable This Entry</label><div><input type="checkbox" id="pf-enable" checked></div></div>
+      <div class="err" id="pf-err" role="alert" hidden></div>`,
+      `<button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" id="pf-save">Save</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    m.querySelector('#pf-view').addEventListener('click', () => {
+      const box = m.querySelector('#pf-devs');
+      box.hidden = !box.hidden;
+      box.innerHTML = `<div class="muted" style="padding:6px 12px">Select a device to fill in its IP address</div>` + DEVICES.map((d) => `<button type="button" class="dv" data-ip="${d.ip}"><b style="min-width:150px">${esc(d.name)}</b><span>${d.ip}</span><span class="muted">${d.mac}</span><span class="muted" style="margin-left:auto">${d.conn}</span></button>`).join('');
+    });
+    m.querySelector('#pf-devs').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-ip]'); if (!b) return;
+      m.querySelector('#pf-ip').value = b.dataset.ip; m.querySelector('#pf-devs').hidden = true;
+    });
+    m.querySelector('#pf-save').addEventListener('click', async () => {
+      const err = (s) => { const el = m.querySelector('#pf-err'); el.textContent = s; el.hidden = !s; };
+      const name = norm(m.querySelector('#pf-name').value);
+      const ip = m.querySelector('#pf-ip').value.trim();
+      const ext = m.querySelector('#pf-ext').value.trim();
+      let int = m.querySelector('#pf-int').value.trim();
+      const proto = m.querySelector('#pf-proto').value;
+      const on = m.querySelector('#pf-enable').checked;
+      const port = (s) => /^\d{1,5}$/.test(s) && +s >= 1 && +s <= 65535;
+      if (!name) return err('Enter a service name.');
+      if (st.pf.some((p) => p.name.toLowerCase() === name.toLowerCase())) return err('This service name already exists.');
+      const mm = ip.match(/^192\.168\.0\.(\d{1,3})$/);
+      if (!mm || +mm[1] < 2 || +mm[1] > 254) return err('Enter a valid IP address in the 192.168.0.2–192.168.0.254 range.');
+      if (!port(ext) && !(/^\d{1,5}-\d{1,5}$/.test(ext) && ext.split('-').every(port))) return err('Enter a valid external port (1-65535) or port range.');
+      if (int === '') int = ext;
+      if (!port(int) && int !== ext) return err('Enter a valid internal port (1-65535).');
+      if (st.pf.some((p) => p.ext === ext && (p.proto === 'All' || proto === 'All' || p.proto === proto))) return err(`External port ${ext} is already used by another entry.`);
+      err('');
+      const b = m.querySelector('#pf-save'); b.disabled = true; b.innerHTML = '<span class="busy"></span>Applying';
+      await sleep(800);
+      await post({ event: 'port_forward_add', name, device_ip: ip, external_port: ext, internal_port: int, protocol: proto.toUpperCase(), enabled: on ? 'yes' : 'no' });
+      st.pf.push({ id: Date.now(), name, ip, ext, int, proto, on });
+      closeModal(); render(); toast('Saved successfully.');
+    });
+  }
+
+  function openPtModal() {
+    const m = modal('Add a Port Triggering Entry', `
+      <div class="frow"><label for="pt-name">Application</label><div><input type="text" id="pt-name"></div></div>
+      <div class="frow"><label for="pt-trig">Triggering Port</label><div><input type="text" id="pt-trig" style="width:160px"></div></div>
+      <div class="frow"><label for="pt-tp">Triggering Protocol</label><div><select id="pt-tp" style="width:160px"><option>All</option><option>TCP</option><option>UDP</option></select></div></div>
+      <div class="frow"><label for="pt-ext">External Port</label><div><input type="text" id="pt-ext" style="width:160px"></div></div>
+      <div class="frow"><label for="pt-ep">External Protocol</label><div><select id="pt-ep" style="width:160px"><option>All</option><option>TCP</option><option>UDP</option></select></div></div>
+      <div class="err" id="pt-err" role="alert" hidden></div>`,
+      `<button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" id="pt-save">Save</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    m.querySelector('#pt-save').addEventListener('click', async () => {
+      const name = norm(m.querySelector('#pt-name').value), trig = m.querySelector('#pt-trig').value.trim(), ext = m.querySelector('#pt-ext').value.trim();
+      const e = m.querySelector('#pt-err');
+      if (!name || !/^\d{1,5}$/.test(trig) || !/^\d{1,5}(-\d{1,5})?$/.test(ext)) { e.textContent = 'Fill in the application name and valid ports.'; e.hidden = false; return; }
+      await sleep(600);
+      await post({ event: 'port_trigger_add', name, trigger_port: trig, trigger_protocol: m.querySelector('#pt-tp').value.toUpperCase(), external_port: ext, external_protocol: m.querySelector('#pt-ep').value.toUpperCase() });
+      st.pt.push({ id: Date.now(), name, trig, trigProto: m.querySelector('#pt-tp').value, ext, extProto: m.querySelector('#pt-ep').value, on: true });
+      closeModal(); render(); toast('Saved successfully.');
+    });
+  }
+
+  function openProfileWizard() {
+    const w = { step: 0, name: '', devices: [], filter: 'none', daily: false, wd: '120', we: '180', bedtime: false, start: '21:00', mins: 540, days: DAYS.slice() };
+    const STARTS = []; for (let m = 18 * 60; m <= 23 * 60 + 30; m += 30) STARTS.push(hm(m));
+    const DURS = []; for (let m = 360; m <= 720; m += 30) DURS.push(m);
+    const LIMITS = [['30', '30 min'], ['60', '1 h'], ['90', '1 h 30 min'], ['120', '2 h'], ['180', '3 h'], ['240', '4 h'], ['360', '6 h']];
+    const m = modal('Create a Profile', '<div id="pw"></div>', `<button class="btn" type="button" id="pw-back">Back</button><button class="btn pri" type="button" id="pw-next">Next</button>`);
+    const body = m.querySelector('#pw');
+    function collect() {
+      if (w.step === 0) {
+        w.name = norm(body.querySelector('#pw-name').value);
+        const pk = body.querySelector('#pw-devs');
+        if (pk && !pk.hidden) w.devices = [...pk.querySelectorAll('input:checked')].map((i) => i.value);
+      }
+      if (w.step === 1) w.filter = (body.querySelector('input[name=pw-filter]:checked') || {}).value || 'none';
+      if (w.step === 2) {
+        w.daily = body.querySelector('#pw-daily').checked;
+        if (w.daily) { w.wd = body.querySelector('#pw-wd').value; w.we = body.querySelector('#pw-we').value; }
+        w.bedtime = body.querySelector('#pw-bed').checked;
+        if (w.bedtime) {
+          w.start = body.querySelector('#pw-start').value; w.mins = +body.querySelector('#pw-dur').value;
+          w.days = DAYS.filter((d) => body.querySelector('#pw-day-' + d).checked);
+        }
+      }
+    }
+    function draw() {
+      const steps = ['Basic Info', 'Filter Content', 'Time Limits'];
+      let h = `<div class="steps">${steps.map((s, i) => `<span class="${i === w.step ? 'on' : i < w.step ? 'done' : ''}">${i + 1}. ${s}</span>`).join('')}</div>`;
+      if (w.step === 0) {
+        h += `<div class="frow"><label for="pw-name">Profile Name</label><div><input type="text" id="pw-name" value="${esc(w.name)}" maxlength="24"></div></div>
+          <div class="frow"><span class="lbl">Devices</span><div><div class="chips" id="pw-chips">${w.devices.length ? w.devices.map((d) => `<span class="chip">${esc(d)}</span>`).join('') : '<span class="muted">No devices added</span>'}</div>
+          <button class="btn" type="button" id="pw-adddev" style="margin-top:8px">＋ Add Devices</button></div></div>
+          <div class="devpick" id="pw-devs" hidden>${DEVICES.map((d) => `<label><input type="checkbox" value="${esc(d.name)}" ${w.devices.includes(d.name) ? 'checked' : ''}> <b style="min-width:150px">${esc(d.name)}</b><span class="muted">${d.mac}</span><span class="muted" style="margin-left:auto">${d.conn}</span></label>`).join('')}
+          <div style="padding:8px 12px;text-align:right"><button class="btn pri" type="button" id="pw-devok">Add</button></div></div>`;
+      } else if (w.step === 1) {
+        h += `<p class="muted">Choose what content this profile can reach. Filters apply to every device in the profile.</p><div class="cards" role="radiogroup" aria-label="Filter level">${FILTERS.map(([v, l, a]) => `<label class="rcard"><input type="radio" name="pw-filter" value="${v}" ${w.filter === v ? 'checked' : ''}><div><b>${l}</b></div><div class="muted">${a}</div></label>`).join('')}</div>
+          <div id="pw-cats" style="margin-top:12px"></div>`;
+      } else {
+        const dSel = w.days;
+        h += `<div class="frow"><label for="pw-daily">Daily Time Limits</label><div>${toggleHtml('pw-daily', w.daily, 'Daily Time Limits')}</div></div>
+          <div id="pw-daily-box" ${w.daily ? '' : 'hidden'}>
+            <div class="frow"><label for="pw-wd">Monday to Friday</label><div><select id="pw-wd">${LIMITS.map(([v, l]) => `<option value="${v}" ${v === w.wd ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
+            <div class="frow"><label for="pw-we">Saturday and Sunday</label><div><select id="pw-we">${LIMITS.map(([v, l]) => `<option value="${v}" ${v === w.we ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
+          </div>
+          <div class="frow"><label for="pw-bed">Bedtime</label><div>${toggleHtml('pw-bed', w.bedtime, 'Bedtime')}</div></div>
+          <div id="pw-bed-box" ${w.bedtime ? '' : 'hidden'}>
+            <div class="frow"><label for="pw-start">Bedtime starts at</label><div><select id="pw-start">${STARTS.map((s) => `<option ${s === w.start ? 'selected' : ''}>${s}</option>`).join('')}</select></div></div>
+            <div class="frow"><label for="pw-dur">Internet paused for</label><div><select id="pw-dur">${DURS.map((d) => `<option value="${d}" ${d === w.mins ? 'selected' : ''}>${durLabel(d)}</option>`).join('')}</select></div></div>
+            <div class="frow"><span class="lbl">Repeat on</span><div class="days">${DAYS.map((d) => `<label><input type="checkbox" id="pw-day-${d}" ${dSel.includes(d) ? 'checked' : ''}>${d}</label>`).join('')}</div></div>
+            <div class="frow"><span class="lbl"></span><div class="muted" id="pw-sum"></div></div>
+          </div>`;
+      }
+      h += `<div class="err" id="pw-err" role="alert" hidden></div>`;
+      body.innerHTML = h;
+      m.querySelector('#pw-back').disabled = w.step === 0;
+      m.querySelector('#pw-next').textContent = w.step === 2 ? 'Save' : 'Next';
+      if (w.step === 1) drawCats();
+      if (w.step === 2) drawSum();
+    }
+    function drawCats() {
+      const f = (body.querySelector('input[name=pw-filter]:checked') || {}).value;
+      const cats = BLOCKED_CATS[f] || [];
+      body.querySelector('#pw-cats').innerHTML = cats.length ? `<div class="muted" style="margin-bottom:6px">Blocked categories</div><div class="chips">${cats.map((c) => `<span class="chip">${c}</span>`).join('')}</div>` : '<div class="muted">No categories are blocked.</div>';
+    }
+    function drawSum() {
+      const box = body.querySelector('#pw-sum'); if (!box) return;
+      const s = body.querySelector('#pw-start').value, d = +body.querySelector('#pw-dur').value;
+      const days = DAYS.filter((x) => body.querySelector('#pw-day-' + x).checked);
+      const end = toM(s) + d;
+      box.textContent = `Internet paused from ${s} to ${hm(end)}${end >= 1440 ? ' (next day)' : ''} · ${days.length === 7 ? 'every day' : days.length ? days.join(', ') : 'no days selected'}`;
+    }
+    body.addEventListener('change', (e) => {
+      if (e.target.name === 'pw-filter') drawCats();
+      if (e.target.id === 'pw-daily') body.querySelector('#pw-daily-box').hidden = !e.target.checked;
+      if (e.target.id === 'pw-bed') body.querySelector('#pw-bed-box').hidden = !e.target.checked;
+      if (w.step === 2) drawSum();
+    });
+    body.addEventListener('click', (e) => {
+      if (e.target.closest('#pw-adddev')) { const b = body.querySelector('#pw-devs'); b.hidden = !b.hidden; return; }
+      if (e.target.closest('#pw-devok')) {
+        w.name = norm(body.querySelector('#pw-name').value);
+        w.devices = [...body.querySelectorAll('#pw-devs input:checked')].map((i) => i.value);
+        draw();
+      }
+    });
+    m.querySelector('#pw-back').addEventListener('click', () => { collect(); if (w.step > 0) { w.step--; draw(); } });
+    m.querySelector('#pw-next').addEventListener('click', async () => {
+      collect();
+      const err = (s) => { const el = body.querySelector('#pw-err'); el.textContent = s; el.hidden = false; };
+      if (w.step === 0) {
+        if (!w.name) return err('Enter a profile name.');
+        if (st.profiles.some((p) => p.name.toLowerCase() === w.name.toLowerCase())) return err('A profile with this name already exists.');
+        if (!w.devices.length) return err('Add at least one device to this profile.');
+      }
+      if (w.step < 2) { w.step++; draw(); return; }
+      if (w.bedtime && !w.days.length) return err('Select at least one day for bedtime.');
+      const b = m.querySelector('#pw-next'); b.disabled = true; b.innerHTML = '<span class="busy"></span>Saving';
+      await sleep(900);
+      const devices = DEVICES.map((d) => d.name).filter((n) => w.devices.includes(n));
+      await post({
+        event: 'parental_profile_create', name: w.name, devices: devices.join(','), filter_level: w.filter,
+        daily_limit: w.daily ? 'on' : 'off', weekday_limit: w.daily ? w.wd : '', weekend_limit: w.daily ? w.we : '',
+        bedtime: w.bedtime ? 'on' : 'off', bedtime_start: w.bedtime ? w.start : '', bedtime_end: w.bedtime ? hm(toM(w.start) + w.mins) : '',
+        bedtime_days: w.bedtime ? DAYS.filter((d) => w.days.includes(d)).join(',') : '',
+      });
+      st.profiles.push({ id: Date.now(), name: w.name, devices, filter: w.filter, daily: w.daily, bedtime: w.bedtime, start: w.start, mins: w.mins, days: w.days });
+      closeModal(); render(); toast(`Profile “${w.name}” created.`);
+    });
+    draw();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

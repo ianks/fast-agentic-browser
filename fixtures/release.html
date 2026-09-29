@@ -1,0 +1,73 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Releases · ledger-api · Shipyard</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+main{max-width:980px}
+.envs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.env{border:1px solid #e5e7eb;border-radius:8px;padding:10px}.env b{display:block}
+.tag{font-size:11px;padding:1px 6px;border-radius:8px;background:#e5e7eb;margin-left:6px}
+.tag.latest{background:#dcfce7;color:#166534}.tag.pre{background:#fef3c7;color:#92400e}
+#panel{position:fixed;top:0;right:0;bottom:0;width:360px;background:#fff;border-left:1px solid #ddd;box-shadow:-6px 0 18px rgba(0,0,0,.08);padding:20px;display:none}
+#panel.open{display:block}
+.toast.bad{background:#991b1b}
+#history li{margin:4px 0}
+</style></head>
+<body><header><strong>Shipyard</strong><a href="#">Projects</a><span style="color:#94a3b8">/</span><a href="#">ledger-api</a><a href="#" style="margin-left:auto">Docs</a></header>
+<main><h1>ledger-api</h1>
+<h2>Environments</h2>
+<div class="envs" id="envs"></div>
+<h2>Releases</h2>
+<table><thead><tr><th>Version</th><th>Created</th><th>Commit</th><th>Notes</th><th></th></tr></thead><tbody id="rel"></tbody></table>
+<h2>Deploy history</h2><ul id="history" class="muted"></ul>
+</main>
+<aside id="panel" role="dialog" aria-labelledby="ph"><h2 id="ph">Deploy</h2>
+  <label for="env">Target environment</label><select id="env"><option value="">Choose environment…</option><option>development</option><option>staging</option><option>staging-eu</option><option>production</option></select>
+  <div class="row" style="margin-top:10px"><input type="checkbox" id="mig" checked><label for="mig" style="display:inline;font-weight:400;margin:0">Run database migrations</label></div>
+  <div class="row" style="margin-top:10px"><input type="checkbox" id="notify"><label for="notify" style="display:inline;font-weight:400;margin:0">Notify #releases in chat</label></div>
+  <p id="perr" role="alert" style="color:#b91c1c"></p>
+  <p id="pstat" role="status"></p>
+  <div class="row"><button id="pclose">Close</button><button class="primary" id="pgo">Deploy</button></div>
+</aside>
+<div id="toasts"></div>
+<script>
+const RELEASES = [
+  ['v2.15.0-beta.1', 'Sep 22', '9f3c2e1', 'Ledger sharding preview', 'pre'],
+  ['v2.14.0', 'Sep 18', 'a41d7b0', 'Multi-currency settlements', 'latest'],
+  ['v2.14.0-rc.3', 'Sep 15', 'c07e9a4', 'Release candidate 3', 'pre'],
+  ['v2.13.2', 'Sep 02', '5be1f88', 'Fix rounding in FX reports', ''],
+  ['v2.13.1', 'Aug 27', '1d9a6c3', 'Hotfix: webhook retries', ''],
+  ['v2.13.0', 'Aug 20', '7e2b4d9', 'Ledger export API', ''],
+];
+const ENVS = { development: 'v2.15.0-beta.1', staging: 'v2.13.2', 'staging-eu': 'v2.13.2', production: 'v2.13.1' };
+let current = null, attempts = 0;
+const renderEnvs = () => q('#envs').innerHTML = Object.entries(ENVS).map(([e, v]) => `<div class="env"><span class="muted">${e}</span><b>${v}</b><button data-rb="${e}" style="margin-top:6px;font-size:12px;padding:3px 8px">Roll back</button></div>`).join('');
+q('#rel').innerHTML = RELEASES.map(([v, d, c, n, t]) => `<tr><td><strong>${v}</strong>${t ? `<span class="tag ${t}">${t === 'latest' ? 'Latest' : 'Pre-release'}</span>` : ''}</td><td>${d}</td><td><code>${c}</code></td><td>${n}</td><td><button data-v="${v}">Deploy…</button></td></tr>`).join('');
+renderEnvs();
+function toast(msg, bad) {
+  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.setAttribute('role', bad ? 'alert' : 'status'); t.textContent = msg;
+  q('#toasts').replaceChildren(t); setTimeout(() => t.remove(), 4000);
+}
+q('#rel').onclick = (e) => { const b = e.target.closest('button[data-v]'); if (!b) return; current = b.dataset.v; q('#ph').textContent = `Deploy ${current}`; q('#env').value = ''; q('#perr').textContent = ''; q('#pstat').textContent = ''; q('#panel').classList.add('open'); };
+q('#envs').onclick = (e) => { const b = e.target.closest('button[data-rb]'); if (b) { rec({ event: 'rollback', env: b.dataset.rb }); toast(`Rollback of ${b.dataset.rb} requires approval from an owner.`, true); } };
+q('#pclose').onclick = () => q('#panel').classList.remove('open');
+q('#pgo').onclick = async () => {
+  const env = q('#env').value, migrations = q('#mig').checked, notify = q('#notify').checked;
+  if (!env) { q('#perr').textContent = 'Choose a target environment.'; return; }
+  q('#perr').textContent = ''; q('#pgo').disabled = true; q('#pgo').textContent = 'Deploying…'; q('#pstat').textContent = `Pushing image ${current} to ${env}…`;
+  attempts++;
+  await later(attempts === 1 ? 900 : 1100);
+  const ok = attempts > 1;
+  await rec({ event: 'deploy', version: current, env, ok, migrations, notify });
+  if (notify) await rec({ event: 'chat_notify', channel: '#releases', version: current, env, ok });
+  q('#pgo').disabled = false; q('#pgo').textContent = 'Deploy';
+  const when = new Date().toISOString().slice(11, 16);
+  if (!ok) {
+    q('#pstat').textContent = '';
+    toast('Deploy failed: registry timeout (retry)', true);
+    q('#history').insertAdjacentHTML('afterbegin', `<li>${when} — ${current} → ${env}: <strong style="color:#b91c1c">Failed</strong> (registry timeout)</li>`);
+    return;
+  }
+  ENVS[env] = current; renderEnvs();
+  q('#pstat').textContent = `${current} is live on ${env}.`;
+  toast(`${current} deployed to ${env}`);
+  q('#history').insertAdjacentHTML('afterbegin', `<li>${when} — ${current} → ${env}: <strong style="color:#166534">Succeeded</strong></li>`);
+};
+</script></body></html>

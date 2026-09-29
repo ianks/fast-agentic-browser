@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Waypost · Podcast hosting</title>
+<script src="../common.js"></script>
+<style>
+  :root { --orange: #e8672b; --orange-d: #c9521b; --char: #23201e; --char-2: #34302d; --sand: #f6f2ed; --line: #e6ded5; --ink: #211d1a; --muted: #7d746c; --green: #2f855a; --blue: #2b6cb0; --red: #c53030; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.5 "Söhne", "Helvetica Neue", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--sand); }
+  a { color: var(--orange-d); text-decoration: none; }
+  button { font: inherit; }
+  .shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+  aside.side { background: var(--char); color: #e9e2da; display: flex; flex-direction: column; padding: 16px 12px; position: sticky; top: 0; height: 100vh; }
+  .brand { font-weight: 800; font-size: 21px; letter-spacing: -.5px; padding: 2px 8px 14px; color: #fff; }
+  .brand span { color: var(--orange); }
+  .lb { position: relative; }
+  #show-btn { width: 100%; display: flex; align-items: center; gap: 10px; background: var(--char-2); border: 1px solid #4a4541; color: #fff; border-radius: 10px; padding: 8px 10px; cursor: pointer; text-align: left; }
+  #show-btn .caret { margin-left: auto; opacity: .7; }
+  .sq { width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex: none; letter-spacing: .3px; }
+  .lb [role=listbox] { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; color: var(--ink); border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,.35); list-style: none; margin: 0; padding: 6px; z-index: 30; }
+  .lb [role=option] { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; }
+  .lb [role=option]:hover { background: var(--sand); }
+  .lb [role=option][aria-selected=true] { background: #fdeee6; }
+  .lb [role=option] small { display: block; color: var(--muted); font-size: 11.5px; }
+  .lb .addshow { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 6px; }
+  .lb .addshow button { width: 100%; text-align: left; background: none; border: 0; padding: 8px; border-radius: 8px; cursor: pointer; color: var(--orange-d); }
+  nav.snav { margin-top: 16px; display: flex; flex-direction: column; gap: 2px; }
+  nav.snav a { color: #d8d0c8; padding: 8px 10px; border-radius: 8px; display: flex; gap: 10px; align-items: center; }
+  nav.snav a:hover { background: var(--char-2); color: #fff; }
+  nav.snav a.on { background: var(--orange); color: #fff; font-weight: 600; }
+  nav.snav .ic { width: 18px; text-align: center; }
+  .side .foot { margin-top: auto; font-size: 12px; color: #9d948b; padding: 8px; }
+  .side .foot a { color: #c9c0b7; display: block; margin: 3px 0; }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 14px 28px; border-bottom: 1px solid var(--line); background: #fff; position: sticky; top: 0; z-index: 10; }
+  .crumbs { color: var(--muted); }
+  .crumbs b { color: var(--ink); }
+  .topbar .sp { flex: 1; }
+  .btn { border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 8px 14px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+  .btn:hover { border-color: #cfc4b8; }
+  .btn.pri { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 600; }
+  .btn.pri:hover { background: var(--orange-d); }
+  .btn.ghost { background: none; border-color: transparent; color: var(--orange-d); }
+  .btn.danger { color: var(--red); border-color: #f1c4c4; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .me { width: 34px; height: 34px; border-radius: 50%; background: var(--char); color: #fff; border: 0; cursor: pointer; font-size: 11.5px; font-weight: 700; }
+  main { padding: 22px 28px 50px; max-width: 1120px; }
+  h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -.3px; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 16px 0; }
+  .kpi { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .kpi .v { font-size: 24px; font-weight: 700; }
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+  table.t { width: 100%; border-collapse: collapse; }
+  table.t th, table.t td { padding: 10px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  table.t th { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .pill { display: inline-block; font-size: 12px; border-radius: 10px; padding: 1px 9px; font-weight: 600; }
+  .pill.published { background: #e6f4ea; color: var(--green); }
+  .pill.scheduled { background: #e8f0fb; color: var(--blue); }
+  .pill.draft { background: #f3eee8; color: #7a6f65; }
+  .ftabs { display: flex; gap: 6px; margin: 12px 0; }
+  .ftabs [role=tab] { border: 1px solid var(--line); background: #fff; border-radius: 16px; padding: 4px 13px; cursor: pointer; }
+  .ftabs [role=tab][aria-selected=true] { background: var(--char); border-color: var(--char); color: #fff; }
+  .stabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 14px 0 18px; }
+  .stabs [role=tab] { padding: 9px 15px; color: var(--muted); border-bottom: 2px solid transparent; }
+  .stabs [role=tab][aria-selected=true] { color: var(--ink); border-bottom-color: var(--orange); font-weight: 600; }
+  .subtabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .subtabs [role=tab] { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 5px 12px; color: var(--muted); }
+  .subtabs [role=tab][aria-selected=true] { border-color: var(--orange); color: var(--orange-d); background: #fdeee6; font-weight: 600; }
+  .fld { margin-bottom: 14px; }
+  .fld > label, .lbl { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+  .fld .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  input[type=text], input[type=email], input[type=date], select, textarea { font: inherit; padding: 8px 11px; border: 1px solid #d6ccc1; border-radius: 9px; width: 100%; max-width: 520px; background: #fff; }
+  input.short { width: 120px; }
+  textarea { min-height: 110px; resize: vertical; border-radius: 0 0 9px 9px; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #f6c3a8; border-color: var(--orange); }
+  .toolbar { display: flex; gap: 2px; max-width: 520px; border: 1px solid #d6ccc1; border-bottom: 0; border-radius: 9px 9px 0 0; background: #faf7f3; padding: 4px; }
+  .toolbar button { border: 0; background: none; width: 30px; height: 26px; border-radius: 5px; cursor: pointer; }
+  .toolbar button:hover { background: #efe7de; }
+  .rcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 620px; }
+  .rc { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: block; background: #fff; }
+  .rc:has(input:checked) { border-color: var(--orange); background: #fff7f2; }
+  .rc input { accent-color: var(--orange); margin-right: 6px; }
+  .rc small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .row2 { display: flex; gap: 16px; }
+  .swrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 620px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .swrow b { display: block; }
+  .switch { width: 42px; height: 24px; border-radius: 12px; background: #cfc6bb; border: 0; position: relative; cursor: pointer; flex: none; transition: background .15s; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .switch[aria-checked=true] { background: var(--orange); }
+  .switch[aria-checked=true]::after { left: 21px; }
+  .switch:disabled { opacity: .5; cursor: default; }
+  .wizsteps { display: flex; gap: 8px; margin: 14px 0 18px; }
+  .wizsteps li { list-style: none; flex: 1; padding: 8px 12px; border-radius: 9px; background: #efe8e0; color: var(--muted); font-size: 13px; }
+  .wizsteps li.on { background: var(--char); color: #fff; font-weight: 600; }
+  .wizsteps li.done { background: #fdeee6; color: var(--orange-d); }
+  .wizsteps { padding: 0; }
+  .media label { display: grid; grid-template-columns: 24px 1fr 80px 150px 80px; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; cursor: pointer; background: #fff; }
+  .media label:has(input:checked) { border-color: var(--orange); background: #fff7f2; }
+  .media .fn { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; }
+  .drop { border: 2px dashed #d6ccc1; border-radius: 12px; padding: 18px; text-align: center; color: var(--muted); margin: 12px 0; background: #faf7f3; }
+  .wizfoot { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 18px; }
+  .wizfoot .sp { flex: 1; }
+  .err { color: var(--red); font-size: 13px; margin: 8px 0; }
+  .saved { color: var(--green); font-size: 12.5px; }
+  .summary div { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #f1ebe4; }
+  .summary div span:first-child { width: 150px; color: var(--muted); }
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 140px; border-bottom: 1px solid var(--line); }
+  .bars i { flex: 1; background: linear-gradient(var(--orange), #f39b6d); border-radius: 3px 3px 0 0; }
+  .hbar { display: grid; grid-template-columns: 120px 1fr 60px; gap: 10px; align-items: center; margin: 6px 0; font-size: 13px; }
+  .hbar .tr { height: 9px; background: #f3ece5; border-radius: 5px; overflow: hidden; }
+  .hbar .tr i { display: block; height: 100%; background: var(--orange); }
+  .overlay { position: fixed; inset: 0; background: rgba(35,32,30,.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .dialog { background: #fff; border-radius: 14px; width: 460px; padding: 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .dialog h3 { margin: 0 0 8px; }
+  .dialog .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--char); color: #fff; padding: 11px 16px; border-radius: 10px; z-index: 60; }
+  .pop { position: absolute; right: 24px; top: 58px; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.15); width: 240px; padding: 8px; z-index: 40; }
+  .pop a, .pop button { display: block; width: 100%; text-align: left; padding: 7px 8px; border-radius: 6px; background: none; border: 0; cursor: pointer; color: var(--ink); }
+  .pop a:hover, .pop button:hover { background: var(--sand); }
+  .preview { background: #faf7f3; border: 1px dashed #d6ccc1; border-radius: 10px; padding: 10px 12px; font-size: 13px; max-width: 520px; }
+  .danger-zone { border-color: #f1c4c4; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">way<span>post</span></div>
+    <div class="lb" id="show-lb">
+      <button type="button" id="show-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Switch show"></button>
+      <ul role="listbox" aria-label="Your shows" hidden></ul>
+    </div>
+    <nav class="snav" id="snav" aria-label="Show"></nav>
+    <div class="foot"><a href="#/account/billing">Plan: Waypost Pro · 3 of 3 shows</a><a href="#/account/team">Team</a><a href="#/account/help">Help centre</a><span>© 2026 Waypost Ltd</span></div>
+  </aside>
+  <div>
+    <div class="topbar"><div class="crumbs" id="crumbs"></div><div class="sp"></div><button type="button" class="btn" id="help-btn">Help</button><button type="button" class="btn pri" id="new-ep-top">＋ New episode</button><button type="button" class="me" id="me-btn" aria-label="Your account">ITL</button></div>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="pop-root"></div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3200); };
+
+  const CATEGORIES = [
+    ['Arts', [['arts-books', 'Books'], ['arts-design', 'Design'], ['arts-food', 'Food'], ['arts-performing-arts', 'Performing Arts'], ['arts-visual-arts', 'Visual Arts']]],
+    ['Education', [['education-courses', 'Courses'], ['education-how-to', 'How To'], ['education-language-learning', 'Language Learning'], ['education-self-improvement', 'Self-Improvement']]],
+    ['History', [['history', 'History']]],
+    ['Science', [['science-astronomy', 'Astronomy'], ['science-nature', 'Nature'], ['science-physics', 'Physics']]],
+    ['Society & Culture', [['society-culture-documentary', 'Documentary'], ['society-culture-personal-journals', 'Personal Journals'], ['society-culture-philosophy', 'Philosophy'], ['society-culture-places-travel', 'Places & Travel']]],
+    ['Fiction', [['fiction-drama', 'Drama']]],
+    ['Kids & Family', [['kids-family-stories-for-kids', 'Stories for Kids']]],
+  ];
+  const catName = (v) => { for (const [g, opts] of CATEGORIES) for (const [k, l] of opts) if (k === v) return g === l ? l : `${g} › ${l}`; return 'None'; };
+  const SHOWS = [
+    { id: 'kitchen-table-physics', name: 'Kitchen Table Physics', initials: 'KTP', color: '#e8672b', author: 'Dr. Imogen Tarrant-Lowe', desc: 'Everyday physics, explained with whatever’s on the kitchen table.', type: 'episodic', season: 4, primary: 'science-physics', secondary: 'education-how-to', ownerName: 'Imogen Tarrant-Lowe', ownerEmail: 'imogen@kitchentablephysics.fm', copyright: '© 2026 Tarrant-Lowe Media', language: 'English (UK)', country: 'United Kingdom', followers: 18420 },
+    { id: 'low-tide-stories', name: 'Low Tide Stories', initials: 'LTS', color: '#2a7f8f', author: 'Cormac Ó Dálaigh', desc: 'Oral histories from the coastlines and islands of Britain and Ireland.', type: 'episodic', season: 3, primary: 'society-culture-documentary', secondary: 'history', ownerName: 'Cormac Ó Dálaigh', ownerEmail: 'cormac@lowtidestories.fm', copyright: '© 2026 Low Tide Audio', language: 'English (UK)', country: 'Ireland', followers: 9310 },
+    { id: 'the-margin-notes', name: 'The Margin Notes', initials: 'TMN', color: '#7a5c9e', author: 'Imogen Tarrant-Lowe & Aditya Raman', desc: 'Two friends read a novel a fortnight in its original language — and argue about the translation.', type: 'episodic', season: 2, primary: 'society-culture-philosophy', secondary: 'education-language-learning', ownerName: 'Aditya Raman', ownerEmail: 'hello@themarginnotes.fm', copyright: '© 2026 The Margin Notes', language: 'English (UK)', country: 'United Kingdom', followers: 6075 },
+  ];
+  const SH = Object.fromEntries(SHOWS.map((s) => [s.id, s]));
+  const EP = [
+    { id: 'ktp-120', show: 'kitchen-table-physics', title: 'Ep. 120: Why Toast Lands Butter-Side Down (Mostly)', status: 'draft', type: 'full', season: '4', episode: '120', explicit: false, audio: 'ktp_ep120_final.mp3', description: 'Rotational physics at breakfast, with a surprising amount of butter.', date: '2026-09-23', dur: '29:47', dl: 0, visibility: 'public' },
+    { id: 'ktp-119', show: 'kitchen-table-physics', title: 'Ep. 119: The Physics of a Perfect Pour-Over', status: 'published', type: 'full', season: '4', episode: '119', explicit: false, audio: 'ktp_ep119_final.mp3', description: 'Flow rates, bloom and why your kettle’s spout matters.', date: '2026-09-16', dur: '31:12', dl: 4812, visibility: 'public' },
+    { id: 'ktp-118', show: 'kitchen-table-physics', title: 'Ep. 118: Why Ice Cubes Crack in Your Drink', status: 'published', type: 'full', season: '4', episode: '118', explicit: false, audio: 'ktp_ep118_final.mp3', description: 'Thermal stress in a glass of lemonade.', date: '2026-09-09', dur: '28:40', dl: 5390, visibility: 'public' },
+    { id: 'ktp-117', show: 'kitchen-table-physics', title: 'Ep. 117: Magnets, Fridges and Fridge Magnets', status: 'published', type: 'full', season: '4', episode: '117', explicit: false, audio: 'ktp_ep117_final.mp3', description: 'Domains, Halbach arrays and the humble fridge magnet.', date: '2026-09-02', dur: '33:05', dl: 5902, visibility: 'public' },
+    { id: 'ktp-116', show: 'kitchen-table-physics', title: 'Ep. 116: The Kettle That Sings', status: 'published', type: 'full', season: '4', episode: '116', explicit: false, audio: 'ktp_ep116_final.mp3', description: 'Why kettles whistle, rumble and go quiet just before they boil.', date: '2026-08-26', dur: '29:58', dl: 6244, visibility: 'public' },
+    { id: 'ktp-s4t', show: 'kitchen-table-physics', title: 'Season 4 Trailer', status: 'published', type: 'trailer', season: '4', episode: '', explicit: false, audio: 'ktp_s4_trailer.mp3', description: 'What’s coming up this season.', date: '2026-08-05', dur: '1:58', dl: 2210, visibility: 'public' },
+    { id: 'lts-b3', show: 'low-tide-stories', title: 'Bonus: Listener Letters from Orkney', status: 'scheduled', type: 'bonus', season: '3', episode: '', explicit: false, audio: 'orkney_letters_bonus.mp3', description: 'We read your letters about the Orkney episode.', date: '2026-10-01', time: '07:00', dur: '18:22', dl: 0, visibility: 'public' },
+    { id: 'lts-41', show: 'low-tide-stories', title: 'Ep. 41: The Last Ferryman of Inishbofin', status: 'published', type: 'full', season: '3', episode: '41', explicit: false, audio: 'inishbofin_final.mp3', description: 'Seán Lavelle on forty years of crossings.', date: '2026-09-15', dur: '51:20', dl: 3104, visibility: 'public' },
+    { id: 'lts-40', show: 'low-tide-stories', title: 'Ep. 40: Salt Pans of the Solway', status: 'published', type: 'full', season: '3', episode: '40', explicit: false, audio: 'solway_final.mp3', description: 'The families who made salt on the Solway Firth.', date: '2026-09-01', dur: '46:02', dl: 3560, visibility: 'public' },
+    { id: 'lts-39', show: 'low-tide-stories', title: 'Ep. 39: The Herring Girls', status: 'published', type: 'full', season: '3', episode: '39', explicit: false, audio: 'herring_girls_final.mp3', description: 'Following the fleet from Shetland to Great Yarmouth.', date: '2026-08-18', dur: '49:47', dl: 3988, visibility: 'public' },
+    { id: 'lts-38', show: 'low-tide-stories', title: 'Ep. 38: Lifeboat Night', status: 'published', type: 'full', season: '3', episode: '38', explicit: false, audio: 'lifeboat_final.mp3', description: 'A Cornish lifeboat crew remembers the storm of 1981.', date: '2026-08-04', dur: '44:31', dl: 4411, visibility: 'public' },
+    { id: 'lts-37', show: 'low-tide-stories', title: 'Ep. 37: Seaweed Harvesters of Connemara', status: 'published', type: 'full', season: '3', episode: '37', explicit: false, audio: 'connemara_final.mp3', description: 'Cutting wrack at low water.', date: '2026-07-21', dur: '42:10', dl: 4020, visibility: 'public' },
+    { id: 'lts-36', show: 'low-tide-stories', title: 'Ep. 36: The Tide Mill at Woodbridge', status: 'published', type: 'full', season: '3', episode: '36', explicit: false, audio: 'woodbridge_final.mp3', description: 'The last working tide mill in England.', date: '2026-07-07', dur: '39:55', dl: 4380, visibility: 'public' },
+    { id: 'tmn-88', show: 'the-margin-notes', title: 'Ep. 88: Reading Lispector in Portuguese', status: 'draft', type: 'full', season: '2', episode: '88', explicit: false, audio: 'margin_notes_ep88_master.mp3', description: 'Clarice Lispector, in the original and in three translations.', date: '2026-09-21', dur: '36:02', dl: 0, visibility: 'public' },
+    { id: 'tmn-87', show: 'the-margin-notes', title: 'Ep. 87: Ferrante, Twice', status: 'published', type: 'full', season: '2', episode: '87', explicit: true, audio: 'tmn_ep87.mp3', description: 'My Brilliant Friend in Italian and English.', date: '2026-09-17', dur: '41:18', dl: 2380, visibility: 'public' },
+    { id: 'tmn-86', show: 'the-margin-notes', title: 'Ep. 86: Is Translation Betrayal?', status: 'published', type: 'full', season: '2', episode: '86', explicit: false, audio: 'tmn_ep86.mp3', description: 'Traduttore, traditore.', date: '2026-09-03', dur: '38:44', dl: 2512, visibility: 'public' },
+    { id: 'tmn-85', show: 'the-margin-notes', title: 'Ep. 85: Murakami’s Cats', status: 'published', type: 'full', season: '2', episode: '85', explicit: false, audio: 'tmn_ep85.mp3', description: 'Every cat in Murakami, ranked.', date: '2026-08-20', dur: '35:20', dl: 2740, visibility: 'public' },
+    { id: 'tmn-84', show: 'the-margin-notes', title: 'Ep. 84: The Long Ships, Out Loud', status: 'published', type: 'full', season: '2', episode: '84', explicit: false, audio: 'tmn_ep84.mp3', description: 'Frans G. Bengtsson in Swedish.', date: '2026-08-06', dur: '40:02', dl: 2655, visibility: 'public' },
+  ];
+  const MEDIA = [
+    ['rathlin_final_mix_v2.mp3', '48:12', '18 Sep 2026', '44.1 MB', ''],
+    ['rathlin_final_mix_v3.mp3', '47:55', '22 Sep 2026', '43.9 MB', ''],
+    ['rathlin_raw_interview_01.wav', '1:12:40', '10 Sep 2026', '768.4 MB', ''],
+    ['lighthouse_promo_30s.mp3', '0:30', '20 Sep 2026', '0.5 MB', ''],
+    ['orkney_letters_bonus.mp3', '18:22', '16 Sep 2026', '16.8 MB', 'Bonus: Listener Letters from Orkney'],
+    ['margin_notes_ep88_master.mp3', '36:02', '21 Sep 2026', '33.0 MB', 'Ep. 88 (draft)'],
+    ['ktp_ep120_final.mp3', '29:47', '23 Sep 2026', '27.3 MB', 'Ep. 120 (draft)'],
+  ];
+  const DIRS = ['Apple Podcasts', 'Spotify', 'YouTube Music', 'Amazon Music', 'Pocket Casts', 'Overcast', 'Podcast Index'];
+  const dirState = {}; SHOWS.forEach((s) => (dirState[s.id] = Object.fromEntries(DIRS.map((d, i) => [d, !(s.id === 'the-margin-notes' && i === 2)]))));
+  const mon = {}; SHOWS.forEach((s) => (mon[s.id] = { dai: s.id === 'kitchen-table-physics', tips: true }));
+  const site = {}; SHOWS.forEach((s) => (site[s.id] = { theme: 'Harbour', transcripts: true, domain: '' }));
+  let epSeq = 5001;
+  let wiz = null;
+  let epFilter = 'all';
+  const fmtDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`; };
+  const group = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  function route() { return location.hash.replace(/^#\/?/, '').split('/'); }
+  function curShow() { const s = route()[0]; return SH[s] ? s : 'kitchen-table-physics'; }
+
+  // ---------------------------------------------------------------- sidebar
+  const NAV = [['dashboard', '◉', 'Dashboard'], ['episodes', '≡', 'Episodes'], ['analytics', '▟', 'Analytics'], ['distribution', '⇶', 'Distribution'], ['monetization', '£', 'Monetization'], ['website', '◫', 'Website'], ['settings', '⚙', 'Settings']];
+  function renderSide() {
+    const s = SH[curShow()]; const sec = route()[1] || 'dashboard';
+    q('#show-btn').setAttribute('aria-label', `Switch show (current: ${s.name})`);
+    q('#show-btn').innerHTML = `<span class="sq" style="background:${s.color}">${s.initials}</span><span><b>${esc(s.name)}</b><br><span style="font-size:11.5px;opacity:.7">Season ${s.season}</span></span><span class="caret">▾</span>`;
+    q('#show-lb [role=listbox]').innerHTML = SHOWS.map((x) => `<li role="option" data-show="${x.id}" aria-selected="${x.id === s.id}"><span class="sq" style="background:${x.color}">${x.initials}</span><span>${esc(x.name)}<small>Season ${x.season} · ${EP.filter((e) => e.show === x.id).length} episodes</small></span></li>`).join('') + `<li class="addshow" role="presentation"><button type="button" id="add-show">＋ Create a new show</button></li>`;
+    q('#snav').innerHTML = NAV.map(([k, ic, l]) => `<a href="#/${s.id}/${k}" class="${sec === k ? 'on' : ''}"><span class="ic" aria-hidden="true">${ic}</span>${l}</a>`).join('');
+  }
+  function toggleShows(open) {
+    const lb = q('#show-lb [role=listbox]'); if (open === undefined) open = lb.hidden;
+    lb.hidden = !open; q('#show-btn').setAttribute('aria-expanded', String(open));
+  }
+  q('#show-btn').addEventListener('click', () => toggleShows());
+  q('#show-lb').addEventListener('click', (e) => {
+    if (e.target.closest('#add-show')) { toggleShows(false); toast('Your Waypost Pro plan includes 3 shows. Upgrade to Network to add more.'); return; }
+    const o = e.target.closest('[role=option]'); if (!o) return;
+    toggleShows(false);
+    const [, sec, a, b] = route();
+    let rest = sec || 'dashboard';
+    if (sec === 'settings') rest = ['settings', a, b].filter(Boolean).join('/');
+    else if (sec === 'episodes' && a) rest = 'episodes';
+    location.hash = `#/${o.dataset.show}/${rest}`;
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#show-lb')) toggleShows(false);
+    if (!e.target.closest('.pop') && !e.target.closest('#me-btn') && !e.target.closest('#help-btn')) q('#pop-root').innerHTML = '';
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { toggleShows(false); q('#pop-root').innerHTML = ''; } });
+  q('#new-ep-top').addEventListener('click', () => { location.hash = `#/${curShow()}/episodes/new`; });
+  q('#me-btn').addEventListener('click', () => { const r = q('#pop-root'); r.innerHTML = r.innerHTML ? '' : `<div class="pop" role="menu" aria-label="Account"><div style="padding:7px 8px"><b>Imogen Tarrant-Lowe</b><div class="muted">imogen@kitchentablephysics.fm</div></div><a role="menuitem" href="#/account/billing">Plan &amp; billing</a><a role="menuitem" href="#/account/team">Team</a><button type="button" role="menuitem" id="logout">Log out</button></div>`; });
+  q('#help-btn').addEventListener('click', () => { const r = q('#pop-root'); r.innerHTML = r.innerHTML ? '' : `<div class="pop" role="menu" aria-label="Help"><a role="menuitem" href="#/account/help">Help centre</a><a role="menuitem" href="#/account/help">Getting listed on Apple Podcasts</a><a role="menuitem" href="#/account/help">Contact support</a></div>`; });
+  q('#pop-root').addEventListener('click', (e) => { if (e.target.closest('#logout')) { q('#pop-root').innerHTML = ''; confirmBox('Log out of Waypost?', 'Log out', () => { q('#main').innerHTML = '<div class="card" style="max-width:420px"><h2>You’ve logged out</h2><p><a href="#/kitchen-table-physics/dashboard">Log in again</a></p></div>'; }); } });
+
+  // ---------------------------------------------------------------- pages
+  function crumbs(parts) { q('#crumbs').innerHTML = parts.map((p, i) => (i === parts.length - 1 ? `<b>${esc(p)}</b>` : esc(p))).join(' › '); }
+  function dashboard(s) {
+    crumbs([s.name, 'Dashboard']);
+    const eps = EP.filter((e) => e.show === s.id);
+    const pub = eps.filter((e) => e.status === 'published').sort((a, b) => (a.date < b.date ? 1 : -1));
+    const sched = eps.find((e) => e.status === 'scheduled');
+    const dl30 = pub.slice(0, 3).reduce((a, e) => a + e.dl, 0);
+    return `<h1>${esc(s.name)}</h1><div class="muted">${esc(s.desc)}</div>
+      <div class="kpis"><div class="kpi"><div class="muted">Downloads (last 30 days)</div><div class="v">${group(dl30)}</div></div><div class="kpi"><div class="muted">Followers</div><div class="v">${group(s.followers)}</div></div><div class="kpi"><div class="muted">Published episodes</div><div class="v">${pub.length}</div></div><div class="kpi"><div class="muted">Avg. listen-through</div><div class="v">${62 + s.season * 3}%</div></div></div>
+      <div class="grid2"><div class="card"><h2>Latest episode</h2>${pub[0] ? `<b>${esc(pub[0].title)}</b><div class="muted">Published ${fmtDate(pub[0].date)} · ${pub[0].dur} · ${group(pub[0].dl)} downloads</div><p>${esc(pub[0].description)}</p><a href="#/${s.id}/episodes/${pub[0].id}">View episode</a>` : '<p class="muted">Nothing published yet.</p>'}</div>
+        <div class="card"><h2>Coming up</h2>${sched ? `<b>${esc(sched.title)}</b><div class="muted">Scheduled for ${fmtDate(sched.date)} at ${sched.time}</div>` : '<p class="muted">No scheduled episodes.</p>'}<p><a href="#/${s.id}/episodes">Manage episodes</a></p></div></div>
+      <div class="grid2"><div class="card"><h2>Recent episodes</h2><table class="t"><thead><tr><th>Episode</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${eps.slice().sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 5).map((e) => `<tr><td><a href="#/${s.id}/episodes/${e.id}">${esc(e.title)}</a></td><td><span class="pill ${e.status}">${e.status[0].toUpperCase() + e.status.slice(1)}</span></td><td>${fmtDate(e.date)}</td><td><a href="#/${s.id}/episodes/${e.id}">Edit</a></td></tr>`).join('')}</tbody></table><p><a href="#/${s.id}/episodes">All episodes →</a></p></div>
+        <div class="card"><h2>Quick actions</h2><p><a class="btn" href="#/${s.id}/episodes/new">＋ Create episode</a></p><p><button type="button" class="btn" data-noop="Show link copied: https://${s.id}.waypost.fm">Copy show link</button> <button type="button" class="btn" data-noop="RSS feed URL copied.">Copy RSS URL</button></p><p><a href="#/${s.id}/analytics">Open analytics</a> · <a href="#/${s.id}/distribution">Check distribution</a> · <a href="#/${s.id}/website">Edit website</a> · <a href="#/${s.id}/settings/listing/categories">Categories</a></p></div></div>
+      <div class="card"><h2>From the Waypost team</h2><p class="muted"><b>Scheduled maintenance:</b> uploads are paused until Saturday 26 September, 06:00 BST. Existing audio in your media library isn’t affected.</p><p class="muted"><b>Tip:</b> add chapters to longer episodes — listeners skip less. Turn on auto-transcripts to appear in more search results. <a href="#/account/help">Read the guide</a></p></div>`;
+  }
+  function episodes(s) {
+    crumbs([s.name, 'Episodes']);
+    const eps = EP.filter((e) => e.show === s.id && (epFilter === 'all' || e.status === epFilter)).sort((a, b) => (a.date < b.date ? 1 : -1));
+    const cnt = (k) => EP.filter((e) => e.show === s.id && (k === 'all' || e.status === k)).length;
+    return `<div style="display:flex;align-items:flex-end;gap:12px"><div><h1>Episodes</h1><div class="muted">${esc(s.name)} · Season ${s.season}</div></div><div style="flex:1"></div><a class="btn pri" href="#/${s.id}/episodes/new">＋ Create episode</a></div>
+      <div class="ftabs" role="tablist">${[['all', 'All'], ['published', 'Published'], ['scheduled', 'Scheduled'], ['draft', 'Drafts']].map(([k, l]) => `<button type="button" role="tab" aria-selected="${epFilter === k}" data-epf="${k}">${l} (${cnt(k)})</button>`).join('')}</div>
+      <div class="card" style="padding:4px 14px"><table class="t"><thead><tr><th>Episode</th><th>Status</th><th>Season / No.</th><th>Date</th><th>Length</th><th>Downloads</th><th></th></tr></thead><tbody>
+      ${eps.length ? eps.map((e) => `<tr><td><a href="#/${s.id}/episodes/${e.id}"><b>${esc(e.title)}</b></a>${e.type !== 'full' ? ` <span class="muted">(${e.type})</span>` : ''}</td><td><span class="pill ${e.status}">${e.status[0].toUpperCase() + e.status.slice(1)}</span></td><td>${e.season ? 'S' + e.season : '—'}${e.episode ? ' · E' + e.episode : ''}</td><td>${e.status === 'draft' ? 'Edited ' : ''}${fmtDate(e.date)}${e.time ? ' ' + e.time : ''}</td><td>${e.dur}</td><td>${e.status === 'published' ? group(e.dl) : '—'}</td><td><a href="#/${s.id}/episodes/${e.id}">Edit</a>${e.status === 'draft' ? ` · <button type="button" class="btn ghost" style="padding:0" data-del-ep="${e.id}">Delete</button>` : ''}</td></tr>`).join('') : `<tr><td colspan="7" class="muted">No episodes here yet.</td></tr>`}
+      </tbody></table></div>`;
+  }
+
+  // ---------------------------------------------------------------- episode wizard
+  function newWiz(show, ep) {
+    return ep ? { id: ep.id, show, status: ep.status, step: 0, title: ep.title, type: ep.type, season: ep.season, episode: ep.episode, description: ep.description, explicit: ep.explicit, audio: ep.audio, chapters: false, transcript: true, mode: ep.status === 'scheduled' ? 'schedule' : 'now', date: ep.status === 'scheduled' ? ep.date : '', time: ep.time || '07:00', visibility: ep.visibility, savedAt: '', err: '' }
+      : { id: null, show, status: 'new', step: 0, title: '', type: 'full', season: '', episode: '', description: '', explicit: false, audio: '', chapters: false, transcript: true, mode: 'now', date: '', time: '07:00', visibility: 'public', savedAt: '', err: '' };
+  }
+  function wizardPage(s, key) {
+    if (key === 'new') { if (!wiz || wiz.show !== s.id || wiz.key !== 'new') { wiz = newWiz(s.id); wiz.key = 'new'; } }
+    else {
+      const ep = EP.find((e) => e.id === key && e.show === s.id);
+      if (!ep) return `<h1>Episode not found</h1><p><a href="#/${s.id}/episodes">Back to episodes</a></p>`;
+      if (!wiz || wiz.id !== key || wiz.key !== key) { wiz = newWiz(s.id, ep); wiz.key = key; }
+    }
+    const w = wiz;
+    crumbs([s.name, 'Episodes', w.status === 'new' ? 'New episode' : 'Edit episode']);
+    const steps = ['Details', 'Audio', 'Publishing'];
+    let body = '';
+    if (w.step === 0) {
+      body = `<div class="fld"><label for="ep-title">Episode title</label><input type="text" id="ep-title" maxlength="150" value="${esc(w.title)}"><div class="hint" id="title-count">${w.title.length}/150</div></div>
+        <div class="fld"><span class="lbl" id="type-lbl">Episode type</span><div class="rcards" role="radiogroup" aria-labelledby="type-lbl">${[['full', 'Full episode', 'A regular episode of your show'], ['trailer', 'Trailer', 'A short preview of the show or season'], ['bonus', 'Bonus', 'Extra content outside the main run']].map(([k, l, d]) => `<label class="rc"><input type="radio" name="ep-type" value="${k}" ${w.type === k ? 'checked' : ''}><b>${l}</b><small>${d}</small></label>`).join('')}</div></div>
+        <div class="row2"><div class="fld"><label for="ep-season">Season number</label><input type="text" class="short" id="ep-season" inputmode="numeric" value="${esc(w.season)}"></div>
+          <div class="fld" id="epnum-wrap" ${w.type === 'trailer' ? 'hidden' : ''}><label for="ep-number">Episode number</label><input type="text" class="short" id="ep-number" inputmode="numeric" value="${esc(w.episode)}"></div></div>
+        <div class="fld"><label for="ep-desc">Description</label><div class="toolbar" role="toolbar" aria-label="Formatting"><button type="button" data-fmt="b" aria-label="Bold"><b>B</b></button><button type="button" data-fmt="i" aria-label="Italic"><i>I</i></button><button type="button" data-fmt="a" aria-label="Insert link">🔗</button></div><textarea id="ep-desc">${esc(w.description)}</textarea><div class="hint">Shown in podcast apps under the episode title.</div></div>
+        <div class="swrow"><div><b>Explicit content</b><span class="muted">Mark episodes with strong language or adult themes</span></div><button type="button" class="switch" role="switch" id="ep-explicit" aria-label="Explicit content" aria-checked="${w.explicit}"></button></div>`;
+    } else if (w.step === 1) {
+      body = `<div class="lbl">Choose audio from your media library</div><div class="media" role="radiogroup" aria-label="Media library">${MEDIA.map(([fn, dur, up, size, used]) => `<label><input type="radio" name="ep-audio" value="${fn}" ${w.audio === fn ? 'checked' : ''}><span class="fn">${fn}</span><span>${dur}</span><span class="muted">Uploaded ${up}</span><span class="muted">${size}</span>${used ? `<span class="muted" style="grid-column:2 / -1">Used in ${esc(used)}</span>` : ''}</label>`).join('')}</div>
+        <div class="drop" aria-disabled="true">⤒ Drop an audio file here to upload<br><span class="muted">Uploads are paused for scheduled maintenance until Saturday 26 September, 06:00 BST.</span></div>
+        <div class="swrow"><div><b>Chapters</b><span class="muted">Add chapter markers after saving</span></div><button type="button" class="switch" role="switch" id="ep-chapters" aria-label="Chapters" aria-checked="${w.chapters}"></button></div>
+        <div class="swrow"><div><b>Auto-transcript</b><span class="muted">Generate a transcript when the episode goes live</span></div><button type="button" class="switch" role="switch" id="ep-transcript" aria-label="Auto-transcript" aria-checked="${w.transcript}"></button></div>`;
+    } else {
+      body = `<div class="fld"><span class="lbl" id="when-lbl">When should this episode go live?</span><div class="rcards" role="radiogroup" aria-labelledby="when-lbl" style="grid-template-columns:repeat(2,1fr)"><label class="rc"><input type="radio" name="ep-mode" value="now" ${w.mode === 'now' ? 'checked' : ''}><b>Publish immediately</b><small>Goes out to all apps within minutes</small></label><label class="rc"><input type="radio" name="ep-mode" value="schedule" ${w.mode === 'schedule' ? 'checked' : ''}><b>Schedule for later</b><small>Pick a date and time (Europe/London)</small></label></div></div>
+        <div class="row2" id="sched-wrap" ${w.mode === 'schedule' ? '' : 'hidden'}><div class="fld"><label for="ep-date">Publish date</label><input type="date" id="ep-date" min="2026-09-24" value="${esc(w.date)}"></div><div class="fld"><label for="ep-time">Publish time</label><select id="ep-time">${Array.from({ length: 48 }, (_, i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`).map((t) => `<option ${t === w.time ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+        <div class="fld"><span class="lbl" id="vis-lbl">Visibility</span><div class="rcards" role="radiogroup" aria-labelledby="vis-lbl" style="grid-template-columns:repeat(2,1fr)"><label class="rc"><input type="radio" name="ep-vis" value="public" ${w.visibility === 'public' ? 'checked' : ''}><b>Public</b><small>Everyone, in every app</small></label><label class="rc"><input type="radio" name="ep-vis" value="subscribers" ${w.visibility === 'subscribers' ? 'checked' : ''}><b>Subscribers only</b><small>Waypost Plus supporters</small></label></div></div>
+        <div class="card summary"><h2>Summary</h2><div><span>Show</span><span>${esc(s.name)}</span></div><div><span>Title</span><span>${esc(w.title) || '—'}</span></div><div><span>Type</span><span>${w.type}</span></div><div><span>Season / episode</span><span>${esc(w.season) || '—'} / ${w.type === 'trailer' ? '—' : esc(w.episode) || '—'}</span></div><div><span>Audio</span><span>${esc(w.audio) || 'None selected'}</span></div><div><span>Explicit</span><span>${w.explicit ? 'Yes' : 'No'}</span></div></div>`;
+    }
+    const primary = w.step < 2 ? 'Continue' : w.status === 'published' ? 'Update episode' : w.status === 'scheduled' ? 'Update schedule' : w.mode === 'schedule' ? 'Schedule episode' : 'Save and publish';
+    const canDraft = w.status === 'new' || w.status === 'draft';
+    return `<div style="display:flex;align-items:flex-end;gap:12px"><div><a href="#/${s.id}/episodes" class="muted">← Episodes</a><h1>${w.status === 'new' ? 'New episode' : 'Edit episode'}</h1><div class="muted">for <b>${esc(s.name)}</b>${w.status !== 'new' ? ` · currently <span class="pill ${w.status}">${w.status}</span>` : ''}</div></div><div style="flex:1"></div><span class="saved" id="saved-note">${w.savedAt ? 'Draft saved · ' + w.savedAt : ''}</span></div>
+      <ol class="wizsteps">${steps.map((l, i) => `<li class="${i === w.step ? 'on' : i < w.step ? 'done' : ''}">${i + 1}. ${l}</li>`).join('')}</ol>
+      <div class="card" id="wiz-body">${body}<div class="err" id="wiz-err" role="alert" ${w.err ? '' : 'hidden'}>${esc(w.err)}</div>
+      <div class="wizfoot"><button type="button" class="btn" id="wiz-back" ${w.step === 0 ? 'disabled' : ''}>Back</button><div class="sp"></div>${canDraft ? '<button type="button" class="btn" id="wiz-draft">Save draft</button>' : ''}<button type="button" class="btn pri" id="wiz-next">${primary}</button></div></div>`;
+  }
+  function collect() {
+    const w = wiz; if (!w || !q('#wiz-body')) return;
+    if (w.step === 0) {
+      w.title = q('#ep-title').value; w.type = (q('input[name=ep-type]:checked') || {}).value || 'full';
+      w.season = q('#ep-season').value.trim(); w.episode = q('#ep-number') ? q('#ep-number').value.trim() : w.episode;
+      w.description = q('#ep-desc').value; w.explicit = q('#ep-explicit').getAttribute('aria-checked') === 'true';
+    } else if (w.step === 1) {
+      w.audio = (q('input[name=ep-audio]:checked') || {}).value || ''; w.chapters = q('#ep-chapters').getAttribute('aria-checked') === 'true'; w.transcript = q('#ep-transcript').getAttribute('aria-checked') === 'true';
+    } else {
+      w.mode = (q('input[name=ep-mode]:checked') || {}).value || 'now'; w.visibility = (q('input[name=ep-vis]:checked') || {}).value || 'public';
+      if (q('#ep-date')) { w.date = q('#ep-date').value; w.time = q('#ep-time').value; }
+    }
+  }
+  function basicErrors(w) {
+    if (!norm(w.title)) return 'Add an episode title.';
+    if (w.season && !/^\d{1,3}$/.test(w.season)) return 'Season number must be a whole number.';
+    if (w.type !== 'trailer' && w.episode && !/^\d{1,4}$/.test(w.episode)) return 'Episode number must be a whole number.';
+    return '';
+  }
+  function wizErr(m) { wiz.err = m; const el = q('#wiz-err'); if (el) { el.textContent = m; el.hidden = !m; } }
+  const clock = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  async function saveEpisode(status) {
+    const w = wiz;
+    const rec0 = { event: 'episode_save', show: w.show, status, title: norm(w.title), type: w.type, season: w.season, episode: w.type === 'trailer' ? '' : w.episode, explicit: w.explicit ? 'yes' : 'no', audio: w.audio, description: norm(w.description), visibility: w.visibility, publish_at: status === 'scheduled' ? `${w.date} ${w.time}` : '' };
+    let id = w.id; const isNew = !id;
+    if (isNew) id = 'ep-' + epSeq++;
+    await post({ ...rec0, episode_id: id });
+    let ep = EP.find((e) => e.id === id);
+    const data = { show: w.show, title: rec0.title, status, type: w.type, season: w.season, episode: rec0.episode, explicit: w.explicit, audio: w.audio, description: rec0.description, visibility: w.visibility, date: status === 'scheduled' ? w.date : status === 'draft' ? '2026-09-24' : (ep && ep.status === 'published' ? ep.date : '2026-09-24'), time: status === 'scheduled' ? w.time : '', dur: (MEDIA.find((m) => m[0] === w.audio) || [0, '—'])[1] };
+    if (ep) Object.assign(ep, data); else { ep = { id, dl: 0, ...data }; EP.push(ep); }
+    w.id = id; w.key = id;
+    return ep;
+  }
+  async function onWizard(e) {
+    const t = e.target;
+    const fmt = t.closest('[data-fmt]');
+    if (fmt) {
+      const ta = q('#ep-desc'); const a = ta.selectionStart, b = ta.selectionEnd; const sel = ta.value.slice(a, b) || 'text';
+      const wrapd = fmt.dataset.fmt === 'b' ? `**${sel}**` : fmt.dataset.fmt === 'i' ? `_${sel}_` : `[${sel}](https://)`;
+      ta.value = ta.value.slice(0, a) + wrapd + ta.value.slice(b); ta.focus(); return true;
+    }
+    const sw = t.closest('.switch');
+    if (sw && sw.closest('#wiz-body')) { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); return true; }
+    if (t.closest('#wiz-back')) { collect(); wiz.err = ''; wiz.step--; render(); return true; }
+    if (t.closest('#wiz-draft')) {
+      collect(); const m = basicErrors(wiz); if (m) { wizErr(m); return true; }
+      wizErr('');
+      const b = t.closest('#wiz-draft'); b.disabled = true; b.textContent = 'Saving…';
+      await sleep(700);
+      const ep = await saveEpisode('draft');
+      wiz.status = 'draft'; wiz.savedAt = clock();
+      history.replaceState(null, '', `#/${wiz.show}/episodes/${ep.id}`);
+      render(); toast('Draft saved.');
+      return true;
+    }
+    if (t.closest('#wiz-next')) {
+      collect();
+      if (wiz.step === 0) { const m = basicErrors(wiz); if (m) { wizErr(m); return true; } }
+      if (wiz.step < 2) { wiz.err = ''; wiz.step++; render(); return true; }
+      const w = wiz; const m = basicErrors(w);
+      if (m) { wizErr(m); return true; }
+      if (!norm(w.description)) { wizErr('Add a description before publishing.'); return true; }
+      if (!w.audio) { wizErr('Choose an audio file before publishing.'); return true; }
+      let status = w.status === 'published' ? 'published' : w.mode === 'schedule' ? 'scheduled' : 'published';
+      if (status === 'scheduled' && (!w.date || w.date < '2026-09-24')) { wizErr('Choose a publish date from today onwards.'); return true; }
+      wizErr('');
+      const b = t.closest('#wiz-next'); b.disabled = true; b.textContent = status === 'scheduled' ? 'Scheduling…' : 'Publishing…';
+      await sleep(900);
+      await saveEpisode(status);
+      const show = w.show; wiz = null; epFilter = 'all';
+      location.hash = `#/${show}/episodes`;
+      toast(status === 'scheduled' ? 'Episode scheduled.' : w.status === 'published' ? 'Episode updated.' : 'Episode published.');
+      return true;
+    }
+    return false;
+  }
+
+  // ---------------------------------------------------------------- analytics / distribution / monetization / website
+  function analytics(s) {
+    crumbs([s.name, 'Analytics']);
+    const eps = EP.filter((e) => e.show === s.id && e.status === 'published').sort((a, b) => b.dl - a.dl);
+    const days = Array.from({ length: 30 }, (_, i) => 120 + 80 * Math.sin(i * 0.8 + s.season) + (i % 7 === 1 ? 160 : 0) + s.followers / 200);
+    const mx = Math.max(...days);
+    return `<h1>Analytics</h1><div class="muted">${esc(s.name)} · last 30 days</div>
+      <div class="card" style="margin-top:14px"><h2>Downloads per day</h2><div class="bars">${days.map((d) => `<i style="height:${((d / mx) * 100).toFixed(1)}%"></i>`).join('')}</div><div class="muted" style="display:flex;justify-content:space-between"><span>25 Aug</span><span>23 Sep</span></div></div>
+      <div class="grid2"><div class="card"><h2>Top episodes</h2><table class="t"><thead><tr><th>Episode</th><th>Downloads</th></tr></thead><tbody>${eps.slice(0, 5).map((e) => `<tr><td>${esc(e.title)}</td><td>${group(e.dl)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="card"><h2>Listening apps</h2>${[['Apple Podcasts', 41], ['Spotify', 33], ['Pocket Casts', 9], ['Overcast', 7], ['Other', 10]].map(([a, p]) => `<div class="hbar"><span>${a}</span><span class="tr"><i style="width:${p * 2}%"></i></span><span>${p}%</span></div>`).join('')}</div></div>`;
+  }
+  function distribution(s) {
+    crumbs([s.name, 'Distribution']);
+    return `<h1>Distribution</h1><div class="muted">Where ${esc(s.name)} is listed</div>
+      <div class="card" style="margin-top:14px"><div class="fld"><label for="rss">RSS feed</label><input type="text" id="rss" readonly value="https://feeds.waypost.fm/${s.id}.xml"></div><button type="button" class="btn" data-noop="RSS feed URL copied.">Copy RSS URL</button></div>
+      <div class="card"><h2>Directories</h2>${DIRS.map((d) => `<div class="swrow"><div><b>${d}</b><span class="muted">${dirState[s.id][d] ? 'Listed' : 'Not listed'}</span></div><button type="button" class="switch" role="switch" data-dir="${esc(d)}" aria-label="List on ${esc(d)}" aria-checked="${dirState[s.id][d]}"></button></div>`).join('')}</div>`;
+  }
+  function monetization(s) {
+    crumbs([s.name, 'Monetization']);
+    const m = mon[s.id];
+    return `<h1>Monetization</h1><div class="muted">${esc(s.name)}</div>
+      <div class="card" style="margin-top:14px"><div class="swrow"><div><b>Dynamic ad insertion</b><span class="muted">Waypost sells and inserts ads into your back catalogue (you keep 70%)</span></div><button type="button" class="switch" role="switch" id="mon-dai" aria-label="Dynamic ad insertion" aria-checked="${m.dai}"></button></div>
+      <div class="swrow"><div><b>Listener support</b><span class="muted">Show a “Support the show” button in Waypost-powered apps</span></div><button type="button" class="switch" role="switch" id="mon-tips" aria-label="Listener support" aria-checked="${m.tips}"></button></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="btn pri" id="mon-save">Save monetization settings</button></div></div>`;
+  }
+  function website(s) {
+    crumbs([s.name, 'Website']);
+    const w = site[s.id];
+    return `<h1>Website</h1><div class="muted">${esc(s.name)} · https://${s.id}.waypost.fm</div>
+      <div class="card" style="margin-top:14px"><div class="fld"><label for="web-theme">Theme</label><select id="web-theme">${['Harbour', 'Broadsheet', 'Minimal', 'Night shift'].map((x) => `<option ${x === w.theme ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+      <div class="fld"><label for="web-domain">Custom domain (optional)</label><input type="text" id="web-domain" placeholder="www.example.com" value="${esc(w.domain)}"></div>
+      <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="web-tr" ${w.transcripts ? 'checked' : ''}> Show episode transcripts on the website</label>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="btn pri" id="web-save">Publish website changes</button></div></div>`;
+  }
+
+  // ---------------------------------------------------------------- settings
+  const STABS = [['general', 'General'], ['listing', 'Listing'], ['artwork', 'Artwork'], ['website', 'Website'], ['advanced', 'Advanced']];
+  const LTABS = [['categories', 'Categories'], ['ownership', 'Ownership'], ['language', 'Language & region']];
+  function catSelect(id, val, withNone) {
+    return `<select id="${id}">${withNone ? `<option value="" ${val ? '' : 'selected'}>None</option>` : ''}${CATEGORIES.map(([g, opts]) => `<optgroup label="${esc(g)}">${opts.map(([k, l]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${esc(l)}</option>`).join('')}</optgroup>`).join('')}</select>`;
+  }
+  function settings(s, tab, sub) {
+    tab = STABS.some(([k]) => k === tab) ? tab : 'general';
+    let body = '';
+    if (tab === 'general') {
+      body = `<div class="card"><div class="fld"><label for="g-title">Show title</label><input type="text" id="g-title" value="${esc(s.name)}"></div><div class="fld"><label for="g-author">Author</label><input type="text" id="g-author" value="${esc(s.author)}"></div><div class="fld"><label for="g-desc">Show description</label><textarea id="g-desc" style="border-radius:9px">${esc(s.desc)}</textarea></div>
+        <div class="fld"><span class="lbl" id="stype-lbl">Show type</span><div class="rcards" role="radiogroup" aria-labelledby="stype-lbl" style="grid-template-columns:repeat(2,1fr)"><label class="rc"><input type="radio" name="g-type" value="episodic" ${s.type === 'episodic' ? 'checked' : ''}><b>Episodic</b><small>Newest first. Episodes can be heard in any order.</small></label><label class="rc"><input type="radio" name="g-type" value="serial" ${s.type === 'serial' ? 'checked' : ''}><b>Serial</b><small>Oldest first. Episodes are meant to be heard in order.</small></label></div></div>
+        <div style="display:flex;justify-content:flex-end"><button type="button" class="btn pri" id="save-general">Save changes</button></div></div>`;
+    } else if (tab === 'listing') {
+      sub = LTABS.some(([k]) => k === sub) ? sub : 'categories';
+      let inner = '';
+      if (sub === 'categories') inner = `<p class="muted">Categories help listeners find ${esc(s.name)} in Apple Podcasts and other apps. Apple uses the primary category for charts.</p>
+        <div class="fld"><label for="cat-primary">Primary category</label>${catSelect('cat-primary', s.primary, false)}</div>
+        <div class="fld"><label for="cat-secondary">Secondary category</label>${catSelect('cat-secondary', s.secondary, true)}</div>
+        <div class="preview" id="cat-preview">Apple Podcasts: <b>${esc(catName(s.primary))}</b>${s.secondary ? ` · also in <b>${esc(catName(s.secondary))}</b>` : ''}</div>`;
+      if (sub === 'ownership') inner = `<div class="fld"><label for="own-name">Owner name</label><input type="text" id="own-name" value="${esc(s.ownerName)}"></div><div class="fld"><label for="own-email">Owner email</label><input type="email" id="own-email" value="${esc(s.ownerEmail)}"><div class="hint">Apple and Spotify use this address to verify ownership. It appears in your public RSS feed.</div></div><div class="fld"><label for="own-copy">Copyright</label><input type="text" id="own-copy" value="${esc(s.copyright)}"></div>`;
+      if (sub === 'language') inner = `<div class="fld"><label for="lang">Language</label><select id="lang">${['English (UK)', 'English (US)', 'Irish', 'Welsh', 'Scottish Gaelic', 'Spanish', 'Portuguese'].map((x) => `<option ${x === s.language ? 'selected' : ''}>${x}</option>`).join('')}</select></div><div class="fld"><label for="country">Country</label><select id="country">${['United Kingdom', 'Ireland', 'United States', 'Canada', 'Australia'].map((x) => `<option ${x === s.country ? 'selected' : ''}>${x}</option>`).join('')}</select></div>`;
+      body = `<div class="subtabs" role="tablist" aria-label="Listing">${LTABS.map(([k, l]) => `<a role="tab" aria-selected="${k === sub}" href="#/${s.id}/settings/listing/${k}">${l}</a>`).join('')}</div><div class="card">${inner}<div style="display:flex;justify-content:flex-end;margin-top:6px"><button type="button" class="btn pri" id="save-listing" data-sub="${sub}">Save listing</button></div></div>`;
+    } else if (tab === 'artwork') {
+      body = `<div class="card"><div style="display:flex;gap:18px;align-items:center"><span class="sq" style="width:140px;height:140px;font-size:34px;background:${s.color}">${s.initials}</span><div><b>Show artwork</b><p class="muted">3000 × 3000 px JPEG or PNG. Replacing artwork is unavailable while uploads are paused for maintenance.</p><button type="button" class="btn" disabled>Replace artwork</button></div></div></div>`;
+    } else if (tab === 'website') {
+      body = `<div class="card"><p>Your show website is at <b>https://${s.id}.waypost.fm</b>.</p><a class="btn" href="#/${s.id}/website">Manage website</a></div>`;
+    } else {
+      body = `<div class="card"><div class="fld"><label for="adv-rss">RSS feed URL</label><input type="text" id="adv-rss" readonly value="https://feeds.waypost.fm/${s.id}.xml"></div><div class="swrow"><div><b>Hide from Waypost search</b><span class="muted">Your show won’t appear in Waypost’s own directory</span></div><button type="button" class="switch" role="switch" id="adv-hide" aria-label="Hide from Waypost search" aria-checked="false"></button></div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="btn pri" id="save-advanced">Save advanced settings</button></div></div>
+        <div class="card danger-zone"><h2 style="color:var(--red)">Danger zone</h2><div class="swrow"><div><b>Redirect this feed</b><span class="muted">Move the show to another host</span></div><button type="button" class="btn" disabled>Redirect…</button></div><div class="swrow" style="border:0"><div><b>Delete show</b><span class="muted">Removes the show, its episodes and its analytics</span></div><button type="button" class="btn danger" id="del-show">Delete show…</button></div></div>`;
+    }
+    crumbs([s.name, 'Settings', STABS.find(([k]) => k === tab)[1]].concat(tab === 'listing' ? [LTABS.find(([k]) => k === sub)[1]] : []));
+    return `<h1>Settings</h1><div class="muted">${esc(s.name)}</div><div class="stabs" role="tablist" aria-label="Settings">${STABS.map(([k, l]) => `<a role="tab" aria-selected="${k === tab}" href="#/${s.id}/settings/${k}${k === 'listing' ? '/categories' : ''}">${l}</a>`).join('')}</div>${body}`;
+  }
+  function account(tab) {
+    const pages = { billing: ['Plan & billing', '<div class="card"><b>Waypost Pro</b> · £19/month · renews 3 Oct 2026<p class="muted">Includes 3 shows, unlimited uploads, advanced analytics.</p><button type="button" class="btn" data-noop="Plan changes are handled by the account owner.">Change plan</button></div>'], team: ['Team', '<div class="card"><table class="t"><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody><tr><td>Imogen Tarrant-Lowe</td><td>Owner</td></tr><tr><td>Cormac Ó Dálaigh</td><td>Editor · Low Tide Stories</td></tr><tr><td>Aditya Raman</td><td>Editor · The Margin Notes</td></tr></tbody></table></div>'], help: ['Help centre', '<div class="card"><details open><summary><b>What’s the difference between Save draft and Save and publish?</b></summary><p>Drafts are private and can be edited any time. Publishing sends the episode to every directory.</p></details><details><summary><b>How do categories work?</b></summary><p>Choose a primary category (used for charts) and an optional secondary category.</p></details></div>'] };
+    const p = pages[tab] || pages.help;
+    crumbs(['Account', p[0]]);
+    return `<h1>${p[0]}</h1>${p[1]}`;
+  }
+
+  function render() {
+    const r = route();
+    if (r[0] === 'account') { q('#main').innerHTML = account(r[1]); renderSide(); return; }
+    const s = SH[curShow()];
+    if (!SH[r[0]] || !r[1]) { history.replaceState(null, '', `#/${s.id}/dashboard`); }
+    renderSide();
+    const [, sec, a, b] = route();
+    let h;
+    if (sec === 'dashboard') h = dashboard(s);
+    else if (sec === 'episodes' && a) h = wizardPage(s, a);
+    else if (sec === 'episodes') h = episodes(s);
+    else if (sec === 'analytics') h = analytics(s);
+    else if (sec === 'distribution') h = distribution(s);
+    else if (sec === 'monetization') h = monetization(s);
+    else if (sec === 'website') h = website(s);
+    else if (sec === 'settings') h = settings(s, a, b);
+    else h = `<h1>Page not found</h1><p><a href="#/${s.id}/dashboard">Go to the dashboard</a></p>`;
+    q('#main').innerHTML = h;
+  }
+  window.addEventListener('hashchange', () => { const [, sec, a] = route(); if (!(sec === 'episodes' && a)) wiz = null; render(); window.scrollTo(0, 0); });
+
+  q('#main').addEventListener('input', (e) => { if (e.target.id === 'ep-title') q('#title-count').textContent = `${e.target.value.length}/150`; });
+  q('#main').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'ep-type') { const w = q('#epnum-wrap'); if (w) w.hidden = t.value === 'trailer'; }
+    if (t.name === 'ep-mode') q('#sched-wrap').hidden = t.value !== 'schedule';
+    if (t.id === 'cat-primary' || t.id === 'cat-secondary') { const p = q('#cat-primary').value, s2 = q('#cat-secondary').value; q('#cat-preview').innerHTML = `Apple Podcasts: <b>${esc(catName(p))}</b>${s2 ? ` · also in <b>${esc(catName(s2))}</b>` : ''}`; }
+  });
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    if (q('#wiz-body') && t.closest('#wiz-body') && await onWizard(e)) return;
+    const s = SH[curShow()];
+    const ef = t.closest('[data-epf]'); if (ef) { epFilter = ef.dataset.epf; render(); return; }
+    const de = t.closest('[data-del-ep]');
+    if (de) { const ep = EP.find((x) => x.id === de.dataset.delEp); confirmBox(`Delete the draft “${ep.title}”? This can’t be undone.`, 'Delete draft', async () => { await post({ event: 'episode_delete', show: ep.show, episode_id: ep.id, title: ep.title }); EP.splice(EP.indexOf(ep), 1); render(); toast('Draft deleted.'); }); return; }
+    const noop = t.closest('[data-noop]'); if (noop) { toast(noop.dataset.noop); return; }
+    const dir = t.closest('[data-dir]');
+    if (dir) { const d = dir.dataset.dir, v = dir.getAttribute('aria-checked') !== 'true'; dir.disabled = true; await sleep(500); await post({ event: 'distribution_update', show: s.id, directory: d, listed: v ? 'yes' : 'no' }); dirState[s.id][d] = v; render(); toast(`${v ? 'Listed on' : 'Removed from'} ${d}.`); return; }
+    const sw = t.closest('.switch'); if (sw && !sw.dataset.dir) { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); return; }
+    if (t.closest('#mon-save')) { const v = { dai: q('#mon-dai').getAttribute('aria-checked') === 'true', tips: q('#mon-tips').getAttribute('aria-checked') === 'true' }; await sleep(500); await post({ event: 'monetization_update', show: s.id, ad_insertion: v.dai ? 'on' : 'off', listener_support: v.tips ? 'on' : 'off' }); mon[s.id] = v; toast('Monetization settings saved.'); return; }
+    if (t.closest('#web-save')) { const v = { theme: q('#web-theme').value, domain: norm(q('#web-domain').value), transcripts: q('#web-tr').checked }; await sleep(600); await post({ event: 'website_update', show: s.id, theme: v.theme, domain: v.domain, transcripts: v.transcripts ? 'on' : 'off' }); site[s.id] = v; toast('Website published.'); return; }
+    if (t.closest('#save-general')) {
+      const title = norm(q('#g-title').value), author = norm(q('#g-author').value), desc = norm(q('#g-desc').value), type = (q('input[name=g-type]:checked') || {}).value;
+      if (!title) { toast('Your show needs a title.'); return; }
+      await busy(t.closest('#save-general'), 600);
+      await post({ event: 'show_settings_save', show: s.id, section: 'general', title, author, description: desc, show_type: type });
+      Object.assign(s, { name: title, author, desc, type }); render(); toast('Settings saved.'); return;
+    }
+    const sl = t.closest('#save-listing');
+    if (sl) {
+      const sub = sl.dataset.sub;
+      if (sub === 'categories') {
+        const primary = q('#cat-primary').value, secondary = q('#cat-secondary').value;
+        if (primary === secondary) { toast('Choose a secondary category that’s different from the primary one.'); return; }
+        await busy(sl, 600);
+        await post({ event: 'show_settings_save', show: s.id, section: 'categories', primary, secondary });
+        Object.assign(s, { primary, secondary });
+      } else if (sub === 'ownership') {
+        const name = norm(q('#own-name').value), email = q('#own-email').value.trim().toLowerCase(), copyright = norm(q('#own-copy').value);
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('Enter a valid owner email.'); return; }
+        await busy(sl, 600);
+        await post({ event: 'show_settings_save', show: s.id, section: 'ownership', owner_name: name, owner_email: email, copyright });
+        Object.assign(s, { ownerName: name, ownerEmail: email, copyright });
+      } else {
+        const language = q('#lang').value, country = q('#country').value;
+        await busy(sl, 600);
+        await post({ event: 'show_settings_save', show: s.id, section: 'language', language, country });
+        Object.assign(s, { language, country });
+      }
+      render(); toast('Listing saved.'); return;
+    }
+    if (t.closest('#save-advanced')) { const v = q('#adv-hide').getAttribute('aria-checked') === 'true'; await busy(t.closest('#save-advanced'), 500); await post({ event: 'show_settings_save', show: s.id, section: 'advanced', hide_from_search: v ? 'yes' : 'no' }); toast('Advanced settings saved.'); return; }
+    if (t.closest('#del-show')) {
+      const d = modal(`<h3>Delete ${esc(s.name)}?</h3><p>This removes the show, all ${EP.filter((x) => x.show === s.id).length} episodes and their analytics. Type the show name to confirm.</p><div class="fld"><label for="del-confirm">Show name</label><input type="text" id="del-confirm"></div><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn danger" data-ok>Delete show</button></div>`);
+      d.querySelector('[data-c]').onclick = closeModal;
+      d.querySelector('[data-ok]').onclick = async () => { if (norm(d.querySelector('#del-confirm').value) !== s.name) { toast('The name doesn’t match.'); return; } await sleep(600); await post({ event: 'show_delete', show: s.id }); closeModal(); toast('Show scheduled for deletion.'); };
+      return;
+    }
+  });
+  async function busy(btn, ms) { btn.disabled = true; const l = btn.textContent; btn.textContent = 'Saving…'; await sleep(ms); btn.disabled = false; btn.textContent = l; }
+
+  function modal(html) { q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; return q('#modal-root .dialog'); }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmBox(msg, ok, fn) {
+    const d = modal(`<h3>Are you sure?</h3><p>${esc(msg)}</p><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>${esc(ok)}</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { d.querySelector('[data-ok]').disabled = true; await sleep(400); closeModal(); await fn(); };
+  }
+
+  if (!location.hash) history.replaceState(null, '', '#/kitchen-table-physics/dashboard');
+  render();
+})();
+</script>
+</body>
+</html>

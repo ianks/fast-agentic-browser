@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><title>The Daily Byte</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body>
+<header><strong>The Daily Byte</strong><a href="#">World</a><a href="#">Tech</a><a href="#">Science</a></header>
+<main>
+  <article><h1>Rust 2.0 ships with a faster borrow checker</h1><p>The compiler team says typical builds are 30% faster.</p><button>Share</button></article>
+  <section class="card" aria-label="Newsletter"><h2>Get the newsletter</h2>
+    <label for="em">Email</label><input id="em" type="email"><button class="primary" id="sub">Subscribe</button><p id="msg" role="status"></p></section>
+</main>
+<div class="overlay" id="cc"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cct">
+  <h2 id="cct">We value your privacy</h2><p>We use cookies to personalise content and analyse traffic.</p>
+  <div class="row"><button class="primary" id="acc">Accept all</button><button id="rej">Reject all</button><button id="cus">Customize</button></div>
+</div></div>
+<script>
+const close = (c) => { rec({ event: 'consent', choice: c }); q('#cc').remove(); };
+q('article button').onclick = () => rec({ event: 'share', article: q('article h1').textContent });
+q('#acc').onclick = () => close('accept'); q('#rej').onclick = () => close('reject'); q('#cus').onclick = () => close('customize');
+q('#sub').onclick = async () => {
+  if (q('#cc')) return; // blocked by the banner
+  const e = q('#em').value.trim(); if (!e) return;
+  await rec({ event: 'subscribe', email: e }); q('#msg').textContent = 'Thanks! Check your inbox.';
+};
+</script></body></html>

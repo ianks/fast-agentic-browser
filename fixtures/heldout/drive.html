@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Driftwood Drive</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f8fafc; }
+  .top { display: flex; align-items: center; gap: 12px; padding: 10px 18px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+  .top .logo { font-weight: 800; color: #0f766e; }
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 50px); }
+  .side { padding: 12px 8px; border-right: 1px solid #e2e8f0; background: #fff; }
+  [role=tree], [role=tree] ul { list-style: none; margin: 0; padding: 0; }
+  [role=tree] ul { padding-left: 14px; }
+  .node { display: flex; align-items: center; gap: 2px; }
+  .node .tw { width: 22px; padding: 0; border: 0; background: none; color: #64748b; }
+  .node .nm { border: 0; background: none; padding: 4px 6px; border-radius: 4px; text-align: left; flex: 1; }
+  [role=treeitem][aria-selected=true] > .node .nm { background: #ccfbf1; font-weight: 700; }
+  .main { padding: 14px 20px; }
+  .crumbs { color: #475569; margin-bottom: 10px; }
+  table { background: #fff; }
+  .shr { position: relative; }
+  .cb { position: relative; }
+  .cb [role=listbox] { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; list-style: none; margin: 2px 0 0; padding: 4px 0; z-index: 30; }
+  .cb [role=option] { padding: 6px 10px; cursor: pointer; }
+  .cb [role=option][aria-selected=true] { background: #ccfbf1; }
+  .person { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="top"><span class="logo">🪵 Driftwood Drive</span><input type="search" id="gsearch" aria-label="Search Drive" placeholder="Search in Drive" style="width:340px"><span style="margin-left:auto">Ezinne Okafor-Lang</span></div>
+<div class="layout">
+  <nav class="side" aria-label="Folders"><ul role="tree" id="tree" aria-label="Folders"></ul></nav>
+  <main class="main" id="main" style="max-width:none;margin:0"></main>
+</div>
+<div class="overlay" id="share" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sh-h" style="width:500px">
+    <h3 id="sh-h" style="margin-top:0"></h3>
+    <div class="row" style="align-items:flex-end">
+      <div class="cb" style="flex:1"><label for="sh-who">Add people</label><input id="sh-who" type="text" role="combobox" aria-expanded="false" aria-controls="sh-list" aria-autocomplete="list" autocomplete="off" placeholder="Name or email" style="width:260px"><ul role="listbox" id="sh-list" aria-label="Suggestions" hidden></ul></div>
+      <div><label for="sh-role">Permission</label><select id="sh-role" style="width:140px"><option value="viewer">Viewer</option><option value="commenter">Commenter</option><option value="editor" selected>Editor</option></select></div>
+    </div>
+    <label style="font-weight:400;display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="sh-notify" checked> Notify people</label>
+    <div class="err" id="sh-err" role="alert" hidden></div>
+    <h4 style="margin:14px 0 4px">People with access</h4><div id="sh-people"></div>
+    <h4 style="margin:14px 0 4px">General access</h4>
+    <select id="sh-link" aria-label="General access" style="width:300px"><option value="restricted">Restricted — only people with access</option><option value="org">Anyone at Driftwood Co-op with the link</option><option value="public">Anyone with the link</option></select>
+    <div class="row" style="justify-content:flex-end;margin-top:16px"><button type="button" id="sh-cancel">Cancel</button><button type="button" class="primary" id="sh-go">Share</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const PEOPLE = [
+    { name: 'Rosalind Achebe', email: 'rosalind.achebe@driftwood.coop' },
+    { name: 'Rosalind Achebe-Ward', email: 'r.achebe-ward@driftwood.coop' },
+    { name: 'Ros Achebe', email: 'ros.achebe@quillpost.net' },
+    { name: 'Rosalie Acheson', email: 'rosalie.acheson@driftwood.coop' },
+    { name: 'Obinna Lang', email: 'obinna.lang@driftwood.coop' },
+  ];
+  const TREE = { id: 'root', name: 'My Drive', kids: [
+    { id: 'fin', name: 'Finance', kids: [
+      { id: 'plan', name: 'Planning', kids: [{ id: 'p25', name: '2025', kids: [] }, { id: 'p26', name: '2026', kids: [] }] },
+      { id: 'arch', name: 'Archive', kids: [{ id: 'a25', name: '2025', kids: [] }] },
+      { id: 'inv', name: 'Invoices', kids: [] }] },
+    { id: 'mkt', name: 'Marketing', kids: [{ id: 'camp', name: 'Campaigns', kids: [] }] },
+    { id: 'ops', name: 'Operations', kids: [] }] };
+  const SHARED = { id: 'shared', name: 'Shared with me', kids: [] };
+  const F = (id, folder, name, owner, modified, size, access = []) => ({ id, folder, name, owner, modified, size, access, link: 'restricted' });
+  const FILES = [
+    F('f301', 'p26', 'FY26 Budget – Draft v2.xlsx', 'me', '2026-03-02', '184 KB'), F('f302', 'p26', 'FY26 Budget – Draft v3.xlsx', 'me', '2026-03-19', '191 KB', [{ email: 'obinna.lang@driftwood.coop', role: 'editor' }]),
+    F('f303', 'p26', 'FY26 Headcount plan.xlsx', 'me', '2026-03-11', '66 KB'), F('f304', 'p26', 'Budget assumptions.docx', 'me', '2026-02-27', '48 KB'),
+    F('f311', 'p25', 'FY25 Budget – Final.xlsx', 'me', '2025-03-30', '176 KB'), F('f312', 'p25', 'FY26 Budget – Draft v3.xlsx', 'me', '2025-12-15', '12 KB'),
+    F('f321', 'a25', 'FY25 Budget – Draft v3.xlsx', 'me', '2025-02-20', '150 KB'), F('f331', 'inv', 'Supplier invoices Q1.pdf', 'me', '2026-04-02', '2.1 MB'),
+    F('f341', 'camp', 'Spring campaign brief.docx', 'me', '2026-03-05', '88 KB'), F('f351', 'ops', 'Rota template.xlsx', 'me', '2026-01-10', '31 KB'),
+    F('f361', 'shared', 'FY26 Budget – Draft v3.xlsx', 'Obinna Lang', '2026-03-21', '193 KB'),
+  ];
+  const st = { open: new Set(['root']), sel: 'root', share: null, pick: null, search: '' };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const all = []; (function walk(n, path) { all.push({ n, path: path.concat(n.name) }); n.kids.forEach((k) => walk(k, path.concat(n.name))); })(TREE, []); all.push({ n: SHARED, path: ['Shared with me'] });
+  const pathOf = (id) => all.find((x) => x.n.id === id).path;
+  function renderTree() {
+    const item = (n) => `<li role="treeitem" aria-selected="${st.sel === n.id}" ${n.kids.length ? `aria-expanded="${st.open.has(n.id)}"` : ''}><div class="node">${n.kids.length ? `<button type="button" class="tw" data-tw="${n.id}" aria-label="${st.open.has(n.id) ? 'Collapse' : 'Expand'} ${esc(n.name)}">${st.open.has(n.id) ? '▾' : '▸'}</button>` : '<span class="tw"></span>'}<button type="button" class="nm" data-sel="${n.id}">📁 ${esc(n.name)}</button></div>${n.kids.length && st.open.has(n.id) ? `<ul role="group">${n.kids.map(item).join('')}</ul>` : ''}</li>`;
+    q('#tree').innerHTML = item(TREE) + item(SHARED);
+  }
+  q('#tree').addEventListener('click', (e) => {
+    const tw = e.target.closest('[data-tw]'); const sl = e.target.closest('[data-sel]');
+    if (tw) { const id = tw.dataset.tw; st.open.has(id) ? st.open.delete(id) : st.open.add(id); renderTree(); }
+    if (sl) { st.sel = sl.dataset.sel; st.search = ''; q('#gsearch').value = ''; renderTree(); renderMain(); }
+  });
+  q('#gsearch').addEventListener('input', (e) => { st.search = e.target.value.trim(); renderMain(); });
+  function renderMain() {
+    const node = all.find((x) => x.n.id === st.sel).n;
+    const files = st.search ? FILES.filter((f) => f.name.toLowerCase().includes(st.search.toLowerCase())) : FILES.filter((f) => f.folder === st.sel);
+    const sub = st.search ? [] : node.kids;
+    q('#main').innerHTML = `<div class="crumbs">${st.search ? `Search results for “${esc(st.search)}”` : pathOf(st.sel).map(esc).join(' › ')}</div>
+      <table><thead><tr><th>Name</th>${st.search ? '<th>Location</th>' : ''}<th>Owner</th><th>Last modified</th><th>Size</th><th></th></tr></thead><tbody>
+      ${sub.map((k) => `<tr><td><button type="button" data-sel="${k.id}" style="border:0;background:none;padding:0">📁 ${esc(k.name)}</button></td>${st.search ? '<td></td>' : ''}<td>me</td><td>—</td><td>—</td><td></td></tr>`).join('')}
+      ${files.map((f) => `<tr><td>📄 ${esc(f.name)}</td>${st.search ? `<td class="muted">${pathOf(f.folder).map(esc).join(' › ')}</td>` : ''}<td>${esc(f.owner)}</td><td>${f.modified}</td><td>${f.size}</td><td><button type="button" data-share="${f.id}" aria-label="Share ${esc(f.name)}">Share</button> <button type="button" data-del="${f.id}" aria-label="Move ${esc(f.name)} to bin">Move to bin</button></td></tr>`).join('')}
+      ${!sub.length && !files.length ? '<tr><td colspan="6" class="muted">This folder is empty.</td></tr>' : ''}</tbody></table>`;
+  }
+  q('#main').addEventListener('click', async (e) => {
+    const sl = e.target.closest('[data-sel]'); if (sl) { st.sel = sl.dataset.sel; pathOf(st.sel); all.filter((x) => x.n.kids.some((k) => k.id === st.sel)).forEach((x) => st.open.add(x.n.id)); renderTree(); renderMain(); return; }
+    const sh = e.target.closest('[data-share]'); if (sh) return openShare(FILES.find((f) => f.id === sh.dataset.share));
+    const del = e.target.closest('[data-del]'); if (del) { const f = FILES.find((x) => x.id === del.dataset.del); await rec({ event: 'file_trash', file_id: f.id, file: f.name, path: pathOf(f.folder).join('/') }); FILES.splice(FILES.indexOf(f), 1); renderMain(); toast('Moved to bin.'); }
+  });
+  function openShare(f) {
+    st.share = f; st.pick = null;
+    q('#sh-h').textContent = `Share “${f.name}”`; q('#sh-who').value = ''; q('#sh-role').value = 'editor'; q('#sh-notify').checked = true; q('#sh-link').value = f.link; q('#sh-err').hidden = true;
+    q('#sh-people').innerHTML = [`<div class="person"><span>${f.owner === 'me' ? 'Ezinne Okafor-Lang (you)' : esc(f.owner)}</span><span class="muted">Owner</span></div>`].concat(f.access.map((a) => `<div class="person"><span>${esc(a.email)}</span><span class="muted">${a.role[0].toUpperCase() + a.role.slice(1)}</span></div>`)).join('');
+    if (f.owner !== 'me') { q('#sh-err').textContent = 'Only the owner can share this file. Ask Obinna Lang for access.'; q('#sh-err').hidden = false; }
+    q('#share').hidden = false; q('#sh-who').focus();
+  }
+  const list = q('#sh-list'); const who = q('#sh-who'); let act = -1; let shown = [];
+  const draw = () => { const t = who.value.trim().toLowerCase(); shown = t ? PEOPLE.filter((p) => p.name.toLowerCase().includes(t) || p.email.includes(t)) : []; list.innerHTML = shown.map((p, i) => `<li role="option" id="pp-${i}" aria-selected="${i === act}" data-email="${p.email}">${esc(p.name)} <span class="muted">${p.email}</span></li>`).join(''); list.hidden = !shown.length; who.setAttribute('aria-expanded', String(!list.hidden)); };
+  const choose = (p) => { st.pick = p; who.value = p.name; list.hidden = true; who.setAttribute('aria-expanded', 'false'); act = -1; };
+  who.addEventListener('input', () => { st.pick = null; act = -1; draw(); });
+  who.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') { e.preventDefault(); act = Math.min(act + 1, shown.length - 1); draw(); } else if (e.key === 'ArrowUp') { e.preventDefault(); act = Math.max(act - 1, 0); draw(); } else if (e.key === 'Enter') { e.preventDefault(); if (act >= 0) choose(shown[act]); } });
+  list.addEventListener('mousedown', (e) => e.preventDefault());
+  list.addEventListener('click', (e) => { const li = e.target.closest('[data-email]'); if (li) choose(PEOPLE.find((p) => p.email === li.dataset.email)); });
+  q('#sh-cancel').onclick = () => { q('#share').hidden = true; st.share = null; };
+  q('#sh-go').onclick = async () => {
+    const f = st.share; const err = (m) => { q('#sh-err').textContent = m; q('#sh-err').hidden = !m; };
+    if (f.owner !== 'me') return err('Only the owner can share this file. Ask Obinna Lang for access.');
+    const link = q('#sh-link').value;
+    if (!st.pick && link === f.link) return err('Add a person from the suggestions, or change general access.');
+    if (st.pick && st.pick.name !== who.value.trim()) return err('Choose the person from the suggestions list.');
+    q('#sh-go').disabled = true; await later(350); q('#sh-go').disabled = false;
+    if (link !== f.link) { await rec({ event: 'file_link_access', file_id: f.id, file: f.name, access: link }); f.link = link; }
+    if (st.pick) { const role = q('#sh-role').value; await rec({ event: 'file_share', file_id: f.id, file: f.name, path: pathOf(f.folder).join('/'), user: st.pick.email, role, notify: q('#sh-notify').checked ? 'yes' : 'no' }); f.access.push({ email: st.pick.email, role }); }
+    q('#share').hidden = true; st.share = null; toast('Sharing updated.');
+  };
+  renderTree(); renderMain();
+})();
+</script>
+</body>
+</html>

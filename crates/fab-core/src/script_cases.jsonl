@@ -1,0 +1,279 @@
+{"src":"x = 1","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}}],"lines":[1],"slots":0}}
+{"src":"$x = 1\nreturn $x","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"$$x=1\nreturn x","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"x=1\ny = x+1\nreturn y","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}},{"Set":{"var":"y","expr":{"Bin":["Add",{"Var":"x"},{"Num":4607182418800017408}]}}},{"Return":[{"Var":"y"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"set x == 1","error":{"line":1,"msg":"expected: set name = value"}}
+{"src":"set x <= 1","error":{"line":1,"msg":"expected: set name = value"}}
+{"src":"set $ x = 1","error":{"line":1,"msg":"expected: set name = value"}}
+{"src":"set x.y = 1\nreturn x","program":{"ops":[{"Set":{"var":"x.y","expr":{"Num":4607182418800017408}}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"set .x = 1","error":{"line":1,"msg":"expected: set name = value"}}
+{"src":"set x =","error":{"line":1,"msg":"expected a value"}}
+{"src":"let x = 1\nlocal y = x\nreturn y","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}},{"Set":{"var":"y","expr":{"Var":"x"}}},{"Return":[{"Var":"y"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"read \"a\" -> $x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"a\" -> {x}\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"a\" -> ${x}\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"a\" -> {$x}\nreturn x","error":{"line":2,"msg":"x is used before it is set"}}
+{"src":"read \"a\" → x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"a\" -> y → x\nreturn y","error":{"line":2,"msg":"y is used before it is set"}}
+{"src":"read \"a -> b\"","program":{"ops":[{"Leaf":{"kind":"Read","text":"a -> b","save":null}}],"lines":[1],"slots":0}}
+{"src":"read \"a -> b\" -> x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a -> b","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"a\" -> x -> y\nreturn y","program":{"ops":[{"Leaf":{"kind":"Read","text":"\"a\" -> x","save":"y"}},{"Return":[{"Var":"y"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"a\" ->","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":null}}],"lines":[1],"slots":0}}
+{"src":"read \"a\" -> x }\nreturn x","error":{"line":2,"msg":"x is used before it is set"}}
+{"src":"read \"a\" -> $ x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":" x"}}],"lines":[1],"slots":0}}
+{"src":"read a b c -> x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a b c","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"do","error":{"line":1,"msg":"do needs a quoted instruction"}}
+{"src":"do \"\"","error":{"line":1,"msg":"do needs a quoted instruction"}}
+{"src":"do ''","error":{"line":1,"msg":"do needs a quoted instruction"}}
+{"src":"do 'it''s'","program":{"ops":[{"Leaf":{"kind":"Do","text":"it''s","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"say \\\"hi\\\"\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"say \"hi\"","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"a\\\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"a\\","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"a\" and \"b\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"a\" and \"b","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"x\"  ","program":{"ops":[{"Leaf":{"kind":"Do","text":"x","save":null}}],"lines":[1],"slots":0}}
+{"src":"do\"x\"","error":{"line":1,"msg":"unknown statement \"do\"x\"\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"DO \"x\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"x","save":null}}],"lines":[1],"slots":0}}
+{"src":"Read \"a\" -> x\nIF x\nEND","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"JumpUnless":{"cond":{"Var":"x"},"to":2}}],"lines":[1,2],"slots":0}}
+{"src":"x = read \"a\"\ny = do \"b\"\nz = test \"c\"\nreturn x, y, z","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Leaf":{"kind":"Do","text":"b","save":"y"}},{"Leaf":{"kind":"Test","text":"c","save":"z"}},{"Return":[{"Var":"x"},{"Var":"y"},{"Var":"z"}]}],"lines":[1,2,3,4],"slots":0}}
+{"src":"x = read \"a\" -> y\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"\"a\" -> y","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"x = READ \"a\"\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"x = do\nreturn x","error":{"line":1,"msg":"do is used before it is set"}}
+{"src":"x = extract \"a, b\"\nreturn x","program":{"ops":[{"Extract":{"fields":["a","b"],"from":null,"save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"x = extract \"a\" -> y\nreturn x","program":{"ops":[{"Extract":{"fields":["a_y"],"from":null,"save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"x.y = extract \"a\"","error":{"line":1,"msg":"extract needs -> name"}}
+{"src":"x = extract \"a\" from row","error":{"line":1,"msg":"row is used before it is set"}}
+{"src":"read \"r\" -> row\nx = extract \"a and b; c\" from $row\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Extract":{"fields":["a","b","c"],"from":"row","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"```\n1. n = 1\nwhile n <= 3:\n  x = read \"p {n}\"\n  if x < 100 then\n    return x\n  endif\n  n = n + 1\nend\n```","program":{"ops":[{"Set":{"var":"n","expr":{"Num":4607182418800017408}}},{"JumpUnless":{"cond":{"Bin":["LessEqual",{"Var":"n"},{"Num":4613937818241073152}]},"to":7}},{"Leaf":{"kind":"Read","text":"p {n}","save":"x"}},{"JumpUnless":{"cond":{"Bin":["Less",{"Var":"x"},{"Num":4636737291354636288}]},"to":5}},{"Return":[{"Var":"x"}]},{"Set":{"var":"n","expr":{"Bin":["Add",{"Var":"n"},{"Num":4607182418800017408}]}}},{"Jump":{"to":1}}],"lines":[2,3,4,5,6,8,9],"slots":0}}
+{"src":"1) do \"a\"\n2) do \"b\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"a","save":null}},{"Leaf":{"kind":"Do","text":"b","save":null}}],"lines":[1,2],"slots":0}}
+{"src":"- do \"a\"\n* do \"b\"\n-  do \"c\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"a","save":null}},{"Leaf":{"kind":"Do","text":"b","save":null}},{"Leaf":{"kind":"Do","text":"c","save":null}}],"lines":[1,2,3],"slots":0}}
+{"src":"1.5 x","error":{"line":1,"msg":"unknown statement \"5\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"1.","error":{"line":1,"msg":"the program has no steps"}}
+{"src":"- then","error":{"line":1,"msg":"unknown statement \"then\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"# comment\n// comment\n-- comment\ndo \"a\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[4],"slots":0}}
+{"src":"do \"a\" # not a comment","program":{"ops":[{"Leaf":{"kind":"Do","text":"\"a\" # not a comment","save":null}}],"lines":[1],"slots":0}}
+{"src":"if true {\n  do \"a\"\n} else {\n  do \"b\"\n}","error":{"line":5,"msg":"end without a block"}}
+{"src":"if true then:\n  do \"a\"\nend","error":{"line":1,"msg":"unexpected \"then\" in true then"}}
+{"src":"if true: then\n  do \"a\"\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[1,2],"slots":0}}
+{"src":"if true {: then\n  do \"a\"\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[1,2],"slots":0}}
+{"src":"if true  then\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":1}}],"lines":[1],"slots":0}}
+{"src":"if x then y then\nend","error":{"line":1,"msg":"unexpected \"then\" in x then y"}}
+{"src":"while true {:\nbreak\n}","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":3}},{"Jump":{"to":3}},{"Jump":{"to":0}}],"lines":[1,2,3],"slots":0}}
+{"src":"if true\nelse if false\nelse\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":4}},{"JumpUnless":{"cond":{"Bool":false},"to":4}},{"Jump":{"to":4}}],"lines":[1,2,2,3],"slots":0}}
+{"src":"if true\nelse If false\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":3}},{"JumpUnless":{"cond":{"Bool":false},"to":3}}],"lines":[1,2,2],"slots":0}}
+{"src":"if true\nelse IF false\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":2}}],"lines":[1,2],"slots":0}}
+{"src":"if true\nelse whatever\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":2}}],"lines":[1,2],"slots":0}}
+{"src":"if true\nelse if\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":2}}],"lines":[1,2],"slots":0}}
+{"src":"if true\nelif\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":2}}],"lines":[1,2],"slots":0}}
+{"src":"if true\nelif false\nelseif true\nelse\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Jump":{"to":6}},{"JumpUnless":{"cond":{"Bool":false},"to":4}},{"Jump":{"to":6}},{"JumpUnless":{"cond":{"Bool":true},"to":6}},{"Jump":{"to":6}}],"lines":[1,2,2,3,3,4],"slots":0}}
+{"src":"else","error":{"line":1,"msg":"else without if"}}
+{"src":"end","error":{"line":1,"msg":"end without a block"}}
+{"src":"}","error":{"line":1,"msg":"end without a block"}}
+{"src":"} else","error":{"line":1,"msg":"end without a block"}}
+{"src":"if true\n  do \"a\"\nend if","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[1,2],"slots":0}}
+{"src":"if true\n  do \"a\"\nendif","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":2}},{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[1,2],"slots":0}}
+{"src":"while true\n  break\nendwhile","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":3}},{"Jump":{"to":3}},{"Jump":{"to":0}}],"lines":[1,2,3],"slots":0}}
+{"src":"for x in [1]\n  continue\nendfor","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"x","exit":4}},{"Jump":{"to":1}},{"Jump":{"to":1}}],"lines":[1,1,2,3],"slots":1}}
+{"src":"for x in [1]\ndone","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"while true\n  continue\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bool":true},"to":3}},{"Jump":{"to":0}},{"Jump":{"to":0}}],"lines":[1,2,3],"slots":0}}
+{"src":"break","error":{"line":1,"msg":"break outside a loop"}}
+{"src":"continue","error":{"line":1,"msg":"continue outside a loop"}}
+{"src":"if true\n  break\nend","error":{"line":2,"msg":"break outside a loop"}}
+{"src":"stop","program":{"ops":[{"Return":[]}],"lines":[1],"slots":0}}
+{"src":"stop now","program":{"ops":[{"Return":[]}],"lines":[1],"slots":0}}
+{"src":"back","program":{"ops":["Back"],"lines":[1],"slots":0}}
+{"src":"back please","program":{"ops":["Back"],"lines":[1],"slots":0}}
+{"src":"repeat 3 times\n  do \"a\"\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4613937818241073152}]}}},{"ForNext":{"slot":0,"var":"_i","exit":4}},{"Leaf":{"kind":"Do","text":"a","save":null}},{"Jump":{"to":1}}],"lines":[1,1,2,3],"slots":1}}
+{"src":"repeat 3\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4613937818241073152}]}}},{"ForNext":{"slot":0,"var":"_i","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"repeat 3times\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4613937818241073152}]}}},{"ForNext":{"slot":0,"var":"_i","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"repeat 3 timestimes\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4613937818241073152}]}}},{"ForNext":{"slot":0,"var":"_i","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"repeat 3 times times\nend","error":{"line":1,"msg":"unexpected \"times\" in 3 times"}}
+{"src":"repeat times\nend","error":{"line":1,"msg":"expected a value"}}
+{"src":"repeat\nend","error":{"line":1,"msg":"expected a value"}}
+{"src":"repeat n times\nend","error":{"line":1,"msg":"n is used before it is set"}}
+{"src":"for x in 1, 2, 3\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904},{"Num":4613937818241073152}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in [1, 2, 3]\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904},{"Num":4613937818241073152}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in [[1, 2], [3]]\nend","error":{"line":1,"msg":"unexpected \"]\" in  2], [3"}}
+{"src":"for x in 1,2\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in 1,042\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408},{"Num":4631107791820423168}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in range(5)\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4617315517961601024}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in range(1, 5)\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Bin":["Subtract",{"Num":4617315517961601024},{"Num":4607182418800017408}]}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in range(1, 5, 2)\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Bin":["Subtract",{"Num":4617315517961601024},{"Num":4607182418800017408}]}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in range(1, 5, ?)\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Bin":["Subtract",{"Num":4617315517961601024},{"Num":4607182418800017408}]}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in range()\nend","error":{"line":1,"msg":"expected a value"}}
+{"src":"for x in range(1) + 1\nend","error":{"line":1,"msg":"unknown function range()"}}
+{"src":"for x in 1..5\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4617315517961601024}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in 1...5\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Bin":["Range",{"Num":4607182418800017408},{"Num":4602678819172646912}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in ..5\nend","error":{"line":1,"msg":"expected a value"}}
+{"src":"for x in items \"a..b\"\nend","error":{"line":1,"msg":"unexpected \"\"\"\" in b\""}}
+{"src":"for x in \"a, b\", c\nend","error":{"line":1,"msg":"c is used before it is set"}}
+{"src":"for x in 'a, b', 1\nend","error":{"line":1,"msg":"unexpected \"\"\"\" in  b'"}}
+{"src":"for x in (1, 2), 3\nend","error":{"line":1,"msg":"missing )"}}
+{"src":"for x in 1), (2\nend","error":{"line":1,"msg":"unexpected \")\" in 1), (2"}}
+{"src":"for x in [1, 2\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in items \"rows\"\n  emit x\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"Effect":["Items","rows"]}}},{"ForNext":{"slot":0,"var":"x","exit":4}},{"Emit":[[null,{"Var":"x"}]]},{"Jump":{"to":1}}],"lines":[1,1,2,3],"slots":1}}
+{"src":"for $x in [1]\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for my item in [1]\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"my item","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x  in [1]\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"x","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x\tin [1]\nend","error":{"line":1,"msg":"expected: for x in <list>"}}
+{"src":"for x IN [1]\nend","error":{"line":1,"msg":"expected: for x in <list>"}}
+{"src":"for x in\nend","error":{"line":1,"msg":"expected: for x in <list>"}}
+{"src":"for in x\nend","error":{"line":1,"msg":"expected: for x in <list>"}}
+{"src":"for $ in [1]\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"","exit":3}},{"Jump":{"to":1}}],"lines":[1,1,2],"slots":1}}
+{"src":"for x in in [1]\nend","error":{"line":1,"msg":"unexpected \"[\" in in [1]"}}
+{"src":"for x in [1]\n  for y in [2]\n    if x == y\n      break\n    elif x > y\n      continue\n    end\n  end\nend","program":{"ops":[{"ForInit":{"slot":0,"list":{"List":[{"Num":4607182418800017408}]}}},{"ForNext":{"slot":0,"var":"x","exit":11}},{"ForInit":{"slot":1,"list":{"List":[{"Num":4611686018427387904}]}}},{"ForNext":{"slot":1,"var":"y","exit":10}},{"JumpUnless":{"cond":{"Bin":["Equal",{"Var":"x"},{"Var":"y"}]},"to":7}},{"Jump":{"to":10}},{"Jump":{"to":9}},{"JumpUnless":{"cond":{"Bin":["Greater",{"Var":"x"},{"Var":"y"}]},"to":9}},{"Jump":{"to":3}},{"Jump":{"to":3}},{"Jump":{"to":1}}],"lines":[1,1,2,2,3,4,5,5,6,8,9],"slots":2}}
+{"src":"extract \"a, b\" -> x\nreturn x","program":{"ops":[{"Extract":{"fields":["a","b"],"from":null,"save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"extract \"a, b\" from row -> x","error":{"line":1,"msg":"row is used before it is set"}}
+{"src":"read \"r\" -> row\nextract \"a, b\" from row -> x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Extract":{"fields":["a","b"],"from":"row","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"read \"r\" -> row\nextract \"a from b\" -> x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Extract":{"fields":["a_from_b"],"from":null,"save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"read \"r\" -> row\nextract \"a\" from $row -> $x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Extract":{"fields":["a"],"from":"row","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"read \"r\" -> row\nextract \"a\" from row → x\nreturn x","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Extract":{"fields":["a"],"from":"row","save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"extract \"a\" -> x.y","error":{"line":1,"msg":"extract needs -> name"}}
+{"src":"extract \"a\" -> ","error":{"line":1,"msg":"extract needs -> name"}}
+{"src":"extract \"a\"","error":{"line":1,"msg":"expected: extract \"fields\" [from item] -> name"}}
+{"src":"extract \"\" -> x","error":{"line":1,"msg":"extract needs fields, e.g. extract \"title, price\" from item -> row"}}
+{"src":"extract \",\" -> x","error":{"line":1,"msg":"extract needs fields, e.g. extract \"title, price\" from item -> row"}}
+{"src":"extract a and b -> x\nreturn x","program":{"ops":[{"Extract":{"fields":["a","b"],"from":null,"save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"extract \"a -> b\" -> x\nreturn x","program":{"ops":[{"Extract":{"fields":["a_b"],"from":null,"save":"x"}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"extract \"a -> b\"","error":{"line":1,"msg":"extract needs -> name"}}
+{"src":"extract \"x\" from from from y -> r","error":{"line":1,"msg":"y is used before it is set"}}
+{"src":"read \"r\" -> y\nextract \"x\" from from y -> r\nreturn r","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"y"}},{"Extract":{"fields":["x_from"],"from":"y","save":"r"}},{"Return":[{"Var":"r"}]}],"lines":[1,2,3],"slots":0}}
+{"src":"get \"a\" -> x\nscrape \"b\" -> y","program":{"ops":[{"Extract":{"fields":["a"],"from":null,"save":"x"}},{"Extract":{"fields":["b"],"from":null,"save":"y"}}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> job\nopen job\nopen $job \"the page\"\nfollow job comments\nvisit job 'x'\nback","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"job"}},{"Open":{"item":"job","how":null,"leaf":false}},{"Open":{"item":"job","how":"the page","leaf":false}},{"Open":{"item":"job","how":"comments","leaf":false}},{"Open":{"item":"job","how":"x","leaf":true}},"Back"],"lines":[1,2,3,4,5,6],"slots":0}}
+{"src":"open","error":{"line":1,"msg":"expected: open <item> [\"which link\"] (to go to a site, use do)"}}
+{"src":"open \"x\"","error":{"line":1,"msg":"expected: open <item> [\"which link\"] (to go to a site, use do)"}}
+{"src":"open $","error":{"line":1,"msg":"expected: open <item> [\"which link\"] (to go to a site, use do)"}}
+{"src":"open job","error":{"line":1,"msg":"job is used before it is set"}}
+{"src":"read \"r\" -> job\nopen job.link","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"job"}},{"Open":{"item":"job.link","how":null,"leaf":false}}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> job\nopen job\textra","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"job"}},{"Open":{"item":"job","how":"extra","leaf":false}}],"lines":[1,2],"slots":0}}
+{"src":"emit","program":{"ops":[{"Emit":[]}],"lines":[1],"slots":0}}
+{"src":"emit 1, 2","program":{"ops":[{"Emit":[[null,{"Num":4607182418800017408}],[null,{"Num":4611686018427387904}]]}],"lines":[1],"slots":0}}
+{"src":"emit {a: 1, b: 2}","program":{"ops":[{"Emit":[["a",{"Num":4607182418800017408}],["b",{"Num":4611686018427387904}]]}],"lines":[1],"slots":0}}
+{"src":"emit a: 1","program":{"ops":[{"Emit":[["a",{"Num":4607182418800017408}]]}],"lines":[1],"slots":0}}
+{"src":"emit \"Prep time\": 1","program":{"ops":[{"Emit":[["prep_time",{"Num":4607182418800017408}]]}],"lines":[1],"slots":0}}
+{"src":"emit 'k': 1","program":{"ops":[{"Emit":[["k",{"Num":4607182418800017408}]]}],"lines":[1],"slots":0}}
+{"src":"emit a: b: c","error":{"line":1,"msg":"unexpected \":\""}}
+{"src":"emit : 1","error":{"line":1,"msg":"unexpected \":\""}}
+{"src":"emit f(x): 1","error":{"line":1,"msg":"unexpected \":\""}}
+{"src":"emit url: \"http://x\"","program":{"ops":[{"Emit":[["url",{"Str":"http://x"}]]}],"lines":[1],"slots":0}}
+{"src":"emit a:","error":{"line":1,"msg":"a is used before it is set"}}
+{"src":"emit ,,1,,","program":{"ops":[{"Emit":[[null,{"Num":4607182418800017408}]]}],"lines":[1],"slots":0}}
+{"src":"yield 1\noutput 2\nprint 3","program":{"ops":[{"Emit":[[null,{"Num":4607182418800017408}]]},{"Emit":[[null,{"Num":4611686018427387904}]]},{"Emit":[[null,{"Num":4613937818241073152}]]}],"lines":[1,2,3],"slots":0}}
+{"src":"read \"r\" -> row\nemit row, title: row.title, row.\"Prep time\", row[\"a b\"]","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Emit":[[null,{"Var":"row"}],["title",{"Var":"row.title"}],[null,{"Var":"row.prep_time"}],[null,{"Var":"row.a_b"}]]}],"lines":[1,2],"slots":0}}
+{"src":"fail","program":{"ops":[{"Fail":""}],"lines":[1],"slots":0}}
+{"src":"fail \"no $x\"","error":{"line":1,"msg":"$x is used before it is set"}}
+{"src":"set x = 1\nfail \"no $x\"","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}},{"Fail":"no $x"}],"lines":[1,2],"slots":0}}
+{"src":"fail no luck","program":{"ops":[{"Fail":"no luck"}],"lines":[1],"slots":0}}
+{"src":"return","program":{"ops":[{"Return":[]}],"lines":[1],"slots":0}}
+{"src":"return 1, \"a\", [1, 2], (1 + 2) * 3","program":{"ops":[{"Return":[{"Num":4607182418800017408},{"Str":"a"},{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904}]},{"Bin":["Multiply",{"Bin":["Add",{"Num":4607182418800017408},{"Num":4611686018427387904}]},{"Num":4613937818241073152}]}]}],"lines":[1],"slots":0}}
+{"src":"return 1,,2","program":{"ops":[{"Return":[{"Num":4607182418800017408},{"Num":4611686018427387904}]}],"lines":[1],"slots":0}}
+{"src":"return f(1, 2)","error":{"line":1,"msg":"unknown function f()"}}
+{"src":"return contains(\"ab\", \"a\"), len([1, 2]), lower(\"A\"), upper(\"a\"), trim(\" a \"), number(\"$1\"), empty(\"\")","program":{"ops":[{"Return":[{"Call":["Contains",[{"Str":"ab"},{"Str":"a"}]]},{"Call":["Length",[{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904}]}]]},{"Call":["Lower",[{"Str":"A"}]]},{"Call":["Upper",[{"Str":"a"}]]},{"Call":["Text",[{"Str":" a "}]]},{"Call":["Number",[{"Str":"$1"}]]},{"Call":["Empty",[{"Str":""}]]}]}],"lines":[1],"slots":0}}
+{"src":"return includes(1), has(1), startswith(1), starts_with(1), str(1), text(1), num(1), int(1), float(1), count(1), is_empty(1)","program":{"ops":[{"Return":[{"Call":["Contains",[{"Num":4607182418800017408}]]},{"Call":["Contains",[{"Num":4607182418800017408}]]},{"Call":["StartsWith",[{"Num":4607182418800017408}]]},{"Call":["StartsWith",[{"Num":4607182418800017408}]]},{"Call":["Text",[{"Num":4607182418800017408}]]},{"Call":["Text",[{"Num":4607182418800017408}]]},{"Call":["Number",[{"Num":4607182418800017408}]]},{"Call":["Number",[{"Num":4607182418800017408}]]},{"Call":["Number",[{"Num":4607182418800017408}]]},{"Call":["Length",[{"Num":4607182418800017408}]]},{"Call":["Empty",[{"Num":4607182418800017408}]]}]}],"lines":[1],"slots":0}}
+{"src":"return typo(1)","error":{"line":1,"msg":"unknown function typo()"}}
+{"src":"return typo(1) + )","error":{"line":1,"msg":"unknown function typo()"}}
+{"src":"return test(1)","error":{"line":1,"msg":"unknown function test()"}}
+{"src":"return true(1)","error":{"line":1,"msg":"unknown function true()"}}
+{"src":"return none(1)","error":{"line":1,"msg":"unexpected \"(\" in none(1)"}}
+{"src":"return null, none, nil, NULL, $null, true, yes, false, no, TRUE","program":{"ops":[{"Return":["Null","Null","Null","Null","Null",{"Bool":true},{"Bool":true},{"Bool":false},{"Bool":false},{"Bool":true}]}],"lines":[1],"slots":0}}
+{"src":"return 1 + 2 * 3 - 4 / 5 % 6","program":{"ops":[{"Return":[{"Bin":["Subtract",{"Bin":["Add",{"Num":4607182418800017408},{"Bin":["Multiply",{"Num":4611686018427387904},{"Num":4613937818241073152}]}]},{"Bin":["Remainder",{"Bin":["Divide",{"Num":4616189618054758400},{"Num":4617315517961601024}]},{"Num":4618441417868443648}]}]}]}],"lines":[1],"slots":0}}
+{"src":"return -1, - -2, -(3), 2 * -3","program":{"ops":[{"Return":[{"Bin":["Subtract",{"Num":0},{"Num":4607182418800017408}]},{"Bin":["Subtract",{"Num":0},{"Bin":["Subtract",{"Num":0},{"Num":4611686018427387904}]}]},{"Bin":["Subtract",{"Num":0},{"Num":4613937818241073152}]},{"Bin":["Multiply",{"Num":4611686018427387904},{"Bin":["Subtract",{"Num":0},{"Num":4613937818241073152}]}]}]}],"lines":[1],"slots":0}}
+{"src":"return 1 < 2 and 2 <= 3 or not 3 > 4 && !(4 >= 5) || 5 != 6","program":{"ops":[{"Return":[{"Bin":["Or",{"Bin":["Or",{"Bin":["And",{"Bin":["Less",{"Num":4607182418800017408},{"Num":4611686018427387904}]},{"Bin":["LessEqual",{"Num":4611686018427387904},{"Num":4613937818241073152}]}]},{"Bin":["And",{"Not":{"Bin":["Greater",{"Num":4613937818241073152},{"Num":4616189618054758400}]}},{"Not":{"Bin":["GreaterEqual",{"Num":4616189618054758400},{"Num":4617315517961601024}]}}]}]},{"Bin":["NotEqual",{"Num":4617315517961601024},{"Num":4618441417868443648}]}]}]}],"lines":[1],"slots":0}}
+{"src":"return 1 == 2 == 3","error":{"line":1,"msg":"unexpected \"==\" in 1 == 2 == 3"}}
+{"src":"return 1 = 2","program":{"ops":[{"Return":[{"Bin":["Equal",{"Num":4607182418800017408},{"Num":4611686018427387904}]}]}],"lines":[1],"slots":0}}
+{"src":"return 1 === 2","error":{"line":1,"msg":"unexpected \"==\""}}
+{"src":"return 1 =< 2","error":{"line":1,"msg":"unexpected \"<\""}}
+{"src":"return 1 <> 2","error":{"line":1,"msg":"unexpected \">\""}}
+{"src":"return ! = 1","error":{"line":1,"msg":"unexpected \"==\""}}
+{"src":"return !1","program":{"ops":[{"Return":[{"Not":{"Num":4607182418800017408}}]}],"lines":[1],"slots":0}}
+{"src":"return 1 is 2, 1 is not 2, 1 IS NOT 2, 1 is","error":{"line":1,"msg":"expected a value"}}
+{"src":"return 1 is$not 2","program":{"ops":[{"Return":[{"Bin":["NotEqual",{"Num":4607182418800017408},{"Num":4611686018427387904}]}]}],"lines":[1],"slots":0}}
+{"src":"return not","error":{"line":1,"msg":"expected a value"}}
+{"src":"return 1 or","error":{"line":1,"msg":"expected a value"}}
+{"src":"return 1 and and 2","error":{"line":1,"msg":"unexpected \"2\" in 1 and and 2"}}
+{"src":"return 1 & 2","error":{"line":1,"msg":"unexpected \"&\""}}
+{"src":"return 1 | 2","error":{"line":1,"msg":"unexpected \"|\""}}
+{"src":"return 1 ^ 2","error":{"line":1,"msg":"unexpected \"^\""}}
+{"src":"return 1.2.3","error":{"line":1,"msg":"bad number 1.2.3"}}
+{"src":"return 1,000.50 + .5 + 1. + 1,","program":{"ops":[{"Return":[{"Num":4607182418800017408},{"Bin":["Add",{"Bin":["Add",{"Bin":["Add",{"Num":4602678819172646912},{"Num":4602678819172646912}]},{"Num":4607182418800017408}]},{"Num":4607182418800017408}]}]}],"lines":[1],"slots":0}}
+{"src":"return 1a","error":{"line":1,"msg":"unexpected \"a\" in 1a"}}
+{"src":"return a1","error":{"line":1,"msg":"a1 is used before it is set"}}
+{"src":"return $","error":{"line":1,"msg":" is used before it is set"}}
+{"src":"return $5","error":{"line":1,"msg":"5 is used before it is set"}}
+{"src":"return $.x","error":{"line":1,"msg":" is used before it is set"}}
+{"src":"return .","error":{"line":1,"msg":"unexpected \".\""}}
+{"src":"return \"a\\nb\", 'c\\'d', “curly”, \"unterminated","program":{"ops":[{"Return":[{"Str":"anb"},{"Str":"c'd"},{"Str":"curly"},{"Str":"unterminated"}]}],"lines":[1],"slots":0}}
+{"src":"return \"ends with backslash\\","program":{"ops":[{"Return":[{"Str":"ends with backslash\\"}]}],"lines":[1],"slots":0}}
+{"src":"return 'a\"b'","program":{"ops":[{"Return":[{"Str":"a\"b"}]}],"lines":[1],"slots":0}}
+{"src":"return ”","error":{"line":1,"msg":"unexpected \"”\""}}
+{"src":"return (1","error":{"line":1,"msg":"missing )"}}
+{"src":"return (1 2)","error":{"line":1,"msg":"missing )"}}
+{"src":"return [1","error":{"line":1,"msg":"missing ]"}}
+{"src":"return [1 2]","error":{"line":1,"msg":"missing ]"}}
+{"src":"return [1,]","program":{"ops":[{"Return":[{"List":[{"Num":4607182418800017408}]}]}],"lines":[1],"slots":0}}
+{"src":"return [,]","error":{"line":1,"msg":"unexpected \",\""}}
+{"src":"return []","program":{"ops":[{"Return":[{"List":[]}]}],"lines":[1],"slots":0}}
+{"src":"return f(","error":{"line":1,"msg":"expected a value"}}
+{"src":"return lower(","error":{"line":1,"msg":"expected a value"}}
+{"src":"return lower(1","error":{"line":1,"msg":"missing )"}}
+{"src":"return lower(1,)","program":{"ops":[{"Return":[{"Call":["Lower",[{"Num":4607182418800017408}]]}]}],"lines":[1],"slots":0}}
+{"src":"return lower(,)","error":{"line":1,"msg":"unexpected \",\""}}
+{"src":"return lower(1 2)","error":{"line":1,"msg":"missing )"}}
+{"src":"return lower (1)","program":{"ops":[{"Return":[{"Call":["Lower",[{"Num":4607182418800017408}]]}]}],"lines":[1],"slots":0}}
+{"src":"return test \"x\"","program":{"ops":[{"Return":[{"Effect":["Test","x"]}]}],"lines":[1],"slots":0}}
+{"src":"return test","error":{"line":1,"msg":"test needs a quoted description"}}
+{"src":"return test 5","error":{"line":1,"msg":"test needs a quoted description"}}
+{"src":"return TEST \"x\"","program":{"ops":[{"Return":[{"Effect":["Test","x"]}]}],"lines":[1],"slots":0}}
+{"src":"return $test \"x\"","program":{"ops":[{"Return":[{"Effect":["Test","x"]}]}],"lines":[1],"slots":0}}
+{"src":"return items \"x\"","program":{"ops":[{"Return":[{"Effect":["Items","x"]}]}],"lines":[1],"slots":0}}
+{"src":"return items","error":{"line":1,"msg":"items needs a quoted description"}}
+{"src":"return next","program":{"ops":[{"Return":[{"Effect":["Next","page"]}]}],"lines":[1],"slots":0}}
+{"src":"return next page","program":{"ops":[{"Return":[{"Effect":["Next","page"]}]}],"lines":[1],"slots":0}}
+{"src":"return next Batch","program":{"ops":[{"Return":[{"Effect":["Next","Batch"]}]}],"lines":[1],"slots":0}}
+{"src":"return next and true","program":{"ops":[{"Return":[{"Bin":["And",{"Effect":["Next","page"]},{"Bool":true}]}]}],"lines":[1],"slots":0}}
+{"src":"return next or true","program":{"ops":[{"Return":[{"Bin":["Or",{"Effect":["Next","page"]},{"Bool":true}]}]}],"lines":[1],"slots":0}}
+{"src":"return next \"month\"","program":{"ops":[{"Return":[{"Effect":["Next","month"]}]}],"lines":[1],"slots":0}}
+{"src":"return next not","program":{"ops":[{"Return":[{"Effect":["Next","not"]}]}],"lines":[1],"slots":0}}
+{"src":"return next(1)","error":{"line":1,"msg":"unknown function next()"}}
+{"src":"return next 5","error":{"line":1,"msg":"unexpected \"5\" in next 5"}}
+{"src":"read \"r\" -> row\nreturn row.\"prep time\", row .\"x\", row.\"\"","error":{"line":2,"msg":"unexpected \".\""}}
+{"src":"read \"r\" -> row\nreturn row[\"prep time\"], row [\"x\"], row[\"a\" ]","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"row"}},{"Return":[{"Var":"row.prep_time"},{"Var":"row.x"},{"Var":"row.a"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> row\nreturn row[1]","error":{"line":2,"msg":"unexpected \"[\" in row[1]"}}
+{"src":"read \"r\" -> sec\nreturn sec.section name == \"World\" and sec.x","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"sec"}},{"Return":[{"Bin":["And",{"Bin":["Equal",{"Var":"sec.section_name"},{"Str":"World"}]},{"Var":"sec.x"}]}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> sec\nreturn sec.Section Name Here","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"sec"}},{"Return":[{"Var":"sec.section_name_here"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> sec\nreturn sec.name then","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"sec"}},{"Return":[{"Var":"sec.name"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> sec\nreturn sec.name test \"x\"","error":{"line":2,"msg":"unexpected \"\"x\"\" in sec.name test \"x\""}}
+{"src":"read \"r\" -> sec\nreturn sec.name $foo","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"sec"}},{"Return":[{"Var":"sec.name_foo"}]}],"lines":[1,2],"slots":0}}
+{"src":"read \"r\" -> sec\nreturn sec.name.x y","program":{"ops":[{"Leaf":{"kind":"Read","text":"r","save":"sec"}},{"Return":[{"Var":"sec.name_x_y"}]}],"lines":[1,2],"slots":0}}
+{"src":"return x","error":{"line":1,"msg":"x is used before it is set"}}
+{"src":"return $x","error":{"line":1,"msg":"x is used before it is set"}}
+{"src":"read \"a\" -> x\nreturn x.y.z","program":{"ops":[{"Leaf":{"kind":"Read","text":"a","save":"x"}},{"Return":[{"Var":"x.y.z"}]}],"lines":[1,2],"slots":0}}
+{"src":"do \"open $x\"","error":{"line":1,"msg":"$x is used before it is set"}}
+{"src":"do \"open {x}\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"open {x}","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"pay with {{Visa card number}}\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"pay with {{Visa card number}}","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"$\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"$","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"$5\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"$5","save":null}}],"lines":[1],"slots":0}}
+{"src":"set x = 1\ndo \"$x and $xy\"","error":{"line":2,"msg":"$xy is used before it is set"}}
+{"src":"while n <= 3\nend","error":{"line":1,"msg":"n is used before it is set"}}
+{"src":"if test \"a\" and test \"b\"\nend","program":{"ops":[{"JumpUnless":{"cond":{"Bin":["And",{"Effect":["Test","a"]},{"Effect":["Test","b"]}]},"to":1}}],"lines":[1],"slots":0}}
+{"src":"if test \"x\"\n  do \"y\"","error":{"line":1,"msg":"this block has no end"}}
+{"src":"if true\n  while true\n    for x in [1]","error":{"line":3,"msg":"this block has no end"}}
+{"src":"click Save","error":{"line":1,"msg":"unknown statement \"click\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"Save the file","error":{"line":1,"msg":"unknown statement \"save\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"Ⱥ","rejected":true}
+{"src":"Ⱥ x","error":{"line":1,"msg":"unknown statement \"ⱥ\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"breaK","rejected":true}
+{"src":"İstanbul = 1","error":{"line":1,"msg":"unknown statement \"i̇stanbul\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"élan = 1","error":{"line":1,"msg":"unknown statement \"élan\" (steps are do, read and test; logic is set, if/else/end, while/end, for/end, break, fail, return)"}}
+{"src":"x = 1 # trailing","error":{"line":1,"msg":"unexpected \"#\""}}
+{"src":"x = 1;","error":{"line":1,"msg":"unexpected \";\""}}
+{"src":"x = [1,2]\nreturn x","program":{"ops":[{"Set":{"var":"x","expr":{"List":[{"Num":4622945017495814144}]}}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"x = [1, 2]\nreturn x","program":{"ops":[{"Set":{"var":"x","expr":{"List":[{"Num":4607182418800017408},{"Num":4611686018427387904}]}}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"","error":{"line":1,"msg":"the program has no steps"}}
+{"src":"\n\n","error":{"line":1,"msg":"the program has no steps"}}
+{"src":"   \n\t\n","error":{"line":1,"msg":"the program has no steps"}}
+{"src":"\r\ndo \"a\"\r\n","program":{"ops":[{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[2],"slots":0}}
+{"src":"do \"a\"\rdo \"b\"","program":{"ops":[{"Leaf":{"kind":"Do","text":"a\"\rdo \"b","save":null}}],"lines":[1],"slots":0}}
+{"src":"set x = 1\r\nreturn x\r","program":{"ops":[{"Set":{"var":"x","expr":{"Num":4607182418800017408}}},{"Return":[{"Var":"x"}]}],"lines":[1,2],"slots":0}}
+{"src":"　do \"a\"　","program":{"ops":[{"Leaf":{"kind":"Do","text":"a","save":null}}],"lines":[1],"slots":0}}
+{"src":"do \"a\" then","program":{"ops":[{"Leaf":{"kind":"Do","text":"\"a\" then","save":null}}],"lines":[1],"slots":0}}
+{"src":"if true {\nend","error":{"line":1,"msg":"unexpected \"{\""}}
+{"src":"set pages = 1\nwhile true\n  for job in items \"job listings\"\n    extract \"title, company, remote\" from job -> row\n    if row.remote != null\n      open job\n      extract \"salary\" -> detail\n      back\n      emit title: row.title, company: row.company, salary: detail.salary\n    end\n  end\n  if pages >= 3 or not next page\n    break\n  end\n  set pages = pages + 1\nend","program":{"ops":[{"Set":{"var":"pages","expr":{"Num":4607182418800017408}}},{"JumpUnless":{"cond":{"Bool":true},"to":15}},{"ForInit":{"slot":0,"list":{"Effect":["Items","job listings"]}}},{"ForNext":{"slot":0,"var":"job","exit":11}},{"Extract":{"fields":["title","company","remote"],"from":"job","save":"row"}},{"JumpUnless":{"cond":{"Bin":["NotEqual",{"Var":"row.remote"},"Null"]},"to":10}},{"Open":{"item":"job","how":null,"leaf":true}},{"Extract":{"fields":["salary"],"from":null,"save":"detail"}},"Back",{"Emit":[["title",{"Var":"row.title"}],["company",{"Var":"row.company"}],["salary",{"Var":"detail.salary"}]]},{"Jump":{"to":3}},{"JumpUnless":{"cond":{"Bin":["Or",{"Bin":["GreaterEqual",{"Var":"pages"},{"Num":4613937818241073152}]},{"Not":{"Effect":["Next","page"]}}]},"to":13}},{"Jump":{"to":15}},{"Set":{"var":"pages","expr":{"Bin":["Add",{"Var":"pages"},{"Num":4607182418800017408}]}}},{"Jump":{"to":1}}],"lines":[1,2,3,3,4,5,6,7,8,9,11,12,13,15,16],"slots":1}}

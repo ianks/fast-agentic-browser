@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brindle Expenses</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #faf7f2; }
+  .app { display: grid; grid-template-columns: 200px 1fr; min-height: 100vh; }
+  .side { background: #2d2418; color: #f5efe6; padding: 18px 14px; }
+  .side a { display: block; color: #e7dccb; text-decoration: none; padding: 8px 10px; border-radius: 6px; }
+  .side a[aria-current=page] { background: #4a3b27; color: #fff; }
+  .side .logo { font-weight: 800; font-size: 20px; margin-bottom: 18px; }
+  .content { padding: 22px 30px; }
+  .chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; background: #e5e7eb; }
+  .chip.draft { background: #fef3c7; } .chip.submitted { background: #dbeafe; } .chip.approved { background: #dcfce7; }
+  table { background: #fff; }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin: 12px 0; }
+  .panel { background: #fff; border: 1px solid #e7dccb; border-radius: 10px; padding: 16px; margin-top: 16px; max-width: 520px; }
+  .cb { position: relative; width: 320px; }
+  .cb input { width: 300px; }
+  [role=listbox] { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #bbb; border-radius: 4px; margin: 2px 0 0; padding: 4px 0; list-style: none; z-index: 5; max-height: 220px; overflow: auto; }
+  [role=option] { padding: 6px 10px; cursor: pointer; }
+  [role=option][aria-selected=true] { background: #eef2ff; }
+  [role=option][aria-disabled=true] { color: #9ca3af; cursor: not-allowed; }
+  .err { color: #b91c1c; font-size: 13px; }
+  .banner { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 10px; border-radius: 6px; margin: 10px 0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side" aria-label="Main">
+    <div class="logo">Brindle</div>
+    <a href="#/reports" data-r="reports">My reports</a>
+    <a href="#/approvals" data-r="approvals">Approvals</a>
+    <a href="#/cards" data-r="cards">Card transactions</a>
+    <div style="margin-top:30px;font-size:13px;color:#c9b99f">Farah Adeyemi<br>Partnerships · Lisbon</div>
+  </nav>
+  <main class="content" id="view" style="max-width:none;margin:0"></main>
+</div>
+
+<div class="overlay" id="exp-modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="exp-h">
+    <h3 id="exp-h" style="margin-top:0">Add expense</h3>
+    <label for="x-date">Date</label><input id="x-date" type="text" placeholder="YYYY-MM-DD">
+    <label for="x-merchant">Merchant</label><input id="x-merchant" type="text">
+    <label for="x-cat">Category</label>
+    <select id="x-cat"><option value="">Choose a category…</option><option>Airfare</option><option>Lodging</option><option>Ground transport</option><option>Meals</option><option>Conference fees</option><option>Office supplies</option><option>Other</option></select>
+    <div class="row" style="align-items:flex-end">
+      <div><label for="x-amt">Amount</label><input id="x-amt" type="text" style="width:120px"></div>
+      <div><label for="x-cur">Currency</label><select id="x-cur" style="width:100px"><option>EUR</option><option>USD</option><option>GBP</option></select></div>
+    </div>
+    <div class="err" id="x-err" role="alert" hidden></div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button type="button" id="x-cancel">Cancel</button><button type="button" class="primary" id="x-save">Save expense</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="sess" hidden>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="sess-h" aria-describedby="sess-d">
+    <div id="sess-a">
+      <h3 id="sess-h" style="margin-top:0">Your session expired</h3>
+      <p id="sess-d">For your security, Brindle signed you out after 15 minutes of inactivity. Your draft is safe, but your last action wasn't completed.</p>
+      <div class="row"><button type="button" id="sess-other">Use a different account</button><button type="button" class="primary" id="sess-go">Continue as Farah Adeyemi</button></div>
+    </div>
+    <div id="sess-b" hidden>
+      <h3 style="margin-top:0">Sign in to Brindle</h3>
+      <label for="si-email">Work email</label><input id="si-email" type="email">
+      <label for="si-pass">Password</label><input id="si-pass" type="password">
+      <div class="err" id="si-err" role="alert" hidden></div>
+      <div class="row" style="margin-top:12px"><button type="button" id="si-back">Back</button><button type="button" class="primary" id="si-go">Sign in</button></div>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(() => {
+  const PEOPLE = [
+    { id: 'u-jserrano', name: 'Joaquim Serrano', dept: 'Finance · Lisbon' },
+    { id: 'u-jserra', name: 'Joaquim Serra', dept: 'Sales · Porto' },
+    { id: 'u-jnserrano', name: 'Joaquina Serrano', dept: 'Legal · Madrid' },
+    { id: 'u-jspitt', name: 'Jo Serrano-Pitt', dept: 'Operations · London' },
+    { id: 'u-fadeyemi', name: 'Farah Adeyemi', dept: 'Partnerships · Lisbon', self: true },
+    { id: 'u-mstanescu', name: 'Mirela Stanescu', dept: 'Finance · Bucharest' },
+    { id: 'u-twendt', name: 'Tobias Wendt', dept: 'Finance · Berlin' },
+  ];
+  const REPORTS = [
+    { id: 'R-2291', title: 'Lisbon partner summit', status: 'Draft', updated: '2026-03-10', lines: [
+      { id: 'L1', date: '2026-02-17', merchant: 'TAP Air Portugal', cat: 'Airfare', amt: 642.80, cur: 'EUR' },
+      { id: 'L2', date: '2026-02-18', merchant: 'Hotel Almada Rio', cat: 'Lodging', amt: 541.40, cur: 'EUR' } ] },
+    { id: 'R-2288', title: 'Lisbon partner summit – site visit', status: 'Submitted', updated: '2026-01-26', lines: [
+      { id: 'L1', date: '2026-01-22', merchant: 'Uber', cat: 'Ground transport', amt: 24.10, cur: 'EUR' },
+      { id: 'L2', date: '2026-01-22', merchant: 'Cervejaria Ramiro', cat: 'Meals', amt: 61.50, cur: 'EUR' } ] },
+    { id: 'R-2302', title: 'Q1 team offsite catering', status: 'Draft', updated: '2026-03-04', lines: [
+      { id: 'L1', date: '2026-03-02', merchant: 'Padaria Portuguesa', cat: 'Meals', amt: 212.00, cur: 'EUR' } ] },
+    { id: 'R-2275', title: 'Porto customer visits', status: 'Approved', updated: '2025-12-19', lines: [
+      { id: 'L1', date: '2025-12-09', merchant: 'CP Comboios', cat: 'Ground transport', amt: 49.80, cur: 'EUR' } ] },
+  ];
+  const APPROVALS = [
+    { id: 'R-2310', who: 'Tiago Moura', title: 'Madrid trade fair', total: 918.35 },
+    { id: 'R-2312', who: 'Beatriz Lemos', title: 'Client dinner – Vireira', total: 146.00 },
+  ];
+  const CARDS = [
+    { id: 'T-88', date: '2026-02-20', merchant: 'CABIFY *TRIP', amt: 21.75 },
+    { id: 'T-91', date: '2026-02-21', merchant: 'BOLT.EU/O/2602', amt: 14.20 },
+    { id: 'T-95', date: '2026-02-19', merchant: 'PASTELARIA VERSAILLES', amt: 12.60 },
+  ];
+  const st = { sessionExpired: true, editing: null, submitOpen: false, approver: null, busy: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const total = (r) => r.lines.reduce((a, l) => a + l.amt, 0);
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const view = q('#view');
+
+  function route() {
+    const h = location.hash || '#/reports';
+    const parts = h.slice(2).split('/');
+    qa('.side a').forEach((a) => (a.dataset.r === parts[0] || (parts[0] === 'report' && a.dataset.r === 'reports') ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
+    st.submitOpen = false; st.approver = null;
+    if (parts[0] === 'report') return renderReport(parts[1]);
+    if (parts[0] === 'approvals') return renderApprovals();
+    if (parts[0] === 'cards') return renderCards();
+    renderList();
+  }
+  function renderList() {
+    view.innerHTML = `<h1>My reports</h1><table><thead><tr><th>Report</th><th>Status</th><th>Lines</th><th>Total</th><th>Last updated</th></tr></thead><tbody>${REPORTS.map((r) => `<tr><td><a href="#/report/${r.id}">${esc(r.title)}</a> <span class="muted">${r.id}</span></td><td><span class="chip ${r.status.toLowerCase()}">${r.status}</span></td><td>${r.lines.length}</td><td>${eur(total(r))}</td><td>${r.updated}</td></tr>`).join('')}</tbody></table>`;
+  }
+  function renderApprovals() {
+    view.innerHTML = `<h1>Approvals</h1><p class="muted">Reports waiting for your decision.</p>${APPROVALS.map((a) => `<div class="card row" style="justify-content:space-between"><div><strong>${esc(a.title)}</strong> <span class="muted">${a.id} · ${esc(a.who)} · ${eur(a.total)}</span></div><div class="row"><button type="button" data-dec="approve" data-id="${a.id}">Approve</button><button type="button" data-dec="reject" data-id="${a.id}">Reject</button></div></div>`).join('')}`;
+    view.onclick = async (e) => { const b = e.target.closest('[data-dec]'); if (!b) return; b.disabled = true; await rec({ event: 'approval_decision', report: b.dataset.id, decision: b.dataset.dec }); toast('Decision recorded.'); };
+  }
+  function renderCards() {
+    view.innerHTML = `<h1>Card transactions</h1><p class="muted">Unreported transactions on your corporate card ••7712.</p><table><thead><tr><th>Date</th><th>Merchant</th><th>Amount</th><th></th></tr></thead><tbody>${CARDS.map((c) => `<tr><td>${c.date}</td><td>${esc(c.merchant)}</td><td>${eur(c.amt)}</td><td><button type="button" data-attach="${c.id}">Add to report</button></td></tr>`).join('')}</tbody></table>`;
+    view.onclick = async (e) => { const b = e.target.closest('[data-attach]'); if (!b) return; b.disabled = true; await rec({ event: 'card_txn_attach', txn: b.dataset.attach }); b.textContent = 'Added to latest draft'; };
+  }
+  function renderReport(id) {
+    const r = REPORTS.find((x) => x.id === id);
+    if (!r) { view.innerHTML = '<p>Report not found.</p>'; return; }
+    const draft = r.status === 'Draft';
+    view.innerHTML = `<p><a href="#/reports">← All reports</a></p><h1>${esc(r.title)} <span class="chip ${r.status.toLowerCase()}">${r.status}</span></h1>
+      <p class="muted">${r.id} · ${r.lines.length} expenses · total <strong>${eur(total(r))}</strong></p>
+      <div id="banner"></div>
+      <div class="toolbar">${draft ? '<button type="button" id="add">Add expense</button><button type="button" class="primary" id="open-submit">Submit for approval</button>' : '<span class="muted">This report is ' + r.status.toLowerCase() + ' and can\'t be edited.</span>'}</div>
+      <table><thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th>Amount</th>${draft ? '<th>Actions</th>' : ''}</tr></thead><tbody>${r.lines.map((l) => `<tr><td>${l.date}</td><td>${esc(l.merchant)}</td><td>${esc(l.cat)}</td><td>${eur(l.amt)}</td>${draft ? `<td><button type="button" data-edit="${l.id}">Edit</button> <button type="button" data-del="${l.id}">Delete</button></td>` : ''}</tr>`).join('')}</tbody></table>
+      <section class="panel" id="submit-panel" ${st.submitOpen ? '' : 'hidden'} aria-labelledby="sp-h">
+        <h3 id="sp-h" style="margin-top:0">Submit for approval</h3>
+        <label for="appr">Approver</label>
+        <div class="cb"><input id="appr" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="appr-list" autocomplete="off" placeholder="Search people"><ul id="appr-list" role="listbox" aria-label="People" hidden></ul></div>
+        <label for="appr-note">Note to approver (optional)</label><textarea id="appr-note" style="width:300px;height:50px"></textarea>
+        <div class="err" id="sp-err" role="alert" hidden></div>
+        <div class="row" style="margin-top:12px"><button type="button" id="sp-cancel">Cancel</button><button type="button" class="primary" id="sp-go">Submit report</button></div>
+      </section>`;
+    view.onclick = null;
+    if (!draft) return;
+    q('#add').onclick = () => openModal(r, null);
+    q('#open-submit').onclick = () => { st.submitOpen = true; q('#submit-panel').hidden = false; q('#appr').focus(); };
+    q('tbody', view).onclick = async (e) => {
+      const ed = e.target.closest('[data-edit]'); const del = e.target.closest('[data-del]');
+      if (ed) openModal(r, r.lines.find((l) => l.id === ed.dataset.edit));
+      if (del) { const l = r.lines.find((x) => x.id === del.dataset.del); del.disabled = true; await later(200); await rec({ event: 'expense_delete', report: r.id, line: l.id, merchant: l.merchant }); r.lines = r.lines.filter((x) => x !== l); renderReport(r.id); toast('Expense deleted.'); }
+    };
+    wireCombobox(r);
+    q('#sp-cancel').onclick = () => { st.submitOpen = false; st.approver = null; q('#submit-panel').hidden = true; };
+    q('#sp-go').onclick = () => submit(r);
+  }
+  function wireCombobox(r) {
+    const input = q('#appr'); const list = q('#appr-list'); let active = -1; let shown = [];
+    const draw = () => {
+      const t = input.value.trim().toLowerCase();
+      shown = PEOPLE.filter((p) => !t || p.name.toLowerCase().includes(t));
+      list.innerHTML = shown.map((p, i) => `<li role="option" id="opt-${p.id}" data-id="${p.id}" aria-selected="${i === active}" ${p.self ? 'aria-disabled="true"' : ''}>${esc(p.name)}${p.self ? ' (you)' : ''} <span class="muted">— ${esc(p.dept)}</span></li>`).join('') || '<li class="muted" style="padding:6px 10px">No matches</li>';
+      list.hidden = false; input.setAttribute('aria-expanded', 'true');
+      input.setAttribute('aria-activedescendant', active >= 0 && shown[active] ? 'opt-' + shown[active].id : '');
+    };
+    const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+    const choose = (p) => { if (!p || p.self) return; st.approver = p; input.value = p.name; close(); q('#sp-err').hidden = true; };
+    input.addEventListener('input', () => { st.approver = null; active = -1; draw(); });
+    input.addEventListener('focus', draw);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, shown.length - 1); draw(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); draw(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (active >= 0) choose(shown[active]); else if (shown.length === 1) choose(shown[0]); }
+      else if (e.key === 'Escape') close();
+    });
+    list.addEventListener('mousedown', (e) => e.preventDefault());
+    list.addEventListener('click', (e) => { const li = e.target.closest('[role=option]'); if (li) choose(PEOPLE.find((p) => p.id === li.dataset.id)); });
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('.cb')) return;
+    const l = q('#appr-list'); const i = q('#appr');
+    if (l && !l.hidden) { l.hidden = true; i.setAttribute('aria-expanded', 'false'); }
+  });
+  async function submit(r) {
+    if (st.busy) return;
+    const err = (m) => { q('#sp-err').textContent = m; q('#sp-err').hidden = !m; };
+    if (!st.approver || st.approver.name !== q('#appr').value.trim()) return err('Choose an approver from the list.');
+    err('');
+    st.busy = true; q('#sp-go').disabled = true; q('#sp-go').textContent = 'Submitting…';
+    await later(500);
+    st.busy = false; q('#sp-go').disabled = false; q('#sp-go').textContent = 'Submit report';
+    if (st.sessionExpired) { q('#sess').hidden = false; q('#sess-a').hidden = false; q('#sess-b').hidden = true; return; }
+    await rec({ event: 'report_submit', report: r.id, approver: st.approver.name, approver_id: st.approver.id, lines: String(r.lines.length), total: total(r).toFixed(2), currency: 'EUR' });
+    r.status = 'Submitted'; r.updated = '2026-03-12';
+    toast(`${r.title} was sent to ${st.approver.name} for approval.`);
+    st.submitOpen = false; renderReport(r.id);
+  }
+  q('#sess-go').addEventListener('click', async () => {
+    q('#sess-go').disabled = true; q('#sess-go').textContent = 'Signing you in…';
+    await later(400);
+    await rec({ event: 'session_resume', user: 'farah.adeyemi' });
+    st.sessionExpired = false;
+    q('#sess-go').disabled = false; q('#sess-go').textContent = 'Continue as Farah Adeyemi';
+    q('#sess').hidden = true;
+    const b = q('#banner'); if (b) b.innerHTML = '<div class="banner" role="status">You\'re signed in again. Your last action wasn\'t completed — please submit your report again.</div>';
+  });
+  q('#sess-other').addEventListener('click', () => { q('#sess-a').hidden = true; q('#sess-b').hidden = false; });
+  q('#si-back').addEventListener('click', () => { q('#sess-a').hidden = false; q('#sess-b').hidden = true; q('#si-err').hidden = true; });
+  q('#si-go').addEventListener('click', async () => { await later(300); q('#si-err').textContent = 'Incorrect email or password.'; q('#si-err').hidden = false; });
+
+  // add/edit expense modal
+  function openModal(r, line) {
+    st.editing = { r, line };
+    q('#exp-h').textContent = line ? 'Edit expense' : 'Add expense';
+    q('#x-date').value = line ? line.date : ''; q('#x-merchant').value = line ? line.merchant : '';
+    q('#x-cat').value = line ? line.cat : ''; q('#x-amt').value = line ? line.amt.toFixed(2) : ''; q('#x-cur').value = line ? line.cur : 'EUR';
+    q('#x-err').hidden = true; q('#exp-modal').hidden = false; q('#x-date').focus();
+  }
+  q('#x-cancel').addEventListener('click', () => { q('#exp-modal').hidden = true; st.editing = null; });
+  q('#x-save').addEventListener('click', async () => {
+    const { r, line } = st.editing || {}; if (!r) return;
+    const err = (m) => { q('#x-err').textContent = m; q('#x-err').hidden = !m; };
+    const date = q('#x-date').value.trim(); const merchant = q('#x-merchant').value.trim().replace(/\s+/g, ' ');
+    const cat = q('#x-cat').value; const amtRaw = q('#x-amt').value.replace(/[€$£,\s]/g, ''); const cur = q('#x-cur').value;
+    if (!/^2026-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(date)) return err('Enter a 2026 date as YYYY-MM-DD.');
+    if (!merchant) return err('Enter the merchant.');
+    if (!cat) return err('Choose a category.');
+    if (!/^\d+(\.\d{1,2})?$/.test(amtRaw) || +amtRaw <= 0) return err('Enter an amount like 38.40.');
+    err(''); q('#x-save').disabled = true;
+    await later(250);
+    q('#x-save').disabled = false;
+    const data = { date, merchant, cat, amt: Number(amtRaw), cur };
+    if (line) { await rec({ event: 'expense_edit', report: r.id, line: line.id, date, merchant, category: cat, amount: data.amt.toFixed(2), currency: cur }); Object.assign(line, data); }
+    else { await rec({ event: 'expense_add', report: r.id, date, merchant, category: cat, amount: data.amt.toFixed(2), currency: cur }); r.lines.push({ id: 'L' + (r.lines.length + 1) + 'n', ...data }); }
+    r.updated = '2026-03-12';
+    q('#exp-modal').hidden = true; st.editing = null;
+    const keepOpen = st.submitOpen; renderReport(r.id); if (keepOpen) { st.submitOpen = true; q('#submit-panel').hidden = false; }
+    toast(line ? 'Expense updated.' : 'Expense added.');
+  });
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tidewater Payments · Transactions</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f6f9fc; }
+  .top { background: #fff; border-bottom: 1px solid #e3e8ee; padding: 10px 22px; display: flex; gap: 18px; align-items: center; }
+  .top .logo { font-weight: 800; color: #635bff; }
+  .top a { color: #425466; text-decoration: none; }
+  .top a[aria-current=page] { color: #635bff; font-weight: 700; }
+  main { max-width: 1080px; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .kpi { background: #fff; border: 1px solid #e3e8ee; border-radius: 8px; padding: 10px 14px; }
+  .kpi b { display: block; font-size: 20px; }
+  .filters { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; background: #fff; border: 1px solid #e3e8ee; border-radius: 8px; padding: 10px 14px; }
+  .filters label { margin: 0 0 3px; font-size: 13px; }
+  .filters select { width: 170px; }
+  table { background: #fff; margin-top: 12px; font-size: 14px; }
+  td.amt { text-align: right; font-variant-numeric: tabular-nums; }
+  .neg { color: #b42318; }
+  .pill { font-size: 12px; border-radius: 8px; padding: 1px 7px; background: #eef2ff; }
+  .pill.Refund { background: #fff1e6; } .pill.Dispute { background: #fee4e2; } .pill.Payout { background: #ecfdf3; } .pill.Fee { background: #f2f4f7; }
+  .pager { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+  .loading { opacity: .4; }
+</style>
+</head>
+<body>
+<div class="top"><span class="logo">Tidewater</span><a href="#" aria-current="page">Transactions</a><a href="#" data-dead>Customers</a><a href="#" data-dead>Payouts</a><a href="#" data-dead>Reports</a><span style="margin-left:auto">Northbeam Studio Ltd · CAD account</span></div>
+<main>
+  <h1>Transactions</h1>
+  <div class="kpis"><div class="kpi">Gross volume (all time)<b id="k-gross"></b></div><div class="kpi">Transactions<b id="k-count"></b></div><div class="kpi">Default currency<b>CAD</b></div></div>
+  <div class="filters" role="search">
+    <div><label for="f-type">Type</label><select id="f-type"><option value="">All types</option><option>Charge</option><option>Refund</option><option>Dispute</option><option>Payout</option><option>Fee</option></select></div>
+    <div><label for="f-month">Date</label><select id="f-month"><option value="">All dates</option><option value="2026-02">February 2026</option><option value="2026-03">March 2026</option><option value="2026-04">April 2026</option></select></div>
+    <div><label for="f-q">Customer</label><input id="f-q" type="search" placeholder="Search customers" style="width:200px"></div>
+    <button type="button" id="apply">Apply filters</button><button type="button" id="export">Export CSV</button>
+  </div>
+  <div id="tbl"></div>
+</main>
+<script>
+(() => {
+  const TXNS = /*DATA*/[
+    {"date": "2026-04-02", "type": "Charge", "customer": "Sable Island Surf", "country": "Canada", "amount": 201.11, "desc": "Order #1965", "id": "txn_8830"},
+    {"date": "2026-04-02", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 240.79, "desc": "Order #3369", "id": "txn_8823"},
+    {"date": "2026-04-02", "type": "Charge", "customer": "Juniper & Pine Florals", "country": "Canada", "amount": 248.86, "desc": "Order #4854", "id": "txn_8816"},
+    {"date": "2026-04-02", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 236.24, "desc": "Order #6748", "id": "txn_8809"},
+    {"date": "2026-04-01", "type": "Refund", "customer": "Juniper & Pine Florals", "country": "Canada", "amount": -48.75, "desc": "Refund for order #4471", "id": "txn_8802"},
+    {"date": "2026-04-01", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 180.04, "desc": "Order #8040", "id": "txn_8795"},
+    {"date": "2026-04-01", "type": "Charge", "customer": "Lakeshore Cycles", "country": "Canada", "amount": 154.34, "desc": "Order #4969", "id": "txn_8788"},
+    {"date": "2026-04-01", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 239.33, "desc": "Order #8861", "id": "txn_8781"},
+    {"date": "2026-04-01", "type": "Charge", "customer": "Lakeshore Cycles", "country": "Canada", "amount": 381.05, "desc": "Order #8385", "id": "txn_8774"},
+    {"date": "2026-03-31", "type": "Charge", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": 384.25, "desc": "Subscription 3275", "id": "txn_8767"},
+    {"date": "2026-03-31", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 396.71, "desc": "Invoice #4541", "id": "txn_8760"},
+    {"date": "2026-03-31", "type": "Refund", "customer": "Northbeam Studio", "country": "Canada", "amount": -14, "desc": "Refund for order #2797", "id": "txn_8753"},
+    {"date": "2026-03-30", "type": "Charge", "customer": "Lakeshore Cycles", "country": "Canada", "amount": 109.54, "desc": "Invoice #1132", "id": "txn_8746"},
+    {"date": "2026-03-30", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 377.8, "desc": "Invoice #8924", "id": "txn_8739"},
+    {"date": "2026-03-29", "type": "Charge", "customer": "Birchwood Ceramics", "country": "United States", "amount": 260.25, "desc": "Subscription 5639", "id": "txn_8732"},
+    {"date": "2026-03-29", "type": "Charge", "customer": "Sable Island Surf", "country": "Canada", "amount": 174.45, "desc": "Invoice #9485", "id": "txn_8725"},
+    {"date": "2026-03-29", "type": "Refund", "customer": "Birchwood Ceramics", "country": "United States", "amount": -14, "desc": "Refund for order #7546", "id": "txn_8718"},
+    {"date": "2026-03-28", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 193.78, "desc": "Order #7637", "id": "txn_8711"},
+    {"date": "2026-03-28", "type": "Refund", "customer": "Fjordline Knitwear", "country": "Norway", "amount": -31.99, "desc": "Refund for order #7037", "id": "txn_8704"},
+    {"date": "2026-03-28", "type": "Payout", "customer": "Tidewater bank transfer", "country": "—", "amount": -1736.97, "desc": "Payout to ••6620", "id": "txn_8697"},
+    {"date": "2026-03-27", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 282.05, "desc": "Invoice #8555", "id": "txn_8690"},
+    {"date": "2026-03-27", "type": "Refund", "customer": "Fjordline Knitwear", "country": "Norway", "amount": -31.99, "desc": "Refund for order #5641", "id": "txn_8683"},
+    {"date": "2026-03-26", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 326.17, "desc": "Subscription 3395", "id": "txn_8676"},
+    {"date": "2026-03-26", "type": "Refund", "customer": "Portage Coffee", "country": "United States", "amount": -24.99, "desc": "Refund for order #8204", "id": "txn_8669"},
+    {"date": "2026-03-26", "type": "Refund", "customer": "Portage Coffee", "country": "United States", "amount": -9.99, "desc": "Refund for order #6623", "id": "txn_8662"},
+    {"date": "2026-03-25", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 183.59, "desc": "Order #8035", "id": "txn_8655"},
+    {"date": "2026-03-25", "type": "Charge", "customer": "Juniper & Pine Florals", "country": "Canada", "amount": 379.81, "desc": "Invoice #1994", "id": "txn_8648"},
+    {"date": "2026-03-25", "type": "Refund", "customer": "Cedar Row Books", "country": "United States", "amount": -14, "desc": "Refund for order #7298", "id": "txn_8641"},
+    {"date": "2026-03-24", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 42.04, "desc": "Subscription 7739", "id": "txn_8634"},
+    {"date": "2026-03-24", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 180.41, "desc": "Invoice #4957", "id": "txn_8627"},
+    {"date": "2026-03-23", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 182.97, "desc": "Order #6918", "id": "txn_8620"},
+    {"date": "2026-03-23", "type": "Charge", "customer": "Sable Island Surf", "country": "Canada", "amount": 376.2, "desc": "Subscription 3246", "id": "txn_8613"},
+    {"date": "2026-03-23", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 121.15, "desc": "Order #9593", "id": "txn_8606"},
+    {"date": "2026-03-23", "type": "Refund", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": -24.99, "desc": "Refund for order #5733", "id": "txn_8599"},
+    {"date": "2026-03-23", "type": "Fee", "customer": "Tidewater fees", "country": "—", "amount": -8.32, "desc": "Monthly platform fee", "id": "txn_8592"},
+    {"date": "2026-03-22", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 300.83, "desc": "Order #3332", "id": "txn_8585"},
+    {"date": "2026-03-22", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 146.86, "desc": "Subscription 9536", "id": "txn_8578"},
+    {"date": "2026-03-22", "type": "Refund", "customer": "Northbeam Studio", "country": "Canada", "amount": -9.99, "desc": "Refund for order #4417", "id": "txn_8571"},
+    {"date": "2026-03-21", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 128.94, "desc": "Invoice #6193", "id": "txn_8564"},
+    {"date": "2026-03-21", "type": "Charge", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": 385.25, "desc": "Invoice #7159", "id": "txn_8557"},
+    {"date": "2026-03-21", "type": "Charge", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": 249.38, "desc": "Subscription 6665", "id": "txn_8550"},
+    {"date": "2026-03-21", "type": "Payout", "customer": "Tidewater bank transfer", "country": "—", "amount": -1856.69, "desc": "Payout to ••6620", "id": "txn_8543"},
+    {"date": "2026-03-20", "type": "Charge", "customer": "Kestrel Ridge Farm", "country": "United Kingdom", "amount": 314.78, "desc": "Order #1159", "id": "txn_8536"},
+    {"date": "2026-03-20", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 62.16, "desc": "Invoice #8244", "id": "txn_8529"},
+    {"date": "2026-03-20", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 96.69, "desc": "Invoice #5157", "id": "txn_8522"},
+    {"date": "2026-03-20", "type": "Refund", "customer": "Cedar Row Books", "country": "United States", "amount": -14, "desc": "Refund for order #5119", "id": "txn_8515"},
+    {"date": "2026-03-20", "type": "Refund", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": -6.5, "desc": "Refund for order #4439", "id": "txn_8508"},
+    {"date": "2026-03-19", "type": "Charge", "customer": "Northbeam Studio", "country": "Canada", "amount": 84.01, "desc": "Order #4146", "id": "txn_8501"},
+    {"date": "2026-03-19", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 263.0, "desc": "Invoice #1185", "id": "txn_8494"},
+    {"date": "2026-03-19", "type": "Refund", "customer": "Cedar Row Books", "country": "United States", "amount": -14, "desc": "Refund for order #1294", "id": "txn_8487"},
+    {"date": "2026-03-18", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 261.14, "desc": "Order #7379", "id": "txn_8480"},
+    {"date": "2026-03-18", "type": "Refund", "customer": "Kestrel Ridge Farm", "country": "United Kingdom", "amount": -6.5, "desc": "Refund for order #7681", "id": "txn_8473"},
+    {"date": "2026-03-18", "type": "Refund", "customer": "Fjordline Knitwear", "country": "Norway", "amount": -22.4, "desc": "Refund for order #3450", "id": "txn_8466"},
+    {"date": "2026-03-17", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 227.34, "desc": "Order #7599", "id": "txn_8459"},
+    {"date": "2026-03-17", "type": "Dispute", "customer": "Lakeshore Cycles", "country": "Canada", "amount": -120.0, "desc": "Chargeback — card not present", "id": "txn_8452"},
+    {"date": "2026-03-16", "type": "Charge", "customer": "Birchwood Ceramics", "country": "United States", "amount": 398.57, "desc": "Invoice #1666", "id": "txn_8445"},
+    {"date": "2026-03-16", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 268.06, "desc": "Order #8476", "id": "txn_8438"},
+    {"date": "2026-03-15", "type": "Charge", "customer": "Northbeam Studio", "country": "Canada", "amount": 261.54, "desc": "Subscription 3632", "id": "txn_8431"},
+    {"date": "2026-03-15", "type": "Refund", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": -38.2, "desc": "Refund for order #8465", "id": "txn_8424"},
+    {"date": "2026-03-15", "type": "Refund", "customer": "Fjordline Knitwear", "country": "Norway", "amount": -38.2, "desc": "Refund for order #2636", "id": "txn_8417"},
+    {"date": "2026-03-14", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 173.64, "desc": "Subscription 6881", "id": "txn_8410"},
+    {"date": "2026-03-14", "type": "Charge", "customer": "Sable Island Surf", "country": "Canada", "amount": 44.98, "desc": "Order #6543", "id": "txn_8403"},
+    {"date": "2026-03-14", "type": "Refund", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": -24.99, "desc": "Refund for order #3636", "id": "txn_8396"},
+    {"date": "2026-03-14", "type": "Payout", "customer": "Tidewater bank transfer", "country": "—", "amount": -1731.28, "desc": "Payout to ••6620", "id": "txn_8389"},
+    {"date": "2026-03-13", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 233.46, "desc": "Invoice #2505", "id": "txn_8382"},
+    {"date": "2026-03-13", "type": "Charge", "customer": "Birchwood Ceramics", "country": "United States", "amount": 361.92, "desc": "Subscription 2147", "id": "txn_8375"},
+    {"date": "2026-03-13", "type": "Refund", "customer": "Portage Coffee", "country": "United States", "amount": -24.99, "desc": "Refund for order #7407", "id": "txn_8368"},
+    {"date": "2026-03-13", "type": "Refund", "customer": "Birchwood Ceramics", "country": "United States", "amount": -22.4, "desc": "Refund for order #5405", "id": "txn_8361"},
+    {"date": "2026-03-13", "type": "Fee", "customer": "Tidewater fees", "country": "—", "amount": -14.51, "desc": "Monthly platform fee", "id": "txn_8354"},
+    {"date": "2026-03-12", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 347.14, "desc": "Invoice #9394", "id": "txn_8347"},
+    {"date": "2026-03-12", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 269.08, "desc": "Order #3251", "id": "txn_8340"},
+    {"date": "2026-03-12", "type": "Charge", "customer": "Lakeshore Cycles", "country": "Canada", "amount": 58.3, "desc": "Invoice #6640", "id": "txn_8333"},
+    {"date": "2026-03-11", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 216.34, "desc": "Invoice #7461", "id": "txn_8326"},
+    {"date": "2026-03-11", "type": "Charge", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": 42.86, "desc": "Subscription 8456", "id": "txn_8319"},
+    {"date": "2026-03-11", "type": "Refund", "customer": "Lakeshore Cycles", "country": "Canada", "amount": -18, "desc": "Refund for order #1783", "id": "txn_8312"},
+    {"date": "2026-03-10", "type": "Charge", "customer": "Lakeshore Cycles", "country": "Canada", "amount": 173.01, "desc": "Invoice #5554", "id": "txn_8305"},
+    {"date": "2026-03-10", "type": "Refund", "customer": "Northbeam Studio", "country": "Canada", "amount": -22.4, "desc": "Refund for order #1041", "id": "txn_8298"},
+    {"date": "2026-03-10", "type": "Refund", "customer": "Fjordline Knitwear", "country": "Norway", "amount": -45, "desc": "Refund for order #4082", "id": "txn_8291"},
+    {"date": "2026-03-09", "type": "Charge", "customer": "Juniper & Pine Florals", "country": "Canada", "amount": 370.52, "desc": "Invoice #9102", "id": "txn_8284"},
+    {"date": "2026-03-09", "type": "Refund", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": -14, "desc": "Refund for order #1958", "id": "txn_8277"},
+    {"date": "2026-03-08", "type": "Charge", "customer": "Birchwood Ceramics", "country": "United States", "amount": 56.46, "desc": "Invoice #2333", "id": "txn_8270"},
+    {"date": "2026-03-08", "type": "Refund", "customer": "Cedar Row Books", "country": "United States", "amount": -6.5, "desc": "Refund for order #8902", "id": "txn_8263"},
+    {"date": "2026-03-07", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 216.1, "desc": "Invoice #1602", "id": "txn_8256"},
+    {"date": "2026-03-07", "type": "Charge", "customer": "Kestrel Ridge Farm", "country": "United Kingdom", "amount": 91.87, "desc": "Order #9275", "id": "txn_8249"},
+    {"date": "2026-03-07", "type": "Charge", "customer": "Northbeam Studio", "country": "Canada", "amount": 79.4, "desc": "Subscription 7267", "id": "txn_8242"},
+    {"date": "2026-03-07", "type": "Refund", "customer": "Fjordline Knitwear", "country": "Norway", "amount": -24.99, "desc": "Refund for order #4748", "id": "txn_8235"},
+    {"date": "2026-03-07", "type": "Payout", "customer": "Tidewater bank transfer", "country": "—", "amount": -2267.74, "desc": "Payout to ••6620", "id": "txn_8228"},
+    {"date": "2026-03-06", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 341.14, "desc": "Invoice #6502", "id": "txn_8221"},
+    {"date": "2026-03-06", "type": "Charge", "customer": "Birchwood Ceramics", "country": "United States", "amount": 46.55, "desc": "Invoice #7217", "id": "txn_8214"},
+    {"date": "2026-03-06", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 345.91, "desc": "Invoice #2324", "id": "txn_8207"},
+    {"date": "2026-03-05", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 179.91, "desc": "Invoice #8978", "id": "txn_8200"},
+    {"date": "2026-03-05", "type": "Refund", "customer": "Portage Coffee", "country": "United States", "amount": -38.2, "desc": "Refund for order #5436", "id": "txn_8193"},
+    {"date": "2026-03-04", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 241.97, "desc": "Subscription 6254", "id": "txn_8186"},
+    {"date": "2026-03-04", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 205.7, "desc": "Order #5020", "id": "txn_8179"},
+    {"date": "2026-03-04", "type": "Refund", "customer": "Northbeam Studio", "country": "Canada", "amount": -31.99, "desc": "Refund for order #6427", "id": "txn_8172"},
+    {"date": "2026-03-04", "type": "Refund", "customer": "Sable Island Surf", "country": "Canada", "amount": -45, "desc": "Refund for order #4847", "id": "txn_8165"},
+    {"date": "2026-03-03", "type": "Charge", "customer": "Portage Coffee", "country": "United States", "amount": 316.34, "desc": "Invoice #6242", "id": "txn_8158"},
+    {"date": "2026-03-03", "type": "Refund", "customer": "Portage Coffee", "country": "United States", "amount": -22.4, "desc": "Refund for order #5380", "id": "txn_8151"},
+    {"date": "2026-03-03", "type": "Fee", "customer": "Tidewater fees", "country": "—", "amount": -6.06, "desc": "Monthly platform fee", "id": "txn_8144"},
+    {"date": "2026-03-02", "type": "Charge", "customer": "Harbour Lights Gifts", "country": "Canada", "amount": 245.87, "desc": "Order #3661", "id": "txn_8137"},
+    {"date": "2026-03-02", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 57.22, "desc": "Subscription 8016", "id": "txn_8130"},
+    {"date": "2026-03-02", "type": "Charge", "customer": "Sable Island Surf", "country": "Canada", "amount": 157.56, "desc": "Order #6299", "id": "txn_8123"},
+    {"date": "2026-03-01", "type": "Charge", "customer": "Sable Island Surf", "country": "Canada", "amount": 21.8, "desc": "Order #1093", "id": "txn_8116"},
+    {"date": "2026-03-01", "type": "Charge", "customer": "Northbeam Studio", "country": "Canada", "amount": 46.32, "desc": "Subscription 5892", "id": "txn_8109"},
+    {"date": "2026-03-01", "type": "Charge", "customer": "Lakeshore Cycles", "country": "Canada", "amount": 352.85, "desc": "Order #9021", "id": "txn_8102"},
+    {"date": "2026-03-01", "type": "Refund", "customer": "Lakeshore Cycles", "country": "Canada", "amount": -38.2, "desc": "Refund for order #5052", "id": "txn_8095"},
+    {"date": "2026-02-28", "type": "Refund", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": -55.0, "desc": "Refund for order #4410", "id": "txn_8088"},
+    {"date": "2026-02-27", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 281.16, "desc": "Order #6629", "id": "txn_8081"},
+    {"date": "2026-02-27", "type": "Charge", "customer": "Kestrel Ridge Farm", "country": "United Kingdom", "amount": 72.56, "desc": "Order #9520", "id": "txn_8074"},
+    {"date": "2026-02-27", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 416.42, "desc": "Order #9948", "id": "txn_8067"},
+    {"date": "2026-02-27", "type": "Charge", "customer": "Maple Hollow Bakery", "country": "Canada", "amount": 357.83, "desc": "Order #5368", "id": "txn_8060"},
+    {"date": "2026-02-26", "type": "Charge", "customer": "Fjordline Knitwear", "country": "Norway", "amount": 100.52, "desc": "Order #5249", "id": "txn_8053"},
+    {"date": "2026-02-26", "type": "Charge", "customer": "Cedar Row Books", "country": "United States", "amount": 334.8, "desc": "Order #1292", "id": "txn_8046"},
+    {"date": "2026-02-26", "type": "Charge", "customer": "Birchwood Ceramics", "country": "United States", "amount": 316.14, "desc": "Order #2988", "id": "txn_8039"},
+    {"date": "2026-02-26", "type": "Charge", "customer": "Tidal Grove Yoga", "country": "Canada", "amount": 376.47, "desc": "Order #2644", "id": "txn_8032"}
+  ]/*END*/;
+  const PER = 10;
+  const st = { type: '', month: '', q: '', page: 1, pages: 1, rows: [], loading: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fd = (s) => { const [y, m, d] = s.split('-').map(Number); return `${MON[m - 1]} ${d}, ${y}`; };
+  const cad = (n) => (n < 0 ? '−' : '') + 'CA$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  q('#k-gross').textContent = cad(TXNS.filter((t) => t.type === 'Charge').reduce((a, t) => a + t.amount, 0));
+  q('#k-count').textContent = TXNS.length;
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  // Simulated server: filtering + paging happen "remotely" after a delay.
+  async function fetchPage() {
+    st.loading = true; draw();
+    await later(350);
+    const all = TXNS.filter((t) => (!st.type || t.type === st.type) && (!st.month || t.date.startsWith(st.month)) && (!st.q || t.customer.toLowerCase().includes(st.q.toLowerCase())));
+    st.pages = Math.max(1, Math.ceil(all.length / PER)); if (st.page > st.pages) st.page = st.pages;
+    st.rows = all.slice((st.page - 1) * PER, st.page * PER); st.total = all.length; st.loading = false; draw();
+  }
+  function draw() {
+    q('#tbl').innerHTML = `<div class="${st.loading ? 'loading' : ''}"><table aria-busy="${st.loading}"><thead><tr><th>Date</th><th>Description</th><th>Customer</th><th>Country</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+      ${st.rows.map((t) => `<tr><td>${fd(t.date)}</td><td>${esc(t.desc)}</td><td>${esc(t.customer)}</td><td>${esc(t.country)}</td><td><span class="pill ${t.type}">${t.type}</span></td><td class="amt ${t.amount < 0 ? 'neg' : ''}">${cad(t.amount)}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">No transactions match these filters.</td></tr>'}</tbody></table></div>
+      <div class="pager"><button type="button" id="prev" ${st.page <= 1 || st.loading ? 'disabled' : ''}>Previous</button><span>${st.loading ? 'Loading…' : `Page ${st.page} of ${st.pages} · ${st.total ?? 0} results`}</span><button type="button" id="next" ${st.page >= st.pages || st.loading ? 'disabled' : ''}>Next</button></div>`;
+  }
+  q('#tbl').addEventListener('click', (e) => { if (e.target.id === 'prev') { st.page--; fetchPage(); } if (e.target.id === 'next') { st.page++; fetchPage(); } });
+  q('#apply').addEventListener('click', () => { st.type = q('#f-type').value; st.month = q('#f-month').value; st.q = q('#f-q').value.trim(); st.page = 1; fetchPage(); });
+  q('#export').addEventListener('click', () => { alertBox('CSV exports are emailed to account owners.'); });
+  function alertBox(m) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = m; document.body.appendChild(d); setTimeout(() => d.remove(), 3000); }
+  fetchPage();
+})();
+</script>
+</body>
+</html>

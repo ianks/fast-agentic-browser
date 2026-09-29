@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Your account · Gorse Grocers</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fffdf5; }
+  header { background: #365314; }
+  main { max-width: 1000px; }
+  .acct { display: grid; grid-template-columns: 220px 1fr; gap: 26px; }
+  .vtabs { display: flex; flex-direction: column; gap: 2px; }
+  .vtabs button { text-align: left; border: 0; background: none; border-radius: 6px; padding: 9px 12px; }
+  .vtabs button[aria-selected=true] { background: #ecfccb; font-weight: 700; color: #365314; }
+  .addr { border: 1px solid #e5e7eb; background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; gap: 12px; }
+  .badge { font-size: 12px; background: #ecfccb; color: #365314; padding: 1px 8px; border-radius: 10px; margin-left: 6px; }
+  .editor { background: #fff; border: 1px solid #d9f99d; border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+  .days { display: flex; gap: 8px; margin: 10px 0 14px; }
+  .days button[aria-pressed=true] { background: #365314; color: #fff; }
+  .wins { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .win { border: 1px solid #d4d4d8; border-radius: 10px; padding: 10px 12px; font-weight: 400; margin: 0; display: flex; gap: 8px; align-items: center; background: #fff; }
+  .win.full { color: #a1a1aa; background: #fafafa; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<header><strong>Gorse Grocers</strong><a href="#" data-dead>Shop</a><a href="#" data-dead>Offers</a><a href="#" data-dead>Orders</a><span style="margin-left:auto">Account · Rhiannon Pryce</span></header>
+<main>
+  <h1>Your account</h1>
+  <div class="acct">
+    <div class="vtabs" role="tablist" aria-orientation="vertical" aria-label="Account sections">
+      <button role="tab" id="t-profile" aria-selected="false" aria-controls="p-profile">Profile</button>
+      <button role="tab" id="t-addr" aria-selected="true" aria-controls="p-addr">Delivery addresses</button>
+      <button role="tab" id="t-slots" aria-selected="false" aria-controls="p-slots">Delivery slots</button>
+      <button role="tab" id="t-comms" aria-selected="false" aria-controls="p-comms">Emails &amp; texts</button>
+    </div>
+    <div>
+      <section role="tabpanel" id="p-profile" aria-labelledby="t-profile" hidden><h2>Profile</h2><p>Rhiannon Pryce · rhiannon.pryce@kitemail.co.uk · member since 2021</p></section>
+      <section role="tabpanel" id="p-addr" aria-labelledby="t-addr"><h2>Delivery addresses</h2><div id="addr-list"></div><button type="button" id="add-addr">+ Add a new address</button></section>
+      <section role="tabpanel" id="p-slots" aria-labelledby="t-slots" hidden><h2>Delivery slots</h2><div id="slots"></div></section>
+      <section role="tabpanel" id="p-comms" aria-labelledby="t-comms" hidden><h2>Emails &amp; texts</h2>
+        <label style="font-weight:400;display:flex;gap:8px"><input type="checkbox" id="c-offers"> Weekly offers email</label>
+        <label style="font-weight:400;display:flex;gap:8px"><input type="checkbox" id="c-sms" checked> Text me when my driver is on the way</label>
+      </section>
+    </div>
+  </div>
+</main>
+<address-verify id="verify"></address-verify>
+<div id="toast" class="toast" hidden></div>
+<script>
+// Address verification dialog rendered inside an open shadow root.
+class AddressVerify extends HTMLElement {
+  connectedCallback() {
+    if (this.shadowRoot) return;
+    const r = this.attachShadow({ mode: 'open' });
+    r.innerHTML = `<style>
+      .ov { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 20; }
+      .box { background: #fff; border-radius: 12px; width: 460px; padding: 20px 22px; font: 15px/1.4 system-ui, sans-serif; }
+      h3 { margin: 0 0 8px; } .opt { border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+      .lab { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
+      button { padding: 8px 14px; border-radius: 6px; border: 1px solid #888; background: #f3f4f6; cursor: pointer; font: inherit; }
+      button.primary { background: #365314; color: #fff; border-color: #365314; }
+      .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+      [hidden] { display: none !important; }
+    </style>
+    <div class="ov" part="overlay" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="vh">
+      <h3 id="vh">Check your address</h3><p style="margin:0;color:#4b5563">We couldn't match the address exactly. Our records suggest a slightly different version.</p>
+      <div class="opt"><div class="lab">You entered</div><div id="entered"></div></div>
+      <div class="opt"><div class="lab">Suggested</div><div id="suggested"></div></div>
+      <div class="row"><button type="button" id="edit">Edit address</button><button type="button" id="keep">Keep what I entered</button><button type="button" class="primary" id="use">Use suggested address</button></div>
+    </div></div>`;
+    r.getElementById('edit').onclick = () => this.close('edit');
+    r.getElementById('keep').onclick = () => this.close('entered');
+    r.getElementById('use').onclick = () => this.close('suggested');
+  }
+  open(entered, suggested) {
+    const r = this.shadowRoot;
+    r.getElementById('entered').textContent = entered; r.getElementById('suggested').textContent = suggested;
+    r.querySelector('.ov').hidden = false;
+    return new Promise((res) => { this._res = res; });
+  }
+  close(v) { this.shadowRoot.querySelector('.ov').hidden = true; const f = this._res; this._res = null; if (f) f(v); }
+}
+customElements.define('address-verify', AddressVerify);
+
+(() => {
+  const ADDRS = [
+    { id: 'a1', label: 'Home', line1: '14 Coldharbour Lane', line2: '', town: 'Norwich', pc: 'NR2 4PH', def: true },
+    { id: 'a2', label: 'Work', line1: 'Unit 6, Hethersett Business Park', line2: 'Colney Lane', town: 'Norwich', pc: 'NR4 7TJ', def: false },
+    { id: 'a3', label: "Mum's", line1: '3 Wimbledon Terrace', line2: '', town: 'Cromer', pc: 'NR27 9AE', def: false },
+  ];
+  // postcode -> canonical town used by the verifier
+  const PAF = { 'NR4 7QD': 'Norwich', 'NR2 4PH': 'Norwich', 'NR4 7TJ': 'Norwich', 'NR27 9AE': 'Cromer' };
+  const DAYS = [['2026-05-21', 'Thu 21 May'], ['2026-05-22', 'Fri 22 May'], ['2026-05-23', 'Sat 23 May']];
+  const WINS = {
+    '2026-05-21': [['08:00–10:00', 1], ['12:00–14:00', 0], ['18:00–20:00', 1], ['20:00–22:00', 0]],
+    '2026-05-22': [['08:00–10:00', 0], ['12:00–14:00', 1], ['18:00–20:00', 1], ['20:00–22:00', 0]],
+    '2026-05-23': [['08:00–10:00', 1], ['12:00–14:00', 0], ['18:00–19:00 · 1-hour window (+£3.00)', 0], ['18:00–20:00', 0], ['20:00–22:00', 1]],
+  };
+  const st = { editing: null, day: '2026-05-21', slot: { date: '2026-05-21', win: '12:00–14:00' } };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  qa('[role=tab]').forEach((t) => t.addEventListener('click', () => {
+    qa('[role=tab]').forEach((o) => { o.setAttribute('aria-selected', String(o === t)); q('#' + o.getAttribute('aria-controls')).hidden = o !== t; });
+  }));
+  q('#c-offers').addEventListener('change', async (e) => { await rec({ event: 'comms_pref', pref: 'offers_email', on: String(e.target.checked) }); toast('Preferences saved.'); });
+  q('#c-sms').addEventListener('change', async (e) => { await rec({ event: 'comms_pref', pref: 'driver_sms', on: String(e.target.checked) }); toast('Preferences saved.'); });
+  const fmt = (a) => [a.line1, a.line2, a.town, a.pc].filter(Boolean).join(', ');
+  const normPc = (s) => { const c = s.toUpperCase().replace(/\s+/g, ''); return c.length > 3 ? c.slice(0, -3) + ' ' + c.slice(-3) : c; };
+
+  function renderAddrs() {
+    q('#addr-list').innerHTML = ADDRS.map((a) => st.editing === a.id ? editor(a) : `<div class="addr"><div><strong>${esc(a.label)}</strong>${a.def ? '<span class="badge">Default</span>' : ''}<div>${esc(fmt(a))}</div></div>
+      <div class="row" style="align-self:flex-start"><button type="button" data-edit="${a.id}" aria-label="Edit ${esc(a.label)} address">Edit</button>${a.def ? '' : `<button type="button" data-def="${a.id}" aria-label="Make ${esc(a.label)} the default address">Make default</button>`}<button type="button" data-rm="${a.id}" aria-label="Remove ${esc(a.label)} address">Remove</button></div></div>`).join('') + (st.editing === 'new' ? editor({ id: 'new', label: '', line1: '', line2: '', town: '', pc: '' }) : '');
+  }
+  const editor = (a) => `<div class="editor" role="group" aria-label="${a.id === 'new' ? 'New address' : 'Edit ' + esc(a.label) + ' address'}">
+    <label for="e-label">Address name</label><input id="e-label" type="text" value="${esc(a.label)}">
+    <label for="e-l1">Address line 1</label><input id="e-l1" type="text" value="${esc(a.line1)}">
+    <label for="e-l2">Address line 2 (optional)</label><input id="e-l2" type="text" value="${esc(a.line2)}">
+    <div class="row"><div><label for="e-town">Town or city</label><input id="e-town" type="text" style="width:180px" value="${esc(a.town)}"></div><div><label for="e-pc">Postcode</label><input id="e-pc" type="text" style="width:110px" value="${esc(a.pc)}"></div></div>
+    <div class="err" id="e-err" role="alert" hidden></div>
+    <div class="row" style="margin-top:12px"><button type="button" id="e-cancel">Cancel</button><button type="button" class="primary" id="e-save">Save address</button></div></div>`;
+  q('#addr-list').addEventListener('click', async (e) => {
+    const ed = e.target.closest('[data-edit]'); const df = e.target.closest('[data-def]'); const rm = e.target.closest('[data-rm]');
+    if (ed) { st.editing = ed.dataset.edit; renderAddrs(); return; }
+    if (df) { const a = ADDRS.find((x) => x.id === df.dataset.def); await rec({ event: 'address_default', label: a.label }); ADDRS.forEach((x) => (x.def = x === a)); renderAddrs(); toast(`${a.label} is now your default address.`); return; }
+    if (rm) { const a = ADDRS.find((x) => x.id === rm.dataset.rm); await rec({ event: 'address_remove', label: a.label }); ADDRS.splice(ADDRS.indexOf(a), 1); renderAddrs(); toast('Address removed.'); return; }
+    if (e.target.id === 'e-cancel') { st.editing = null; renderAddrs(); return; }
+    if (e.target.id === 'e-save') saveAddr();
+  });
+  q('#add-addr').addEventListener('click', () => { st.editing = 'new'; renderAddrs(); });
+  async function saveAddr() {
+    const err = (m) => { q('#e-err').textContent = m; q('#e-err').hidden = !m; };
+    const v = { label: q('#e-label').value.trim(), line1: q('#e-l1').value.trim().replace(/\s+/g, ' '), line2: q('#e-l2').value.trim().replace(/\s+/g, ' '), town: q('#e-town').value.trim().replace(/\s+/g, ' '), pc: normPc(q('#e-pc').value.trim()) };
+    if (!v.label) return err('Give this address a name.');
+    if (!v.line1) return err('Enter the first line of the address.');
+    if (!v.town) return err('Enter the town or city.');
+    if (!/^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/.test(v.pc)) return err('Enter a valid UK postcode.');
+    err(''); q('#e-save').disabled = true; q('#e-save').textContent = 'Checking address…';
+    await later(450);
+    q('#e-save').disabled = false; q('#e-save').textContent = 'Save address';
+    let source = 'entered';
+    const canon = PAF[v.pc];
+    if (canon && canon.toLowerCase() !== v.town.toLowerCase()) {
+      const choice = await q('#verify').open(fmt(v), fmt({ ...v, town: canon }));
+      if (choice === 'edit') return;
+      if (choice === 'suggested') { v.town = canon; source = 'suggested'; }
+    }
+    const target = st.editing === 'new' ? null : ADDRS.find((x) => x.id === st.editing);
+    const street = [v.line1, v.line2].filter(Boolean).join(', ').toLowerCase().replace(/\s*,\s*/g, ', ').replace(/(, )+/g, ', ');
+    await rec({ event: target ? 'address_update' : 'address_add', label: v.label, previous_label: target ? target.label : '', street, town: v.town.toLowerCase(), postcode: v.pc, verified: source });
+    if (target) Object.assign(target, v); else ADDRS.push({ id: 'a' + (ADDRS.length + 7), ...v, def: false });
+    st.editing = null; renderAddrs(); toast('Address saved.');
+  }
+
+  function renderSlots() {
+    const wins = WINS[st.day];
+    q('#slots').innerHTML = `<div class="card" style="background:#fff"><strong>Next order GG-55812</strong><div class="muted">Currently booked: ${DAYS.find((d) => d[0] === st.slot.date)[1]}, ${st.slot.win}</div></div>
+      <div class="days" role="group" aria-label="Delivery day">${DAYS.map(([d, l]) => `<button type="button" data-day="${d}" aria-pressed="${st.day === d}">${l}</button>`).join('')}</div>
+      <div class="wins" role="radiogroup" aria-label="Delivery window">${wins.map(([w, full], i) => `<label class="win ${full ? 'full' : ''}"><input type="radio" name="win" value="${w}" ${full ? 'disabled' : ''} ${st.slot.date === st.day && st.slot.win === w ? 'checked' : ''}> ${w}${full ? ' — fully booked' : ''}</label>`).join('')}</div>
+      <div class="row" style="margin-top:14px"><button type="button" class="primary" id="slot-save">Confirm delivery window</button></div>`;
+  }
+  q('#slots').addEventListener('click', async (e) => {
+    const d = e.target.closest('[data-day]'); if (d) { st.day = d.dataset.day; renderSlots(); return; }
+    if (e.target.id === 'slot-save') {
+      const w = (qa('input[name=win]').find((r) => r.checked) || {}).value;
+      if (!w) return toast('Choose a delivery window first.');
+      e.target.disabled = true; await later(350);
+      await rec({ event: 'delivery_slot', order: 'GG-55812', date: st.day, window: w });
+      st.slot = { date: st.day, win: w }; renderSlots(); toast(`Delivery booked for ${DAYS.find((x) => x[0] === st.day)[1]}, ${w}.`);
+    }
+  });
+  renderAddrs(); renderSlots();
+})();
+</script>
+</body>
+</html>

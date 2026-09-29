@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inbox · Postbox</title>
+<script src="../common.js"></script>
+<style>
+  :root { --blue: #2f6fed; --blue-d: #1f55c4; --blue-l: #e8f0fe; --ink: #1f2430; --muted: #6b7280; --line: #e6e8ee; --side: #f6f8fc; --sel: #c2dbff; --unread: #fff; --read: #f7f9fc; --bad: #c5221f; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 "Helvetica Neue", -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink); background: var(--side); }
+  a { color: var(--blue-d); text-decoration: none; }
+  header.top { height: 62px; display: flex; align-items: center; gap: 18px; padding: 0 16px 0 20px; }
+  .logo { display: flex; align-items: center; gap: 9px; width: 222px; font-size: 21px; color: #3c4150; font-weight: 500; letter-spacing: -.2px; }
+  .sform { flex: 1; max-width: 720px; display: flex; align-items: center; background: #eaf1fb; border-radius: 24px; padding: 0 6px; height: 46px; }
+  .sform:focus-within { background: #fff; box-shadow: 0 1px 3px rgba(60,64,67,.3); }
+  .sform input { flex: 1; border: 0; background: none; font: inherit; font-size: 15px; padding: 10px 6px; outline: none; }
+  .sform button { background: none; border: 0; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 16px; color: #444; }
+  .sform button:hover { background: rgba(0,0,0,.06); }
+  .hicons { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .ib { background: none; border: 0; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; color: #444; }
+  .ib:hover { background: rgba(0,0,0,.06); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: #7b61c9; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-left: 6px; border: 0; cursor: pointer; }
+  .shell { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 62px); }
+  nav.side { padding: 4px 8px 20px 0; }
+  .compose { margin: 6px 0 14px 8px; display: inline-flex; align-items: center; gap: 12px; background: #c2e7ff; color: #001d35; border: 0; border-radius: 16px; padding: 16px 22px; font: inherit; font-weight: 600; cursor: pointer; }
+  .compose:hover { box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .fl { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 12px 0 22px; border-radius: 0 16px 16px 0; color: #202124; font-size: 14px; }
+  .fl:hover { background: #e9ecf1; }
+  .fl.on { background: #d3e3fd; font-weight: 700; color: #041e49; }
+  .fl .n { margin-left: auto; font-size: 12.5px; font-weight: 700; }
+  .fl .ic { width: 20px; text-align: center; }
+  .sechd { display: flex; align-items: center; padding: 14px 12px 4px 22px; font-weight: 600; color: #444; }
+  .sechd button { margin-left: auto; background: none; border: 0; font-size: 18px; cursor: pointer; color: #555; border-radius: 50%; width: 28px; height: 28px; }
+  .ftree, .ftree ul { list-style: none; margin: 0; padding: 0; }
+  .ftree ul { padding-left: 14px; }
+  .ftree .fr { display: flex; align-items: center; }
+  .ftree .exp { width: 22px; height: 26px; background: none; border: 0; cursor: pointer; color: #5f6368; font-size: 11px; margin-left: 4px; flex: none; }
+  .ftree .nexp { width: 22px; margin-left: 4px; flex: none; }
+  .ftree .fl { flex: 1; padding-left: 4px; height: 28px; }
+  .ftree .fl .ic { width: 16px; color: #8a8f99; }
+  .pane { background: #fff; border-radius: 16px; margin: 0 16px 16px 0; min-height: calc(100vh - 80px); overflow: hidden; }
+  .ltool { display: flex; align-items: center; gap: 4px; padding: 8px 14px; border-bottom: 1px solid var(--line); min-height: 48px; position: sticky; top: 0; background: #fff; z-index: 3; }
+  .tb { background: none; border: 0; height: 34px; min-width: 34px; padding: 0 9px; border-radius: 17px; cursor: pointer; font: inherit; font-size: 13.5px; color: #3c4043; display: inline-flex; align-items: center; gap: 5px; }
+  .tb:hover { background: rgba(0,0,0,.06); }
+  .tb:disabled { opacity: .4; cursor: default; }
+  .tsep { width: 1px; height: 20px; background: var(--line); margin: 0 6px; }
+  .pgtxt { margin-left: auto; font-size: 12.5px; color: var(--muted); padding: 0 8px; }
+  .lhead { padding: 10px 18px 4px; font-size: 13px; color: var(--muted); }
+  .mrow { display: flex; align-items: center; gap: 6px; padding: 0 14px 0 12px; height: 40px; border-bottom: 1px solid #f1f3f4; background: var(--read); position: relative; }
+  .mrow.unread { background: var(--unread); }
+  .mrow.unread .from, .mrow.unread .subj b, .mrow.unread .date { font-weight: 800; color: #111; }
+  .mrow:hover { box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px rgba(60,64,67,.3); z-index: 1; }
+  .mrow.selected { background: var(--sel); }
+  .mrow input.sel { width: 16px; height: 16px; margin: 0 4px; cursor: pointer; }
+  .star { background: none; border: 0; font-size: 17px; color: #b0b4ba; cursor: pointer; width: 28px; }
+  .star.on { color: #f4b400; }
+  .mlink { flex: 1; display: flex; align-items: center; gap: 12px; color: #202124; min-width: 0; height: 100%; }
+  .mlink .from { width: 190px; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+  .mlink .subj { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .mlink .subj b { font-weight: 500; }
+  .mlink .snip { color: #5f6368; }
+  .mlink .date { width: 64px; text-align: right; flex: none; font-size: 12.5px; color: #3c4043; }
+  .fchip { display: inline-block; background: #e8eaed; color: #3c4043; border-radius: 4px; padding: 0 6px; font-size: 11.5px; margin-right: 6px; font-weight: 500; vertical-align: 1px; }
+  .hov { visibility: hidden; position: absolute; right: 12px; top: 3px; display: flex; gap: 2px; background: inherit; padding-left: 8px; }
+  .mrow:hover .hov, .mrow:focus-within .hov { visibility: visible; }
+  .mrow:hover .date, .mrow:focus-within .date { visibility: hidden; }
+  .hov button { background: none; border: 0; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 15px; }
+  .hov button:hover { background: rgba(0,0,0,.07); }
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+  .rtool { display: flex; align-items: center; gap: 2px; padding: 8px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #fff; z-index: 3; }
+  .reader { padding: 18px 28px 30px 70px; }
+  .reader h1 { font-size: 22px; font-weight: 400; margin: 6px 0 18px; color: #1f1f1f; }
+  .sender { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+  .sender .av { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; margin-left: -54px; flex: none; }
+  .sender .av::before { content: attr(data-i); }
+  .sender .who b { font-size: 14.5px; }
+  .sender .when { margin-left: auto; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+  .mbody { font-size: 14.5px; line-height: 1.6; max-width: 760px; }
+  .atts { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
+  .att { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; min-width: 230px; }
+  .att .pdf { background: #d93025; color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 2px 4px; }
+  .rbar { display: flex; gap: 10px; margin-top: 26px; }
+  .btn { font: inherit; padding: 8px 18px; border-radius: 18px; border: 1px solid #747775; background: #fff; cursor: pointer; color: #1f1f1f; font-weight: 500; }
+  .btn:hover { background: #f4f6fb; }
+  .btn.pri { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.pri:hover { background: var(--blue-d); }
+  .btn.sm { padding: 4px 12px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .pop { position: absolute; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(60,64,67,.28), 0 1px 3px rgba(60,64,67,.2); z-index: 30; width: 290px; padding: 8px 0; }
+  .pop .ph { padding: 4px 14px 8px; font-size: 12.5px; color: var(--muted); }
+  .pop input[type=search] { margin: 0 12px 6px; width: calc(100% - 24px); padding: 7px 9px; border: 1px solid #c7c9cf; border-radius: 6px; font: inherit; }
+  .pop .body { max-height: 300px; overflow: auto; }
+  .pop ul { list-style: none; margin: 0; padding: 0; }
+  .pop ul ul { padding-left: 16px; }
+  .pop .ti { display: flex; align-items: center; }
+  .pop .exp { width: 26px; height: 30px; background: none; border: 0; cursor: pointer; color: #5f6368; font-size: 11px; margin-left: 6px; flex: none; }
+  .pop .nexp { width: 26px; margin-left: 6px; flex: none; }
+  .pop .mv, .pop .mi { flex: 1; text-align: left; background: none; border: 0; font: inherit; padding: 6px 12px 6px 4px; cursor: pointer; color: #202124; }
+  .pop .mi { padding-left: 16px; display: block; width: 100%; }
+  .pop .mv:hover, .pop .mi:hover { background: #f1f3f4; }
+  .pop .foot { border-top: 1px solid var(--line); margin-top: 6px; padding: 6px 8px 0; display: flex; justify-content: space-between; }
+  .pop label { display: flex; gap: 8px; align-items: center; padding: 5px 14px; cursor: pointer; }
+  .toast { position: fixed; left: 24px; bottom: 24px; background: #323232; color: #fff; padding: 12px 18px; border-radius: 6px; z-index: 60; font-size: 14px; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
+  .qs { position: fixed; top: 62px; right: 12px; width: 300px; background: #fff; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.2); padding: 16px 18px; z-index: 25; }
+  .qs fieldset { border: 0; padding: 0; margin: 14px 0 0; }
+  .qs legend { font-weight: 700; margin-bottom: 6px; font-size: 13px; }
+  .qs label { display: flex; gap: 8px; align-items: center; padding: 3px 0; }
+  .settings { padding: 18px 26px 40px; }
+  .settings h1 { font-size: 22px; font-weight: 400; margin: 0 0 12px; }
+  .stabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .stabs a { padding: 10px 14px; color: #3c4043; border-bottom: 3px solid transparent; font-size: 13.5px; }
+  .stabs a[aria-selected=true] { color: var(--blue-d); border-bottom-color: var(--blue); font-weight: 700; }
+  .srow { display: grid; grid-template-columns: 240px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid #f1f3f4; }
+  .srow > .k { font-weight: 700; color: #3c4043; }
+  .srow label { display: flex; gap: 8px; align-items: center; margin: 3px 0; font-weight: 400; }
+  input[type=text], input[type=email], select, textarea { font: inherit; padding: 7px 9px; border: 1px solid #c7c9cf; border-radius: 6px; background: #fff; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #aecbfa; border-color: var(--blue); }
+  .ftable { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  .ftable td { padding: 10px 8px; border-bottom: 1px solid #f1f3f4; vertical-align: top; }
+  .ftable .lk { color: var(--blue-d); background: none; border: 0; font: inherit; cursor: pointer; padding: 0 4px; }
+  .fbox { border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 2px 10px rgba(60,64,67,.15); padding: 16px 20px; max-width: 620px; margin: 10px 0 20px; background: #fff; }
+  .fbox .fg { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 8px 12px; }
+  .fbox .fg label { font-weight: 400; color: #3c4043; }
+  .fbox .fg input[type=text] { width: 100%; }
+  .fbox .acts label { display: flex; gap: 9px; align-items: center; padding: 4px 0; }
+  .fbox .acts select { margin-left: 4px; }
+  .fbox .back { background: none; border: 0; color: var(--blue-d); cursor: pointer; font: inherit; padding: 0; margin-bottom: 10px; }
+  .err { color: var(--bad); font-size: 13px; margin-top: 8px; }
+  .muted { color: var(--muted); font-size: 12.5px; }
+  .overlay { position: fixed; inset: 0; background: rgba(32,33,36,.5); display: flex; align-items: flex-start; justify-content: center; padding-top: 110px; z-index: 50; }
+  .dialog { background: #fff; border-radius: 12px; width: 460px; padding: 20px 24px; box-shadow: 0 12px 40px rgba(0,0,0,.3); }
+  .dialog h2 { font-size: 18px; font-weight: 500; margin: 0 0 12px; }
+  .dialog .df { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .cmp { position: fixed; right: 24px; bottom: 0; width: 500px; background: #fff; border-radius: 12px 12px 0 0; box-shadow: 0 8px 24px rgba(0,0,0,.3); z-index: 45; }
+  .cmp .ch { background: #f2f6fc; padding: 10px 14px; border-radius: 12px 12px 0 0; display: flex; font-weight: 600; }
+  .cmp .ch button { margin-left: auto; background: none; border: 0; cursor: pointer; }
+  .cmp input { width: 100%; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 9px 14px; }
+  .cmp textarea { width: 100%; border: 0; min-height: 200px; padding: 10px 14px; resize: none; }
+  .cmp .cf { padding: 10px 14px; display: flex; gap: 10px; }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .compact .mrow { height: 32px; }
+  .comfy .mrow { height: 48px; }
+  .sfoot { padding: 12px 20px; font-size: 12px; color: var(--muted); display: flex; gap: 16px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><rect x="1" y="2" width="28" height="20" rx="4" fill="#2f6fed"/><path d="M3 5 L15 14 L27 5" stroke="#fff" stroke-width="2.4" fill="none"/></svg>Postbox</div>
+  <form class="sform" id="sform" role="search"><button type="submit" aria-label="Search">🔍</button><input type="search" id="sq" placeholder="Search mail" aria-label="Search mail" autocomplete="off"><button type="button" id="sclear" aria-label="Clear search">✕</button></form>
+  <div class="hicons">
+    <button type="button" class="ib" aria-label="Support" id="hsupport">?</button>
+    <button type="button" class="ib" aria-label="Settings" id="hsettings">⚙</button>
+    <button type="button" class="ib" aria-label="Apps" id="happs">⋮⋮</button>
+    <button type="button" class="avatar" aria-label="Account: Maëlle Kerbrat" id="hacct">MK</button>
+  </div>
+</header>
+<div class="shell">
+  <nav class="side" id="side" aria-label="Mailboxes"></nav>
+  <div class="pane" id="pane"></div>
+</div>
+<aside class="qs" id="qs" role="dialog" aria-label="Quick settings" hidden>
+  <div style="display:flex;align-items:center"><b style="font-size:15px">Quick settings</b><button type="button" class="ib" id="qs-x" aria-label="Close quick settings" style="margin-left:auto">✕</button></div>
+  <button type="button" class="btn" id="qs-all" style="width:100%;margin-top:10px">See all settings</button>
+  <fieldset><legend>Density</legend>
+    <label><input type="radio" name="qs-density" value="default" checked> Default</label>
+    <label><input type="radio" name="qs-density" value="comfortable"> Comfortable</label>
+    <label><input type="radio" name="qs-density" value="compact"> Compact</label></fieldset>
+  <fieldset><legend>Reading pane</legend>
+    <label><input type="radio" name="qs-pane" value="none" checked> No split</label>
+    <label><input type="radio" name="qs-pane" value="right"> Right of inbox</label>
+    <label><input type="radio" name="qs-pane" value="below"> Below inbox</label></fieldset>
+  <p class="muted" style="margin:14px 0 0">Storage: 4.2 GB of 30 GB used</p>
+</aside>
+<div id="pop-root"></div>
+<div id="modal-root"></div>
+<div id="cmp-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const fold = (s) => norm(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 4500); };
+  const TODAY = '2026-09-24';
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dow = (d) => { const [y, m, dd] = d.slice(0, 10).split('-').map(Number); return DOW[new Date(Date.UTC(y, m - 1, dd)).getUTCDay()]; };
+  const listDate = (d) => (d.slice(0, 10) === TODAY ? d.slice(11, 16) : d.slice(0, 4) === '2026' ? `${+d.slice(8, 10)} ${MON[+d.slice(5, 7) - 1]}` : `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`);
+  const longDate = (d) => `${dow(d)} ${+d.slice(8, 10)} ${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}, ${d.slice(11, 16)}`;
+
+  const SYS = [['inbox', 'Inbox', '📥'], ['starred', 'Starred', '☆'], ['snoozed', 'Snoozed', '⏰'], ['sent', 'Sent', '➤'], ['drafts', 'Drafts', '📝'], ['archive', 'Archive', '🗄'], ['spam', 'Spam', '⚠'], ['trash', 'Trash', '🗑']];
+  const FOLDERS = [
+    { path: 'clients', name: 'Clients', kids: [
+      { path: 'clients/benelux', name: 'Benelux' },
+      { path: 'clients/iberia', name: 'Iberia', kids: [{ path: 'clients/iberia/2025', name: '2025' }, { path: 'clients/iberia/2026', name: '2026' }] },
+      { path: 'clients/nordics', name: 'Nordics', kids: [{ path: 'clients/nordics/2025', name: '2025' }, { path: 'clients/nordics/2026', name: '2026' }] },
+    ] },
+    { path: 'finance', name: 'Finance', kids: [{ path: 'finance/receipts', name: 'Receipts' }, { path: 'finance/taxes', name: 'Taxes' }, { path: 'finance/utilities', name: 'Utilities' }] },
+    { path: 'press', name: 'Press' }, { path: 'travel', name: 'Travel' }, { path: 'newsletters', name: 'Newsletters' },
+  ];
+  const flat = []; (function walk(list, depth, prefix) { for (const f of list) { const label = prefix ? prefix + ' / ' + f.name : f.name; flat.push({ path: f.path, name: f.name, label, depth, kids: !!f.kids }); if (f.kids) walk(f.kids, depth + 1, label); } })(FOLDERS, 0, '');
+  const folderLabel = (p) => { const s = SYS.find((x) => x[0] === p); if (s) return s[1]; const f = flat.find((x) => x.path === p); return f ? f.label : p; };
+
+  // ------------------------------------------------------------------ messages
+  const P = (...xs) => xs.join('\n\n');
+  const M = [
+    ['M-3431', 'inbox', 'Inês Carvalho', 'ines@lumarte.pt', '2026-09-24 08:52', 'Contract countersigned – Lumarte x Ardent', P('Olá Maëlle,', 'Attached is the countersigned contract for the Lumarte showroom fit-out. Payment schedule as agreed: 40% on signature, 40% at install, 20% at handover.', 'Could you send the first invoice to finance@lumarte.pt with our PO number LUM-2026-114?', 'Beijinhos,\nInês'), { u: 1, at: ['Lumarte_Ardent_contract_signed.pdf'] }],
+    ['M-3430', 'inbox', 'Quay Metrics Billing', 'billing@quaymetrics.io', '2026-09-24 08:10', 'Your September invoice is ready (INV-2026-0918)', P('Hi Ardent Studio,', 'Your invoice for September 2026 is ready. Amount due: €249.00 (Studio plan, 5 seats). It will be charged to the card ending 4417 on 1 October 2026.', 'You can download the PDF from Billing › Invoices in your Quay Metrics workspace.', '— Quay Metrics'), { u: 1 }],
+    ['M-3429', 'inbox', 'The Brief', 'digest@thebrief.news', '2026-09-24 07:31', 'Thursday: freight costs ease, the EU design act, and a very tall chair', P('Good morning. Container rates fell for a sixth week, Brussels publishes the final text of the design act, and a Milanese studio built a 4-metre chair for no clear reason.', 'Read the full edition in your browser.'), { u: 1 }],
+    ['M-3427', 'inbox', 'Joost van Dijk', 'joost@vandijkevents.nl', '2026-09-23 18:44', 'Amsterdam launch – run of show v4', P('Hi Maëlle,', 'Run of show v4 attached. Main change: doors now at 18:30, speeches moved to 19:15 so the DJ can start earlier.', 'Can you confirm the stage dimensions (6 × 4 m?) by Friday?', 'Groetjes,\nJoost'), { u: 1, at: ['Run_of_show_v4.pdf'] }],
+    ['M-3426', 'inbox', 'Aurélie Fontaine', 'aurelie@ardentstudio.eu', '2026-09-23 16:20', 'Moodboard feedback before Friday', P('Hey! Left comments on the Q4 pitch moodboard in Sketchpad. Mostly about the palette — I think the terracotta fights the oak.', 'Can we do 15 minutes tomorrow afternoon?', 'A.'), {}],
+    ['M-3424', 'inbox', 'Railjet Europe', 'tickets@railjet.eu', '2026-09-23 11:05', 'Your e-ticket: Brussels-Midi → Paris-Nord, 2 Oct', P('Bonjour Maëlle Kerbrat,', 'Your journey on Friday 2 October 2026: Brussels-Midi 08:13 → Paris-Nord 09:35, coach 7, seat 64. Booking reference RJ4K2Q.', 'Show the attached ticket on your phone at the gate.'), { at: ['Eticket_RJ4K2Q.pdf'] }],
+    ['M-3421', 'inbox', 'Hana Watanabe', 'hana@kiriko-press.jp', '2026-09-22 19:12', 'Interview request: Ardent’s spatial design practice', P('Dear Ms Kerbrat,', 'I write for Kiriko, a design quarterly in Tokyo. We are preparing a feature on European studios working across retail and events and would love a 30-minute video interview in October.', 'Would any afternoon in the week of 12 October suit you?', 'With best regards,\nHana Watanabe'), { u: 1 }],
+    ['M-3419', 'inbox', 'Leilani Kahananui', 'leilani@kahananui-events.com', '2026-09-22 14:37', 'Re: Invoice query – August', P('Hi Maëlle,', 'Thanks — the corrected invoice is fine. We’ll pay it with our next run on 30 September.', 'Leilani'), {}],
+    ['M-3418', 'inbox', 'Northwind Coworking', 'hello@northwind.work', '2026-09-22 09:02', 'Your October desk booking is confirmed', P('Hi Maëlle, your dedicated desk (D-14) is booked for October 2026. Meeting-room credits: 10 hours.', 'See you soon,\nNorthwind Coworking, Rue de Flandre'), {}],
+    ['M-3415', 'inbox', 'Quay Metrics Billing', 'billing@quaymetrics.io', '2026-09-21 17:50', 'Payment received – thank you', P('Hi Ardent Studio,', 'We received your payment of €249.00 for invoice INV-2026-0817. Thank you!', '— Quay Metrics'), {}],
+    ['M-3413', 'inbox', 'Mateus Oliveira', 'mateus@casaolivia.pt', '2026-09-21 10:15', 'Lisbon site visit photos', P('Olá Maëlle,', 'Photos from Thursday’s site visit at Armazém 16 are in the attached zip. The loading dock is narrower than the plan suggested — about 2.4 m.', 'Abraço,\nMateus'), { at: ['Armazem16_site_visit.zip'] }],
+    ['M-3411', 'inbox', 'Sketchpad', 'noreply@sketchpad.app', '2026-09-20 20:33', 'Aurélie mentioned you in “Ardent / Q4 pitch”', P('Aurélie Fontaine mentioned you: “@Maëlle does the terracotta work with the oak?”', 'Open the file to reply.'), {}],
+    ['M-3409', 'inbox', 'Ferran Puig', 'ferran@puigarquitectes.es', '2026-09-20 12:10', 'Barcelona venue: technical rider', P('Hola Maëlle,', 'Attached is the technical rider for Nau Bostik: 3-phase power at the east wall, max floor load 500 kg/m², rigging points every 4 m.', 'Salut,\nFerran'), { at: ['NauBostik_technical_rider.pdf'] }],
+    ['M-3406', 'inbox', 'Lumen Bank', 'alerts@lumenbank.eu', '2026-09-19 16:45', 'Card payment of €412.60 at Railjet Europe', P('A payment of €412.60 was made with your Lumen Business card ending 4417 at RAILJET EUROPE on 19/09/2026.', 'If you don’t recognise it, freeze your card in the Lumen app.'), {}],
+    ['M-3405', 'inbox', 'Signe Dahl', 'signe@nordlys.no', '2026-09-19 09:30', 'Oslo dates confirmed', P('Hei Maëlle,', 'Good news — the Oslo pop-up is confirmed for 5–8 November at Vippa. I’ll send the floor plan next week.', 'Hilsen,\nSigne'), {}],
+    ['M-3403', 'inbox', 'Design Week Lisboa', 'press@designweeklisboa.pt', '2026-09-18 18:02', 'Accreditation approved – Ardent Studio', P('Your press and trade accreditation for Design Week Lisboa (20–25 October 2026) has been approved for 2 people.', 'Collect your badges at the LX Factory welcome desk.'), {}],
+    ['M-3402', 'inbox', 'Sigrid Holm', 'sigrid@holm-agency.se', '2026-09-18 11:26', 'Q4 venue shortlist – Nordics', P('Hi Maëlle,', 'Here are my Nordic options for Q4: Fotografiska (Stockholm), Vippa (Oslo) and Kulturværftet (Helsingør). All three hold dates until 2 October.', 'Best,\nSigrid'), {}],
+    ['M-3399', 'inbox', 'Pedro Salgado', 'pedro@salgado.pt', '2026-09-17 21:14', 'Dinner on the 3rd?', P('Maëlle! Are you still in Lisbon on 3 October? Dinner at Prado with the Lumarte team?', 'P.'), {}],
+    ['M-3397', 'inbox', 'Quay Metrics Billing', 'billing@quaymetrics.io', '2026-09-17 15:40', 'Action needed: update your payment method', P('Hi Ardent Studio,', 'The card on file expires at the end of September. Update your payment method before 1 October 2026 to avoid interruption.', '— Quay Metrics'), {}],
+    ['M-3395', 'inbox', 'Studio Weekly', 'news@studioweekly.com', '2026-09-17 08:05', '10 studios redefining hospitality design', P('This week: ten studios, from Porto to Copenhagen, changing how hotels feel.', 'Plus: the lighting trends that will define 2027.'), {}],
+    ['M-3391', 'inbox', 'Leilani Kahananui', 'leilani@kahananui-events.com', '2026-09-16 16:48', 'Q4 venue shortlist', P('Hi Maëlle,', 'As promised, here’s the shortlist for the Q4 Iberia roadshow:', '1. Palacio de Cibeles rooftop, Madrid — 180 standing, available 12–14 November\n2. Armazém 16, Lisbon — 220 standing, available 19–21 November\n3. Nau Bostik, Barcelona — 300 standing, holds until 30 September\n4. Alfândega do Porto (Sala do Arquivo) — 150 seated', 'Let me know which ones to put on hold and I’ll send contracts. Tomás is copied for the Madrid logistics.', 'Warmly,\nLeilani'), { u: 1, at: ['Q4_Iberia_venues.pdf'], cc: 'Tomás Aguirre <tomas@aguirre-eventos.es>' }],
+    ['M-3388', 'inbox', 'Chiara Bellini', 'chiara@bellini-studio.it', '2026-09-16 09:12', 'Milan: lighting samples', P('Ciao Maëlle, the brass pendant samples ship tomorrow — DHL tracking to follow.', 'Chiara'), {}],
+    ['M-3385', 'inbox', 'Movo', 'receipts@movo.app', '2026-09-15 19:40', 'Your Tuesday evening trip with Movo', P('Thanks for riding with Movo. Total: €18.40 (Gare Centrale → Rue de Flandre).'), {}],
+    ['M-3377', 'inbox', 'Tomás Aguirre', 'tomas@aguirre-eventos.es', '2026-09-15 13:22', 'Re: Q4 venue shortlist', P('Leilani, Maëlle —', 'Cibeles can also do 15 November if we need an extra day. Load-in is through Calle de Montalbán, max van height 2.7 m.', 'Saludos,\nTomás'), {}],
+    ['M-3374', 'inbox', 'Ardent People Team', 'people@ardentstudio.eu', '2026-09-14 17:05', 'Holiday requests for Q4', P('Hi all, please submit Q4 holiday requests by 30 September so we can plan cover around the roadshow.'), {}],
+    ['M-3370', 'inbox', 'Emeka Obi', 'emeka@obi-fabrication.co.uk', '2026-09-14 10:48', 'Quote: custom joinery for the Lisbon stand', P('Hi Maëlle,', 'Quote attached for the oak display plinths and back wall: £8,420 + VAT, 4 weeks lead time.', 'Emeka'), { at: ['Quote_Q-2291.pdf'] }],
+    ['M-3366', 'inbox', 'Lumen Bank', 'alerts@lumenbank.eu', '2026-09-13 12:30', 'Your August statement is ready', P('Your Lumen Business statement for August 2026 is ready to view in online banking.'), {}],
+    ['M-3361', 'inbox', 'Juniper Air', 'bookings@juniperair.com', '2026-09-12 09:15', 'Booking confirmed: Madrid (MAD) → Lisbon (LIS), 12 Nov', P('Booking JQ7PLX confirmed: 12 November 2026, MAD 17:05 → LIS 17:20, 1 passenger, 1 cabin bag.'), {}],
+    ['M-3358', 'inbox', 'Sofia Rahimi', 'sofia@rahimi-pr.com', '2026-09-11 16:55', 'Press kit – final version', P('Final press kit attached with the updated photo credits.', 'Sofia'), { at: ['Ardent_press_kit_final.pdf'] }],
+    ['M-3352', 'inbox', 'The Brief', 'digest@thebrief.news', '2026-09-10 07:30', 'Thursday: the return of terrazzo, and rent caps in Lisbon', P('Good morning. Terrazzo is back (again), and Lisbon debates commercial rent caps.'), {}],
+    ['M-3349', 'inbox', 'Leilani Kahananui', 'leilani@kahananui-events.com', '2026-09-09 14:20', 'Kick-off notes – Q4 roadshow', P('Hi Maëlle, notes from today’s kick-off are attached. Next step: venue shortlist by mid-September.', 'Leilani'), { at: ['Kickoff_notes.pdf'] }],
+    ['M-3344', 'inbox', 'Noor Haddad', 'noor@haddad-lighting.com', '2026-09-08 10:05', 'Lighting plan rev B', P('Rev B of the lighting plan attached — we reduced the number of fixtures from 42 to 36.', 'Noor'), { at: ['Lighting_plan_revB.pdf'] }],
+    // folders
+    ['M-3310', 'clients/iberia/2026', 'Ferran Puig', 'ferran@puigarquitectes.es', '2026-08-28 15:02', 'Barcelona walkthrough – notes', P('Notes from the Nau Bostik walkthrough are attached.'), {}],
+    ['M-3296', 'clients/iberia/2026', 'Inês Carvalho', 'ines@lumarte.pt', '2026-08-19 11:40', 'Lumarte brief v2', P('Updated brief with the revised budget.'), { at: ['Lumarte_brief_v2.pdf'] }],
+    ['M-3280', 'clients/iberia/2026', 'Tomás Aguirre', 'tomas@aguirre-eventos.es', '2026-08-07 09:18', 'Madrid supplier list', P('Our preferred suppliers for AV, furniture hire and catering in Madrid.'), {}],
+    ['M-2851', 'clients/iberia/2025', 'Inês Carvalho', 'ines@lumarte.pt', '2025-11-20 16:30', 'Lumarte – first meeting follow-up', P('Lovely to meet you in Lisbon. Sharing our brand book as promised.'), {}],
+    ['M-2790', 'clients/iberia/2025', 'Ferran Puig', 'ferran@puigarquitectes.es', '2025-10-02 10:12', 'Portfolio', P('Our portfolio, as discussed at the fair.'), {}],
+    ['M-3302', 'clients/nordics/2026', 'Signe Dahl', 'signe@nordlys.no', '2026-08-24 13:45', 'Oslo site measurements', P('Measurements for Vippa attached.'), {}],
+    ['M-3261', 'clients/nordics/2026', 'Sigrid Holm', 'sigrid@holm-agency.se', '2026-07-30 17:20', 'Stockholm pop-up – recap', P('Visitor numbers and press coverage from the Stockholm pop-up.'), {}],
+    ['M-2877', 'clients/nordics/2025', 'Sigrid Holm', 'sigrid@holm-agency.se', '2025-12-03 09:55', 'Proposal feedback', P('Feedback on the Stockholm proposal from our client.'), {}],
+    ['M-3288', 'clients/benelux', 'Joost van Dijk', 'joost@vandijkevents.nl', '2026-08-12 14:10', 'Amsterdam – floor plans', P('Floor plans for the launch venue.'), {}],
+    ['M-3190', 'clients/benelux', 'Joost van Dijk', 'joost@vandijkevents.nl', '2026-06-30 11:00', 'Intro call', P('Great to speak today — as promised, our event calendar for the autumn.'), {}],
+    ['M-3298', 'finance/receipts', 'Northwind Coworking', 'hello@northwind.work', '2026-08-31 18:00', 'Receipt for August – desk D-14', P('Receipt: €320.00.'), {}],
+    ['M-3259', 'finance/receipts', 'Movo', 'receipts@movo.app', '2026-07-28 22:14', 'Your Tuesday evening trip with Movo', P('Total: €14.10.'), {}],
+    ['M-3240', 'finance/taxes', 'Van Acker Accountants', 'office@vanacker-acc.be', '2026-07-20 10:30', 'Q2 VAT return submitted', P('We submitted your Q2 VAT return. Payment due by 20 August.'), {}],
+    ['M-3304', 'finance/utilities', 'Lumiva Énergie', 'factures@lumiva-energie.be', '2026-08-25 07:00', 'Your electricity bill – August 2026', P('Amount due: €184.22 by 10 September.'), {}],
+    ['M-3285', 'finance/utilities', 'Arcel Fibre', 'billing@arcelfibre.be', '2026-08-10 06:30', 'Invoice for your 1 Gbps fibre line', P('Amount: €59.99, paid by direct debit.'), {}],
+    ['M-3212', 'finance/utilities', 'Aquabru', 'noreply@aquabru.be', '2026-07-05 08:00', 'Water bill – Q2', P('Amount due: €96.40.'), {}],
+    ['M-3270', 'press', 'Sofia Rahimi', 'sofia@rahimi-pr.com', '2026-08-04 12:00', 'Coverage report – July', P('Five pieces of coverage in July, including Frame and Wallpaper*.'), {}],
+    ['M-3201', 'press', 'Frame Magazine', 'editors@frame-mag.com', '2026-07-02 09:00', 'Your project in Frame #172', P('Your Stockholm pop-up features in issue 172.'), {}],
+    ['M-3290', 'travel', 'Juniper Air', 'bookings@juniperair.com', '2026-08-14 20:10', 'Booking confirmed: Brussels (BRU) → Madrid (MAD), 11 Nov', P('Booking JQ5TRN confirmed.'), {}],
+    ['M-3222', 'travel', 'Railjet Europe', 'tickets@railjet.eu', '2026-07-12 16:40', 'Your e-ticket: Brussels-Midi → Amsterdam Centraal', P('Coach 4, seat 22.'), {}],
+    ['M-3306', 'newsletters', 'Sketchpad', 'noreply@sketchpad.app', '2026-08-26 19:00', 'What’s new in Sketchpad: branching', P('Branches are here.'), {}],
+    ['M-3279', 'newsletters', 'Studio Weekly', 'news@studioweekly.com', '2026-08-06 08:05', 'The best retail interiors of the summer', P('Our summer round-up.'), {}],
+    ['M-3250', 'newsletters', 'The Brief', 'digest@thebrief.news', '2026-07-23 07:30', 'Thursday: a quieter August', P('Summer edition.'), {}],
+    ['M-3312', 'archive', 'Aurélie Fontaine', 'aurelie@ardentstudio.eu', '2026-08-29 17:30', 'Team drinks Friday?', P('Rooftop at 6?'), {}],
+    ['M-3293', 'archive', 'Chiara Bellini', 'chiara@bellini-studio.it', '2026-08-18 10:15', 'Samples invoice', P('Invoice for the pendant samples.'), {}],
+    ['M-3268', 'archive', 'Hana Watanabe', 'hana@kiriko-press.jp', '2026-08-03 06:20', 'Kiriko issue 31', P('A copy of our latest issue, with our thanks.'), {}],
+    ['M-3380', 'sent', 'Maëlle Kerbrat', 'maelle@ardentstudio.eu', '2026-09-15 18:02', 'Re: Invoice query – August', P('Hi Leilani, corrected invoice attached.'), { to: 'Leilani Kahananui <leilani@kahananui-events.com>' }],
+    ['M-3398', 'sent', 'Maëlle Kerbrat', 'maelle@ardentstudio.eu', '2026-09-17 19:40', 'Re: Dinner on the 3rd?', P('Yes please! 20:30?'), { to: 'Pedro Salgado <pedro@salgado.pt>' }],
+    ['M-3420', 'sent', 'Maëlle Kerbrat', 'maelle@ardentstudio.eu', '2026-09-22 16:05', 'Stage dimensions', P('Joost — 6 × 4 m confirmed.'), { to: 'Joost van Dijk <joost@vandijkevents.nl>' }],
+    ['M-3428', 'drafts', 'Maëlle Kerbrat', 'maelle@ardentstudio.eu', '2026-09-23 22:10', 'Re: Interview request', P('Dear Hana, thank you so much for thinking of us —'), { to: 'Hana Watanabe <hana@kiriko-press.jp>' }],
+    ['M-3383', 'spam', 'Deals Hub', 'promo@deals-hub.biz', '2026-09-15 03:12', 'You’ve been selected for an exclusive offer', P('Claim your reward today.'), {}],
+    ['M-3342', 'spam', 'Crypto Daily', 'news@crypto-daily.win', '2026-09-07 23:50', '10x returns this week', P('Unsubscribe.'), {}],
+    ['M-3317', 'trash', 'Movo', 'receipts@movo.app', '2026-09-01 21:00', 'Rate your trip', P('How was your ride?'), {}],
+    ['M-3400', 'snoozed', 'Van Acker Accountants', 'office@vanacker-acc.be', '2026-09-18 09:10', 'Q3 VAT – documents needed by 10 October', P('Please upload Q3 purchase invoices by 10 October.'), { snooze: '1 Oct, 08:00' }],
+  ].map(([id, f, n, e, d, s, b, o]) => ({ id, f, n, e, d, s, b, u: !!o.u, st: !!o.st, at: o.at || [], cc: o.cc || '', to: o.to || '', snooze: o.snooze || '' }));
+  M.find((m) => m.id === 'M-3405').st = true;
+  M.find((m) => m.id === 'M-3370').st = true;
+  const byId = (id) => M.find((m) => m.id === id);
+  const snippet = (m) => m.b.replace(/\s+/g, ' ').slice(0, 120);
+  const inFolder = (f) => M.filter((m) => (f === 'starred' ? m.st && m.f !== 'trash' && m.f !== 'spam' : m.f === f)).sort((a, b) => b.d.localeCompare(a.d));
+
+  let FILTERS = [
+    { id: 'F-1', crit: { from: 'noreply@sketchpad.app' }, acts: { skip: true, move: true, folder: 'newsletters' } },
+    { id: 'F-2', crit: { from: 'alerts@lumenbank.eu', subject: 'statement' }, acts: { move: true, folder: 'finance/receipts', read: true } },
+  ];
+  let BLOCKED = ['promo@deals-hub.biz'];
+
+  const st = { sel: new Set(), pageSize: 20, lastList: '/inbox', sideOpen: new Set(), mvOpen: new Set(), density: 'default', fbox: null, busy: false };
+
+  // ------------------------------------------------------------------ sidebar
+  function sideHtml(cur) {
+    const unread = (f) => M.filter((m) => m.f === f && m.u).length;
+    const sys = SYS.map(([id, label, ic]) => { const n = id === 'inbox' ? unread('inbox') : id === 'drafts' ? inFolder('drafts').length : id === 'spam' ? inFolder('spam').length : 0; return `<a class="fl${cur === id ? ' on' : ''}" href="#/${id}"><span class="ic" aria-hidden="true">${ic}</span>${label}${n ? `<span class="n">${n}</span>` : ''}</a>`; }).join('');
+    const tree = (list) => `<ul${list === FOLDERS ? ' class="ftree"' : ''} role="${list === FOLDERS ? 'tree' : 'group'}"${list === FOLDERS ? ' aria-label="Folders"' : ''}>${list.map((f) => { const open = st.sideOpen.has(f.path); const n = unread(f.path); return `<li role="treeitem"${f.kids ? ` aria-expanded="${open}"` : ''}><div class="fr">${f.kids ? `<button type="button" class="exp" data-sexp="${f.path}" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(f.name)}">${open ? '▾' : '▸'}</button>` : '<span class="nexp"></span>'}<a class="fl${cur === 'folder:' + f.path ? ' on' : ''}" href="#/folder/${f.path}"><span class="ic" aria-hidden="true">▭</span>${esc(f.name)}${n ? `<span class="n">${n}</span>` : ''}</a></div>${f.kids && open ? tree(f.kids) : ''}</li>`; }).join('')}</ul>`;
+    return `<button type="button" class="compose" id="compose">✏️ Compose</button>${sys}<div class="sechd">Folders<button type="button" id="newfolder" aria-label="Create new folder" title="Create new folder">＋</button></div>${tree(FOLDERS)}`;
+  }
+
+  // ------------------------------------------------------------------ list
+  function rowHtml(m, showFolder) {
+    const sel = st.sel.has(m.id);
+    return `<div class="mrow${m.u ? ' unread' : ''}${sel ? ' selected' : ''}" data-id="${m.id}">
+      <input type="checkbox" class="sel" data-sel="${m.id}" aria-label="Select conversation from ${esc(m.n)}: ${esc(m.s)}" ${sel ? 'checked' : ''}>
+      <button type="button" class="star${m.st ? ' on' : ''}" data-star="${m.id}" aria-label="${m.st ? 'Starred' : 'Not starred'}" aria-pressed="${m.st}">${m.st ? '★' : '☆'}</button>
+      <a class="mlink" href="#/msg/${m.id}"><span class="from">${esc(m.f === 'sent' || m.f === 'drafts' ? 'To: ' + m.to.replace(/ <.*/, '') : m.n)}</span><span class="subj">${showFolder ? `<span class="fchip">${esc(folderLabel(m.f))}</span>` : ''}<b>${esc(m.s)}</b><span class="snip"> — ${esc(snippet(m))}</span></span>${m.at.length ? '<span aria-label="Has attachment" title="Has attachment">📎</span>' : ''}<span class="date">${m.snooze ? '⏰ ' + esc(m.snooze) : listDate(m.d)}</span></a>
+      <span class="hov"><button type="button" data-act="archive" data-mid="${m.id}" aria-label="Archive" title="Archive">🗄</button><button type="button" data-act="delete" data-mid="${m.id}" aria-label="Delete" title="Delete">🗑</button><button type="button" data-act="${m.u ? 'read' : 'unread'}" data-mid="${m.id}" aria-label="${m.u ? 'Mark as read' : 'Mark as unread'}" title="${m.u ? 'Mark as read' : 'Mark as unread'}">✉</button><button type="button" data-act="snooze" data-mid="${m.id}" aria-label="Snooze" title="Snooze">⏰</button></span></div>`;
+  }
+  function listHtml(title, msgs, opts = {}) {
+    const per = st.pageSize; const pages = Math.max(1, Math.ceil(msgs.length / per));
+    const page = Math.min(opts.page || 1, pages);
+    const shown = msgs.slice((page - 1) * per, page * per);
+    const any = st.sel.size > 0;
+    const base = opts.base;
+    const pageHref = (p) => (p === 1 ? base : `${base}/p${p}`);
+    const allSel = shown.length && shown.every((m) => st.sel.has(m.id));
+    return `<div class="ltool">
+        <input type="checkbox" id="selall" aria-label="Select all conversations on this page" ${allSel ? 'checked' : ''} style="width:16px;height:16px;margin:0 8px 0 4px">
+        ${any ? `<button type="button" class="tb" data-bulk="archive" aria-label="Archive">🗄 Archive</button><button type="button" class="tb" data-bulk="spam" aria-label="Report spam">⚠ Spam</button><button type="button" class="tb" data-bulk="delete" aria-label="Delete">🗑 Delete</button><span class="tsep"></span><button type="button" class="tb" data-bulk="read" aria-label="Mark as read">✉ Mark as read</button><button type="button" class="tb" id="bulk-move" aria-label="Move to" aria-haspopup="dialog">📁 Move to ▾</button><span class="muted" style="margin-left:6px">${st.sel.size} selected</span>`
+          : `<button type="button" class="tb" id="refresh" aria-label="Refresh" title="Refresh">⟳</button><button type="button" class="tb" id="markall" aria-label="Mark all as read" title="Mark all as read">✓ Mark all as read</button>`}
+        <span class="pgtxt">${msgs.length ? `${(page - 1) * per + 1}–${Math.min(page * per, msgs.length)} of ${msgs.length}` : '0 of 0'}</span>
+        ${page > 1 ? `<a class="tb" href="#${pageHref(page - 1)}" aria-label="Newer" title="Newer">‹</a>` : '<button type="button" class="tb" disabled aria-label="Newer">‹</button>'}
+        ${page < pages ? `<a class="tb" href="#${pageHref(page + 1)}" aria-label="Older" title="Older">›</a>` : '<button type="button" class="tb" disabled aria-label="Older">›</button>'}
+      </div>
+      ${opts.head ? `<div class="lhead">${opts.head}</div>` : ''}
+      <div class="mlist ${st.density === 'compact' ? 'compact' : st.density === 'comfortable' ? 'comfy' : ''}" role="list" aria-label="${esc(title)}">${shown.map((m) => rowHtml(m, opts.showFolder)).join('') || `<div class="empty">${opts.empty || 'Nothing here.'}</div>`}</div>
+      <div class="sfoot"><span>4.2 GB of 30 GB used</span><a href="#/settings/general">Programme policies</a><span style="margin-left:auto">Last account activity: 12 minutes ago</span></div>`;
+  }
+
+  // ------------------------------------------------------------------ reader
+  function readerHtml(m) {
+    const inList = st.lastListMsgs || [];
+    const i = inList.indexOf(m.id);
+    const nav = i >= 0 ? `<span class="pgtxt">${i + 1} of ${inList.length}</span>${i > 0 ? `<a class="tb" href="#/msg/${inList[i - 1]}" aria-label="Newer" title="Newer">‹</a>` : '<button type="button" class="tb" disabled aria-label="Newer">‹</button>'}${i < inList.length - 1 ? `<a class="tb" href="#/msg/${inList[i + 1]}" aria-label="Older" title="Older">›</a>` : '<button type="button" class="tb" disabled aria-label="Older">›</button>'}` : '';
+    const col = ['#1a73e8', '#e37400', '#188038', '#a142f4', '#d93025', '#007b83'][m.n.length % 6];
+    const initials = m.n.split(/\s+/).map((x) => x[0]).join('').slice(0, 2);
+    return `<div class="rtool">
+        <a class="tb" href="#${st.lastList}" aria-label="Back to ${esc(folderLabel(listFolderOf(st.lastList)))}" title="Back">←</a><span class="tsep"></span>
+        <button type="button" class="tb" data-ract="archive" aria-label="Archive" title="Archive">🗄</button>
+        <button type="button" class="tb" data-ract="spam" aria-label="Report spam" title="Report spam">⚠</button>
+        <button type="button" class="tb" data-ract="delete" aria-label="Delete" title="Delete">🗑</button><span class="tsep"></span>
+        <button type="button" class="tb" data-ract="unread" aria-label="Mark as unread" title="Mark as unread">✉</button>
+        <button type="button" class="tb" data-ract="snooze" aria-label="Snooze" title="Snooze">⏰</button>
+        <button type="button" class="tb" id="r-move" aria-label="Move to" title="Move to" aria-haspopup="dialog">📁 Move to ▾</button>
+        <button type="button" class="tb" id="r-labels" aria-label="Labels" title="Labels" aria-haspopup="dialog">🏷 Labels ▾</button>
+        <button type="button" class="tb" id="r-more" aria-label="More" title="More" aria-haspopup="menu">⋮</button>
+        ${nav}
+      </div>
+      <div class="reader"><h1>${esc(m.s)} <span class="fchip">${esc(folderLabel(m.f))}</span></h1>
+        <div class="sender"><span class="av" style="background:${col}" data-i="${esc(initials)}" aria-hidden="true"></span><div class="who"><b>${esc(m.n)}</b> <span class="muted">&lt;${esc(m.e)}&gt;</span><div class="muted">to ${m.to ? esc(m.to) : 'me'}${m.cc ? `, cc ${esc(m.cc)}` : ''}</div></div><span class="when">${longDate(m.d)}</span></div>
+        <div class="mbody">${m.b.split('\n\n').map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('')}</div>
+        ${m.at.length ? `<div class="atts">${m.at.map((a) => `<div class="att"><span class="pdf">${a.endsWith('.zip') ? 'ZIP' : 'PDF'}</span><span>${esc(a)}</span><button type="button" class="tb" data-toast="Downloading ${esc(a)}…" aria-label="Download ${esc(a)}">⤓</button></div>`).join('')}</div>` : ''}
+        <div class="rbar"><button type="button" class="btn" data-reply="${m.id}">↩ Reply</button><button type="button" class="btn" data-fwd="${m.id}">↪ Forward</button></div>
+      </div>`;
+  }
+  function listFolderOf(h) { const p = h.replace(/^#?\/?/, '').split('/'); if (p[0] === 'folder') return p.slice(1).filter((x) => !/^p\d+$/.test(x)).join('/'); if (p[0] === 'search') return 'search'; return p[0] || 'inbox'; }
+
+  // ------------------------------------------------------------------ settings
+  const STABS = [['general', 'General'], ['labels', 'Labels & folders'], ['inbox', 'Inbox'], ['accounts', 'Accounts'], ['filters', 'Filters and blocked addresses'], ['forwarding', 'Forwarding and POP/IMAP'], ['signatures', 'Signatures'], ['vacation', 'Vacation responder'], ['advanced', 'Advanced']];
+  function critText(c) { return Object.entries(c).filter(([, v]) => v).map(([k, v]) => (k === 'attach' ? 'has:attachment' : `${{ from: 'from', to: 'to', subject: 'subject', has: '', not: '-' }[k]}${k === 'has' ? '' : k === 'not' ? '' : ':'}(${esc(v)})`)).join(' '); }
+  function actText(a) { return [a.skip && 'Skip Inbox', a.read && 'Mark as read', a.star && 'Star it', a.move && `Move to “${esc(folderLabel(a.folder))}”`, a.del && 'Delete it', a.nospam && 'Never send it to Spam', a.important && 'Always mark it as important'].filter(Boolean).join(', '); }
+  function critMatch(c, m) {
+    const all = fold([m.n, m.e, m.to, m.cc, m.s, m.b].join(' '));
+    return (!norm(c.from) || fold(m.e).includes(fold(c.from)) || fold(m.n).includes(fold(c.from)))
+      && (!norm(c.to) || fold(m.to || 'Maëlle Kerbrat <maelle@ardentstudio.eu>').includes(fold(c.to))) && (!norm(c.subject) || fold(m.s).includes(fold(c.subject)))
+      && (!norm(c.has) || fold(c.has).split(' ').every((w) => all.includes(w))) && (!norm(c.not) || !fold(c.not).split(' ').some((w) => all.includes(w)))
+      && (!c.attach || m.at.length > 0);
+  }
+  const filterable = (m) => m.f !== 'trash' && m.f !== 'spam' && m.f !== 'sent' && m.f !== 'drafts';
+  function matchCount(c) { return M.filter((m) => filterable(m) && critMatch(c, m)).length; }
+  function fboxHtml() {
+    const f = st.fbox;
+    if (f.step === 1) {
+      return `<div class="fbox" id="fbox" role="group" aria-label="${f.editId ? 'Edit filter' : 'Create a new filter'}"><h3 style="margin:0 0 12px;font-weight:500">${f.editId ? 'Edit filter' : 'Create a new filter'}</h3><div class="fg">
+        <label for="fc-from">From</label><input type="text" id="fc-from" value="${esc(f.c.from)}">
+        <label for="fc-to">To</label><input type="text" id="fc-to" value="${esc(f.c.to)}">
+        <label for="fc-subject">Subject</label><input type="text" id="fc-subject" value="${esc(f.c.subject)}">
+        <label for="fc-has">Has the words</label><input type="text" id="fc-has" value="${esc(f.c.has)}">
+        <label for="fc-not">Doesn't have</label><input type="text" id="fc-not" value="${esc(f.c.not)}">
+        <span></span><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fc-attach" ${f.c.attach ? 'checked' : ''}> Has attachment</label></div>
+        <div class="err" id="fc-err" role="alert" hidden></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button type="button" class="btn" id="fc-cancel">Cancel</button><button type="button" class="btn" id="fc-search">Search</button><button type="button" class="btn pri" id="fc-next">Create filter</button></div></div>`;
+    }
+    const n = matchCount(f.c); const a = f.a;
+    return `<div class="fbox" id="fbox" role="group" aria-label="Filter actions"><button type="button" class="back" id="fc-back">‹ Back to search options</button>
+      <div class="muted" style="margin-bottom:8px">Matches: <b>${critText(f.c)}</b></div>
+      <div style="margin-bottom:8px">When a message is an exact match for your search criteria:</div>
+      <div class="acts">
+        <label><input type="checkbox" id="fa-skip" ${a.skip ? 'checked' : ''}> Skip the Inbox (Archive it)</label>
+        <label><input type="checkbox" id="fa-read" ${a.read ? 'checked' : ''}> Mark as read</label>
+        <label><input type="checkbox" id="fa-star" ${a.star ? 'checked' : ''}> Star it</label>
+        <div style="display:flex;align-items:center;gap:6px"><label><input type="checkbox" id="fa-move" ${a.move ? 'checked' : ''}> Move to folder:</label><select id="fa-folder" aria-label="Folder to move to"><option value="">Choose folder…</option>${flat.map((x) => `<option value="${x.path}" ${a.folder === x.path ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></div>
+        <div style="display:flex;align-items:center;gap:6px"><label style="color:#9aa0a6"><input type="checkbox" id="fa-fwd" disabled> Forward it to:</label><select disabled aria-label="Forwarding address"><option>No verified addresses</option></select><a href="#/settings/forwarding">add forwarding address</a></div>
+        <label><input type="checkbox" id="fa-del" ${a.del ? 'checked' : ''}> Delete it</label>
+        <label><input type="checkbox" id="fa-nospam" ${a.nospam ? 'checked' : ''}> Never send it to Spam</label>
+        <label><input type="checkbox" id="fa-imp" ${a.important ? 'checked' : ''}> Always mark it as important</label>
+        ${n ? `<label style="margin-top:8px"><input type="checkbox" id="fa-apply" ${a.apply ? 'checked' : ''}> Also apply filter to ${n} matching conversation${n > 1 ? 's' : ''}.</label>` : ''}
+      </div>
+      <div class="err" id="fa-err" role="alert" hidden></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" class="btn pri" id="fa-create">${f.editId ? 'Update filter' : 'Create filter'}</button></div></div>`;
+  }
+  function settingsHtml(tab) {
+    if (!STABS.some((t) => t[0] === tab)) tab = 'general';
+    let body = '';
+    if (tab === 'general') body = `<div data-sform="general">
+      <div class="srow"><div class="k">Language</div><div><label for="sg-lang" style="display:none">Language</label><select id="sg-lang"><option>English (UK)</option><option>Français</option><option>Nederlands</option><option>Português</option></select></div></div>
+      <div class="srow"><div class="k">Maximum page size</div><div>Show <select id="sg-size" aria-label="Conversations per page">${[20, 25, 50, 100].map((n) => `<option ${n === st.pageSize ? 'selected' : ''}>${n}</option>`).join('')}</select> conversations per page</div></div>
+      <div class="srow"><div class="k">Undo send</div><div>Send cancellation period: <select id="sg-undo" aria-label="Send cancellation period"><option>5</option><option selected>10</option><option>20</option><option>30</option></select> seconds</div></div>
+      <div class="srow"><div class="k">Default reply behaviour</div><div><label><input type="radio" name="sg-reply" value="reply" checked> Reply</label><label><input type="radio" name="sg-reply" value="all"> Reply all</label></div></div>
+      <div class="srow"><div class="k">Conversation view</div><div><label><input type="radio" name="sg-conv" value="on" checked> Conversation view on</label><label><input type="radio" name="sg-conv" value="off"> Conversation view off</label></div></div>
+      <div class="srow"><div class="k">Desktop notifications</div><div><label><input type="radio" name="sg-notif" value="new"> New mail notifications on</label><label><input type="radio" name="sg-notif" value="off" checked> Mail notifications off</label></div></div>
+      <div style="margin-top:16px;display:flex;gap:10px"><button type="button" class="btn pri" data-ssave="general">Save changes</button><a class="btn" href="#/inbox">Cancel</a></div></div>`;
+    if (tab === 'labels') body = `<table class="ftable"><tbody><tr><td><b>Folders</b></td><td class="muted">Show in folder list</td><td class="muted">Actions</td></tr>${flat.map((f) => `<tr><td style="padding-left:${8 + f.depth * 18}px">${esc(f.name)}</td><td><button type="button" class="lk" data-toast="“${esc(f.label)}” is shown in the folder list.">show</button> <button type="button" class="lk" data-fvis="${f.path}">hide</button></td><td><button type="button" class="lk" data-fdel="${f.path}">remove</button></td></tr>`).join('')}</tbody></table><button type="button" class="btn" id="s-newfolder">Create new folder</button>`;
+    if (tab === 'inbox') body = `<div data-sform="inbox"><div class="srow"><div class="k">Inbox type</div><div><select id="si-type" aria-label="Inbox type"><option>Default</option><option>Important first</option><option>Unread first</option><option>Starred first</option></select></div></div>
+      <div class="srow"><div class="k">Importance markers</div><div><label><input type="radio" name="si-mark" value="show" checked> Show markers</label><label><input type="radio" name="si-mark" value="hide"> No markers</label></div></div>
+      <div style="margin-top:16px"><button type="button" class="btn pri" data-ssave="inbox">Save changes</button></div></div>`;
+    if (tab === 'accounts') body = `<div class="srow"><div class="k">Send mail as</div><div>Maëlle Kerbrat &lt;maelle@ardentstudio.eu&gt; <span class="muted">default</span><div><button type="button" class="lk" id="s-sendas" style="padding:0">Add another email address</button></div></div></div>
+      <div class="srow"><div class="k">Check mail from other accounts</div><div class="muted">No other accounts connected.</div></div><div class="srow"><div class="k">Storage</div><div>4.2 GB of 30 GB used · Postbox Business</div></div>`;
+    if (tab === 'filters') body = `<p>The following filters are applied to all incoming mail:</p>
+      <table class="ftable"><tbody>${FILTERS.map((f) => `<tr><td><input type="checkbox" aria-label="Select filter ${f.id}"></td><td>Matches: <b>${critText(f.crit)}</b><br>Do this: ${actText(f.acts)}</td><td style="white-space:nowrap"><button type="button" class="lk" data-fedit="${f.id}">edit</button> <button type="button" class="lk" data-fdelete="${f.id}">delete</button></td></tr>`).join('')}</tbody></table>
+      ${st.fbox ? fboxHtml() : '<button type="button" class="btn" id="fc-open">Create a new filter</button> <button type="button" class="btn" data-toast="Choose a filter file exported from another mail app.">Import filters</button>'}
+      <p style="margin-top:28px">The following email addresses are blocked. Messages from these addresses will appear in Spam:</p>
+      <table class="ftable"><tbody>${BLOCKED.map((b) => `<tr><td>${esc(b)}</td><td style="text-align:right"><button type="button" class="lk" data-unblock="${esc(b)}">unblock</button></td></tr>`).join('') || '<tr><td class="muted">You currently have no blocked addresses.</td></tr>'}</tbody></table>`;
+    if (tab === 'forwarding') body = `<div data-sform="forwarding"><div class="srow"><div class="k">Forwarding</div><div><button type="button" class="btn sm" id="s-fwd-add">Add a forwarding address</button><div class="muted" style="margin-top:6px">Tip: you can also forward only some of your mail by creating a filter.</div></div></div>
+      <div class="srow"><div class="k">POP download</div><div><label><input type="radio" name="sf-pop" value="off" checked> Disable POP</label><label><input type="radio" name="sf-pop" value="new"> Enable POP for mail that arrives from now on</label></div></div>
+      <div class="srow"><div class="k">IMAP access</div><div><label><input type="radio" name="sf-imap" value="on" checked> Enable IMAP</label><label><input type="radio" name="sf-imap" value="off"> Disable IMAP</label></div></div>
+      <div style="margin-top:16px"><button type="button" class="btn pri" data-ssave="forwarding">Save changes</button></div></div>`;
+    if (tab === 'signatures') body = `<div data-sform="signatures"><div class="srow"><div class="k">Signature</div><div><label for="ss-sig" style="display:none">Signature</label><textarea id="ss-sig" rows="5" style="width:420px">Maëlle Kerbrat\nFounder, Ardent Studio\n+32 470 12 88 41 · ardentstudio.eu</textarea></div></div><div style="margin-top:16px"><button type="button" class="btn pri" data-ssave="signatures">Save changes</button></div></div>`;
+    if (tab === 'vacation') body = `<div data-sform="vacation"><div class="srow"><div class="k">Vacation responder</div><div><label><input type="radio" name="sv-on" value="off" checked> Vacation responder off</label><label><input type="radio" name="sv-on" value="on"> Vacation responder on</label>
+      <div style="margin-top:8px"><label for="sv-subject" style="display:block">Subject</label><input type="text" id="sv-subject" style="width:360px"></div><div style="margin-top:8px"><label for="sv-msg" style="display:block">Message</label><textarea id="sv-msg" rows="4" style="width:420px"></textarea></div></div></div>
+      <div style="margin-top:16px"><button type="button" class="btn pri" data-ssave="vacation">Save changes</button></div></div>`;
+    if (tab === 'advanced') body = `<div data-sform="advanced"><div class="srow"><div class="k">Templates</div><div><label><input type="radio" name="sa-tpl" value="on"> Enable</label><label><input type="radio" name="sa-tpl" value="off" checked> Disable</label></div></div>
+      <div class="srow"><div class="k">Auto-advance</div><div><label><input type="radio" name="sa-adv" value="on"> Enable</label><label><input type="radio" name="sa-adv" value="off" checked> Disable</label></div></div>
+      <div style="margin-top:16px"><button type="button" class="btn pri" data-ssave="advanced">Save changes</button></div></div>`;
+    return `<div class="settings"><h1>Settings</h1><nav class="stabs" role="tablist" aria-label="Settings">${STABS.map(([k, l]) => `<a role="tab" href="#/settings/${k}" aria-selected="${k === tab}">${l}</a>`).join('')}</nav>${body}</div>`;
+  }
+
+  // ------------------------------------------------------------------ router
+  const pane = q('#pane'); const side = q('#side');
+  function parts() { return location.hash.replace(/^#\/?/, '').split('/').filter(Boolean); }
+  function render() {
+    const p = parts(); const r = p[0] || 'inbox';
+    closePop();
+    let cur = r; let html; let title = 'Postbox';
+    if (SYS.some((s) => s[0] === r)) {
+      const page = p[1] && /^p\d+$/.test(p[1]) ? +p[1].slice(1) : 1;
+      const msgs = inFolder(r);
+      st.lastList = '/' + p.join('/'); st.lastListMsgs = msgs.map((m) => m.id);
+      html = listHtml(folderLabel(r), msgs, { page, base: '/' + r, empty: r === 'spam' ? 'Hooray, no spam here!' : 'No conversations in ' + folderLabel(r) + '.' });
+      title = `${folderLabel(r)}${r === 'inbox' ? ` (${M.filter((m) => m.f === 'inbox' && m.u).length})` : ''}`;
+    } else if (r === 'folder') {
+      const fp = p.slice(1).filter((x) => !/^p\d+$/.test(x)).join('/'); const pg = p.find((x) => /^p\d+$/.test(x));
+      if (!flat.some((f) => f.path === fp)) { html = `<div class="empty">That folder doesn’t exist. <a href="#/inbox">Back to Inbox</a></div>`; cur = ''; }
+      else {
+        for (let i = 1; i < fp.split('/').length; i++) st.sideOpen.add(fp.split('/').slice(0, i).join('/'));
+        const msgs = inFolder(fp); cur = 'folder:' + fp; st.lastList = '/' + p.join('/'); st.lastListMsgs = msgs.map((m) => m.id);
+        html = listHtml(folderLabel(fp), msgs, { page: pg ? +pg.slice(1) : 1, base: '/folder/' + fp, head: `Folder: <b>${esc(folderLabel(fp))}</b>`, empty: `No conversations in ${esc(folderLabel(fp))}.` });
+        title = folderLabel(fp);
+      }
+    } else if (r === 'msg') {
+      const m = byId(p[1] || '');
+      if (!m) html = `<div class="empty">That conversation has been moved or deleted. <a href="#${st.lastList}">Back</a></div>`;
+      else { m.u = false; html = readerHtml(m); title = m.s; cur = m.f === 'inbox' ? 'inbox' : (SYS.some((s) => s[0] === m.f) ? m.f : 'folder:' + m.f); }
+    } else if (r === 'search') {
+      const pg = p.length > 2 && /^p\d+$/.test(p[p.length - 1]) ? +p[p.length - 1].slice(1) : 1;
+      const qp = pg > 1 || (p.length > 2 && /^p\d+$/.test(p[p.length - 1])) ? p.slice(1, -1) : p.slice(1);
+      const qq = decodeURIComponent(qp.join('/'));
+      q('#sq').value = qq;
+      const msgs = search(qq); st.lastList = '/' + p.join('/'); st.lastListMsgs = msgs.map((m) => m.id);
+      html = listHtml('Search results', msgs, { page: pg, base: '/search/' + qp.join('/'), showFolder: true, head: `Search results for <b>${esc(qq)}</b>`, empty: 'No messages matched your search.' });
+      cur = ''; title = qq;
+    } else if (r === 'settings') { html = settingsHtml(p[1] || 'general'); cur = ''; title = 'Settings'; }
+    else { html = `<div class="empty">Page not found. <a href="#/inbox">Back to Inbox</a></div>`; cur = ''; }
+    side.innerHTML = sideHtml(cur);
+    pane.innerHTML = html;
+    document.title = `${title} · Postbox`;
+  }
+  function search(qq) {
+    const toks = qq.match(/(\w+:\S+|\S+)/g) || [];
+    return M.filter((m) => m.f !== 'trash' && m.f !== 'spam' && toks.every((t) => {
+      const mm = t.match(/^from:(.+)$/i); if (mm) return fold(m.e).includes(fold(mm[1])) || fold(m.n).includes(fold(mm[1]));
+      const ms = t.match(/^subject:(.+)$/i); if (ms) return fold(m.s).includes(fold(ms[1]));
+      const x = fold(t); return fold(m.n + ' ' + m.e + ' ' + m.s + ' ' + m.b).includes(x);
+    })).sort((a, b) => b.d.localeCompare(a.d));
+  }
+  window.addEventListener('hashchange', () => {
+    const r = parts()[0];
+    if (r !== 'settings') st.fbox = st.fbox && st.fbox.keep ? st.fbox : null;
+    if (st.fbox) st.fbox.keep = false;
+    const cur = parts().join('/');
+    if (!/^msg\//.test(cur) && cur !== st.lastSelKey) { st.sel.clear(); st.lastSelKey = cur; }
+    q('#qs').hidden = true; render(); window.scrollTo(0, 0);
+  });
+
+  // ------------------------------------------------------------------ popovers
+  function closePop() { q('#pop-root').innerHTML = ''; }
+  function placePop(anchor, html, width, label) {
+    const r = anchor.getBoundingClientRect();
+    q('#pop-root').innerHTML = `<div class="pop" id="pop" role="dialog" aria-label="${esc(label || anchor.getAttribute('aria-label') || 'Menu')}" style="left:${Math.min(window.innerWidth - (width || 290) - 12, r.left + window.scrollX)}px;top:${r.bottom + window.scrollY + 4}px;${width ? 'width:' + width + 'px' : ''}">${html}</div>`;
+    return q('#pop');
+  }
+  document.addEventListener('mousedown', (e) => {
+    if (!e.target.closest('#pop, #r-move, #bulk-move, #r-labels, #r-more, [data-act=snooze], [data-ract=snooze]')) closePop();
+    if (!e.target.closest('#qs, #hsettings')) q('#qs').hidden = true;
+  });
+  function moveTreeHtml(filter) {
+    if (filter) {
+      const ms = flat.filter((f) => fold(f.label).includes(fold(filter)));
+      return ms.length ? `<ul role="listbox" aria-label="Matching folders">${ms.map((f) => `<li><button type="button" class="mi" data-move="${f.path}">${esc(f.label)}</button></li>`).join('')}</ul>` : '<div class="ph">No folders match.</div>';
+    }
+    const tree = (list, lvl) => `<ul role="${lvl === 1 ? 'tree' : 'group'}"${lvl === 1 ? ' aria-label="Folders"' : ''}>${list.map((f) => { const open = st.mvOpen.has(f.path); return `<li role="treeitem" aria-level="${lvl}"${f.kids ? ` aria-expanded="${open}"` : ''}><div class="ti">${f.kids ? `<button type="button" class="exp" data-mexp="${f.path}" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(f.name)}">${open ? '▾' : '▸'}</button>` : '<span class="nexp"></span>'}<button type="button" class="mv" data-move="${f.path}">${esc(f.name)}</button></div>${f.kids && open ? tree(f.kids, lvl + 1) : ''}</li>`; }).join('')}</ul>`;
+    return tree(FOLDERS, 1);
+  }
+  function openMove(anchor, ids) {
+    const pop = placePop(anchor, `<div class="ph">Move ${ids.length > 1 ? ids.length + ' conversations' : 'conversation'} to:</div><input type="search" id="mv-filter" placeholder="Search folders" aria-label="Search folders" autocomplete="off"><div class="body" id="mv-body">${moveTreeHtml('')}</div><div class="foot"><button type="button" class="tb" id="mv-new">＋ Create new folder</button><button type="button" class="tb" id="mv-cancel">Cancel</button></div>`);
+    pop.dataset.ids = ids.join(',');
+    pop.querySelector('#mv-filter').addEventListener('input', (e) => { pop.querySelector('#mv-body').innerHTML = moveTreeHtml(e.target.value.trim()); });
+  }
+  async function doMove(ids, path) {
+    closePop();
+    if (st.busy) return; st.busy = true;
+    await sleep(400);
+    for (const id of ids) { const m = byId(id); await post({ event: 'message_move', message_id: m.id, from: m.f, to: path }); m.f = path; }
+    st.busy = false; st.sel.clear();
+    toast(`${ids.length > 1 ? ids.length + ' conversations' : 'Conversation'} moved to “${folderLabel(path)}”.`);
+    if (parts()[0] === 'msg') location.hash = '#' + st.lastList; else render();
+  }
+  async function msgAction(act, ids, anchor) {
+    if (act === 'snooze') {
+      const pop = placePop(anchor, `<div class="ph">Snooze until…</div>${[['Later today', '24 Sep, 18:00'], ['Tomorrow', '25 Sep, 08:00'], ['This weekend', '26 Sep, 08:00'], ['Next week', '28 Sep, 08:00']].map(([l, v]) => `<button type="button" class="mi" data-snooze="${v}">${l} <span class="muted">${v}</span></button>`).join('')}`, 240);
+      pop.dataset.ids = ids.join(',');
+      return;
+    }
+    const EV = { archive: ['message_archive', 'archive', 'archived'], spam: ['message_spam', 'spam', 'reported as spam'], delete: ['message_delete', 'trash', 'moved to Trash'], read: ['message_mark_read', null, 'marked as read'], unread: ['message_mark_unread', null, 'marked as unread'] }[act];
+    if (!EV) return;
+    for (const id of ids) {
+      const m = byId(id);
+      await post({ event: EV[0], message_id: m.id, folder: m.f });
+      if (EV[1]) m.f = EV[1]; if (act === 'read') m.u = false; if (act === 'unread') m.u = true;
+    }
+    st.sel.clear();
+    toast(`${ids.length > 1 ? ids.length + ' conversations' : 'Conversation'} ${EV[2]}.`);
+    if (parts()[0] === 'msg' && act !== 'read') location.hash = '#' + st.lastList; else render();
+  }
+
+  // ------------------------------------------------------------------ dialogs / compose
+  function dialog(html) { q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; qa('#modal-root [data-close]').forEach((b) => b.addEventListener('click', () => (q('#modal-root').innerHTML = ''))); return q('#modal-root .dialog'); }
+  function closeDialog() { q('#modal-root').innerHTML = ''; }
+  function compose(pre = {}) {
+    q('#cmp-root').innerHTML = `<div class="cmp" role="dialog" aria-label="New message"><div class="ch">${esc(pre.title || 'New message')}<button type="button" id="cmp-x" aria-label="Save and close">✕</button></div>
+      <input type="text" id="cmp-to" placeholder="To" aria-label="To" value="${esc(pre.to || '')}"><input type="text" id="cmp-subj" placeholder="Subject" aria-label="Subject" value="${esc(pre.subject || '')}"><textarea id="cmp-body" aria-label="Message body">${esc(pre.body || '')}</textarea>
+      <div class="cf"><button type="button" class="btn pri" id="cmp-send">Send</button><button type="button" class="btn" id="cmp-discard" aria-label="Discard draft">🗑 Discard</button></div></div>`;
+    q('#cmp-x').addEventListener('click', () => { q('#cmp-root').innerHTML = ''; toast('Draft saved.'); });
+    q('#cmp-discard').addEventListener('click', () => { q('#cmp-root').innerHTML = ''; toast('Draft discarded.'); });
+    q('#cmp-send').addEventListener('click', async (e) => {
+      const to = norm(q('#cmp-to').value);
+      if (!/[\w.+-]+@[\w-]+\.[\w.-]+/.test(to)) { toast('Please specify at least one recipient.'); return; }
+      e.currentTarget.disabled = true; await sleep(600);
+      await post({ event: 'message_send', to: to.toLowerCase(), subject: norm(q('#cmp-subj').value) });
+      q('#cmp-root').innerHTML = ''; toast('Message sent.');
+    });
+  }
+
+  // ------------------------------------------------------------------ filters
+  function newFbox(c = {}, a = {}, editId = null) { st.fbox = { step: 1, editId, c: Object.assign({ from: '', to: '', subject: '', has: '', not: '', attach: false }, c), a: Object.assign({ skip: false, read: false, star: false, move: false, folder: '', del: false, nospam: false, important: false, apply: true }, a) }; }
+  function readCrit() { const f = st.fbox; f.c = { from: q('#fc-from').value, to: q('#fc-to').value, subject: q('#fc-subject').value, has: q('#fc-has').value, not: q('#fc-not').value, attach: q('#fc-attach').checked }; }
+  function readActs() {
+    const f = st.fbox; const ap = q('#fa-apply');
+    f.a = { skip: q('#fa-skip').checked, read: q('#fa-read').checked, star: q('#fa-star').checked, move: q('#fa-move').checked, folder: q('#fa-folder').value, del: q('#fa-del').checked, nospam: q('#fa-nospam').checked, important: q('#fa-imp').checked, apply: ap ? ap.checked : false, hasApply: !!ap };
+  }
+  async function createFilter() {
+    readActs();
+    const f = st.fbox; const a = f.a; const e = q('#fa-err');
+    const fail = (m) => { e.textContent = m; e.hidden = false; };
+    if (a.move && !a.folder) return fail('Choose a folder to move matching messages to.');
+    if (!a.skip && !a.read && !a.star && !a.move && !a.del && !a.nospam && !a.important) return fail('Select at least one action for this filter.');
+    if (st.busy) return; st.busy = true;
+    const b = q('#fa-create'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Saving…';
+    await sleep(600);
+    const yn = (x) => (x ? 'yes' : 'no');
+    const c = f.c;
+    await post({
+      event: f.editId ? 'filter_update' : 'filter_create', ...(f.editId ? { filter_id: f.editId } : {}),
+      from: norm(c.from).toLowerCase(), to: norm(c.to).toLowerCase(), subject: norm(c.subject), has_words: norm(c.has), not_words: norm(c.not), has_attachment: yn(c.attach),
+      skip_inbox: yn(a.skip), mark_read: yn(a.read), star: yn(a.star), folder: a.move ? a.folder : '', forward_to: '', delete: yn(a.del), never_spam: yn(a.nospam), important: yn(a.important), apply_existing: yn(a.apply && a.hasApply),
+    });
+    const crit = {}; for (const k of ['from', 'to', 'subject', 'has', 'not']) if (norm(c[k])) crit[k] = norm(c[k]); if (c.attach) crit.attach = true;
+    if (f.editId) { const ex = FILTERS.find((x) => x.id === f.editId); ex.crit = crit; ex.acts = { ...a }; }
+    else FILTERS.push({ id: 'F-' + (FILTERS.length + 1), crit, acts: { ...a } });
+    if (a.apply && a.hasApply) {
+      for (const m of M) {
+        if (!filterable(m) || !critMatch(c, m)) continue;
+        if (a.read) m.u = false; if (a.star) m.st = true; if (a.move && a.folder) m.f = a.folder; else if (a.skip && m.f === 'inbox') m.f = 'archive'; if (a.del) m.f = 'trash';
+      }
+    }
+    st.busy = false; st.fbox = null; render();
+    toast(f.editId ? 'Your filter was updated.' : 'Your filter was created.');
+  }
+
+  // ------------------------------------------------------------------ events
+  q('#sform').addEventListener('submit', (e) => { e.preventDefault(); const v = norm(q('#sq').value); if (v) location.hash = '#/search/' + encodeURIComponent(v); });
+  q('#sclear').addEventListener('click', () => { q('#sq').value = ''; if (parts()[0] === 'search') location.hash = '#/inbox'; });
+  q('#hsettings').addEventListener('click', () => { q('#qs').hidden = !q('#qs').hidden; });
+  q('#qs-x').addEventListener('click', () => { q('#qs').hidden = true; });
+  q('#qs-all').addEventListener('click', () => { q('#qs').hidden = true; location.hash = '#/settings/general'; });
+  q('#hsupport').addEventListener('click', () => toast('Help: support.postbox.eu · Keyboard shortcuts: press ?'));
+  q('#happs').addEventListener('click', () => toast('Postbox apps: Calendar, Contacts, Drive (coming soon).'));
+  q('#hacct').addEventListener('click', () => toast('Signed in as Maëlle Kerbrat · maelle@ardentstudio.eu'));
+  q('#qs').addEventListener('change', async (e) => {
+    const t = e.target;
+    if (t.name === 'qs-density') { st.density = t.value; render(); await post({ event: 'settings_update', section: 'quick', density: t.value }); toast('Density updated.'); }
+    if (t.name === 'qs-pane') { await post({ event: 'settings_update', section: 'quick', reading_pane: t.value }); toast('Reading pane updated.'); }
+  });
+  side.addEventListener('click', (e) => {
+    const x = e.target.closest('[data-sexp]'); if (x) { const pth = x.dataset.sexp; st.sideOpen.has(pth) ? st.sideOpen.delete(pth) : st.sideOpen.add(pth); side.innerHTML = sideHtml(currentKey()); return; }
+    if (e.target.closest('#compose')) { compose(); return; }
+    if (e.target.closest('#newfolder')) newFolderDialog();
+  });
+  function currentKey() { const p = parts(); if (p[0] === 'folder') return 'folder:' + p.slice(1).filter((x) => !/^p\d+$/.test(x)).join('/'); if (p[0] === 'msg') { const m = byId(p[1]); return m ? (SYS.some((s) => s[0] === m.f) ? m.f : 'folder:' + m.f) : ''; } return p[0] || 'inbox'; }
+  function newFolderDialog() {
+    const d = dialog(`<h2>New folder</h2><label for="nf-name" style="display:block;margin-bottom:4px">Please enter a new folder name:</label><input type="text" id="nf-name" style="width:100%"><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="nf-nest"> Nest folder under: <select id="nf-parent" aria-label="Parent folder">${flat.map((f) => `<option value="${f.path}">${esc(f.label)}</option>`).join('')}</select></label><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="nf-go">Create</button></div>`);
+    d.querySelector('#nf-go').addEventListener('click', async () => { const n = norm(d.querySelector('#nf-name').value); if (!n) return; await sleep(400); await post({ event: 'folder_create', name: n, parent: d.querySelector('#nf-nest').checked ? d.querySelector('#nf-parent').value : '' }); closeDialog(); toast(`Folder “${n}” created.`); });
+  }
+  q('#pop-root').addEventListener('click', async (e) => {
+    const pop = q('#pop'); if (!pop) return;
+    const ex = e.target.closest('[data-mexp]'); if (ex) { const pth = ex.dataset.mexp; st.mvOpen.has(pth) ? st.mvOpen.delete(pth) : st.mvOpen.add(pth); pop.querySelector('#mv-body').innerHTML = moveTreeHtml(''); return; }
+    const mv = e.target.closest('[data-move]'); if (mv) { await doMove(pop.dataset.ids.split(','), mv.dataset.move); return; }
+    if (e.target.closest('#mv-cancel')) { closePop(); return; }
+    if (e.target.closest('#mv-new')) { closePop(); newFolderDialog(); return; }
+    const sz = e.target.closest('[data-snooze]');
+    if (sz) { const ids = pop.dataset.ids.split(','); closePop(); for (const id of ids) { const m = byId(id); await post({ event: 'message_snooze', message_id: m.id, until: sz.dataset.snooze }); m.f = 'snoozed'; m.snooze = sz.dataset.snooze; } toast(`Snoozed until ${sz.dataset.snooze}.`); if (parts()[0] === 'msg') location.hash = '#' + st.lastList; else render(); return; }
+    if (e.target.closest('#lb-apply')) {
+      const labels = qa('input[data-label]:checked', pop).map((x) => x.dataset.label); const id = pop.dataset.ids; closePop();
+      await post({ event: 'message_label', message_id: id, labels: labels.join(',') }); toast(labels.length ? `Labels applied: ${labels.join(', ')}.` : 'Labels removed.'); return;
+    }
+    const mo = e.target.closest('[data-more]');
+    if (mo) {
+      const m = byId(pop.dataset.ids); closePop();
+      if (mo.dataset.more === 'filter') { newFbox({ from: m.e }); st.fbox.keep = true; location.hash = '#/settings/filters'; }
+      if (mo.dataset.more === 'print') toast('Preparing to print…');
+      if (mo.dataset.more === 'original') dialog(`<h2>Original message</h2><pre style="white-space:pre-wrap;font-size:12px;background:#f6f8fc;padding:10px;border-radius:6px">Message-ID: &lt;${m.id.toLowerCase()}@mail.postbox.eu&gt;\nFrom: ${esc(m.n)} &lt;${esc(m.e)}&gt;\nTo: Maëlle Kerbrat &lt;maelle@ardentstudio.eu&gt;\nDate: ${longDate(m.d)} +0200\nSubject: ${esc(m.s)}\nSPF: PASS · DKIM: PASS · DMARC: PASS</pre><div class="df"><button type="button" class="btn" data-close>Close</button></div>`);
+      if (mo.dataset.more === 'block') {
+        const d = dialog(`<h2>Block “${esc(m.n)}”?</h2><p>Future messages from ${esc(m.e)} will go to Spam.</p><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="blk-go">Block</button></div>`);
+        d.querySelector('#blk-go').addEventListener('click', async () => { await sleep(400); await post({ event: 'sender_block', email: m.e }); BLOCKED.push(m.e); closeDialog(); toast(`${m.e} blocked.`); });
+      }
+    }
+  });
+  pane.addEventListener('click', async (e) => {
+    const t = e.target;
+    const tst = t.closest('[data-toast]'); if (tst) { toast(tst.dataset.toast); return; }
+    const sb = t.closest('[data-star]');
+    if (sb) { const m = byId(sb.dataset.star); m.st = !m.st; render(); await post({ event: 'message_star', message_id: m.id, starred: m.st ? 'yes' : 'no' }); return; }
+    const ha = t.closest('[data-act]'); if (ha) { await msgAction(ha.dataset.act, [ha.dataset.mid], ha); return; }
+    const bk = t.closest('[data-bulk]'); if (bk) { await msgAction(bk.dataset.bulk, [...st.sel], bk); return; }
+    if (t.closest('#bulk-move')) { openMove(t.closest('#bulk-move'), [...st.sel]); return; }
+    if (t.closest('#refresh')) { toast('No new mail.'); return; }
+    if (t.closest('#markall')) {
+      const unread = inFolder(listFolderOf(st.lastList)).filter((m) => m.u);
+      if (!unread.length) { toast('No unread conversations.'); return; }
+      const d = dialog(`<h2>Mark all as read?</h2><p>This marks ${unread.length} conversations in ${esc(folderLabel(listFolderOf(st.lastList)))} as read.</p><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="ma-go">Mark as read</button></div>`);
+      d.querySelector('#ma-go').addEventListener('click', async () => { closeDialog(); await msgAction('read', unread.map((m) => m.id)); });
+      return;
+    }
+    const ra = t.closest('[data-ract]'); if (ra) { await msgAction(ra.dataset.ract, [parts()[1]], ra); return; }
+    if (t.closest('#r-move')) { if (q('#pop')) { closePop(); return; } openMove(t.closest('#r-move'), [parts()[1]]); return; }
+    if (t.closest('#r-labels')) {
+      if (q('#pop')) { closePop(); return; }
+      const pop = placePop(t.closest('#r-labels'), `<div class="ph">Label as:</div>${['Important', 'Follow up', 'Invoices', 'Waiting'].map((l) => `<label><input type="checkbox" data-label="${l}"> ${l}</label>`).join('')}<div class="foot"><span></span><button type="button" class="tb" id="lb-apply">Apply</button></div>`, 220);
+      pop.dataset.ids = parts()[1]; return;
+    }
+    if (t.closest('#r-more')) {
+      if (q('#pop')) { closePop(); return; }
+      const m = byId(parts()[1]);
+      const pop = placePop(t.closest('#r-more'), `<button type="button" class="mi" data-more="filter">Filter messages like this</button><button type="button" class="mi" data-more="print">Print</button><button type="button" class="mi" data-more="original">Show original</button><button type="button" class="mi" data-more="block">Block “${esc(m.n)}”</button>`, 250);
+      pop.dataset.ids = m.id; return;
+    }
+    const rp = t.closest('[data-reply]'); if (rp) { const m = byId(rp.dataset.reply); compose({ title: 'Reply', to: `${m.n} <${m.e}>`, subject: m.s.startsWith('Re:') ? m.s : 'Re: ' + m.s }); return; }
+    const fw = t.closest('[data-fwd]'); if (fw) { const m = byId(fw.dataset.fwd); compose({ title: 'Forward', subject: 'Fwd: ' + m.s, body: `\n\n---------- Forwarded message ---------\nFrom: ${m.n} <${m.e}>\nSubject: ${m.s}\n\n${m.b}` }); return; }
+    // settings
+    if (t.closest('#fc-open')) { newFbox(); render(); return; }
+    if (t.closest('#fc-cancel')) { st.fbox = null; render(); return; }
+    if (t.closest('#fc-search')) { readCrit(); const c = st.fbox.c; const qq = [c.from && 'from:' + norm(c.from), c.subject && 'subject:' + norm(c.subject), norm(c.has)].filter(Boolean).join(' '); if (qq) location.hash = '#/search/' + encodeURIComponent(qq); return; }
+    if (t.closest('#fc-next')) {
+      readCrit(); const c = st.fbox.c;
+      if (![c.from, c.to, c.subject, c.has, c.not].some((x) => norm(x)) && !c.attach) { const er = q('#fc-err'); er.textContent = 'Enter at least one search criterion.'; er.hidden = false; return; }
+      st.fbox.step = 2; render(); return;
+    }
+    if (t.closest('#fc-back')) { readActs(); st.fbox.step = 1; render(); return; }
+    if (t.closest('#fa-create')) { await createFilter(); return; }
+    const fe = t.closest('[data-fedit]'); if (fe) { const f = FILTERS.find((x) => x.id === fe.dataset.fedit); newFbox({ ...f.crit }, { ...f.acts, apply: false }, f.id); render(); return; }
+    const fd = t.closest('[data-fdelete]');
+    if (fd) { const f = FILTERS.find((x) => x.id === fd.dataset.fdelete); const d = dialog(`<h2>Delete filter?</h2><p>Matches: ${critText(f.crit)}</p><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="fd-go">Delete</button></div>`); d.querySelector('#fd-go').addEventListener('click', async () => { await sleep(400); await post({ event: 'filter_delete', filter_id: f.id }); FILTERS = FILTERS.filter((x) => x !== f); closeDialog(); render(); toast('Filter deleted.'); }); return; }
+    const ub = t.closest('[data-unblock]'); if (ub) { await post({ event: 'sender_unblock', email: ub.dataset.unblock }); BLOCKED = BLOCKED.filter((x) => x !== ub.dataset.unblock); render(); toast('Address unblocked.'); return; }
+    const fv = t.closest('[data-fvis]'); if (fv) { await post({ event: 'folder_visibility', folder: fv.dataset.fvis, visible: 'no' }); toast('Folder hidden from the folder list.'); return; }
+    const fdl = t.closest('[data-fdel]'); if (fdl) { const pth = fdl.dataset.fdel; const d = dialog(`<h2>Remove folder?</h2><p>Remove “${esc(folderLabel(pth))}”? Conversations in it will stay in your archive.</p><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="rf-go">Remove</button></div>`); d.querySelector('#rf-go').addEventListener('click', async () => { await sleep(400); await post({ event: 'folder_delete', folder: pth }); closeDialog(); toast('Folder removed.'); }); return; }
+    if (t.closest('#s-newfolder')) { newFolderDialog(); return; }
+    if (t.closest('#s-sendas')) { const d = dialog(`<h2>Add another email address you own</h2><label for="sa-mail" style="display:block;margin-bottom:4px">Email address</label><input type="email" id="sa-mail" style="width:100%"><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="sa-go">Next step</button></div>`); d.querySelector('#sa-go').addEventListener('click', async () => { const v = norm(d.querySelector('#sa-mail').value).toLowerCase(); if (!v.includes('@')) return; await sleep(400); await post({ event: 'sendas_add', email: v }); closeDialog(); toast('Verification email sent.'); }); return; }
+    if (t.closest('#s-fwd-add')) { const d = dialog(`<h2>Add a forwarding address</h2><label for="fw-mail" style="display:block;margin-bottom:4px">Please enter a new forwarding email address:</label><input type="email" id="fw-mail" style="width:100%"><div class="df"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" id="fw-go">Next</button></div>`); d.querySelector('#fw-go').addEventListener('click', async () => { const v = norm(d.querySelector('#fw-mail').value).toLowerCase(); if (!v.includes('@')) return; await sleep(500); await post({ event: 'forwarding_add', email: v }); closeDialog(); toast(`A confirmation code has been sent to ${v}.`); }); return; }
+    const ss = t.closest('[data-ssave]');
+    if (ss) {
+      const box = q(`[data-sform="${ss.dataset.ssave}"]`); ss.disabled = true; await sleep(500);
+      const vals = qa('select, input[type=text], textarea, input[type=radio]:checked', box).map((x) => (x.name || x.id) + '=' + x.value).join('; ');
+      await post({ event: 'settings_update', section: ss.dataset.ssave, values: vals });
+      if (ss.dataset.ssave === 'general') st.pageSize = +q('#sg-size').value;
+      ss.disabled = false; toast('Your preferences have been saved.');
+    }
+  });
+  pane.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.matches('input.sel')) { t.checked ? st.sel.add(t.dataset.sel) : st.sel.delete(t.dataset.sel); render(); return; }
+    if (t.id === 'selall') { const ids = qa('input.sel').map((x) => x.dataset.sel); ids.forEach((id) => (t.checked ? st.sel.add(id) : st.sel.delete(id))); render(); return; }
+    if (t.id === 'fa-folder' && t.value) { q('#fa-move').checked = true; }
+  });
+
+  if (!location.hash || location.hash === '#' || location.hash === '#/') history.replaceState(null, '', '#/inbox');
+  st.lastSelKey = parts().join('/');
+  render();
+})();
+</script>
+</body>
+</html>

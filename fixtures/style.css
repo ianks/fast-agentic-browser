@@ -1,0 +1,17 @@
+body { font: 15px/1.4 system-ui, sans-serif; margin: 0; color: #222; }
+header { display: flex; gap: 16px; align-items: center; padding: 10px 24px; background: #1f2937; color: #fff; }
+header a { color: #cbd5e1; text-decoration: none; }
+main { max-width: 880px; margin: 24px auto; padding: 0 24px; }
+label { display: block; margin: 10px 0 4px; font-weight: 600; }
+input[type=text], input[type=email], input[type=password], input[type=search], input[type=number], select, textarea { padding: 6px 8px; width: 280px; border: 1px solid #bbb; border-radius: 4px; }
+button, .btn { padding: 7px 14px; border-radius: 4px; border: 1px solid #888; background: #f3f4f6; cursor: pointer; }
+button.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+.card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 10px 0; }
+.row { display: flex; gap: 12px; align-items: center; }
+.muted { color: #666; font-size: 13px; }
+.toast { position: fixed; bottom: 20px; right: 20px; background: #065f46; color: #fff; padding: 10px 16px; border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; }
+td, th { border-bottom: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 10; }
+.dialog { background: #fff; padding: 20px; border-radius: 8px; width: 420px; }
+footer { margin: 40px 24px; color: #888; font-size: 13px; }

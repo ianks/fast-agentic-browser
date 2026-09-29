@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gantry Flags</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #0f1115; color: #e6e6e6; }
+  header { background: #16181d; border-bottom: 1px solid #262a33; }
+  header a { color: #9aa4b2; }
+  main { max-width: 1040px; }
+  a { color: #8ab4ff; }
+  .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .proj { background: #16181d; border: 1px solid #262a33; border-radius: 12px; padding: 14px; text-decoration: none; color: inherit; display: block; }
+  .proj:hover { border-color: #3b82f6; }
+  .muted { color: #8b93a1; }
+  .head { display: grid; grid-template-columns: 1fr 110px 110px 110px; gap: 8px; padding: 6px 12px; color: #8b93a1; font-size: 13px; border-bottom: 1px solid #262a33; }
+  input[type=search] { background: #16181d; color: #e6e6e6; border-color: #333a46; }
+  .dialog { background: #16181d; color: #e6e6e6; border: 1px solid #333a46; }
+  button { background: #1f232b; color: #e6e6e6; border-color: #3a404c; }
+  button.primary { background: #dc2626; border-color: #dc2626; color: #fff; }
+</style>
+</head>
+<body>
+<header><strong>⛓ Gantry Flags</strong><a href="#/projects">Projects</a><a href="#/audit">Audit log</a><span style="margin-left:auto" class="muted">Workspace: Seaforth Retail · you are an Editor</span></header>
+<main id="view"></main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-h" aria-describedby="dlg-b">
+    <h3 id="dlg-h" style="margin-top:0"></h3><p id="dlg-b"></p>
+    <div class="row" style="justify-content:flex-end"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes">Change production</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+// Each flag row renders its toggles inside an open shadow root.
+class FlagRow extends HTMLElement {
+  connectedCallback() {
+    if (this.shadowRoot) return;
+    const r = this.attachShadow({ mode: 'open' });
+    r.addEventListener('click', (e) => {
+      const b = e.target.closest('[role=switch]');
+      if (b) this.dispatchEvent(new CustomEvent('flag-toggle', { bubbles: true, composed: true, detail: { env: b.dataset.env, next: b.getAttribute('aria-checked') !== 'true' } }));
+    });
+    this.render();
+  }
+  set data(v) { this._d = v; if (this.shadowRoot) this.render(); }
+  get data() { return this._d; }
+  render() {
+    const d = this._d; if (!d) return;
+    const sw = (env, label) => `<button type="button" role="switch" data-env="${env}" aria-checked="${d.env[env]}" aria-label="${d.key} — ${label}"><span class="t"></span><span class="lab">${d.env[env] ? 'On' : 'Off'}</span></button>`;
+    this.shadowRoot.innerHTML = `<style>
+      :host { display: block; border-bottom: 1px solid #262a33; }
+      .row { display: grid; grid-template-columns: 1fr 110px 110px 110px; gap: 8px; align-items: center; padding: 10px 12px; font: 14px/1.4 system-ui, sans-serif; color: #e6e6e6; }
+      .key { font-family: ui-monospace, Menlo, monospace; font-weight: 600; } .desc { color: #8b93a1; font-size: 13px; }
+      button { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; color: #cbd5e1; cursor: pointer; padding: 2px; font: inherit; }
+      .t { width: 34px; height: 18px; border-radius: 9px; background: #3a404c; position: relative; }
+      .t::after { content: ''; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left .12s; }
+      button[aria-checked=true] .t { background: #22c55e; } button[aria-checked=true] .t::after { left: 18px; }
+    </style><div class="row"><div><div class="key">${d.key}</div><div class="desc">${d.desc}</div></div>${sw('development', 'Development')}${sw('staging', 'Staging')}${sw('production', 'Production')}</div>`;
+  }
+}
+customElements.define('flag-row', FlagRow);
+
+(() => {
+  const F = (key, desc, d, s, p) => ({ key, desc, env: { development: d, staging: s, production: p } });
+  const PROJECTS = {
+    storefront: { name: 'Storefront', desc: 'Web shop (seaforth.shop)', flags: [
+      F('checkout-v2', 'New single-page checkout', true, true, false), F('checkout-v2-banner', 'Promo banner advertising the new checkout', true, true, true),
+      F('checkout-v2-banner-dismiss', 'Let shoppers dismiss the checkout banner', true, false, false), F('search-ranking-2026', 'Learning-to-rank search results', true, true, false),
+      F('holiday-theme', 'Seasonal colours and header art', false, false, false), F('guest-wishlist', 'Wishlists without an account', true, false, false)] },
+    'storefront-mobile': { name: 'Storefront Mobile', desc: 'iOS & Android apps', flags: [
+      F('checkout-v2', 'New single-page checkout', true, true, true), F('checkout-v2-banner', 'Promo banner advertising the new checkout', true, true, false), F('push-reminders', 'Abandoned-cart push notifications', true, true, true)] },
+    'warehouse-api': { name: 'Warehouse API', desc: 'Fulfilment services', flags: [F('batch-picking', 'Batch pick lists', true, true, true), F('carrier-fallback', 'Fallback carrier selection', true, false, false)] },
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const view = q('#view'); let filter = '';
+  function route() {
+    const p = (location.hash || '#/projects').slice(2).split('/');
+    if (p[0] === 'projects' && p[1] && PROJECTS[p[1]]) return renderProject(p[1]);
+    if (p[0] === 'audit') { view.innerHTML = '<h1>Audit log</h1><p class="muted">Audit history is available on the Enterprise plan.</p>'; return; }
+    view.innerHTML = `<h1>Projects</h1><div class="projects">${Object.entries(PROJECTS).map(([id, x]) => `<a class="proj" href="#/projects/${id}"><strong>${x.name}</strong><div class="muted">${x.desc}</div><div class="muted" style="margin-top:8px">${x.flags.length} flags</div></a>`).join('')}</div>`;
+  }
+  async function renderProject(id) {
+    const P = PROJECTS[id];
+    view.innerHTML = `<p><a href="#/projects">← Projects</a></p><h1>${P.name}</h1><p class="muted">${P.desc}</p><input type="search" id="fsearch" aria-label="Filter flags" placeholder="Filter flags by key" value="${esc(filter)}" style="width:320px"><div id="flags" style="margin-top:12px"><p class="muted" role="status">Loading flags…</p></div>`;
+    q('#fsearch').oninput = (e) => { filter = e.target.value; draw(); };
+    const tok = {}; renderProject.tok = tok;
+    await later(400);
+    if (renderProject.tok !== tok) return;
+    const draw = () => {
+      const box = q('#flags'); if (!box) return;
+      const list = P.flags.filter((f) => !filter || f.key.includes(filter.trim().toLowerCase()));
+      box.innerHTML = `<div class="head"><div>Flag</div><div>Development</div><div>Staging</div><div>Production</div></div>`;
+      for (const f of list) { const el = document.createElement('flag-row'); el.data = f; el.setAttribute('data-key', f.key); box.appendChild(el); }
+      if (!list.length) box.insertAdjacentHTML('beforeend', '<p class="muted">No flags match.</p>');
+    };
+    q('#flags').addEventListener('flag-toggle', (e) => {
+      const row = e.target.closest ? e.target.closest('flag-row') : e.target; const f = row.data; const { env, next } = e.detail;
+      const apply = async () => { await later(250); await rec({ event: 'flag_toggle', project: P.name, flag: f.key, env, enabled: String(next) }); f.env[env] = next; row.data = f; toast(`${f.key} turned ${next ? 'on' : 'off'} in ${env}.`); };
+      if (env === 'production') { q('#dlg-h').textContent = `Turn ${next ? 'on' : 'off'} ${f.key} in production?`; q('#dlg-b').textContent = 'This affects live customers immediately.'; q('#dlg').hidden = false; q('#dlg-yes').onclick = async () => { q('#dlg').hidden = true; await apply(); }; }
+      else apply();
+    });
+    renderProject.draw = draw; draw();
+  }
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; };
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

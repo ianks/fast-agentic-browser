@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gigsmith · Hire freelancers</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Söhne", "Helvetica Neue", Arial, sans-serif; color: #14213d; background: #f6f7fb; }
+  a { color: #2f6fed; }
+  button, input, select, textarea { font: inherit; }
+  header { background: #fff; border-bottom: 1px solid #e3e6ef; }
+  header .in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 12px 24px; }
+  .logo { font-weight: 800; font-size: 21px; color: #14213d; text-decoration: none; }
+  .logo span { color: #2f6fed; }
+  header nav a { color: #14213d; text-decoration: none; margin-right: 12px; font-size: 14px; }
+  header nav a.on { color: #2f6fed; font-weight: 700; }
+  header .sp { flex: 1; }
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 24px 60px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .sub { color: #5d6782; margin: 0 0 14px; font-size: 14px; }
+  .card { background: #fff; border: 1px solid #e3e6ef; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+  .btn { border: 1px solid #c9cfdf; background: #fff; border-radius: 999px; padding: 8px 18px; cursor: pointer; color: #14213d; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #2f6fed; border-color: #2f6fed; color: #fff; font-weight: 600; }
+  .btn.sm { padding: 4px 12px; font-size: 13px; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .wiz { display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
+  .wsteps { list-style: none; margin: 0; padding: 0; }
+  .wsteps li { padding: 10px 12px; color: #8a92a8; border-left: 3px solid #e3e6ef; font-size: 14px; }
+  .wsteps li.on { color: #14213d; border-left-color: #2f6fed; font-weight: 700; }
+  .wsteps li.done { color: #1f8a5b; }
+  .f { margin: 16px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+  .f input[type=text], .f select, .f textarea { width: 100%; max-width: 560px; padding: 9px 11px; border: 1px solid #c9cfdf; border-radius: 8px; background: #fff; }
+  .hint { font-size: 12px; color: #5d6782; margin-top: 4px; }
+  .dd { position: relative; max-width: 560px; }
+  .dd-btn { width: 100%; text-align: left; padding: 9px 11px; border: 1px solid #c9cfdf; border-radius: 8px; background: #fff; cursor: pointer; }
+  .dd-btn::after { content: "▾"; float: right; color: #5d6782; }
+  .dd-pop { position: absolute; left: 0; right: 0; top: 100%; z-index: 20; background: #fff; border: 1px solid #c9cfdf; border-radius: 10px; box-shadow: 0 14px 30px rgba(20,33,61,.15); margin-top: 4px; max-height: 320px; overflow: auto; padding: 6px; }
+  .dd-pop .grp { font-size: 12px; font-weight: 700; color: #5d6782; text-transform: uppercase; letter-spacing: .06em; padding: 8px 10px 4px; }
+  .dd-pop [role=option] { padding: 7px 10px 7px 20px; border-radius: 6px; cursor: pointer; }
+  .dd-pop [role=option]:hover, .dd-pop [role=option][aria-selected=true] { background: #eef3ff; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .tag { background: #eef3ff; color: #1f4fc4; border-radius: 999px; padding: 3px 6px 3px 12px; font-size: 13px; display: inline-flex; gap: 4px; align-items: center; }
+  .tag button { border: 0; background: none; cursor: pointer; color: #1f4fc4; }
+  .combo { position: relative; max-width: 560px; }
+  .combo ul { position: absolute; left: 0; right: 0; top: 100%; z-index: 20; list-style: none; margin: 4px 0 0; padding: 6px; background: #fff; border: 1px solid #c9cfdf; border-radius: 10px; box-shadow: 0 14px 30px rgba(20,33,61,.15); }
+  .combo li { padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+  .combo li:hover { background: #eef3ff; }
+  .rcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 700px; }
+  .rcard { display: block; border: 2px solid #e3e6ef; border-radius: 12px; padding: 12px; cursor: pointer; background: #fff; }
+  .rcard.sel { border-color: #2f6fed; background: #f3f7ff; }
+  .rcard small { display: block; color: #5d6782; }
+  .radios label { display: block; padding: 4px 0; }
+  .switch { width: 42px; height: 24px; border-radius: 999px; background: #c9cfdf; border: 0; position: relative; cursor: pointer; vertical-align: middle; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .12s; }
+  .switch[aria-checked=true] { background: #2f6fed; }
+  .switch[aria-checked=true]::after { left: 21px; }
+  .boost { display: flex; gap: 10px; align-items: flex-start; border: 1px solid #f0d58c; background: #fffbea; border-radius: 10px; padding: 12px 14px; max-width: 560px; }
+  .err { color: #c62828; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eef0f6; font-size: 14px; vertical-align: top; }
+  th { color: #5d6782; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .prof { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+  .avatar { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; font-weight: 700; color: #fff; }
+  .jss { font-size: 30px; font-weight: 800; color: #1f8a5b; }
+  .badge { font-size: 12px; background: #eef3ff; color: #1f4fc4; border-radius: 999px; padding: 2px 10px; }
+  .loading { padding: 50px; text-align: center; color: #5d6782; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #14213d; color: #fff; padding: 10px 18px; border-radius: 999px; z-index: 60; }
+  footer { text-align: center; color: #8a92a8; font-size: 12px; padding: 22px; }
+</style>
+</head>
+<body>
+<header><div class="in"><a class="logo" href="#/jobs">gig<span>smith</span></a><nav aria-label="Main"><a href="#/jobs" data-nav="jobs">My jobs</a><a href="#/jobs/new" data-nav="new">Post a job</a><a href="#/talent" data-nav="talent">Find talent</a><a href="#/contracts" data-nav="contracts">Contracts</a><a href="#/messages" data-nav="messages">Messages</a></nav><span class="sp"></span><span class="sub" style="margin:0">Fjordvandring Forlag · Eirik Haugen</span></div></header>
+<main id="view"></main>
+<footer>Gigsmith Inc. · Client service fee 5% · Payments protected by Gigsmith Escrow</footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const CATS = [['Design & Creative', ['Illustration', 'Logo & brand identity', 'Graphic design', 'Photography', 'Animation']], ['Writing & Translation', ['Copywriting', 'Editing & proofreading', 'Translation', 'Technical writing']], ['Web & Software', ['Web development', 'Mobile apps', 'QA & testing']], ['Sales & Marketing', ['SEO', 'Social media marketing', 'Email marketing']]];
+  const SKILLS = ['Adobe Illustrator', 'Adobe InDesign', 'Adobe Photoshop', 'Affinity Designer', 'Cartography', 'Map Illustration', 'GIS', 'Watercolor', 'Watercolor Painting', 'Digital Painting', 'Book Illustration', 'Infographics', 'Procreate', 'Copy Editing', 'Proofreading', 'Norwegian Translation', 'Travel Writing', 'Figma'];
+  const FREEL = {
+    'f-tuva': { name: 'Tuva Rønning', country: 'Norway', title: 'Bilingual editor (NO/EN), travel & outdoors', jss: 100, profileRate: 70, earned: '$120k+', badge: 'Top Rated Plus', hue: '#6a4c93' },
+    'f-analucia': { name: 'Ana Lúcia Ferraz', country: 'Portugal', title: 'Copy-editor for guidebooks', jss: 92, profileRate: 55, earned: '$40k+', badge: 'Top Rated', hue: '#1982c4' },
+    'f-analuisa': { name: 'Ana Luísa Ferraz', country: 'Brazil', title: 'English proofreader & translator', jss: 88, profileRate: 45, earned: '$15k+', badge: 'Rising Talent', hue: '#8ac926' },
+    'f-kalinda': { name: 'Kalinda Mercer', country: 'Australia', title: 'Line editor, travel & natural history books', jss: 97, profileRate: 64, earned: '$80k+', badge: 'Top Rated', hue: '#ff595e' },
+    'f-oskar': { name: 'Oskar Lindgren', country: 'Sweden', title: 'Scandinavian-English copy-editor', jss: 98, profileRate: 55, earned: '$60k+', badge: 'Top Rated', hue: '#ffca3a' },
+    'f-priya': { name: 'Priya Menon', country: 'India', title: 'Proofreader, academic & trade books', jss: 95, profileRate: 35, earned: '$30k+', badge: 'Top Rated', hue: '#6a994e' },
+    'f-jakub': { name: 'Jakub Novák', country: 'Czechia', title: 'Editor & fact-checker for outdoor guides', jss: 90, profileRate: 50, earned: '$25k+', badge: '', hue: '#bc4749' },
+    'f-maren': { name: 'Maren Kvale', country: 'Norway', title: 'Brand designer for cafés & restaurants', jss: 99, profileRate: 85, earned: '$200k+', badge: 'Top Rated Plus', hue: '#264653' },
+    'f-diego': { name: 'Diego Salcedo', country: 'Mexico', title: 'Logo & packaging designer', jss: 93, profileRate: 40, earned: '$50k+', badge: 'Top Rated', hue: '#e76f51' },
+  };
+  const JOBS = [
+    { id: 'J-5510', title: 'Copy-editing for a Norwegian–English hiking guide', posted: '2026-09-15', status: 'Open', budget: 'Hourly · $30–$70/hr', proposals: [['f-tuva', 72, 'I have edited three Cicerone-style guides...'], ['f-analucia', 58, 'Guidebook editing is my specialty...'], ['f-analuisa', 45, 'I can proofread your manuscript quickly...'], ['f-kalinda', 59, 'I line-edit travel books for two Australian publishers...'], ['f-oskar', 60, 'Scandinavian place names are my daily bread...'], ['f-priya', 35, 'Careful, consistent proofreading...'], ['f-jakub', 52, 'I edit and fact-check trail descriptions...']] },
+    { id: 'J-5476', title: 'Brand refresh for Sjøbris Café', posted: '2026-08-30', status: 'Open', budget: 'Fixed · $2,500', proposals: [['f-maren', 85, 'Coastal cafés are my favourite brief...'], ['f-diego', 40, 'Here is a moodboard to start...'], ['f-kalinda', 55, 'I can also help with menu copy...']] },
+    { id: 'J-5302', title: 'Cover design: Rondane day walks', posted: '2026-06-02', status: 'Closed', budget: 'Fixed · $800', proposals: [] },
+  ];
+  const st = { job: null, busy: false, dd: false };
+  const newJob = () => ({ step: 1, title: '', cat: '', skills: [], skq: '', level: 'intermediate', btype: 'hourly', rateFrom: '', rateTo: '', budget: '', length: '', vis: 'public', nda: false, boost: true, questions: '', err: '', done: null });
+
+  function jobsPage() { return `<h1>My jobs</h1><p class="sub"><a class="btn primary" href="#/jobs/new">Post a new job</a></p><div class="card"><table><thead><tr><th>Job</th><th>Posted</th><th>Budget</th><th>Status</th><th>Proposals</th></tr></thead><tbody>${JOBS.map((j) => `<tr><td><a href="#/jobs/${j.id}/proposals">${esc(j.title)}</a></td><td>${j.posted}</td><td>${esc(j.budget)}</td><td>${j.status}</td><td>${j.proposals.length}</td></tr>`).join('')}</tbody></table></div>`; }
+  function proposalsPage(id) {
+    const j = JOBS.find((x) => x.id === id); if (!j) return '<p>Job not found.</p>';
+    return `<p class="sub"><a href="#/jobs">My jobs</a> › ${esc(j.title)}</p><h1>${esc(j.title)}</h1><p class="sub">${esc(j.budget)} · ${j.proposals.length} proposals · rates shown are what each freelancer proposed for this job</p><div class="card"><table><thead><tr><th>Freelancer</th><th>Country</th><th>Proposed rate</th><th>Cover letter</th><th></th></tr></thead><tbody>${j.proposals.map(([fid, rate, cl]) => `<tr><td><a href="#/freelancers/${fid}">${esc(FREEL[fid].name)}</a><div class="sub" style="margin:0">${esc(FREEL[fid].title)}</div></td><td>${esc(FREEL[fid].country)}</td><td>$${rate.toFixed(2)}/hr</td><td>${esc(cl)}</td><td><button class="btn sm" type="button" data-hire="${fid}" data-job="${j.id}">Hire</button> <button class="btn sm" type="button" data-decline="${fid}" data-job="${j.id}">Decline</button></td></tr>`).join('') || '<tr><td colspan="5" class="sub">No proposals.</td></tr>'}</tbody></table></div>`;
+  }
+  async function profilePage(fid) {
+    const f = FREEL[fid]; if (!f) return '<p>Not found</p>';
+    await new Promise((r) => setTimeout(r, 450 + (fid.length % 4) * 110));
+    return `<p class="sub"><a href="javascript:history.back()">‹ Back</a></p><div class="prof"><div class="card" style="text-align:center"><div class="avatar" style="background:${f.hue};margin:0 auto 10px">${esc(f.name[0])}</div><h2 style="margin:4px 0">${esc(f.name)}</h2><div class="sub">${esc(f.country)}</div>${f.badge ? `<span class="badge">${esc(f.badge)}</span>` : ''}<p style="margin-top:14px">Profile rate<br><strong>$${f.profileRate.toFixed(2)}/hr</strong></p><p>Total earned<br><strong>${f.earned}</strong></p></div>
+      <div><div class="card"><h2 style="margin-top:0">${esc(f.title)}</h2><p>Job Success</p><div class="jss">${f.jss}%</div><p class="sub">Job Success reflects client feedback on completed contracts over the last 24 months.</p></div><div class="card"><strong>Work history</strong><ul><li>Guidebook line edit · ★ 5.0</li><li>Brochure proofreading · ★ 4.9</li><li>Website copy review · ★ 5.0</li></ul></div></div></div>`;
+  }
+  function wizard() {
+    const j = st.job || (st.job = newJob());
+    if (j.done) return `<h1>Your job is live</h1><div class="card"><p><strong>${esc(j.title)}</strong> (${esc(j.done)}) was posted${j.vis === 'invite_only' ? ' as invite-only. Invite freelancers from Find talent.' : '.'}</p><a class="btn" href="#/jobs">Go to My jobs</a></div>`;
+    const L = ['Title & category', 'Skills & level', 'Budget', 'Visibility', 'Review'];
+    let body = '';
+    if (j.step === 1) body = `<div class="f"><label for="title">Job title</label><input type="text" id="title" value="${esc(j.title)}" maxlength="100"><div class="hint">A clear title gets better proposals.</div></div>
+      <div class="f"><span class="lab" id="cat-lab">Category</span><div class="dd"><button type="button" class="dd-btn" id="cat-btn" aria-haspopup="listbox" aria-expanded="${st.dd}" aria-labelledby="cat-lab cat-btn">${j.cat ? esc(j.cat.replace(' > ', ' › ')) : 'Select a category'}</button>${st.dd ? `<div class="dd-pop" role="listbox" aria-label="Category">${CATS.map(([g, subs]) => `<div class="grp" role="presentation">${esc(g)}</div>${subs.map((s) => `<div role="option" tabindex="0" data-cat="${esc(g + ' > ' + s)}" aria-selected="${j.cat === g + ' > ' + s}">${esc(s)}</div>`).join('')}`).join('')}</div>` : ''}</div></div>`;
+    else if (j.step === 2) body = `<div class="f"><label for="skq">Skills (up to 5)</label><div class="tags">${j.skills.map((s) => `<span class="tag">${esc(s)}<button type="button" data-rmskill="${esc(s)}" aria-label="Remove ${esc(s)}">×</button></span>`).join('')}</div><div class="combo"><input type="text" id="skq" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search skills" value="${esc(j.skq)}"><ul role="listbox" id="sk-list" hidden></ul></div><div class="hint">Pick skills from the list.</div></div>
+      <div class="f"><span class="lab">Experience level</span><div class="rcards" role="radiogroup" aria-label="Experience level">${[['entry', 'Entry', 'Looking for someone relatively new'], ['intermediate', 'Intermediate', 'Substantial experience'], ['expert', 'Expert', 'Deep expertise in this field']].map(([k, l, d]) => `<label class="rcard ${j.level === k ? 'sel' : ''}"><input type="radio" name="level" value="${k}" ${j.level === k ? 'checked' : ''}> <strong>${l}</strong><small>${d}</small></label>`).join('')}</div></div>`;
+    else if (j.step === 3) body = `<div class="f"><span class="lab">How will you pay?</span><div class="radios" role="radiogroup" aria-label="Budget type"><label><input type="radio" name="btype" value="hourly" ${j.btype === 'hourly' ? 'checked' : ''}> Hourly rate</label><label><input type="radio" name="btype" value="fixed" ${j.btype === 'fixed' ? 'checked' : ''}> Fixed price</label></div></div>
+      ${j.btype === 'hourly' ? `<div class="f"><span class="lab">Hourly range (USD)</span><input type="text" id="rate-from" value="${esc(j.rateFrom)}" placeholder="From" style="width:120px;padding:8px;border:1px solid #c9cfdf;border-radius:8px"> – <input type="text" id="rate-to" value="${esc(j.rateTo)}" placeholder="To" style="width:120px;padding:8px;border:1px solid #c9cfdf;border-radius:8px"></div>` : `<div class="f"><label for="budget">Project budget (USD)</label><input type="text" id="budget" value="${esc(j.budget)}" inputmode="decimal" style="max-width:200px"></div>`}
+      <div class="f"><label for="length">Project length</label><select id="length"><option value="">Choose…</option>${['Less than 1 month', '1 to 3 months', '3 to 6 months', 'More than 6 months'].map((l) => `<option ${j.length === l ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+    else if (j.step === 4) body = `<div class="f"><span class="lab">Who can see this job?</span><div class="radios" role="radiogroup" aria-label="Visibility"><label><input type="radio" name="vis" value="public" ${j.vis === 'public' ? 'checked' : ''}> Anyone on Gigsmith</label><label><input type="radio" name="vis" value="invite_only" ${j.vis === 'invite_only' ? 'checked' : ''}> Only freelancers I invite</label></div></div>
+      <div class="f"><span class="lab">Require freelancers to sign an NDA</span><button type="button" class="switch" role="switch" id="nda" aria-checked="${j.nda}" aria-label="Require an NDA"></button></div>
+      <label class="boost"><input type="checkbox" id="boost" ${j.boost ? 'checked' : ''}><span><strong>Boost this job — Featured for 7 days ($29.00)</strong><br><span class="sub" style="margin:0">Featured jobs get 3× more proposals · Recommended</span></span></label>
+      <div class="f"><label for="questions">Screening questions (optional)</label><textarea id="questions" rows="2">${esc(j.questions)}</textarea></div>`;
+    else body = `<table><tbody><tr><th>Title</th><td>${esc(j.title)}</td></tr><tr><th>Category</th><td>${esc(j.cat.replace(' > ', ' › '))}</td></tr><tr><th>Skills</th><td>${esc(j.skills.join(', '))}</td></tr><tr><th>Level</th><td>${j.level}</td></tr><tr><th>Budget</th><td>${j.btype === 'fixed' ? 'Fixed · $' + esc(j.budget) : 'Hourly · $' + esc(j.rateFrom) + '–$' + esc(j.rateTo)}</td></tr><tr><th>Length</th><td>${esc(j.length)}</td></tr><tr><th>Visibility</th><td>${j.vis === 'public' ? 'Public' : 'Invite-only'}</td></tr><tr><th>NDA</th><td>${j.nda ? 'Required' : 'Not required'}</td></tr><tr><th>Boost</th><td>${j.boost ? 'Featured for 7 days ($29.00)' : 'No'}</td></tr></tbody></table>`;
+    return `<h1>Post a job</h1><div class="card"><div class="wiz"><ol class="wsteps">${L.map((l, i) => `<li class="${j.step === i + 1 ? 'on' : j.step > i + 1 ? 'done' : ''}">${i + 1}. ${l}</li>`).join('')}</ol><section>${body}<p class="err" role="alert">${esc(j.err)}</p><p>${j.step > 1 ? '<button class="btn" type="button" id="j-back">Back</button> ' : ''}${j.step < 5 ? '<button class="btn primary" type="button" id="j-next">Next</button>' : `<button class="btn" type="button" id="j-draft">Save draft</button> <button class="btn primary" type="button" id="j-post" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Posting…' : 'Post job'}</button>`}</p></section></div></div>`;
+  }
+  let tok = 0;
+  async function route() {
+    const p = (location.hash || '#/jobs').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === (p[1] === 'new' ? 'new' : p[0])));
+    const v = $('#view'); const my = ++tok;
+    if (p[0] === 'jobs' && p[1] === 'new') v.innerHTML = wizard();
+    else if (p[0] === 'jobs' && p[1]) v.innerHTML = proposalsPage(p[1]);
+    else if (p[0] === 'freelancers') { v.innerHTML = '<div class="loading">Loading profile…</div>'; const h = await profilePage(p[1]); if (my === tok) v.innerHTML = h; }
+    else if (['talent', 'contracts', 'messages'].includes(p[0])) v.innerHTML = `<h1>${p[0][0].toUpperCase() + p[0].slice(1)}</h1><div class="card"><p class="sub">Nothing here yet.</p></div>`;
+    else { document.querySelector('[data-nav=jobs]').classList.add('on'); v.innerHTML = jobsPage(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { st.dd = false; route(); scrollTo(0, 0); });
+  const view = $('#view'); let skt;
+  view.addEventListener('input', (e) => {
+    const t = e.target; const j = st.job; if (!j) return;
+    if (t.id === 'title') j.title = t.value;
+    if (t.id === 'rate-from') j.rateFrom = t.value; if (t.id === 'rate-to') j.rateTo = t.value; if (t.id === 'budget') j.budget = t.value; if (t.id === 'questions') j.questions = t.value;
+    if (t.id === 'skq') {
+      j.skq = t.value; clearTimeout(skt); const ul = $('#sk-list'); const q = t.value.trim().toLowerCase();
+      if (q.length < 2) { ul.hidden = true; return; }
+      skt = setTimeout(() => { const res = SKILLS.filter((s) => s.toLowerCase().includes(q) && !j.skills.includes(s)); ul.innerHTML = res.length ? res.map((s) => `<li role="option" data-skill="${esc(s)}">${esc(s)}</li>`).join('') : '<li aria-disabled="true">No matching skills</li>'; ul.hidden = false; t.setAttribute('aria-expanded', 'true'); }, 250);
+    }
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target; const j = st.job; if (!j) return;
+    if (t.name === 'level') { j.level = t.value; rerender(); }
+    if (t.name === 'btype') { j.btype = t.value; rerender(); }
+    if (t.id === 'length') j.length = t.value;
+    if (t.name === 'vis') j.vis = t.value;
+    if (t.id === 'boost') j.boost = t.checked;
+  });
+  view.addEventListener('mousedown', (e) => { if (e.target.closest('.combo ul')) e.preventDefault(); });
+  view.addEventListener('keydown', (e) => { const o = e.target.closest && e.target.closest('[data-cat]'); if (o && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); o.click(); } if (e.key === 'Escape' && st.dd) { st.dd = false; rerender(); } });
+  view.addEventListener('click', async (e) => {
+    const t = e.target; const j = st.job;
+    const hire = t.closest('[data-hire]'); if (hire) { await later(400); await rec({ event: 'proposal_hire', job: hire.dataset.job, freelancer: FREEL[hire.dataset.hire].name }); toast('Offer sent'); return; }
+    const dec = t.closest('[data-decline]'); if (dec) { await later(300); await rec({ event: 'proposal_decline', job: dec.dataset.job, freelancer: FREEL[dec.dataset.decline].name }); t.closest('tr').remove(); return; }
+    if (!j) return;
+    if (t.closest('#cat-btn')) { st.dd = !st.dd; rerender(); return; }
+    const c = t.closest('[data-cat]'); if (c) { j.cat = c.dataset.cat; st.dd = false; j.err = ''; rerender(); return; }
+    const sk = t.closest('[data-skill]'); if (sk) { if (j.skills.length >= 5) { j.err = 'You can add up to 5 skills.'; } else j.skills.push(sk.dataset.skill); j.skq = ''; rerender(); const i = $('#skq'); if (i) i.focus(); return; }
+    const rs = t.closest('[data-rmskill]'); if (rs) { j.skills = j.skills.filter((s) => s !== rs.dataset.rmskill); rerender(); return; }
+    if (t.closest('#nda')) { j.nda = !j.nda; rerender(); return; }
+    if (t.closest('#j-back')) { j.err = ''; j.step--; rerender(); return; }
+    if (t.closest('#j-next')) {
+      j.err = '';
+      if (j.step === 1) { if (j.title.trim().length < 10) j.err = 'Write a title of at least 10 characters.'; else if (!j.cat) j.err = 'Choose a category.'; }
+      if (j.step === 2 && !j.skills.length) j.err = 'Add at least one skill.';
+      if (j.step === 3) { if (j.btype === 'fixed' && !(parseFloat(j.budget.replace(/[$,\s]/g, '')) >= 50)) j.err = 'Enter a budget of at least $50.'; else if (j.btype === 'hourly' && !(parseFloat(j.rateFrom) > 0 && parseFloat(j.rateTo) >= parseFloat(j.rateFrom))) j.err = 'Enter an hourly range.'; else if (!j.length) j.err = 'Choose a project length.'; }
+      if (!j.err) j.step++;
+      rerender(); return;
+    }
+    const payload = () => ({ title: j.title.trim().replace(/\s+/g, ' '), category: j.cat, skills: [...j.skills].sort().join('; '), level: j.level, budget_type: j.btype, budget: j.btype === 'fixed' ? parseFloat(j.budget.replace(/[$,\s]/g, '')).toFixed(2) : `${j.rateFrom}-${j.rateTo}/hr`, length: j.length, visibility: j.vis, nda: j.nda ? 'yes' : 'no', boost: j.boost ? 'yes' : 'no' });
+    if (t.closest('#j-draft')) { await later(400); await rec({ event: 'job_draft', ...payload() }); toast('Draft saved'); return; }
+    if (t.closest('#j-post')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(900);
+      const id = 'J-' + (5520 + JOBS.length);
+      await rec({ event: 'job_post', job: id, ...payload() });
+      JOBS.unshift({ id, title: j.title.trim(), posted: '2026-09-24', status: 'Open', budget: j.btype === 'fixed' ? 'Fixed · $' + j.budget : 'Hourly', proposals: [] });
+      st.busy = false; j.done = id; rerender(); toast('Job posted');
+    }
+  });
+  document.addEventListener('click', (e) => { if (st.dd && !e.target.closest('.dd')) { st.dd = false; rerender(); } });
+  route();
+})();
+</script>
+</body>
+</html>

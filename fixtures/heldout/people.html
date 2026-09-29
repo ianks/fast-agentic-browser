@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ottoline People</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #faf5ff; }
+  .bar { display: flex; align-items: center; gap: 6px; background: #4c1d95; color: #fff; padding: 6px 16px; }
+  .bar .logo { font-weight: 800; margin-right: 18px; }
+  .bar > .mb > button, .bar > a { background: none; border: 0; color: #ede9fe; padding: 8px 12px; border-radius: 6px; text-decoration: none; font: inherit; cursor: pointer; }
+  .bar > .mb > button[aria-expanded=true] { background: #6d28d9; }
+  .mb { position: relative; }
+  [role=menu] { position: absolute; top: 100%; left: 0; background: #fff; color: #111; border: 1px solid #ddd6fe; border-radius: 8px; min-width: 200px; padding: 4px 0; box-shadow: 0 8px 24px rgba(0,0,0,.15); z-index: 10; }
+  [role=menuitem] { display: block; padding: 8px 14px; color: #111; text-decoration: none; }
+  [role=menuitem]:hover, [role=menuitem]:focus { background: #f5f3ff; }
+  main { max-width: 960px; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0; }
+  .tabs [role=tab] { border-radius: 20px; border: 1px solid #ddd6fe; background: #fff; }
+  .tabs [role=tab][aria-selected=true] { background: #4c1d95; color: #fff; border-color: #4c1d95; }
+  .req { background: #fff; border: 1px solid #ede9fe; border-radius: 12px; padding: 14px 16px; margin: 10px 0; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+  .req .who { font-weight: 700; }
+  .chip { font-size: 12px; background: #ede9fe; color: #4c1d95; padding: 1px 8px; border-radius: 10px; }
+  .done { color: #166534; font-weight: 600; }
+  .declined { color: #991b1b; font-weight: 600; }
+</style>
+</head>
+<body>
+<nav class="bar" aria-label="Main">
+  <span class="logo">Ottoline People</span>
+  <a href="#/home">Home</a>
+  <div class="mb"><button type="button" aria-haspopup="menu" aria-expanded="false" data-menu="m-me">Me ▾</button>
+    <div role="menu" id="m-me" aria-label="Me" hidden><a role="menuitem" href="#/profile">My profile</a><a role="menuitem" href="#/my-time-off">My time off</a><a role="menuitem" href="#/payslips">Payslips</a></div></div>
+  <div class="mb"><button type="button" aria-haspopup="menu" aria-expanded="false" data-menu="m-team">My team ▾</button>
+    <div role="menu" id="m-team" aria-label="My team" hidden><a role="menuitem" href="#/team-calendar">Team calendar</a><a role="menuitem" href="#/org">Org chart</a><a role="menuitem" href="#/approvals">Approvals</a></div></div>
+  <div class="mb"><button type="button" aria-haspopup="menu" aria-expanded="false" data-menu="m-co">Company ▾</button>
+    <div role="menu" id="m-co" aria-label="Company" hidden><a role="menuitem" href="#/directory">Directory</a><a role="menuitem" href="#/policies">Policies</a></div></div>
+  <span style="margin-left:auto;color:#ddd6fe">Henrike Solberg · Engineering manager</span>
+</nav>
+<main id="view"></main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0"></h3><div id="dlg-b"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes"></button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const TIMEOFF = [
+    { id: 'TO-8812', who: 'Otto Brandt', type: 'Sick leave', from: '2026-07-02', to: '2026-07-03', days: 2, note: 'Doctor appointment follow-up', status: 'Pending' },
+    { id: 'TO-8816', who: 'Ottilie Brandtner', type: 'Annual leave', from: '2026-07-06', to: '2026-07-10', days: 5, note: 'Family trip to Bergen', status: 'Pending' },
+    { id: 'TO-8819', who: 'Ottilie Brandt', type: 'Annual leave', from: '2026-08-24', to: '2026-08-28', days: 5, note: '', status: 'Pending' },
+    { id: 'TO-8821', who: 'Leilani Kahale', type: 'Parental leave', from: '2026-09-01', to: '2026-11-30', days: 65, note: '', status: 'Pending' },
+    { id: 'TO-8824', who: 'Ottilie Brandt', type: 'Annual leave', from: '2026-07-06', to: '2026-07-10', days: 5, note: 'Summer holiday', status: 'Pending' },
+    { id: 'TO-8830', who: 'Ferdinand Oyelaran', type: 'Unpaid leave', from: '2026-07-06', to: '2026-07-07', days: 2, note: 'Moving house', status: 'Pending' },
+  ];
+  const EXPENSES = [
+    { id: 'EX-311', who: 'Ottilie Brandt', what: 'Conference ticket — RustConf EU', amount: '€420.00', status: 'Pending' },
+    { id: 'EX-315', who: 'Leilani Kahale', what: 'Monitor arm', amount: '€89.00', status: 'Pending' },
+  ];
+  const EQUIP = [{ id: 'EQ-77', who: 'Otto Brandt', what: 'Replacement laptop charger', status: 'Pending' }];
+  const st = { tab: 'timeoff', loaded: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fd = (s) => { const [y, m, d] = s.split('-').map(Number); return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`; };
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const view = q('#view');
+  let dlgFn = null;
+  const dialog = (h, body, yes, fn) => { q('#dlg-h').textContent = h; q('#dlg-b').innerHTML = body; q('#dlg-yes').textContent = yes; dlgFn = fn; q('#dlg').hidden = false; };
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; dlgFn = null; };
+  q('#dlg-yes').onclick = async () => { const f = dlgFn; if (!f) return; q('#dlg-yes').disabled = true; await f(); q('#dlg-yes').disabled = false; q('#dlg').hidden = true; dlgFn = null; };
+
+  const closeMenus = () => qa('[data-menu]').forEach((b) => { b.setAttribute('aria-expanded', 'false'); q('#' + b.dataset.menu).hidden = true; });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-menu]');
+    if (b) { const open = b.getAttribute('aria-expanded') === 'true'; closeMenus(); if (!open) { b.setAttribute('aria-expanded', 'true'); q('#' + b.dataset.menu).hidden = false; } return; }
+    closeMenus();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
+
+  function route() {
+    const r = (location.hash || '#/home').slice(2);
+    if (r === 'approvals') return renderApprovals();
+    const titles = { home: 'Welcome back, Henrike', profile: 'My profile', 'my-time-off': 'My time off', payslips: 'Payslips', 'team-calendar': 'Team calendar', org: 'Org chart', directory: 'Directory', policies: 'Policies' };
+    const pending = TIMEOFF.filter((t) => t.status === 'Pending').length + EXPENSES.filter((t) => t.status === 'Pending').length + EQUIP.filter((t) => t.status === 'Pending').length;
+    view.innerHTML = `<h1>${titles[r] || 'Not found'}</h1>` + (r === 'home' ? `<div class="card" style="background:#fff">You have <strong>${pending}</strong> items waiting for your approval. Find them under <em>My team → Approvals</em>.</div><div class="card" style="background:#fff">Company update: office closed on 24 June for Midsummer.</div>` : r === 'team-calendar' ? '<p class="muted">Approved absences appear here once approved.</p>' : '<p class="muted">Nothing to show here yet.</p>');
+  }
+  async function renderApprovals() {
+    if (!st.loaded) { view.innerHTML = '<h1>Approvals</h1><p class="muted" role="status">Loading requests…</p>'; await later(500); st.loaded = true; if (location.hash !== '#/approvals') return; }
+    const pend = (a) => a.filter((x) => x.status === 'Pending').length;
+    view.innerHTML = `<h1>Approvals</h1><div class="tabs" role="tablist">${[['timeoff', 'Time off', pend(TIMEOFF)], ['expenses', 'Expenses', pend(EXPENSES)], ['equipment', 'Equipment', pend(EQUIP)]].map(([k, l, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${l} (${n})</button>`).join('')}</div><div id="panel" role="tabpanel"></div>`;
+    const panel = q('#panel');
+    if (st.tab === 'timeoff') {
+      panel.innerHTML = `<div class="row" style="justify-content:space-between"><p class="muted" style="margin:0">Requests from your direct reports, oldest first.</p><button type="button" id="approve-all">Approve all pending</button></div>` + TIMEOFF.map((t) => `<article class="req" aria-label="${esc(t.who)}, ${fd(t.from)} to ${fd(t.to)}"><div><span class="who">${esc(t.who)}</span> <span class="chip">${t.type}</span><div>${fd(t.from)} – ${fd(t.to)} · ${t.days} working day${t.days > 1 ? 's' : ''}</div><div class="muted">${t.id}${t.note ? ' · “' + esc(t.note) + '”' : ''}</div></div>
+        <div class="row">${t.status === 'Pending' ? `<button type="button" data-dec="decline" data-id="${t.id}" aria-label="Decline ${esc(t.who)} ${fd(t.from)} – ${fd(t.to)}">Decline</button><button type="button" class="primary" data-dec="approve" data-id="${t.id}" aria-label="Approve ${esc(t.who)} ${fd(t.from)} – ${fd(t.to)}">Approve</button>` : `<span class="${t.status === 'Approved' ? 'done' : 'declined'}">${t.status}</span>`}</div></article>`).join('');
+    } else {
+      const list = st.tab === 'expenses' ? EXPENSES : EQUIP;
+      panel.innerHTML = list.map((x) => `<article class="req"><div><span class="who">${esc(x.who)}</span><div>${esc(x.what)}${x.amount ? ' · ' + x.amount : ''}</div><div class="muted">${x.id}</div></div><div class="row">${x.status === 'Pending' ? `<button type="button" data-dec="decline" data-id="${x.id}">Decline</button><button type="button" class="primary" data-dec="approve" data-id="${x.id}">Approve</button>` : `<span class="${x.status === 'Approved' ? 'done' : 'declined'}">${x.status}</span>`}</div></article>`).join('');
+    }
+    qa('[data-tab]').forEach((b) => (b.onclick = () => { st.tab = b.dataset.tab; renderApprovals(); }));
+    panel.onclick = (e) => {
+      const b = e.target.closest('[data-dec]');
+      if (b) {
+        const all = TIMEOFF.concat(EXPENSES, EQUIP); const x = all.find((y) => y.id === b.dataset.id);
+        const kind = x.id.startsWith('TO') ? 'timeoff' : x.id.startsWith('EX') ? 'expense' : 'equipment';
+        const label = x.from ? `${fd(x.from)} – ${fd(x.to)}` : x.what;
+        if (b.dataset.dec === 'approve') {
+          dialog(`Approve ${x.who}'s request?`, `<p>${esc(x.type || '')} ${esc(label)}</p>`, 'Approve', async () => { await later(300); await rec({ event: 'approval', kind, request: x.id, employee: x.who, dates: x.from ? `${x.from}..${x.to}` : '', decision: 'approved' }); x.status = 'Approved'; toast('Request approved.'); renderApprovals(); });
+        } else {
+          dialog(`Decline ${x.who}'s request?`, `<label for="why">Reason (shared with ${esc(x.who.split(' ')[0])})</label><textarea id="why" style="width:360px;height:60px"></textarea>`, 'Decline', async () => { await later(300); await rec({ event: 'approval', kind, request: x.id, employee: x.who, dates: x.from ? `${x.from}..${x.to}` : '', decision: 'declined' }); x.status = 'Declined'; toast('Request declined.'); renderApprovals(); });
+        }
+      }
+      if (e.target.id === 'approve-all') {
+        const p = TIMEOFF.filter((t) => t.status === 'Pending');
+        dialog(`Approve ${p.length} time-off requests?`, '<p>All pending time-off requests will be approved.</p>', 'Approve all', async () => { await later(400); for (const t of p) { await rec({ event: 'approval', kind: 'timeoff', request: t.id, employee: t.who, dates: `${t.from}..${t.to}`, decision: 'approved' }); t.status = 'Approved'; } toast('All requests approved.'); renderApprovals(); });
+      }
+    };
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

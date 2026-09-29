@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Marlowe &amp; Pine · Outerwear</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<script src="apparel_data.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #faf9f6; }
+  header { background: #2f3b2f; }
+  main { max-width: 1040px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .p { background: #fff; border: 1px solid #e7e5e0; border-radius: 4px; }
+  .p .img { height: 180px; background: linear-gradient(160deg, #6b705c, #a5a58d); }
+  .p .b { padding: 10px 12px; }
+  .banner { background: #ffe8d6; padding: 10px 14px; border-radius: 4px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+<div id="hdr"></div>
+<main>
+  <div class="banner"><span>Autumn edit: 15% off knitwear this week.</span><a href="apparel_item.html?p=ribble">Shop the Ribble jumper</a></div>
+  <h1>Outerwear &amp; more</h1>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+(() => {
+  // ?fresh=1 starts with an empty bag; drop the flag so Back/reload keep the bag.
+  if (new URLSearchParams(location.search).get('fresh') === '1') { sessionStorage.clear(); history.replaceState(null, '', location.pathname); }
+  const M = window.MP;
+  q('#hdr').innerHTML = M.header();
+  q('#grid').innerHTML = M.products.map((p) => `<article class="p" aria-label="${p.name}"><div class="img" role="img" aria-label="${p.name}"></div><div class="b"><a href="apparel_item.html?p=${p.id}"><strong>${p.name}</strong></a><div>£${p.price}</div><div class="muted">${Object.keys(p.colors).join(' · ')}</div></div></article>`).join('');
+})();
+</script>
+</body>
+</html>

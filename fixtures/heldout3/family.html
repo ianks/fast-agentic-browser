@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rootwise · Olsson–Dahl family tree</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 Charter, "Bitstream Charter", Georgia, serif; color: #2d2a24; background: #f6f2ea; }
+  a { color: #5a6b2e; }
+  button, input, select, textarea { font: 14px -apple-system, "Segoe UI", sans-serif; }
+  header { background: #fffdf8; border-bottom: 1px solid #e4dccb; }
+  header .in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 12px 24px; }
+  .logo { font-size: 22px; font-weight: 700; color: #5a6b2e; text-decoration: none; }
+  header nav a { color: #2d2a24; text-decoration: none; font: 14px -apple-system, sans-serif; margin-right: 12px; }
+  header nav a.on { font-weight: 700; color: #5a6b2e; }
+  header .sp { flex: 1; }
+  header form input { padding: 6px 10px; border: 1px solid #d8cdb6; border-radius: 6px; width: 220px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 24px 60px; }
+  h1 { font-weight: 400; font-size: 30px; margin: 0 0 4px; }
+  .sub { color: #7a7263; font: 14px -apple-system, sans-serif; margin: 0 0 14px; }
+  .btn { border: 1px solid #cfc3a8; background: #fff; border-radius: 6px; padding: 7px 14px; cursor: pointer; color: #2d2a24; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #5a6b2e; border-color: #5a6b2e; color: #fff; }
+  .btn.sm { padding: 3px 9px; font-size: 13px; }
+  .btn[disabled] { opacity: .5; }
+  .pedigree { display: grid; grid-template-columns: repeat(3, 250px) 60px; gap: 0 40px; align-items: center; background: #fffdf8; border: 1px solid #e4dccb; border-radius: 12px; padding: 24px; overflow-x: auto; }
+  .col { display: flex; flex-direction: column; justify-content: space-around; gap: 16px; height: 100%; }
+  .pbox { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid #d8cdb6; border-left: 5px solid #8a9a5b; border-radius: 8px; padding: 9px 12px; cursor: pointer; font-family: Charter, Georgia, serif; }
+  .pbox.f { border-left-color: #b5785a; }
+  .pbox.focus { box-shadow: 0 0 0 3px #d9e3b8; }
+  .pbox small { display: block; color: #7a7263; font: 12px -apple-system, sans-serif; }
+  .pbox.empty { border-style: dashed; color: #a39a88; cursor: default; }
+  .more { display: flex; flex-direction: column; justify-content: space-around; height: 100%; }
+  .more a { font: 13px -apple-system, sans-serif; text-decoration: none; }
+  .profile { display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
+  .card { background: #fffdf8; border: 1px solid #e4dccb; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+  .avatar { width: 90px; height: 90px; border-radius: 50%; background: #d9e3b8; display: grid; place-items: center; font-size: 30px; color: #5a6b2e; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #e4dccb; margin-bottom: 14px; }
+  .tabs a { padding: 8px 14px; font: 14px -apple-system, sans-serif; color: #7a7263; text-decoration: none; border-bottom: 2px solid transparent; }
+  .tabs a.on { color: #2d2a24; border-bottom-color: #5a6b2e; font-weight: 600; }
+  .fact { display: grid; grid-template-columns: 130px 160px 1fr; gap: 14px; padding: 10px 0; border-bottom: 1px dashed #e4dccb; }
+  .fact .t { font: 600 13px -apple-system, sans-serif; text-transform: uppercase; letter-spacing: .05em; color: #5a6b2e; }
+  .fam h4 { font: 600 12px -apple-system, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: #7a7263; margin: 12px 0 6px; }
+  .fam a { display: block; padding: 4px 0; }
+  .loading { padding: 50px; text-align: center; color: #7a7263; font-family: -apple-system, sans-serif; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(45, 42, 36, .45); display: flex; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 40; }
+  .modal { background: #fffdf8; border-radius: 12px; width: 560px; padding: 20px 24px; font-family: -apple-system, sans-serif; }
+  .f { margin: 12px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .f select, .f input[type=text], .f textarea { padding: 7px 9px; border: 1px solid #cfc3a8; border-radius: 6px; background: #fff; }
+  .f input[type=text].wide, .f textarea { width: 100%; }
+  .row { display: flex; gap: 8px; }
+  .combo { position: relative; }
+  .combo ul { position: absolute; left: 0; right: 0; top: 100%; list-style: none; margin: 2px 0 0; padding: 4px; background: #fff; border: 1px solid #cfc3a8; border-radius: 6px; box-shadow: 0 10px 22px rgba(0,0,0,.12); z-index: 5; max-height: 220px; overflow: auto; }
+  .combo li { padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+  .combo li:hover { background: #eef2df; }
+  .err { color: #a3261d; font-size: 13px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #2d2a24; color: #fff; padding: 10px 18px; border-radius: 8px; font-family: -apple-system, sans-serif; z-index: 60; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, sans-serif; font-size: 14px; }
+  td, th { text-align: left; padding: 8px; border-bottom: 1px solid #e4dccb; }
+  footer { text-align: center; font: 12px -apple-system, sans-serif; color: #a39a88; padding: 20px; }
+</style>
+</head>
+<body>
+<header><div class="in"><a class="logo" href="#/tree/P-0001">Rootwise</a><nav aria-label="Main"><a href="#/tree/P-0001" data-nav="tree">Family tree</a><a href="#/people" data-nav="people">People</a><a href="#/search" data-nav="search">Search records</a><a href="#/dna" data-nav="dna">DNA</a><a href="#/hints" data-nav="hints">Hints (7)</a></nav><span class="sp"></span><form id="qf" role="search"><input type="search" id="q" placeholder="Find a person in this tree" aria-label="Find a person in this tree"></form><span class="sub" style="margin:0">Kristin Olsson-Barker</span></div></header>
+<main id="view"></main>
+<footer>Rootwise · Tree: Olsson–Dahl family (private) · 214 people · Last edited 22 September 2026</footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const f = (type, date, place, desc) => ({ type, date, place, desc: desc || '' });
+  const PEOPLE = {
+    'P-0001': { name: 'Margarethe Olsson', sex: 'F', life: '1952–', father: 'P-0002', mother: 'P-0003', spouses: [], facts: [f('Birth', '3 May 1952', 'Minneapolis, Hennepin, Minnesota, USA'), f('Residence', '1980', 'Saint Paul, Ramsey, Minnesota, USA'), f('Occupation', '1975', '', 'Librarian')] },
+    'P-0002': { name: 'Sven Olsson', sex: 'M', life: '1921–1998', father: 'P-0004', mother: 'P-0005', spouses: ['P-0003'], facts: [f('Birth', '11 Feb 1921', 'Minneapolis, Hennepin, Minnesota, USA'), f('Marriage', '14 Jun 1947', 'Duluth, St. Louis, Minnesota, USA', 'Married Ingrid Dahl'), f('Death', '2 Oct 1998', 'Saint Paul, Ramsey, Minnesota, USA')] },
+    'P-0003': { name: 'Ingrid Olsson (née Dahl)', sex: 'F', life: '1924–2011', father: 'P-0010', mother: 'P-0011', spouses: ['P-0002'], facts: [f('Birth', '28 Aug 1924', 'Duluth, St. Louis, Minnesota, USA'), f('Death', '19 Jan 2011', 'Saint Paul, Ramsey, Minnesota, USA')] },
+    'P-0004': { name: 'Karl Olsson', sex: 'M', life: '1889–1960', father: 'P-0008', mother: 'P-0009', spouses: ['P-0005'], facts: [f('Birth', '7 Mar 1889', 'Lerum, Västra Götaland, Sweden'), f('Marriage', '22 Sep 1917', 'Minneapolis, Hennepin, Minnesota, USA', 'Married Elin Berg'), f('Occupation', '1920', '', 'Carpenter'), f('Death', '30 Nov 1960', 'Minneapolis, Hennepin, Minnesota, USA')] },
+    'P-0005': { name: 'Elin Olsson (née Berg)', sex: 'F', life: '1893–1972', father: 'P-0006', mother: 'P-0007', spouses: ['P-0004'], facts: [f('Birth', '16 Jul 1893', 'Sunne, Värmland, Sweden'), f('Immigration', '1913', 'New York, New York, USA', 'Arrived on the SS Oscar II'), f('Death', '4 Apr 1972', 'Minneapolis, Hennepin, Minnesota, USA')] },
+    'P-0006': { name: 'Anders Berg', sex: 'M', life: '1868–1931', father: null, mother: null, spouses: ['P-0007'], facts: [f('Birth', '2 Jan 1868', 'Östra Ämtervik, Värmland, Sweden'), f('Occupation', '1895', '', 'Farmer (hemmansägare)'), f('Death', '12 Dec 1931', 'Sunne, Värmland, Sweden')] },
+    'P-0007': { name: 'Kerstin Berg (née Persdotter)', sex: 'F', life: '1870–1944', father: null, mother: null, spouses: ['P-0006'], facts: [f('Birth', '19 Oct 1870', 'Västra Ämtervik, Värmland, Sweden'), f('Death', '8 May 1944', 'Sunne, Värmland, Sweden')] },
+    'P-0008': { name: 'Olof Olsson', sex: 'M', life: '1860–1925', father: null, mother: null, spouses: ['P-0009'], facts: [f('Birth', '1860', 'Lerum, Västra Götaland, Sweden'), f('Death', '1925', 'Lerum, Västra Götaland, Sweden')] },
+    'P-0009': { name: 'Britta Olsson (née Nilsdotter)', sex: 'F', life: '1862–1930', father: null, mother: null, spouses: ['P-0008'], facts: [f('Birth', '1862', 'Alingsås, Västra Götaland, Sweden')] },
+    'P-0010': { name: 'Erik Dahl', sex: 'M', life: '1895–1970', father: null, mother: null, spouses: ['P-0011'], facts: [f('Birth', '5 May 1895', 'Tromsø, Troms, Norway'), f('Death', '1970', 'Duluth, St. Louis, Minnesota, USA')] },
+    'P-0011': { name: 'Signe Dahl (née Haugen)', sex: 'F', life: '1898–1981', father: null, mother: null, spouses: ['P-0010'], facts: [f('Birth', '1898', 'Bodø, Nordland, Norway')] },
+    'P-0012': { name: 'Karl Olsson', sex: 'M', life: '1915–1977', father: 'P-0004', mother: 'P-0005', spouses: [], facts: [f('Birth', '9 Sep 1915', 'Minneapolis, Hennepin, Minnesota, USA'), f('Death', '1977', 'Seattle, King, Washington, USA')] },
+    'P-0013': { name: 'Anders Berg', sex: 'M', life: '1871–1940', father: null, mother: null, spouses: ['P-0014'], facts: [f('Birth', '30 Mar 1871', 'Karlstad, Värmland, Sweden'), f('Death', '1940', 'Karlstad, Värmland, Sweden')] },
+    'P-0014': { name: 'Maria Berg (née Persdotter)', sex: 'F', life: '1873–1951', father: null, mother: null, spouses: ['P-0013'], facts: [f('Birth', '1873', 'Västra Ämtervik, Värmland, Sweden')] },
+    'P-0015': { name: 'Astrid Olsson', sex: 'F', life: '1918–2004', father: 'P-0004', mother: 'P-0005', spouses: [], facts: [f('Birth', '1918', 'Minneapolis, Hennepin, Minnesota, USA')] },
+  };
+  const PLACES = ['Göteborg, Västra Götaland, Sweden', 'Göteborgs domkyrkoförsamling, Västra Götaland, Sweden', 'Götene, Västra Götaland, Sweden', 'Gothenburg, Dawson, Nebraska, USA', 'Lerum, Västra Götaland, Sweden', 'Alingsås, Västra Götaland, Sweden', 'Sunne, Värmland, Sweden', 'Östra Ämtervik, Värmland, Sweden', 'Västra Ämtervik, Värmland, Sweden', 'Karlstad, Värmland, Sweden', 'Minneapolis, Hennepin, Minnesota, USA', 'Duluth, St. Louis, Minnesota, USA', 'New York, New York, USA', 'Kristiania (Oslo), Norway', 'Tromsø, Troms, Norway', 'Liverpool, Lancashire, England'];
+  const TYPES = ['Birth', 'Baptism', 'Marriage', 'Residence', 'Occupation', 'Emigration', 'Immigration', 'Naturalization', 'Death', 'Burial'];
+  const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const st = { modal: null, busy: false };
+  const box = (id, cls = '') => { const p = PEOPLE[id]; return p ? `<a class="pbox ${p.sex === 'F' ? 'f' : ''} ${cls}" href="#/person/${id}">${esc(p.name)}<small>${esc(p.life)}</small></a>` : '<div class="pbox empty">Add person</div>'; };
+  function tree(id) {
+    const p = PEOPLE[id] || PEOPLE['P-0001']; const fa = PEOPLE[p.father], mo = PEOPLE[p.mother];
+    const gp = [fa && fa.father, fa && fa.mother, mo && mo.father, mo && mo.mother];
+    return `<h1>Family tree</h1><p class="sub">Pedigree view · showing 3 generations from <strong>${esc(p.name)}</strong> (${esc(p.life)}). Click a name to open their profile; use → to move the tree back a generation.</p>
+      <div class="pedigree" role="group" aria-label="Pedigree"><div class="col">${box(id, 'focus')}</div><div class="col">${box(p.father)}${box(p.mother)}</div><div class="col">${gp.map((g) => box(g)).join('')}</div>
+      <div class="more">${gp.map((g) => (g && PEOPLE[g] && (PEOPLE[g].father || PEOPLE[g].mother) ? `<a href="#/tree/${g}" aria-label="Show ${esc(PEOPLE[g].name)}'s ancestors">→</a>` : '<span></span>')).join('')}</div></div>
+      <p class="sub" style="margin-top:12px">${id !== 'P-0001' ? '<a href="#/tree/P-0001">↩ Back to home person (Margarethe Olsson)</a>' : 'Home person: Margarethe Olsson'}</p>`;
+  }
+  function peopleList(filter = '') {
+    const q = filter.trim().toLowerCase();
+    const list = Object.entries(PEOPLE).filter(([, p]) => !q || p.name.toLowerCase().includes(q)).sort((a, b) => a[1].name.localeCompare(b[1].name));
+    return `<h1>${q ? 'People matching “' + esc(filter) + '”' : 'People in this tree'}</h1><p class="sub">${list.length} people</p><div class="card"><table><thead><tr><th>Name</th><th>Lived</th><th>Birthplace</th></tr></thead><tbody>${list.map(([id, p]) => `<tr><td><a href="#/person/${id}">${esc(p.name)}</a></td><td>${esc(p.life)}</td><td>${esc((p.facts.find((x) => x.type === 'Birth') || {}).place || '')}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function personHtml(id, tab) {
+    const p = PEOPLE[id];
+    const T = [['facts', 'Facts & events'], ['family', 'Family'], ['sources', 'Sources'], ['media', 'Media']];
+    const kids = Object.entries(PEOPLE).filter(([, c]) => c.father === id || c.mother === id);
+    let inner = '';
+    if (tab === 'family') inner = `<div class="fam"><h4>Parents</h4>${p.father ? `<a href="#/person/${p.father}">${esc(PEOPLE[p.father].name)} (${esc(PEOPLE[p.father].life)})</a>` : '<span class="sub">Father unknown</span>'}${p.mother ? `<a href="#/person/${p.mother}">${esc(PEOPLE[p.mother].name)} (${esc(PEOPLE[p.mother].life)})</a>` : '<span class="sub" style="display:block">Mother unknown</span>'}<h4>Spouse</h4>${p.spouses.map((s) => `<a href="#/person/${s}">${esc(PEOPLE[s].name)} (${esc(PEOPLE[s].life)})</a>`).join('') || '<span class="sub">None recorded</span>'}<h4>Children</h4>${kids.map(([cid, c]) => `<a href="#/person/${cid}">${esc(c.name)} (${esc(c.life)})</a>`).join('') || '<span class="sub">None recorded</span>'}</div>`;
+    else if (tab === 'sources') inner = `<p class="sub">${p.facts.length} facts · 2 sources</p><ul><li>Svenska kyrkan, husförhörslängd (household examination rolls)</li><li>U.S. Federal Census, 1930</li></ul>`;
+    else if (tab === 'media') inner = `<p class="sub">No photos yet.</p><button class="btn" type="button" id="upload">Upload a photo</button>`;
+    else inner = `<p><button class="btn primary" type="button" data-addfact="${id}">+ Add fact</button></p>${p.facts.map((x, i) => `<div class="fact"><span class="t">${esc(x.type)}</span><span>${esc(x.date)}</span><span>${esc(x.place)}${x.desc ? `<br><span class="sub">${esc(x.desc)}</span>` : ''}</span></div>`).join('')}`;
+    return `<p class="sub"><a href="#/tree/P-0001">Family tree</a> › ${esc(p.name)}</p><div class="profile"><div class="card" style="text-align:center"><div class="avatar" style="margin:0 auto 10px">${esc(p.name[0])}</div><h1 style="font-size:24px">${esc(p.name)}</h1><p class="sub">${esc(p.life)}</p><a class="btn sm" href="#/tree/${id}">View in tree</a></div>
+      <div><nav class="tabs" aria-label="Profile sections">${T.map(([k, l]) => `<a href="#/person/${id}/${k}" class="${tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav><div class="card">${inner}</div></div></div>`;
+  }
+  function factModal() {
+    const m = st.modal; const p = PEOPLE[m.person];
+    return `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="fm-title"><h2 id="fm-title" style="margin-top:0">Add a fact for ${esc(p.name)} (${esc(p.life)})</h2>
+      <div class="f"><label for="fm-type">Fact</label><select id="fm-type"><option value="">Choose a fact type…</option>${TYPES.map((t) => `<option ${m.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div class="f"><span class="lab">Date</span><div class="row"><select id="fm-qual" aria-label="Date qualifier">${[['', 'Exact'], ['ABT', 'About'], ['BEF', 'Before'], ['AFT', 'After'], ['EST', 'Estimated']].map(([v, l]) => `<option value="${v}" ${m.qual === v ? 'selected' : ''}>${l}</option>`).join('')}</select><select id="fm-day" aria-label="Day"><option value="">Day</option>${Array.from({ length: 31 }, (_, i) => `<option ${m.day === String(i + 1) ? 'selected' : ''}>${i + 1}</option>`).join('')}</select><select id="fm-month" aria-label="Month"><option value="">Month</option>${MON.map((x, i) => `<option value="${x}" ${m.month === x ? 'selected' : ''}>${['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][i]}</option>`).join('')}</select><input type="text" id="fm-year" aria-label="Year" placeholder="Year" value="${esc(m.year)}" style="width:80px" inputmode="numeric"></div></div>
+      <div class="f"><label for="fm-place">Place</label><div class="combo"><input type="text" class="wide" id="fm-place" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Start typing a place" value="${esc(m.placeQ)}"><ul role="listbox" id="fm-places" hidden></ul></div><div class="sub" style="margin:3px 0 0;font-size:12px">${m.place ? 'Standardized: ' + esc(m.place) : 'Pick a standardized place from the list.'}</div></div>
+      <div class="f"><label for="fm-desc">Description (optional)</label><textarea id="fm-desc" rows="2">${esc(m.desc)}</textarea></div>
+      <p class="err" role="alert">${esc(m.err || '')}</p><p style="text-align:right"><button class="btn" type="button" id="fm-cancel">Cancel</button> <button class="btn primary" type="button" id="fm-save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Save fact'}</button></p></div></div>`;
+  }
+  const renderModal = () => { $('#modal-root').innerHTML = st.modal ? factModal() : ''; };
+  let tok = 0;
+  async function route() {
+    const p = (location.hash || '#/tree/P-0001').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view'); const my = ++tok;
+    if (p[0] === 'person' && PEOPLE[p[1]]) { v.innerHTML = '<div class="loading">Loading profile…</div>'; await new Promise((r) => setTimeout(r, 380)); if (my !== tok) return; v.innerHTML = personHtml(p[1], p[2] || 'facts'); }
+    else if (p[0] === 'people') v.innerHTML = peopleList(decodeURIComponent(p[1] || ''));
+    else if (p[0] === 'search') v.innerHTML = `<h1>Search historical records</h1><div class="card"><p class="sub">Search 2.1 billion records: parish books, censuses and passenger lists.</p><input type="text" placeholder="First name" id="rs-first"> <input type="text" placeholder="Last name" id="rs-last"> <button class="btn primary" type="button" id="rs-go">Search</button></div>`;
+    else if (p[0] === 'dna' || p[0] === 'hints') v.innerHTML = `<h1>${p[0] === 'dna' ? 'DNA' : 'Hints'}</h1><div class="card"><p class="sub">${p[0] === 'dna' ? 'Order a kit to see ethnicity estimates.' : '7 record hints are waiting for review.'}</p></div>`;
+    else { document.querySelector('[data-nav=tree]').classList.add('on'); v.innerHTML = tree(p[1] || 'P-0001'); }
+  }
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  $('#qf').addEventListener('submit', (e) => { e.preventDefault(); location.hash = '#/people/' + encodeURIComponent($('#q').value); });
+  $('#view').addEventListener('click', async (e) => {
+    const t = e.target;
+    const af = t.closest('[data-addfact]'); if (af) { st.modal = { person: af.dataset.addfact, type: '', qual: '', day: '', month: '', year: '', placeQ: '', place: '', desc: '', err: '' }; renderModal(); return; }
+    if (t.closest('#upload') || t.closest('#rs-go')) { toast('This feature needs a Rootwise Plus subscription.'); return; }
+  });
+  const mr = $('#modal-root'); let pt;
+  mr.addEventListener('change', (e) => { const m = st.modal; if (!m) return; const t = e.target; if (t.tagName !== 'SELECT') return; ({ 'fm-type': 'type', 'fm-qual': 'qual', 'fm-day': 'day', 'fm-month': 'month' })[t.id] && (m[({ 'fm-type': 'type', 'fm-qual': 'qual', 'fm-day': 'day', 'fm-month': 'month' })[t.id]] = t.value); });
+  mr.addEventListener('input', (e) => {
+    const m = st.modal; if (!m) return; const t = e.target;
+    if (t.id === 'fm-year') m.year = t.value;
+    if (t.id === 'fm-desc') m.desc = t.value;
+    if (t.id === 'fm-place') {
+      m.placeQ = t.value; m.place = ''; t.nextElementSibling.hidden = true; clearTimeout(pt);
+      const fold = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const q = fold(t.value.trim()); if (q.length < 2) return;
+      pt = setTimeout(() => { const ul = $('#fm-places'); if (!ul) return; const res = PLACES.filter((x) => fold(x).includes(q)); ul.innerHTML = res.length ? res.map((x) => `<li role="option" data-place="${esc(x)}">${esc(x)}</li>`).join('') : '<li aria-disabled="true">No standardized place found</li>'; ul.hidden = false; $('#fm-place').setAttribute('aria-expanded', 'true'); }, 300);
+    }
+  });
+  mr.addEventListener('mousedown', (e) => { if (e.target.closest('.combo ul')) e.preventDefault(); });
+  mr.addEventListener('click', async (e) => {
+    const m = st.modal; if (!m) return; const t = e.target;
+    const pl = t.closest('[data-place]'); if (pl) { m.place = pl.dataset.place; m.placeQ = m.place; renderModal(); return; }
+    if (t.closest('#fm-cancel')) { st.modal = null; renderModal(); return; }
+    if (t.closest('#fm-save')) {
+      m.err = '';
+      if (!m.type) m.err = 'Choose a fact type.';
+      else if (m.year && !/^\d{4}$/.test(m.year.trim())) m.err = 'Year must have four digits.';
+      else if (!m.year.trim() && (m.day || m.month)) m.err = 'Add a year.';
+      else if (m.placeQ.trim() && !m.place) m.err = 'Choose the place from the list of standardized places.';
+      if (m.err) { renderModal(); return; }
+      st.busy = true; renderModal(); await later(700);
+      const date = [m.qual, m.day, m.month, m.year.trim()].filter(Boolean).join(' ');
+      const p = PEOPLE[m.person];
+      await rec({ event: 'fact_add', person: m.person, person_name: p.name, type: m.type, date, place: m.place, description: m.desc.trim() });
+      const shown = (m.qual ? { ABT: 'abt. ', BEF: 'bef. ', AFT: 'aft. ', EST: 'est. ' }[m.qual] : '') + [m.day, m.month && m.month[0] + m.month.slice(1).toLowerCase(), m.year.trim()].filter(Boolean).join(' ');
+      p.facts.push(f(m.type, shown, m.place, m.desc.trim()));
+      st.busy = false; st.modal = null; renderModal(); route(); toast('Fact added');
+    }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

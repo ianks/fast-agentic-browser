@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pellucid Survey · Responses</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fdf8f3; }
+  header { background: #7c2d12; }
+  main { max-width: 1100px; }
+  .bar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin: 10px 0 16px; }
+  .bar label { margin: 0 0 3px; }
+  .bar select { width: 180px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .score-legend span { display: inline-block; margin-right: 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header><strong>Pellucid Survey</strong><span>Customer NPS</span><span style="margin-left:auto">Workspace: Seaforth Retail</span></header>
+<main>
+  <h1>Responses</h1>
+  <p class="score-legend muted"><span>Detractors: 0–6</span><span>Passives: 7–8</span><span>Promoters: 9–10</span></p>
+  <div class="bar">
+    <div><label for="wave">Survey wave</label><select id="wave"><option value="">All waves</option><option>April 2026</option><option>March 2026</option></select></div>
+    <div><label for="plan">Plan</label><select id="plan"><option value="">All plans</option><option>Starter</option><option>Team</option><option>Business</option><option>Enterprise</option></select></div>
+    <div class="muted" id="summary" role="status"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div style="margin:16px 0"><button type="button" id="more">Show more responses</button></div>
+</main>
+<script>
+// Response cards render inside open shadow roots.
+class NpsCard extends HTMLElement {
+  set data(d) { this._d = d; this.render(); }
+  connectedCallback() { this.render(); }
+  render() {
+    const d = this._d; if (!d) return;
+    const r = this.shadowRoot || this.attachShadow({ mode: 'open' });
+    const tone = d.score <= 6 ? '#dc2626' : d.score <= 8 ? '#d97706' : '#16a34a';
+    r.innerHTML = `<style>
+      .c { background: #fff; border: 1px solid #f1e4d8; border-radius: 12px; padding: 12px 14px; font: 14px/1.4 system-ui, sans-serif; color: #222; height: 100%; box-sizing: border-box; }
+      .top { display: flex; justify-content: space-between; align-items: center; }
+      .score { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; background: ${tone}; }
+      .meta { color: #6b7280; font-size: 12px; margin-top: 8px; } .region { font-weight: 700; }
+    </style><div class="c" role="article" aria-label="Response ${d.id}, score ${d.score}"><div class="top"><div><div class="region">${d.region}</div><div>${d.plan} plan</div></div><div class="score" aria-label="Score ${d.score}">${d.score}</div></div>
+    <p style="margin:8px 0 0">“${d.comment}”</p><div class="meta">${d.id} · ${d.wave} wave · submitted ${d.date}</div></div>`;
+  }
+}
+customElements.define('nps-card', NpsCard);
+(() => {
+  const RESP = /*DATA*/[
+    {"region": "EMEA", "score": 3, "plan": "Starter", "comment": "Pricing jumped at renewal.", "wave": "April 2026", "date": "2026-04-24", "id": "R5000"},
+    {"region": "EMEA", "score": 4, "plan": "Business", "comment": "Onboarding was confusing.", "wave": "April 2026", "date": "2026-04-23", "id": "R5003"},
+    {"region": "North America", "score": 4, "plan": "Enterprise", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-23", "id": "R5006"},
+    {"region": "LATAM", "score": 9, "plan": "Enterprise", "comment": "Great value for money.", "wave": "April 2026", "date": "2026-04-23", "id": "R5009"},
+    {"region": "APAC", "score": 9, "plan": "Business", "comment": "Love the new dashboard!", "wave": "April 2026", "date": "2026-04-23", "id": "R5012"},
+    {"region": "North America", "score": 9, "plan": "Team", "comment": "Support is fantastic.", "wave": "April 2026", "date": "2026-04-23", "id": "R5015"},
+    {"region": "EMEA", "score": 5, "plan": "Enterprise", "comment": "Onboarding was confusing.", "wave": "April 2026", "date": "2026-04-22", "id": "R5018"},
+    {"region": "APAC", "score": 4, "plan": "Business", "comment": "Missing integrations we need.", "wave": "April 2026", "date": "2026-04-22", "id": "R5021"},
+    {"region": "North America", "score": 4, "plan": "Enterprise", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-22", "id": "R5024"},
+    {"region": "EMEA", "score": 9, "plan": "Business", "comment": "Great value for money.", "wave": "April 2026", "date": "2026-04-22", "id": "R5027"},
+    {"region": "North America", "score": 9, "plan": "Starter", "comment": "Great value for money.", "wave": "April 2026", "date": "2026-04-21", "id": "R5030"},
+    {"region": "APAC", "score": 10, "plan": "Business", "comment": "Rock solid and fast.", "wave": "April 2026", "date": "2026-04-21", "id": "R5033"},
+    {"region": "EMEA", "score": 6, "plan": "Enterprise", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-21", "id": "R5036"},
+    {"region": "North America", "score": 10, "plan": "Starter", "comment": "Rock solid and fast.", "wave": "April 2026", "date": "2026-04-20", "id": "R5039"},
+    {"region": "APAC", "score": 5, "plan": "Team", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-20", "id": "R5042"},
+    {"region": "EMEA", "score": 4, "plan": "Enterprise", "comment": "Onboarding was confusing.", "wave": "April 2026", "date": "2026-04-20", "id": "R5045"},
+    {"region": "LATAM", "score": 6, "plan": "Starter", "comment": "Onboarding was confusing.", "wave": "April 2026", "date": "2026-04-19", "id": "R5048"},
+    {"region": "EMEA", "score": 0, "plan": "Starter", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-19", "id": "R5051"},
+    {"region": "North America", "score": 2, "plan": "Team", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-19", "id": "R5054"},
+    {"region": "LATAM", "score": 8, "plan": "Business", "comment": "Does the job.", "wave": "April 2026", "date": "2026-04-19", "id": "R5057"},
+    {"region": "North America", "score": 7, "plan": "Team", "comment": "Fine, but could be faster.", "wave": "April 2026", "date": "2026-04-19", "id": "R5060"},
+    {"region": "APAC", "score": 7, "plan": "Team", "comment": "Fine, but could be faster.", "wave": "April 2026", "date": "2026-04-18", "id": "R5063"},
+    {"region": "North America", "score": 8, "plan": "Business", "comment": "OK overall.", "wave": "April 2026", "date": "2026-04-18", "id": "R5066"},
+    {"region": "APAC", "score": 2, "plan": "Team", "comment": "Onboarding was confusing.", "wave": "April 2026", "date": "2026-04-17", "id": "R5069"},
+    {"region": "North America", "score": 6, "plan": "Enterprise", "comment": "Too many clicks to export reports.", "wave": "April 2026", "date": "2026-04-17", "id": "R5072"},
+    {"region": "LATAM", "score": 7, "plan": "Starter", "comment": "OK overall.", "wave": "April 2026", "date": "2026-04-16", "id": "R5075"},
+    {"region": "LATAM", "score": 8, "plan": "Enterprise", "comment": "Some features feel unfinished.", "wave": "April 2026", "date": "2026-04-16", "id": "R5078"},
+    {"region": "LATAM", "score": 3, "plan": "Enterprise", "comment": "Pricing jumped at renewal.", "wave": "April 2026", "date": "2026-04-16", "id": "R5081"},
+    {"region": "North America", "score": 4, "plan": "Enterprise", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-15", "id": "R5084"},
+    {"region": "North America", "score": 10, "plan": "Business", "comment": "Rock solid and fast.", "wave": "April 2026", "date": "2026-04-15", "id": "R5087"},
+    {"region": "LATAM", "score": 9, "plan": "Team", "comment": "Love the new dashboard!", "wave": "April 2026", "date": "2026-04-15", "id": "R5090"},
+    {"region": "LATAM", "score": 2, "plan": "Enterprise", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-14", "id": "R5093"},
+    {"region": "LATAM", "score": 4, "plan": "Business", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-13", "id": "R5096"},
+    {"region": "EMEA", "score": 7, "plan": "Starter", "comment": "Does the job.", "wave": "April 2026", "date": "2026-04-12", "id": "R5099"},
+    {"region": "LATAM", "score": 5, "plan": "Enterprise", "comment": "Too many clicks to export reports.", "wave": "April 2026", "date": "2026-04-12", "id": "R5102"},
+    {"region": "North America", "score": 9, "plan": "Starter", "comment": "Support is fantastic.", "wave": "April 2026", "date": "2026-04-11", "id": "R5105"},
+    {"region": "North America", "score": 7, "plan": "Business", "comment": "Fine, but could be faster.", "wave": "April 2026", "date": "2026-04-11", "id": "R5108"},
+    {"region": "EMEA", "score": 6, "plan": "Business", "comment": "Support took four days to answer.", "wave": "April 2026", "date": "2026-04-11", "id": "R5111"},
+    {"region": "APAC", "score": 2, "plan": "Starter", "comment": "Mobile app keeps logging me out.", "wave": "April 2026", "date": "2026-04-10", "id": "R5114"},
+    {"region": "North America", "score": 2, "plan": "Business", "comment": "Too many clicks to export reports.", "wave": "April 2026", "date": "2026-04-10", "id": "R5117"},
+    {"region": "EMEA", "score": 7, "plan": "Team", "comment": "Fine, but could be faster.", "wave": "April 2026", "date": "2026-04-09", "id": "R5120"},
+    {"region": "APAC", "score": 4, "plan": "Enterprise", "comment": "Too many clicks to export reports.", "wave": "April 2026", "date": "2026-04-09", "id": "R5123"},
+    {"region": "North America", "score": 5, "plan": "Enterprise", "comment": "Mobile app keeps logging me out.", "wave": "April 2026", "date": "2026-04-09", "id": "R5126"},
+    {"region": "APAC", "score": 5, "plan": "Team", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-08", "id": "R5129"},
+    {"region": "North America", "score": 7, "plan": "Starter", "comment": "Does the job.", "wave": "April 2026", "date": "2026-04-08", "id": "R5132"},
+    {"region": "APAC", "score": 4, "plan": "Business", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-08", "id": "R5135"},
+    {"region": "EMEA", "score": 9, "plan": "Starter", "comment": "Saves my team hours every week.", "wave": "April 2026", "date": "2026-04-08", "id": "R5138"},
+    {"region": "EMEA", "score": 10, "plan": "Starter", "comment": "Saves my team hours every week.", "wave": "April 2026", "date": "2026-04-07", "id": "R5141"},
+    {"region": "EMEA", "score": 4, "plan": "Enterprise", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-07", "id": "R5144"},
+    {"region": "APAC", "score": 8, "plan": "Team", "comment": "Some features feel unfinished.", "wave": "April 2026", "date": "2026-04-07", "id": "R5147"},
+    {"region": "North America", "score": 8, "plan": "Enterprise", "comment": "Fine, but could be faster.", "wave": "April 2026", "date": "2026-04-07", "id": "R5150"},
+    {"region": "North America", "score": 9, "plan": "Starter", "comment": "Great value for money.", "wave": "April 2026", "date": "2026-04-07", "id": "R5153"},
+    {"region": "APAC", "score": 7, "plan": "Team", "comment": "Fine, but could be faster.", "wave": "April 2026", "date": "2026-04-07", "id": "R5156"},
+    {"region": "EMEA", "score": 5, "plan": "Team", "comment": "Invoices are hard to find.", "wave": "April 2026", "date": "2026-04-06", "id": "R5159"},
+    {"region": "LATAM", "score": 8, "plan": "Enterprise", "comment": "Some features feel unfinished.", "wave": "April 2026", "date": "2026-04-06", "id": "R5162"},
+    {"region": "APAC", "score": 1, "plan": "Starter", "comment": "Pricing jumped at renewal.", "wave": "April 2026", "date": "2026-04-06", "id": "R5165"},
+    {"region": "North America", "score": 10, "plan": "Business", "comment": "Support is fantastic.", "wave": "March 2026", "date": "2026-03-27", "id": "R5168"},
+    {"region": "North America", "score": 3, "plan": "Team", "comment": "Onboarding was confusing.", "wave": "March 2026", "date": "2026-03-27", "id": "R5171"},
+    {"region": "North America", "score": 2, "plan": "Enterprise", "comment": "Invoices are hard to find.", "wave": "March 2026", "date": "2026-03-25", "id": "R5174"},
+    {"region": "APAC", "score": 9, "plan": "Enterprise", "comment": "Great value for money.", "wave": "March 2026", "date": "2026-03-24", "id": "R5177"},
+    {"region": "EMEA", "score": 2, "plan": "Business", "comment": "Invoices are hard to find.", "wave": "March 2026", "date": "2026-03-23", "id": "R5180"},
+    {"region": "LATAM", "score": 10, "plan": "Enterprise", "comment": "Great value for money.", "wave": "March 2026", "date": "2026-03-22", "id": "R5183"},
+    {"region": "LATAM", "score": 6, "plan": "Business", "comment": "Support took four days to answer.", "wave": "March 2026", "date": "2026-03-21", "id": "R5186"},
+    {"region": "LATAM", "score": 2, "plan": "Enterprise", "comment": "Too many clicks to export reports.", "wave": "March 2026", "date": "2026-03-21", "id": "R5189"},
+    {"region": "North America", "score": 4, "plan": "Starter", "comment": "Too many clicks to export reports.", "wave": "March 2026", "date": "2026-03-20", "id": "R5192"},
+    {"region": "APAC", "score": 7, "plan": "Business", "comment": "Great value for money.", "wave": "March 2026", "date": "2026-03-20", "id": "R5195"},
+    {"region": "LATAM", "score": 5, "plan": "Enterprise", "comment": "Onboarding was confusing.", "wave": "March 2026", "date": "2026-03-19", "id": "R5198"},
+    {"region": "LATAM", "score": 8, "plan": "Team", "comment": "Support is fantastic.", "wave": "March 2026", "date": "2026-03-19", "id": "R5201"},
+    {"region": "North America", "score": 6, "plan": "Starter", "comment": "Pricing jumped at renewal.", "wave": "March 2026", "date": "2026-03-19", "id": "R5204"},
+    {"region": "North America", "score": 3, "plan": "Enterprise", "comment": "Pricing jumped at renewal.", "wave": "March 2026", "date": "2026-03-16", "id": "R5207"},
+    {"region": "LATAM", "score": 2, "plan": "Business", "comment": "Support took four days to answer.", "wave": "March 2026", "date": "2026-03-15", "id": "R5210"},
+    {"region": "LATAM", "score": 5, "plan": "Starter", "comment": "Invoices are hard to find.", "wave": "March 2026", "date": "2026-03-13", "id": "R5213"},
+    {"region": "LATAM", "score": 6, "plan": "Starter", "comment": "Mobile app keeps logging me out.", "wave": "March 2026", "date": "2026-03-11", "id": "R5216"},
+    {"region": "LATAM", "score": 6, "plan": "Business", "comment": "Onboarding was confusing.", "wave": "March 2026", "date": "2026-03-11", "id": "R5219"},
+    {"region": "LATAM", "score": 5, "plan": "Team", "comment": "Mobile app keeps logging me out.", "wave": "March 2026", "date": "2026-03-09", "id": "R5222"},
+    {"region": "North America", "score": 9, "plan": "Business", "comment": "Saves my team hours every week.", "wave": "March 2026", "date": "2026-03-09", "id": "R5225"}
+  ]/*END*/;
+  const PER = 12;
+  const st = { wave: '', plan: '', shown: PER };
+  const list = () => RESP.filter((r) => (!st.wave || r.wave === st.wave) && (!st.plan || r.plan === st.plan));
+  function render() {
+    const l = list(); const g = q('#grid'); g.innerHTML = '';
+    for (const r of l.slice(0, st.shown)) { const c = document.createElement('nps-card'); c.data = r; g.appendChild(c); }
+    const pro = l.filter((r) => r.score >= 9).length, det = l.filter((r) => r.score <= 6).length;
+    q('#summary').textContent = `${l.length} responses · NPS ${l.length ? Math.round((pro - det) / l.length * 100) : 0} · showing ${Math.min(st.shown, l.length)}`;
+    q('#more').hidden = st.shown >= l.length;
+  }
+  q('#wave').addEventListener('change', (e) => { st.wave = e.target.value; st.shown = PER; render(); });
+  q('#plan').addEventListener('change', (e) => { st.plan = e.target.value; st.shown = PER; render(); });
+  q('#more').addEventListener('click', async () => { q('#more').disabled = true; await later(300); q('#more').disabled = false; st.shown += PER; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

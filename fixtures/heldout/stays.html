@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Skerry Stays · Svolvær hotels</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<script src="stays_data.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f3f6f9; }
+  header { background: #0b3954; }
+  main { max-width: 960px; }
+  .search { display: flex; gap: 10px; align-items: flex-end; background: #fff; border: 2px solid #f4b400; border-radius: 10px; padding: 10px 14px; }
+  .search label { margin: 0 0 3px; font-size: 13px; }
+  .search select { width: 150px; }
+  .hotel { display: grid; grid-template-columns: 120px 1fr 170px; gap: 14px; background: #fff; border: 1px solid #dde3ea; border-radius: 10px; padding: 12px; margin: 12px 0; }
+  .ph { height: 100px; border-radius: 8px; background: linear-gradient(135deg, #8ecae6, #219ebc); }
+  .score { display: inline-block; background: #0b3954; color: #fff; font-weight: 700; border-radius: 6px 6px 6px 0; padding: 2px 6px; }
+  .price { text-align: right; }
+  .price b { font-size: 20px; display: block; }
+  .heart { background: none; border: 0; font-size: 18px; padding: 0 4px; }
+  .sortbar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+</style>
+</head>
+<body>
+<header><strong>Skerry Stays</strong><span>Hotels · Cabins · Guesthouses</span><span style="margin-left:auto">Signed in as Keziah Moreau-Lindqvist</span></header>
+<main>
+  <h1>Stays in Svolvær, Lofoten</h1>
+  <form class="search" id="search" onsubmit="return false">
+    <div><label for="ci">Check-in</label><select id="ci"></select></div>
+    <div><label for="co">Check-out</label><select id="co"></select></div>
+    <div><label for="ad">Guests</label><select id="ad"><option value="1">1 adult</option><option value="2">2 adults</option><option value="3">3 adults</option></select></div>
+    <button type="button" class="primary" id="go">Update search</button>
+    <span class="muted" id="nights"></span>
+  </form>
+  <div class="sortbar"><span class="muted" id="count"></span><label style="margin:0;font-weight:400">Sort by <select id="sort" style="width:180px"><option value="rec">Our top picks</option><option value="price">Lowest “from” price</option><option value="rating">Guest rating</option></select></label></div>
+  <div id="list"></div>
+</main>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const S = window.SKERRY;
+  // ?fresh=1 starts a clean session; drop the flag from the URL so Back/reload keep the saved search.
+  if (new URLSearchParams(location.search).get('fresh') === '1') { sessionStorage.clear(); history.replaceState(null, '', location.pathname); }
+  let s = S.load();
+  const opts = (sel) => S.dates.map(([v, l]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${l}</option>`).join('');
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  function drawForm() { q('#ci').innerHTML = opts(s.checkin); q('#co').innerHTML = opts(s.checkout); q('#ad').value = String(s.adults); q('#nights').textContent = `${S.nights(s)} night${S.nights(s) === 1 ? '' : 's'} · ${S.label(s.checkin)} – ${S.label(s.checkout)}`; }
+  function drawList() {
+    let hs = S.hotels.slice(); const sort = q('#sort').value;
+    const from = (h) => Math.min(...h.rooms.map((r) => r.price));
+    if (sort === 'price') hs.sort((a, b) => from(a) - from(b)); if (sort === 'rating') hs.sort((a, b) => b.rating - a.rating);
+    q('#count').textContent = `${hs.length} properties`;
+    q('#list').innerHTML = hs.map((h) => `<article class="hotel" aria-label="${h.name}"><div class="ph" role="img" aria-label="Photo of ${h.name}"></div>
+      <div><h2 style="margin:0 0 4px;font-size:19px"><a href="stays_hotel.html?id=${h.id}">${h.name}</a></h2><div class="muted">${h.area}</div>
+      <div style="margin-top:6px"><span class="score">${h.rating.toFixed(1)}</span> <span class="muted">${h.reviews} reviews</span></div>
+      <div class="muted" style="margin-top:6px;font-size:13px">${h.rooms.length} room type${h.rooms.length > 1 ? 's' : ''} · see the property page for cancellation and breakfast terms</div></div>
+      <div class="price"><button type="button" class="heart" data-wish="${h.id}" aria-label="Save ${h.name} to wishlist">♡</button><span class="muted">from</span><b>€${from(h)}</b><span class="muted">per night</span><div style="margin-top:8px"><a class="btn" href="stays_hotel.html?id=${h.id}">See availability</a></div></div></article>`).join('');
+  }
+  q('#go').addEventListener('click', () => {
+    const ci = q('#ci').value, co = q('#co').value;
+    if (co <= ci) { toast('Check-out must be after check-in.'); return; }
+    s = { checkin: ci, checkout: co, adults: +q('#ad').value }; S.save(s); drawForm(); toast('Search updated.');
+  });
+  q('#sort').addEventListener('change', drawList);
+  q('#list').addEventListener('click', async (e) => { const b = e.target.closest('[data-wish]'); if (!b) return; await rec({ event: 'wishlist_add', hotel: S.hotels.find((h) => h.id === b.dataset.wish).name }); b.textContent = '♥'; toast('Saved to your wishlist.'); });
+  drawForm(); drawList();
+})();
+</script>
+</body>
+</html>

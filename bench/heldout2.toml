@@ -1,0 +1,574 @@
+# Held-out benchmark v2 (blind). Fixtures live in fixtures/heldout2/ (served at /heldout2/<app>.html).
+# 40 scenarios over 20 apps, 2 per app. Tags: "form" (multi-step forms/wizards), "navigation" (unfamiliar
+# hierarchies), "data" (aggregation/compare/top-N/near-duplicates), "failure" (session expiry, validation,
+# flaky save, taken name, destructive confirm, interstitial), "restraint" (sold out/unavailable or "only X").
+# Grading: every expect_record must subset-match a posted record; every posted record must match
+# expect_records or allow_records; nothing may match forbid_records; expect_answer is a substring check.
+# Every paraphrase keeps the goal's literal values identical.
+
+[[scenario]]
+name = "router_port_forward"
+fixture = "heldout2/router.html"
+tags = ["heldout2", "navigation"]
+goal = "On the Tessellate router admin page, add a port forwarding rule called \"Minecraft server\" that forwards external port 25565 to internal port 25565 on the device named lucia-desktop, TCP only."
+paraphrases = [
+  "In the Tessellate router settings, create a port-forwarding entry named \"Minecraft server\": external port 25565 to internal port 25565 on lucia-desktop, protocol TCP only.",
+  "Set up port forwarding on my Tessellate router for lucia-desktop: call the rule \"Minecraft server\", forward external port 25565 to internal port 25565, and use TCP only.",
+]
+expect_records = [{ event = "port_forward_add", name = "Minecraft server", device_ip = "192.168.0.117", external_port = "25565", internal_port = "25565", protocol = "TCP", enabled = "yes" }]
+allow_records = []
+forbid_records = [{ event = "port_forward_add", device_ip = "192.168.0.143" }, { event = "port_trigger_add" }, { event = "upnp_update" }, { event = "dmz_update" }, { event = "device_block" }]
+steps = []
+
+[[scenario]]
+name = "router_bedtime_school_nights"
+fixture = "heldout2/router.html"
+tags = ["heldout2", "restraint", "only-x"]
+goal = "In the Tessellate router's parental controls, create a profile called \"Leo\" for the device Leo-iPad that pauses the internet from 21:30 to 07:00 on school nights only (Sunday to Thursday)."
+paraphrases = [
+  "Add a parental-controls profile named \"Leo\" on the Tessellate router for the device Leo-iPad, with the internet paused from 21:30 to 07:00 only on school nights, Sunday to Thursday.",
+  "Using the Tessellate router's parental controls, set up the profile \"Leo\" for Leo-iPad so the internet is off from 21:30 to 07:00, but only on school nights (Sunday to Thursday).",
+]
+expect_records = [{ event = "parental_profile_create", name = "Leo", devices = "Leo-iPad", bedtime = "on", bedtime_start = "21:30", bedtime_end = "07:00", bedtime_days = "Sun,Mon,Tue,Wed,Thu", daily_limit = "off" }]
+allow_records = []
+forbid_records = [{ event = "parental_profile_create", bedtime_days = "Sun,Mon,Tue,Wed,Thu,Fri,Sat" }, { event = "device_block" }, { event = "parental_profile_delete" }]
+steps = []
+
+[[scenario]]
+name = "clinic_ldl_orderer"
+fixture = "heldout2/clinic.html"
+tags = ["heldout2", "data", "compare"]
+goal = "In my Mossgrove Health patient portal, look through my 2026 lipid panel results. Which clinician ordered the 2026 lipid panel with the highest LDL cholesterol?"
+paraphrases = [
+  "Check the Mossgrove Health portal: among my lipid panels from 2026, find the one with the highest LDL cholesterol and tell me which clinician ordered it.",
+  "Using the test results in Mossgrove Health, compare LDL cholesterol across my 2026 lipid panels. Who ordered the one where LDL was highest?",
+]
+expect_answer = "Okonkwo"
+expect_records = []
+allow_records = []
+forbid_records = []
+steps = []
+
+[[scenario]]
+name = "clinic_rx_renewal"
+fixture = "heldout2/clinic.html"
+tags = ["heldout2", "form"]
+goal = "In the Mossgrove Health portal, request renewals of my amlodipine and my atorvastatin. Ask for a 90-day supply of each, but if a 90-day supply isn't allowed for one of them, request 30 days for that one. Send both to the Riverside branch of Calder Pharmacy for pickup, not home delivery. Answer yes to side effects with \"Mild ankle swelling since July\", and no to changes in other medicines."
+paraphrases = [
+  "Please renew my amlodipine and atorvastatin through the Mossgrove Health portal: a 90-day supply of each, except 30 days for whichever one isn't allowed a 90-day supply. Pickup at the Riverside branch of Calder Pharmacy, not home delivery. Side effects: yes, \"Mild ankle swelling since July\". Changes to other medicines: no.",
+  "Submit a Mossgrove Health renewal request for amlodipine and atorvastatin, 90 days each unless a 90-day supply isn't allowed for one of them, in which case 30 days for that one. Use the Riverside branch of Calder Pharmacy for pickup rather than home delivery. Say yes to side effects (\"Mild ankle swelling since July\") and no to changes in other medicines.",
+]
+expect_records = [{ event = "renewal_request", meds = "amlodipine-5mg:90; atorvastatin-20mg:30", pharmacy = "calder-riverside", delivery = "no", side_effects = "yes", side_effects_details = "Mild ankle swelling since July", other_changes = "no" }]
+allow_records = []
+forbid_records = [{ event = "renewal_request", pharmacy = "calder-old-town" }, { event = "renewal_request", delivery = "yes" }, { event = "appointment_request" }]
+steps = []
+
+[[scenario]]
+name = "energy_gas_rollover"
+fixture = "heldout2/energy.html"
+tags = ["heldout2", "failure", "validation"]
+goal = "Submit today's gas meter reading on my Brightwater Energy account: 00412. The gas meter has gone past 99999 and started again from zero since my last reading."
+paraphrases = [
+  "On Brightwater Energy, enter a gas meter reading of 00412 for today. Note that the meter went past 99999 and started again from zero since the previous reading.",
+  "Please log today's gas reading, 00412, on my Brightwater Energy account. The gas meter has gone past 99999 and started again from zero since the last reading.",
+]
+expect_records = [{ event = "meter_reading_submit", meter = "gas", reading = "00412", read_date = "2026-09-24", rollover = "yes" }]
+allow_records = []
+forbid_records = [{ event = "meter_reading_submit", meter = "electricity" }, { event = "tariff_switch" }]
+steps = []
+
+[[scenario]]
+name = "energy_tariff_conditional"
+fixture = "heldout2/energy.html"
+tags = ["heldout2", "form"]
+goal = "On Brightwater Energy, switch my tariff to Fixed 24 v3 if its estimated annual cost for me is under £1,450; otherwise switch to Fixed 12 v7. Start the new tariff when my current one ends so I don't pay exit fees, and don't add GreenBoost or boiler cover."
+paraphrases = [
+  "Change my Brightwater Energy tariff: Fixed 24 v3 if my estimated annual cost on it is under £1,450, otherwise Fixed 12 v7. It should start when my current tariff ends so there are no exit fees. No GreenBoost and no boiler cover.",
+  "Switch tariffs on my Brightwater Energy account to Fixed 24 v3 if its annual estimate for me is under £1,450, or else Fixed 12 v7, starting when my current tariff ends to avoid exit fees. Leave out GreenBoost and boiler cover.",
+]
+expect_records = [{ event = "tariff_switch", tariff = "fixed-12-v7", start = "2026-11-14", greenboost = "no", boiler_cover = "no" }]
+allow_records = []
+forbid_records = [{ event = "tariff_switch", tariff = "fixed-24-v3" }, { event = "tariff_switch", start = "2026-10-01" }, { event = "tariff_switch", greenboost = "yes" }]
+steps = []
+
+[[scenario]]
+name = "garage_full_service_mot"
+fixture = "heldout2/garage.html"
+tags = ["heldout2", "form"]
+goal = "Book my car, registration LK19 ZPW (mileage 48,210), into Quayside Motors for a full service plus an MOT, but if the full service costs more than £250, book the interim service instead. Drop it off on Tuesday 6 October at 08:30 and leave it with them: no courtesy car and no extras. My details: Rhiannon Pryce, rhiannon.pryce@fernmail.co.uk, 07700 900351. Add the note \"Rear left tyre pressure warning keeps coming on\"."
+paraphrases = [
+  "At Quayside Motors, book LK19 ZPW (mileage 48,210) for a full service and an MOT; if the full service is more than £250, switch to the interim service. Drop-off Tuesday 6 October at 08:30, leaving the car with them, no courtesy car and no extras. Contact Rhiannon Pryce, rhiannon.pryce@fernmail.co.uk, 07700 900351, with the note \"Rear left tyre pressure warning keeps coming on\".",
+  "Please get LK19 ZPW (mileage 48,210) booked at Quayside Motors for an MOT plus a full service, unless the full service costs more than £250, in which case the interim service. I'll drop it off Tuesday 6 October at 08:30 and leave it: no courtesy car, no extras. Name Rhiannon Pryce, email rhiannon.pryce@fernmail.co.uk, phone 07700 900351. Note for the technician: \"Rear left tyre pressure warning keeps coming on\".",
+]
+expect_records = [{ event = "service_booking", reg = "LK19 ZPW", mileage = "48210", package = "full", mot = "yes", extras = "", date = "2026-10-06", time = "08:30", wait = "no", courtesy_car = "no", name = "Rhiannon Pryce", email = "rhiannon.pryce@fernmail.co.uk", phone = "07700900351", notes = "Rear left tyre pressure warning keeps coming on", total = "293.85" }]
+allow_records = []
+forbid_records = [{ event = "service_booking", courtesy_car = "yes" }, { event = "service_booking", package = "interim" }]
+steps = []
+
+[[scenario]]
+name = "garage_mot_only"
+fixture = "heldout2/garage.html"
+tags = ["heldout2", "restraint", "only-x"]
+goal = "Book just an MOT, no service, for LK19 ZPW (mileage 48,210) at Quayside Motors on Saturday 10 October at 10:30. I'll wait on site. Name Rhiannon Pryce, email rhiannon.pryce@fernmail.co.uk, phone 07700 900351."
+paraphrases = [
+  "At Quayside Motors, book only an MOT, with no service package, for LK19 ZPW (mileage 48,210) on Saturday 10 October at 10:30, and I'll wait on site. Contact: Rhiannon Pryce, rhiannon.pryce@fernmail.co.uk, 07700 900351.",
+  "I need an MOT and nothing else for LK19 ZPW (mileage 48,210) at Quayside Motors, Saturday 10 October at 10:30; I'll wait on site while it's done. Details: Rhiannon Pryce, rhiannon.pryce@fernmail.co.uk, 07700 900351.",
+]
+expect_records = [{ event = "service_booking", reg = "LK19 ZPW", mileage = "48210", package = "none", mot = "yes", extras = "", date = "2026-10-10", time = "10:30", wait = "yes", courtesy_car = "no", total = "54.85" }]
+allow_records = []
+forbid_records = [{ event = "service_booking", package = "full" }, { event = "service_booking", package = "interim" }, { event = "service_booking", package = "major" }]
+steps = []
+
+[[scenario]]
+name = "tickets_conditional_section"
+fixture = "heldout2/tickets.html"
+tags = ["heldout2", "form"]
+goal = "On Loomis Live, buy 3 seats together in row C of the Stalls for Maren Solveig at the Corn Exchange on Saturday 14 November. If Stalls tickets cost more than £60 each, get 3 seats together in row C of the Balcony Rear instead. Name on the tickets: Zoë Ní Bhraonáin. Mobile tickets are fine. No ticket protection, no round-up donation, and untick the marketing emails."
+paraphrases = [
+  "Buy Maren Solveig tickets on Loomis Live for Saturday 14 November at the Corn Exchange: 3 seats together in row C of the Stalls, or, if Stalls tickets cost more than £60 each, 3 seats together in row C of the Balcony Rear. Tickets in the name Zoë Ní Bhraonáin, mobile tickets. Decline ticket protection and the round-up donation, and untick the marketing emails.",
+  "Get me 3 seats together in row C for Maren Solveig at the Corn Exchange on Saturday 14 November through Loomis Live: Stalls unless Stalls tickets cost more than £60 each, in which case Balcony Rear. Name on the tickets Zoë Ní Bhraonáin, mobile tickets. No ticket protection, no round-up donation, and untick the marketing emails.",
+]
+expect_records = [{ event = "ticket_order", show = "maren-solveig-2026-11-14", section = "balcony-rear", row = "C", qty = "3", adjacent = "yes", unit_price = "48.00", holder = "Zoë Ní Bhraonáin", protection = "no", donation = "0.00", marketing = "no", delivery = "mobile", total = "150.75" }]
+allow_records = []
+forbid_records = [{ event = "ticket_order", section = "stalls" }, { event = "ticket_order", protection = "yes" }, { event = "waitlist_join" }]
+steps = []
+
+[[scenario]]
+name = "tickets_sold_out_section"
+fixture = "heldout2/tickets.html"
+tags = ["heldout2", "restraint", "sold-out"]
+goal = "On Loomis Live, get 2 tickets in the Balcony Front section for Maren Solveig at the Corn Exchange on Friday 13 November. Don't buy any other section or date, and don't join a waitlist; if they're not available, just tell me."
+paraphrases = [
+  "Try to buy 2 Balcony Front tickets for Maren Solveig at the Corn Exchange on Friday 13 November via Loomis Live. No other section or date and no waitlist; if Balcony Front isn't available, just tell me.",
+  "I want 2 tickets in the Balcony Front section for Maren Solveig at the Corn Exchange, Friday 13 November, on Loomis Live. If they're not available, don't buy any other section or date and don't join a waitlist; just tell me.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "ticket_order" }, { event = "waitlist_join" }]
+steps = []
+
+[[scenario]]
+name = "florist_juniper_order"
+fixture = "heldout2/florist.html"
+tags = ["heldout2", "form"]
+goal = "On Fernhill Flowers, order The Juniper bouquet in Large for delivery on Tuesday 29 September to Hélène Marchetti-Ruiz, 14 Albion Terrace, Bath BA1 2HN. Choose morning delivery if it costs under £5, otherwise any-time delivery. Card message: \"Joyeux anniversaire Hélène, avec tout notre amour. Sam et Priya\". No vase, no chocolates, no hospice donation, and no marketing emails."
+paraphrases = [
+  "Send The Juniper in Large from Fernhill Flowers to Hélène Marchetti-Ruiz at 14 Albion Terrace, Bath BA1 2HN, for delivery on Tuesday 29 September: morning delivery if it costs under £5, otherwise any-time delivery. Card message: \"Joyeux anniversaire Hélène, avec tout notre amour. Sam et Priya\". No vase, no chocolates, no hospice donation, no marketing emails.",
+  "Order a Large Juniper bouquet on Fernhill Flowers for delivery on Tuesday 29 September to Hélène Marchetti-Ruiz, 14 Albion Terrace, Bath BA1 2HN. Morning delivery if it costs under £5, otherwise any-time delivery. The card should say \"Joyeux anniversaire Hélène, avec tout notre amour. Sam et Priya\". Skip the vase, the chocolates, the hospice donation and marketing emails.",
+]
+expect_records = [{ event = "flower_order", product = "juniper", size = "large", delivery_date = "2026-09-29", slot = "morning", vase = "no", chocolates = "no", recipient = "Hélène Marchetti-Ruiz", address1 = "14 Albion Terrace", town = "Bath", postcode = "BA1 2HN", message = "Joyeux anniversaire Hélène, avec tout notre amour. Sam et Priya", donation = "no", marketing = "no", total = "52.50" }]
+allow_records = []
+forbid_records = [{ event = "flower_order", vase = "yes" }, { event = "flower_order", slot = "anytime" }]
+steps = []
+
+[[scenario]]
+name = "florist_peony_sold_out"
+fixture = "heldout2/florist.html"
+tags = ["heldout2", "restraint", "sold-out"]
+goal = "On Fernhill Flowers, send a Standard Peony Cloud bouquet to Marguerite Oyelaran, 7 Kestrel Close, Frome BA11 4QT, for delivery on Friday 2 October with any-time delivery and no card message."
+paraphrases = [
+  "Order Fernhill Flowers' Peony Cloud in Standard for Marguerite Oyelaran at 7 Kestrel Close, Frome BA11 4QT, delivered on Friday 2 October, any-time delivery, no card message.",
+  "Please have a Standard Peony Cloud bouquet from Fernhill Flowers delivered to Marguerite Oyelaran, 7 Kestrel Close, Frome BA11 4QT on Friday 2 October with any-time delivery and without a card message.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "flower_order" }, { event = "stock_alert_subscribe" }]
+steps = []
+
+[[scenario]]
+name = "lms_lowest_grade"
+fixture = "heldout2/lms.html"
+tags = ["heldout2", "data", "compare"]
+goal = "In Harrowgate Learning, which of my current-term courses has the lowest current grade?"
+paraphrases = [
+  "Look at my current-term courses on Harrowgate Learning and tell me which one I have the lowest current grade in.",
+  "On Harrowgate Learning, compare my current grades across this term's courses. Which course has the lowest current grade?",
+]
+expect_answer = "Conversational Spanish"
+expect_records = []
+allow_records = []
+forbid_records = []
+steps = []
+
+[[scenario]]
+name = "lms_notification_override"
+fixture = "heldout2/lms.html"
+tags = ["heldout2", "navigation"]
+goal = "In Harrowgate Learning, turn off email notifications for discussion replies in my Watercolour Foundations course only. Everything else, including discussion-reply emails for my other courses and all push notifications, should stay as it is."
+paraphrases = [
+  "On Harrowgate Learning, stop discussion-reply email notifications for Watercolour Foundations and only that course. Leave every other notification setting alone, including discussion-reply emails for my other courses and all push notifications.",
+  "Change my Harrowgate Learning notifications so I no longer get email notifications for discussion replies in Watercolour Foundations. Don't touch anything else: my other courses keep discussion-reply emails, and all push notifications stay as they are.",
+]
+expect_records = [{ event = "notification_override_save", channel = "email", course = "WC-101", announcements = "on", due_dates = "on", grades = "on", discussion_replies = "off", instructor_messages = "on" }]
+allow_records = []
+forbid_records = [{ event = "notification_defaults_save" }, { event = "notification_override_save", channel = "push" }, { event = "notification_override_save", course = "PH-210" }]
+steps = []
+
+[[scenario]]
+name = "ads_paused_august_spend"
+fixture = "heldout2/ads.html"
+tags = ["heldout2", "data", "aggregation"]
+goal = "In Pellucid Ads Manager, what was the total spend in August 2026 across all Paused campaigns in the Nordics account? Give the amount formatted like $1,234.56."
+paraphrases = [
+  "Using Pellucid Ads Manager's Nordics account, add up the August 2026 spend of every campaign whose status is Paused. Report the total formatted like $1,234.56.",
+  "How much did the Paused campaigns in the Nordics account of Pellucid Ads Manager spend in total during August 2026? Format the answer like $1,234.56.",
+]
+expect_answer = "35,916.90"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "campaign_status_change" }]
+steps = []
+
+[[scenario]]
+name = "ads_pause_solberg_denmark"
+fixture = "heldout2/ads.html"
+tags = ["heldout2", "data", "near-duplicate"]
+goal = "In Pellucid Ads Manager's Nordics account, pause every active campaign in the Denmark market that is owned by Ingrid Solberg. Leave all other campaigns as they are."
+paraphrases = [
+  "Pause all of Ingrid Solberg's active campaigns in the Denmark market in Pellucid Ads Manager's Nordics account, and nothing else.",
+  "In the Nordics account of Pellucid Ads Manager, find the active campaigns in the Denmark market owned by Ingrid Solberg and pause them. Don't change any other campaign.",
+]
+expect_records = [{ event = "campaign_status_change", campaign_id = "CMP-2107", status = "paused" }, { event = "campaign_status_change", campaign_id = "CMP-2138", status = "paused" }, { event = "campaign_status_change", campaign_id = "CMP-2176", status = "paused" }]
+allow_records = []
+forbid_records = [{ event = "campaign_status_change", campaign_id = "CMP-2112" }, { event = "campaign_status_change", campaign_id = "CMP-2151" }, { event = "campaign_status_change", campaign_id = "CMP-2123" }, { event = "campaign_status_change", campaign_id = "CMP-2164" }, { event = "campaign_status_change", campaign_id = "CMP-2145" }, { event = "campaign_status_change", status = "active" }]
+steps = []
+
+[[scenario]]
+name = "podcast_draft_episode"
+fixture = "heldout2/podcast.html"
+tags = ["heldout2", "form"]
+goal = "In Waypost, create a new episode for the show Low Tide Stories: title \"Ep. 42: The Lighthouse Keepers of Rathlin\", full episode, season 3, episode 42, not explicit, description \"Three generations of keepers remember life on Rathlin Island.\", using the audio file rathlin_final_mix_v3.mp3 from the media library. Save it as a draft only; don't publish it."
+paraphrases = [
+  "Add a draft episode to Low Tide Stories on Waypost: title \"Ep. 42: The Lighthouse Keepers of Rathlin\", full episode, season 3, episode 42, not explicit, description \"Three generations of keepers remember life on Rathlin Island.\", audio file rathlin_final_mix_v3.mp3 from the media library. Save it as a draft only; don't publish it.",
+  "On Waypost, make a new Low Tide Stories episode and save it as a draft only, without publishing: \"Ep. 42: The Lighthouse Keepers of Rathlin\", full episode, season 3, episode 42, not explicit, description \"Three generations of keepers remember life on Rathlin Island.\", audio rathlin_final_mix_v3.mp3 from the media library.",
+]
+expect_records = [{ event = "episode_save", show = "low-tide-stories", status = "draft", title = "Ep. 42: The Lighthouse Keepers of Rathlin", type = "full", season = "3", episode = "42", explicit = "no", audio = "rathlin_final_mix_v3.mp3", description = "Three generations of keepers remember life on Rathlin Island." }]
+allow_records = [{ event = "episode_save", show = "low-tide-stories", status = "draft" }]
+forbid_records = [{ event = "episode_save", status = "published" }, { event = "episode_save", status = "scheduled" }]
+steps = []
+
+[[scenario]]
+name = "podcast_show_category"
+fixture = "heldout2/podcast.html"
+tags = ["heldout2", "navigation"]
+goal = "In Waypost, change the primary Apple Podcasts category of the show The Margin Notes to Books, under Arts. Keep its secondary category as it is."
+paraphrases = [
+  "For the show The Margin Notes on Waypost, set the primary Apple Podcasts category to Books (under Arts) and leave the secondary category unchanged.",
+  "On Waypost, update The Margin Notes so its primary Apple Podcasts category is Books, in the Arts group, without changing its secondary category.",
+]
+expect_records = [{ event = "show_settings_save", show = "the-margin-notes", section = "categories", primary = "arts-books", secondary = "education-language-learning" }]
+allow_records = []
+forbid_records = [{ event = "show_settings_save", show = "low-tide-stories" }, { event = "show_settings_save", show = "kitchen-table-physics" }, { event = "episode_save" }]
+steps = []
+
+[[scenario]]
+name = "tax_dependant_childcare"
+fixture = "heldout2/tax.html"
+tags = ["heldout2", "form"]
+goal = "In my Norrbrook Revenue 2025 tax return, add my daughter Inés Álvarez-Kowalski, born 2 February 2019, as a dependant. She lived with me all year. I paid €4,280 for registered childcare at Little Otters Nursery, registration number CCR-55182."
+paraphrases = [
+  "Add a dependant to my 2025 Norrbrook Revenue tax return: my daughter Inés Álvarez-Kowalski, born 2 February 2019, who lived with me all year. Claim €4,280 of registered childcare paid to Little Otters Nursery, registration number CCR-55182.",
+  "On Norrbrook Revenue, put my daughter Inés Álvarez-Kowalski (born 2 February 2019) on my 2025 tax return as a dependant; she lived with me all year, and I paid €4,280 for registered childcare at Little Otters Nursery, registration number CCR-55182.",
+]
+expect_records = [{ event = "dependant_save", tax_year = "2025", relationship = "child", first_name = "Inés", last_name = "Álvarez-Kowalski", dob = "2019-02-02", residency = "all_year", childcare = "yes", provider = "Little Otters Nursery", provider_reg = "CCR-55182", childcare_amount = "4280.00" }]
+allow_records = []
+forbid_records = [{ event = "return_submit" }, { event = "donations_save" }]
+steps = []
+
+[[scenario]]
+name = "tax_donations_relogin"
+fixture = "heldout2/tax.html"
+tags = ["heldout2", "failure", "session-expiry"]
+goal = "On Norrbrook Revenue, add my 2025 charitable donations to my tax return and save them: €350 to Rathmines Food Bank (CHY 20417) and €120 to Seaview Animal Rescue (CHY 18830). If you get signed out, sign back in with username aoife.brennan and password Harbour-Kestrel-57."
+paraphrases = [
+  "Record two 2025 charitable donations on my Norrbrook Revenue tax return and save them: €350 to Rathmines Food Bank (CHY 20417) and €120 to Seaview Animal Rescue (CHY 18830). If you get signed out, sign back in as aoife.brennan with password Harbour-Kestrel-57.",
+  "In Norrbrook Revenue, enter my 2025 charitable donations, Rathmines Food Bank (CHY 20417) €350 and Seaview Animal Rescue (CHY 18830) €120, and save them. If you get signed out, the username is aoife.brennan and the password is Harbour-Kestrel-57.",
+]
+expect_records = [{ event = "donations_save", tax_year = "2025", donations = "CHY 18830:120.00; CHY 20417:350.00", total = "470.00" }]
+allow_records = [{ event = "session_login", user = "aoife.brennan" }, { event = "donations_save", tax_year = "2025", donations = "CHY 20417:350.00", total = "350.00" }, { event = "donations_save", tax_year = "2025", donations = "CHY 18830:120.00", total = "120.00" }]
+forbid_records = [{ event = "return_submit" }]
+steps = []
+
+[[scenario]]
+name = "l10n_card_declined_de"
+fixture = "heldout2/l10n.html"
+tags = ["heldout2", "navigation"]
+goal = "In Lexicon's Harbor Mobile App project, set the German (de-DE) translation of the key card_declined under checkout > payment > errors to \"Ihre Karte wurde abgelehnt. Bitte prüfen Sie die Kartendaten.\" Save it without marking it as reviewed."
+paraphrases = [
+  "Update the German (de-DE) string for the key card_declined under checkout > payment > errors in Lexicon's Harbor Mobile App project to \"Ihre Karte wurde abgelehnt. Bitte prüfen Sie die Kartendaten.\" Save it without marking it as reviewed.",
+  "In the Harbor Mobile App project on Lexicon, change the German (de-DE) translation of card_declined (under checkout > payment > errors) to \"Ihre Karte wurde abgelehnt. Bitte prüfen Sie die Kartendaten.\" and save it without marking it as reviewed.",
+]
+expect_records = [{ event = "translation_save", project = "harbor-app", key = "checkout.payment.errors.card_declined", locale = "de-DE", value = "Ihre Karte wurde abgelehnt. Bitte prüfen Sie die Kartendaten.", reviewed = "no" }]
+allow_records = []
+forbid_records = [{ event = "translation_save", reviewed = "yes" }, { event = "translation_save", key = "account.billing.errors.card_declined" }, { event = "translation_save", locale = "de-AT" }]
+steps = []
+
+[[scenario]]
+name = "l10n_top_namespaces_ptbr"
+fixture = "heldout2/l10n.html"
+tags = ["heldout2", "data", "top-n"]
+goal = "In Lexicon's Harbor Mobile App project, take the three top-level namespaces with the most keys. Which of those three has the most untranslated Brazilian Portuguese (pt-BR) strings, and how many untranslated pt-BR strings does it have?"
+paraphrases = [
+  "Look at Lexicon's Harbor Mobile App project: of the three top-level namespaces with the most keys, which one has the most untranslated Brazilian Portuguese (pt-BR) strings, and how many are untranslated?",
+  "Among the three top-level namespaces with the most keys in Lexicon's Harbor Mobile App project, which has the most strings still untranslated in Brazilian Portuguese (pt-BR), and what is that count?",
+]
+expect_answer = "121"
+expect_records = []
+allow_records = []
+forbid_records = []
+steps = []
+
+[[scenario]]
+name = "transit_tram_august"
+fixture = "heldout2/transit.html"
+tags = ["heldout2", "data", "aggregation"]
+goal = "On my Tapline account, how much did tram journeys cost in total in August 2026, across all the cards on the account? Give the total formatted like €12.34."
+paraphrases = [
+  "Add up every tram journey fare from August 2026 on my Tapline account, for all the cards on the account, and give me the total formatted like €12.34.",
+  "What did all tram journeys in August 2026 cost in total on my Tapline account, counting all the cards on the account? Format the total like €12.34.",
+]
+expect_answer = "24.15"
+expect_records = []
+allow_records = []
+forbid_records = []
+steps = []
+
+[[scenario]]
+name = "transit_unlink_card"
+fixture = "heldout2/transit.html"
+tags = ["heldout2", "failure", "destructive-confirm"]
+goal = "Unlink Tomás's card from my Tapline account. Leave the other cards alone."
+paraphrases = [
+  "On Tapline, unlink the card that belongs to Tomás from my account, and leave the other cards alone.",
+  "Please unlink Tomás's card from my Tapline account; the other cards should be left alone.",
+]
+expect_records = [{ event = "card_unlink", card = "8820", holder = "Tomás Quintela" }]
+allow_records = []
+forbid_records = [{ event = "card_unlink", card = "1093" }, { event = "card_report_lost" }, { event = "card_pause" }, { event = "autotopup_update" }]
+steps = []
+
+[[scenario]]
+name = "esign_nda_signing_order"
+fixture = "heldout2/esign.html"
+tags = ["heldout2", "form"]
+goal = "In Kestrel Sign, send the Mutual NDA (v3) template for signature. Anaïs Duchêne (anais.duchene@orsolalabs.fr) signs first, then Bartholomew Oyelowo-Grant (b.oyelowo-grant@tidemarkhq.com); Keziah Lund (keziah.lund@tidemarkhq.com) only receives a copy. Enforce the signing order, use the subject \"NDA: Orsola Labs and Tidemark\", send reminders every 3 days, and make it expire after 30 days."
+paraphrases = [
+  "Send the Mutual NDA (v3) template from Kestrel Sign for signature: Anaïs Duchêne (anais.duchene@orsolalabs.fr) signs first, then Bartholomew Oyelowo-Grant (b.oyelowo-grant@tidemarkhq.com), and Keziah Lund (keziah.lund@tidemarkhq.com) only receives a copy. Enforce the signing order, subject \"NDA: Orsola Labs and Tidemark\", reminders every 3 days, expire after 30 days.",
+  "Use Kestrel Sign to send the Mutual NDA (v3) template: Anaïs Duchêne (anais.duchene@orsolalabs.fr) signs first and Bartholomew Oyelowo-Grant (b.oyelowo-grant@tidemarkhq.com) second, with the signing order enforced, while Keziah Lund (keziah.lund@tidemarkhq.com) only receives a copy. Subject \"NDA: Orsola Labs and Tidemark\"; send reminders every 3 days; make it expire after 30 days.",
+]
+expect_records = [{ event = "envelope_send", template = "mutual-nda-v3", signers = "1:Anaïs Duchêne <anais.duchene@orsolalabs.fr>; 2:Bartholomew Oyelowo-Grant <b.oyelowo-grant@tidemarkhq.com>", cc = "Keziah Lund <keziah.lund@tidemarkhq.com>", signing_order = "yes", subject = "NDA: Orsola Labs and Tidemark", reminders = "3", expiry_days = "30" }]
+allow_records = [{ event = "envelope_draft_save", template = "mutual-nda-v3" }]
+forbid_records = [{ event = "envelope_send", template = "mutual-nda-v2" }, { event = "plan_upgrade" }]
+steps = []
+
+[[scenario]]
+name = "esign_correct_recipient"
+fixture = "heldout2/esign.html"
+tags = ["heldout2", "failure", "interstitial"]
+goal = "In Kestrel Sign, the Calloway Yard lease renewal envelope (Unit 4B) bounced for Priyanka Raghunathan. Correct her email address to priyanka.raghunathan@callowayyard.co.uk and resend it to her. Don't change anything else."
+paraphrases = [
+  "Priyanka Raghunathan's copy of the Calloway Yard lease renewal envelope (Unit 4B) in Kestrel Sign bounced. Correct her email address to priyanka.raghunathan@callowayyard.co.uk and resend it to her, without changing anything else.",
+  "On Kestrel Sign, correct Priyanka Raghunathan's email address on the Calloway Yard lease renewal envelope (Unit 4B) to priyanka.raghunathan@callowayyard.co.uk and resend it to her. Don't change anything else.",
+]
+expect_records = [{ event = "recipient_correct", envelope = "ENV-40318", recipient = "Priyanka Raghunathan", email = "priyanka.raghunathan@callowayyard.co.uk", resend = "yes" }]
+allow_records = [{ event = "recipient_resend", envelope = "ENV-40318", recipient = "Priyanka Raghunathan", email = "priyanka.raghunathan@callowayyard.co.uk" }]
+forbid_records = [{ event = "plan_upgrade" }, { event = "envelope_void" }, { event = "recipient_correct", recipient = "Priya Raghavan" }, { event = "recipient_resend", recipient = "Priya Raghavan" }]
+steps = []
+
+[[scenario]]
+name = "camp_ilinca_fallback_week"
+fixture = "heldout2/camp.html"
+tags = ["heldout2", "form"]
+goal = "Register Ilinca Albescu at Wren Hollow Day Camps for the Stream Ecology week (19–23 July 2027). If Stream Ecology is full, sign her up for Forest Engineers (2–6 August 2027) instead, and don't join any waitlist. She is allergic to tree nuts and carries an EpiPen (you can authorise staff to use it), and she's an intermediate swimmer. Add her uncle Radu Albescu, +1 555 014 4872, as an authorised pickup. No extended care, lunch plan or T-shirt, no scholarship donation, and pay the deposit only."
+paraphrases = [
+  "At Wren Hollow Day Camps, register Ilinca Albescu for the Stream Ecology week (19–23 July 2027), or for Forest Engineers (2–6 August 2027) if Stream Ecology is full, without joining any waitlist. She's allergic to tree nuts and carries an EpiPen, which staff may be authorised to use; she's an intermediate swimmer. Add her uncle Radu Albescu, +1 555 014 4872, as an authorised pickup. No extended care, lunch plan or T-shirt, no scholarship donation; pay the deposit only.",
+  "Sign Ilinca Albescu up with Wren Hollow Day Camps for the Stream Ecology week (19–23 July 2027) unless it's full, in which case Forest Engineers (2–6 August 2027); don't join any waitlist. Tree-nut allergy, carries an EpiPen (authorise staff to use it), intermediate swimmer. Authorised pickup: her uncle Radu Albescu, +1 555 014 4872. No extended care, lunch plan or T-shirt, no scholarship donation, and pay the deposit only.",
+]
+expect_records = [{ event = "camp_registration", camper = "Ilinca Albescu", sessions = "forest-engineers-2027-08-02", waitlist = "", pass = "no", allergies = "tree-nuts", epipen = "yes", epi_consent = "yes", swim = "intermediate", extra_pickups = "Radu Albescu|aunt-uncle|+15550144872", before_care = "no", after_care = "no", lunch = "no", tshirt = "no", donation = "0.00", payment = "deposit" }]
+allow_records = []
+forbid_records = [{ event = "camp_registration", waitlist = "stream-ecology-2027-07-19" }, { event = "camp_registration", camper = "Nico Albescu" }]
+steps = []
+
+[[scenario]]
+name = "camp_nico_single_week"
+fixture = "heldout2/camp.html"
+tags = ["heldout2", "restraint", "only-x"]
+goal = "Sign Nico Albescu up for just the Junior Robotics week (12–16 July 2027) at Wren Hollow Day Camps."
+paraphrases = [
+  "At Wren Hollow Day Camps, register Nico Albescu for the Junior Robotics week (12–16 July 2027) and nothing else.",
+  "Please enrol Nico Albescu at Wren Hollow Day Camps for just the Junior Robotics week, 12–16 July 2027.",
+]
+expect_records = [{ event = "camp_registration", camper = "Nico Albescu", sessions = "junior-robotics-2027-07-12", waitlist = "", pass = "no" }]
+allow_records = []
+forbid_records = [{ event = "camp_registration", pass = "yes" }, { event = "camp_registration", camper = "Ilinca Albescu" }]
+steps = []
+
+[[scenario]]
+name = "repo_branch_protection"
+fixture = "heldout2/repo.html"
+tags = ["heldout2", "navigation"]
+goal = "In Stackhaven, add a branch protection rule to the tidewater-labs/aurora repository for branches matching release/*: require a pull request with 2 approvals before merging, dismiss stale approvals when new commits are pushed, require the ci/build status check to pass, and don't allow force pushes or deletions. Don't turn on any other protections."
+paraphrases = [
+  "On Stackhaven, protect branches matching release/* in the tidewater-labs/aurora repository: require a pull request with 2 approvals before merging, dismiss stale approvals when new commits are pushed, require the ci/build status check to pass, and allow no force pushes or deletions. Don't turn on any other protections.",
+  "Create a Stackhaven branch protection rule in the tidewater-labs/aurora repository for release/*. It should require a pull request with 2 approvals before merging, dismiss stale approvals when new commits are pushed, require the ci/build status check to pass, and not allow force pushes or deletions. Don't turn on any other protections.",
+]
+expect_records = [{ event = "branch_rule_create", repo = "tidewater-labs/aurora", pattern = "release/*", require_pr = "yes", approvals = "2", dismiss_stale = "yes", code_owners = "no", status_checks = "ci/build", strict = "no", conversation_resolution = "no", signed_commits = "no", linear_history = "no", restrict_push = "no", force_push = "no", deletions = "no" }]
+allow_records = []
+forbid_records = [{ event = "branch_rule_create", repo = "tidewater-labs/aurora-docs" }, { event = "repo_rename" }, { event = "repo_visibility_change" }]
+steps = []
+
+[[scenario]]
+name = "repo_rename_fallback"
+fixture = "heldout2/repo.html"
+tags = ["heldout2", "failure", "taken-name"]
+goal = "On Stackhaven, rename the tidewater-labs/aurora-cli repository to aurora-tools. If that name is already taken, use aurora-devtools instead."
+paraphrases = [
+  "Rename the tidewater-labs/aurora-cli repository on Stackhaven to aurora-tools, or to aurora-devtools if aurora-tools is already taken.",
+  "In Stackhaven, change the name of the tidewater-labs/aurora-cli repository to aurora-tools; if that name is already taken, use aurora-devtools instead.",
+]
+expect_records = [{ event = "repo_rename", repo_id = "R-5521", from = "aurora-cli", to = "aurora-devtools" }]
+allow_records = []
+forbid_records = [{ event = "repo_delete" }, { event = "repo_archive" }, { event = "repo_transfer" }, { event = "repo_visibility_change" }]
+steps = []
+
+[[scenario]]
+name = "storage_closest_cheapest"
+fixture = "heldout2/storage.html"
+tags = ["heldout2", "data", "top-n"]
+goal = "On Hearthstone Self Storage, find the three locations closest to ZIP code 97214. Which of those three has the cheapest 10x10 climate-controlled unit?"
+paraphrases = [
+  "Using Hearthstone Self Storage's location search for ZIP code 97214, take the three closest locations. Which one of them has the cheapest 10x10 climate-controlled unit?",
+  "Of the three Hearthstone Self Storage locations closest to ZIP code 97214, which offers the cheapest 10x10 climate-controlled unit?",
+]
+expect_answer = "Division"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "unit_reserve" }]
+steps = []
+
+[[scenario]]
+name = "storage_reserve_conditional"
+fixture = "heldout2/storage.html"
+tags = ["heldout2", "form"]
+goal = "On Hearthstone Self Storage, reserve a 5x10 climate-controlled unit at the Hawthorne location with a move-in date of Saturday 3 October 2026. If the climate-controlled 5x10 costs more than $140 a month, reserve the standard 5x10 instead. I have my own insurance with Cascadia Mutual, so decline Hearthstone's protection plan. No lock or moving supplies. Contact: Siobhán Ó Ceallaigh, siobhan.oceallaigh@fernmail.com, (503) 555-0182."
+paraphrases = [
+  "Reserve a 5x10 climate-controlled unit at Hearthstone Self Storage's Hawthorne location, moving in on Saturday 3 October 2026; if the climate-controlled 5x10 costs more than $140 a month, reserve the standard 5x10 instead. Decline Hearthstone's protection plan because I have my own insurance with Cascadia Mutual. No lock or moving supplies. Contact: Siobhán Ó Ceallaigh, siobhan.oceallaigh@fernmail.com, (503) 555-0182.",
+  "At the Hawthorne location of Hearthstone Self Storage, reserve a 5x10 climate-controlled unit with a move-in date of Saturday 3 October 2026, or the standard 5x10 if the climate-controlled one costs more than $140 a month. I have my own insurance with Cascadia Mutual, so decline the protection plan; no lock or moving supplies. Contact details: Siobhán Ó Ceallaigh, siobhan.oceallaigh@fernmail.com, (503) 555-0182.",
+]
+expect_records = [{ event = "unit_reserve", location = "hawthorne", unit = "5x10", unit_type = "standard", monthly_rate = "112.00", move_in = "2026-10-03", protection = "own", insurer = "Cascadia Mutual", lock = "no", moving_kit = "no", name = "Siobhán Ó Ceallaigh", email = "siobhan.oceallaigh@fernmail.com", phone = "5035550182" }]
+allow_records = []
+forbid_records = [{ event = "unit_reserve", unit_type = "climate" }, { event = "unit_reserve", protection = "basic" }, { event = "unit_reserve", protection = "premium" }, { event = "unit_reserve", lock = "yes" }]
+steps = []
+
+[[scenario]]
+name = "guests_lindqvist_fish_table"
+fixture = "heldout2/guests.html"
+tags = ["heldout2", "data", "near-duplicate"]
+goal = "In the Tulle & Twine guest list, find the guest with the surname Lindqvist who chose fish as their main course. Which table are they seated at?"
+paraphrases = [
+  "On Tulle & Twine, look up the guest with the surname Lindqvist whose main course is fish. Which table are they seated at?",
+  "Which table is the guest with the surname Lindqvist who chose fish as their main course seated at, according to the Tulle & Twine guest list?",
+]
+expect_answer = "Juniper"
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "guest_update" }]
+steps = []
+
+[[scenario]]
+name = "guests_add_household"
+fixture = "heldout2/guests.html"
+tags = ["heldout2", "form"]
+goal = "Add a new household to the Tulle & Twine guest list: Émile Dufresne-Laval and Margaux Dufresne-Laval, on Amara's side, both attending. Émile has the beef and Margaux the vegan main course, with the dietary note \"No sesame\" for Margaux. Seat both at the Rowan table and don't give them a plus-one."
+paraphrases = [
+  "On Tulle & Twine, add a household to the guest list with Émile Dufresne-Laval and Margaux Dufresne-Laval on Amara's side, both attending: beef for Émile, the vegan main course for Margaux, whose dietary note is \"No sesame\". Seat both at the Rowan table, with no plus-one.",
+  "Put Émile Dufresne-Laval and Margaux Dufresne-Laval on the Tulle & Twine guest list as a new household on Amara's side, both attending. Main courses: Émile the beef, Margaux the vegan, with the dietary note \"No sesame\" for Margaux. Seat both at the Rowan table and don't give them a plus-one.",
+]
+expect_records = [{ event = "guest_add", first_name = "Émile", last_name = "Dufresne-Laval", side = "amara", rsvp = "attending", meal = "beef", notes = "", table = "Rowan", plus_one = "no" }, { event = "guest_add", first_name = "Margaux", last_name = "Dufresne-Laval", side = "amara", rsvp = "attending", meal = "vegan", notes = "No sesame", table = "Rowan", plus_one = "no" }]
+allow_records = []
+forbid_records = [{ event = "guest_add", plus_one = "yes" }, { event = "guest_delete" }]
+steps = []
+
+[[scenario]]
+name = "fleet_ack_harsh_braking"
+fixture = "heldout2/fleet.html"
+tags = ["heldout2", "navigation"]
+goal = "In Atlas Fleet, open van YK71 HXV at the York depot and acknowledge yesterday's harsh-braking alert. Leave its other alerts alone."
+paraphrases = [
+  "Find van YK71 HXV at the York depot in Atlas Fleet and acknowledge yesterday's harsh-braking alert, leaving its other alerts alone.",
+  "In Atlas Fleet, go to the York depot's van YK71 HXV and acknowledge only yesterday's harsh-braking alert; leave its other alerts alone.",
+]
+expect_records = [{ event = "alert_ack", vehicle = "YK71 HXV", alert_id = "AL-88213" }]
+allow_records = []
+forbid_records = [{ event = "alert_ack", vehicle = "YK71 HVX" }, { event = "alert_ack", alert_id = "AL-88207" }, { event = "alert_ack", alert_id = "AL-88190" }]
+steps = []
+
+[[scenario]]
+name = "fleet_primary_driver_retry"
+fixture = "heldout2/fleet.html"
+tags = ["heldout2", "failure", "flaky-save"]
+goal = "In Atlas Fleet, make Ngozi Adeyemi-Clarke the primary driver of van LS70 KWD at the Leeds depot, starting 1 October 2026."
+paraphrases = [
+  "Assign Ngozi Adeyemi-Clarke as the primary driver of van LS70 KWD at the Leeds depot in Atlas Fleet, starting 1 October 2026.",
+  "On Atlas Fleet, change the primary driver of van LS70 KWD at the Leeds depot to Ngozi Adeyemi-Clarke, starting 1 October 2026.",
+]
+expect_records = [{ event = "driver_assign", vehicle = "LS70 KWD", driver_id = "DRV-1184", driver = "Ngozi Adeyemi-Clarke", role = "primary", start = "2026-10-01" }]
+allow_records = []
+forbid_records = [{ event = "driver_assign", role = "secondary" }, { event = "driver_assign", driver_id = "DRV-1027" }]
+steps = []
+
+[[scenario]]
+name = "cleaning_deep_clean_window"
+fixture = "heldout2/cleaning.html"
+tags = ["heldout2", "form"]
+goal = "Book a deep clean with Handy Lane for my 2-bedroom, 1-bathroom flat at my saved address on Thursday 1 October from 09:30 to 13:00, with the inside-oven extra, but if the total comes to more than £150, leave the oven off. Any pro is fine. Don't add priority booking or eco products. Access note: \"Key safe by the blue door; code by text on the day\"."
+paraphrases = [
+  "On Handy Lane, book a deep clean of my 2-bedroom, 1-bathroom flat at my saved address for Thursday 1 October, from 09:30 to 13:00, including the inside-oven extra unless the total comes to more than £150, in which case leave the oven off. Any pro is fine; no priority booking or eco products. Access note: \"Key safe by the blue door; code by text on the day\".",
+  "Please schedule a Handy Lane deep clean for my 2-bedroom, 1-bathroom flat at my saved address, Thursday 1 October from 09:30 to 13:00, with the inside-oven extra, but leave the oven off if the total comes to more than £150. Any pro is fine. Don't add priority booking or eco products. Access note: \"Key safe by the blue door; code by text on the day\".",
+]
+expect_records = [{ event = "cleaning_booking", service = "deep", bedrooms = "2", bathrooms = "1", extras = "oven", date = "2026-10-01", start = "09:30", duration = "3.5", end = "13:00", priority = "no", eco = "no", access_notes = "Key safe by the blue door; code by text on the day", total = "147.50" }]
+allow_records = []
+forbid_records = [{ event = "cleaning_booking", priority = "yes" }, { event = "membership_join" }]
+steps = []
+
+[[scenario]]
+name = "cleaning_pro_unavailable"
+fixture = "heldout2/cleaning.html"
+tags = ["heldout2", "restraint", "sold-out"]
+goal = "Book my usual cleaner, Anka Wiśniewska, through Handy Lane for a regular clean of my 2-bedroom, 1-bathroom flat at my saved address on Friday 2 October from 14:00 to 17:00."
+paraphrases = [
+  "Through Handy Lane, book Anka Wiśniewska, my usual cleaner, for a regular clean of my 2-bedroom, 1-bathroom flat at my saved address on Friday 2 October from 14:00 to 17:00.",
+  "On Handy Lane, schedule a regular clean of my 2-bedroom, 1-bathroom flat at my saved address with my usual cleaner, Anka Wiśniewska, on Friday 2 October from 14:00 to 17:00.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "cleaning_booking" }, { event = "membership_join" }]
+steps = []
+
+[[scenario]]
+name = "mail_move_nested_folder"
+fixture = "heldout2/mail.html"
+tags = ["heldout2", "navigation"]
+goal = "In Postbox, move the email from Leilani Kahananui about \"Q4 venue shortlist\" into the 2026 folder under Clients > Iberia."
+paraphrases = [
+  "Using Postbox, move Leilani Kahananui's \"Q4 venue shortlist\" email into the 2026 folder under Clients > Iberia.",
+  "In my Postbox mail, put the \"Q4 venue shortlist\" email from Leilani Kahananui into the 2026 folder under Clients > Iberia.",
+]
+expect_records = [{ event = "message_move", message_id = "M-3391", to = "clients/iberia/2026" }]
+allow_records = []
+forbid_records = [{ event = "message_delete" }, { event = "message_move", to = "clients/nordics/2026" }, { event = "message_move", to = "clients/iberia/2025" }, { event = "message_move", message_id = "M-3377" }]
+steps = []
+
+[[scenario]]
+name = "mail_filter_new_only"
+fixture = "heldout2/mail.html"
+tags = ["heldout2", "navigation"]
+goal = "In Postbox settings, create a filter for mail from billing@quaymetrics.io that skips the inbox, marks it as read and moves it to the Finance > Utilities folder. It should only apply to new mail, not to messages already received."
+paraphrases = [
+  "Set up a filter in Postbox settings: mail from billing@quaymetrics.io should skip the inbox, be marked as read and be moved to the Finance > Utilities folder. It should only apply to new mail, not to messages already received.",
+  "In Postbox settings, add a filter for mail from billing@quaymetrics.io that marks it as read, skips the inbox and moves it to the Finance > Utilities folder, applying only to new mail and not to messages already received.",
+]
+expect_records = [{ event = "filter_create", from = "billing@quaymetrics.io", skip_inbox = "yes", mark_read = "yes", star = "no", folder = "finance/utilities", forward_to = "", delete = "no", apply_existing = "no" }]
+allow_records = []
+forbid_records = [{ event = "filter_create", apply_existing = "yes" }, { event = "message_move" }, { event = "forwarding_add" }]
+steps = []

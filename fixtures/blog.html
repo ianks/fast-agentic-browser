@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Blog · Ferris Weekly</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body><header><strong>Ferris Weekly</strong><a href="#">Archive</a><a href="#">RSS</a></header>
+<main><h1>All posts</h1><div id="list"></div>
+<nav aria-label="Pagination" class="row" id="pg"></nav></main>
+<script>
+const TITLES = ['Why We Rewrote It in Rust','Zero-Cost Futures','Pinning, Explained','Lifetimes for Humans','Cargo Workspaces at Scale','Error Handling Patterns','Rust in Anger','Unsafe Is Not a Dirty Word',
+ 'Traits vs Generics','Macros by Example','Fearless Concurrency Revisited','Async Traits Are Here','Profiling with perf','SIMD in Stable Rust','Const Generics Deep Dive','Embedded Rust on RP2040',
+ 'Serde Tricks','Borrow Checker Blues','WebAssembly in 2026','Tokio Internals','Arena Allocation','Writing a Parser','The Newtype Pattern','Rust for Pythonistas',
+ 'Testing Strategies','Build Times Diet','Crates You Should Know','Interior Mutability','GATs in Practice','Closures Demystified','Iterators All the Way Down','Farewell, 2025'];
+const PER = 8; let page = 1;
+const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+const render = () => {
+  q('#list').innerHTML = TITLES.slice((page - 1) * PER, page * PER).map((t, i) =>
+    `<article class="card post"><h3><a href="#${slug(t)}" data-s="${slug(t)}">${t}</a></h3><p class="muted">By Ferris · ${3 + i} min read</p></article>`).join('');
+  const n = Math.ceil(TITLES.length / PER);
+  q('#pg').innerHTML = `<button ${page === 1 ? 'disabled' : ''} data-p="${page - 1}">‹ Previous</button>` +
+    Array.from({ length: n }, (_, i) => `<button data-p="${i + 1}" ${i + 1 === page ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('') +
+    `<button ${page === n ? 'disabled' : ''} data-p="${page + 1}">Next ›</button>`;
+};
+q('#pg').onclick = async (e) => { const b = e.target.closest('button'); if (!b || b.disabled) return; await later(120); page = +b.dataset.p; render(); };
+q('#list').onclick = (e) => { const a = e.target.closest('a'); if (a) rec({ event: 'view', slug: a.dataset.s }); };
+render();
+</script></body></html>

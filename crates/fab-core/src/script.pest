@@ -1,0 +1,251 @@
+// The grammar of fab scripts (see script.rs for the language).
+//
+// A script is read one line at a time (`str::lines`), in phases that each
+// start a rule below on a piece of the text:
+//
+//   line        a raw line → its statement: a keyword and the rest, or a
+//               line without one (`x = …`); comments, `1.`/`-` markers and
+//               a trailing `:`, ` {` or ` then` removed
+//   leaf_args, assignment, assign_rhs, else_args, for_args, for_list,
+//   for_where, repeat_args, list_expr, extract_args, extract_body, open_args,
+//   emit_args
+//               → the pieces of one kind of statement
+//   comma_parts / colon_parts
+//               → a list split at top-level separators (outside `"…"`,
+//               `(…)` and `[…]`)
+//   unquoted, field_list
+//               → a text with its quotes removed; a list of field names
+//   expression, lexemes
+//               → an expression; when it has an error, its tokens (a stray
+//               character is reported before a misplaced token)
+//
+// The language is permissive on purpose: models write these variants
+// unprompted, and every one of them keeps its meaning (INTENT.md I03). Rules
+// other than the expression grammar are atomic: whitespace is explicit.
+
+ws = _{ WHITE_SPACE }
+
+// ---- lines ----
+
+// A line: its statement (`body`), without the text around it.
+line     = ${ SOI ~ ws* ~ (comment | numbered? ~ bullet? ~ body ~ tail) ~ EOI }
+comment  =  { ("```" | "#" | "//" | "--") ~ ANY* }
+numbered = _{ ASCII_DIGIT+ ~ ("." | ")") ~ ws* }
+// The space must not be the line's trailing whitespace (`-` alone is no marker).
+bullet   = _{ ("- " | "* ") ~ !(ws* ~ EOI) ~ ws* }
+// In this order: ` {`, `:`, ` then` (`while x {: then`).
+tail     = _{ (!(" {" | " then") ~ ws)* ~ " {"? ~ ":"? ~ " then"? ~ ws* ~ EOI }
+// Up to the tail. Runs of characters no tail starts with are taken whole
+// (for speed; the same holds in the scans below).
+text     = _{ (!(ws | ":") ~ ANY)* ~ (!tail ~ ANY ~ (!(ws | ":") ~ ANY)*)* }
+
+// ---- statements ----
+
+// A keyword and the rest, or a line without one (its first word names it in
+// errors).
+body       = ${ (keyword ~ (!tail ~ ws)* ~ rest | first_word ~ text)? }
+// Longer words first where one starts another (`done`/`do`, `endif`/`end`).
+keyword    = @{
+    (^"done" | ^"do" | ^"read" | ^"test" | ^"set" | ^"let" | ^"local" | ^"if"
+    | ^"elseif" | ^"else" | ^"elif" | ^"while" | ^"for" | ^"repeat"
+    | ^"endwhile" | ^"endfor" | ^"endif" | ^"end" | "}" | ^"break" | ^"continue"
+    | ^"stop" | ^"extract" | ^"get" | ^"scrape" | ^"open" | ^"follow" | ^"visit"
+    | ^"back" | ^"emit" | ^"yield" | ^"output" | ^"print" | ^"fail" | ^"return")
+    ~ &(ws | tail)
+}
+rest       = @{ text }
+first_word = @{ (!(ws | tail) ~ ANY)+ }
+
+// `"text" -> name`: the last arrow, when no quote follows it.
+leaf_args       = ${ SOI ~ (leaf_dash | leaf_arrow | leaf_text) ~ EOI }
+leaf_dash       = ${ leaf_text_dash ~ "->" ~ save }
+leaf_text_dash  = @{ (!"-" ~ ANY)* ~ (!("->" ~ (!("->" | "\"") ~ ANY)* ~ EOI) ~ ANY ~ (!"-" ~ ANY)*)* }
+leaf_arrow      = ${ !has_dash ~ leaf_text_arrow ~ "→" ~ save }
+leaf_text_arrow = @{ (!"→" ~ ANY)* ~ (!("→" ~ (!("→" | "\"") ~ ANY)* ~ EOI) ~ ANY ~ (!"→" ~ ANY)*)* }
+has_dash        = @{ (!"->" ~ ANY)* ~ "->" }
+leaf_text       = @{ ANY* }
+// `-> $x`, `-> {x}`
+save      = ${ ws* ~ "$"* ~ ("{" | "}")* ~ save_name ~ ("{" | "}")* ~ ws* }
+save_name = @{ (!(("{" | "}")* ~ ws* ~ EOI) ~ ANY)* }
+
+// `n = n + 1`, `$row.title = …`: the first `=` (not `==`).
+assignment = ${ SOI ~ ws* ~ "$"* ~ target ~ ws* ~ "=" ~ !"=" ~ ws* ~ value ~ EOI }
+target     = @{ (ASCII_ALPHANUMERIC | "_") ~ (ASCII_ALPHANUMERIC | "_" | ".")* }
+value      = @{ ANY* }
+// The value of `x = …` without `set`.
+assign_rhs  = ${ SOI ~ (rhs_extract | rhs_leaf | rhs_expr) ~ EOI }
+rhs_extract = ${ ^"extract " ~ rhs_rest }
+rhs_leaf    = ${ rhs_kind ~ rhs_rest }
+rhs_rest    = @{ ANY* }
+rhs_kind    = @{ ^"do " | ^"read " | ^"test " }
+rhs_expr    = @{ ANY* }
+
+// `else if <cond>`; any other text after `else` is ignored.
+else_args = ${ SOI ~ (("if " | "If ") ~ ws* ~ else_cond | ANY*) ~ EOI }
+else_cond = @{ ANY* }
+
+// `for x in <list> [where <condition>]`: the first ` in `; the list runs to the
+// first `where` outside its quotes.
+for_args  = ${ SOI ~ "$"* ~ for_var ~ (!" in " ~ ws)* ~ " in " ~ ws* ~ for_list ~ for_where? ~ EOI }
+for_var   = @{ (!ws ~ ANY)* ~ (!((!" in " ~ ws)* ~ " in ") ~ ANY ~ (!ws ~ ANY)*)* }
+for_list  = @{ (quoted_run | (!for_where_kw ~ ANY))* }
+for_where = ${ for_where_kw ~ for_cond }
+// `where` as a whole word, with the white space before it.
+for_where_kw = _{ ws+ ~ "where" ~ !ident_char }
+for_cond     = @{ ws* ~ ANY* }
+
+// `repeat 3 times`
+repeat_args  = ${ SOI ~ repeat_count ~ ws* ~ "times"* ~ EOI }
+repeat_count = @{ (!(ws* ~ "times"* ~ EOI) ~ ANY)* }
+
+// A `for` list: `range(a, b)`, `a..b`, `a, b, c` / `[a, b, c]`, or a value.
+list_expr     = ${ SOI ~ (range_call | range_dots | brackets) ~ EOI }
+range_call    = ${ "range(" ~ range_inner ~ ")" ~ EOI }
+range_inner   = @{ (!")" ~ ANY)* ~ (!(")" ~ EOI) ~ ANY ~ (!")" ~ ANY)*)* }
+range_dots    = ${ range_lo ~ ".." ~ range_hi }
+range_lo      = @{ (!".." ~ ANY)* }
+range_hi      = @{ ANY* }
+brackets      = ${ "["* ~ bracket_inner ~ "]"* }
+bracket_inner = @{ (!"]" ~ ANY)* ~ (!("]"* ~ EOI) ~ ANY ~ (!"]" ~ ANY)*)* }
+
+// `extract "a, b" [from item] -> x`: the last arrow.
+extract_args    = ${ SOI ~ (ex_dash | ex_arrow) ~ EOI }
+ex_dash         = ${ ex_body_dash ~ "->" ~ ex_save }
+ex_body_dash    = @{ (!"-" ~ ANY)* ~ (!("->" ~ (!"->" ~ ANY)* ~ EOI) ~ ANY ~ (!"-" ~ ANY)*)* }
+ex_arrow        = ${ !has_dash ~ ex_body_arrow ~ "→" ~ ex_save }
+ex_body_arrow   = @{ (!"→" ~ ANY)* ~ (!("→" ~ (!"→" ~ ANY)* ~ EOI) ~ ANY ~ (!"→" ~ ANY)*)* }
+ex_save         = ${ ws* ~ (save_ok ~ EOI | save_bad) }
+save_ok         = ${ "$"* ~ save_ident }
+save_ident      = @{ (ASCII_ALPHANUMERIC | "_")+ }
+save_bad        = @{ ANY* }
+// `"a, b" from item`: the last ` from `, when no quote follows it.
+extract_body    = ${ SOI ~ (ex_from | ex_fields) ~ EOI }
+ex_from         = ${ ex_fields_from ~ " from " ~ ws* ~ "$"* ~ ex_item }
+ex_fields_from  = @{
+    (!" from " ~ ANY)* ~ (!(&" from " ~ ANY ~ (!(" from " | "\"") ~ ANY)* ~ EOI) ~ ANY ~ (!" from " ~ ANY)*)*
+}
+ex_item         = @{ ANY* }
+ex_fields       = @{ ANY* }
+field_list      = ${ SOI ~ field ~ (field_sep ~ field)* ~ EOI }
+field           = @{ (!field_sep ~ ANY)* }
+field_sep       = _{ "," | ";" | " and " }
+
+// `open item "which link"`
+open_args = ${ SOI ~ "$"* ~ open_item ~ (ws ~ open_how)? ~ EOI }
+open_item = @{ (!ws ~ ANY)* }
+open_how  = @{ ANY* }
+
+// `emit a, key: b` / `emit {a, key: b}`
+emit_args  = ${ SOI ~ "{"* ~ emit_inner ~ "}"* ~ EOI }
+emit_inner = @{ (!"}" ~ ANY)* ~ (!("}"* ~ EOI) ~ ANY ~ (!"}" ~ ANY)*)* }
+
+// Top-level separators. Only `"` quotes; `(` and `[` count alike, and a
+// closer without an opener holds the depth below zero until one comes.
+comma_parts = ${ SOI ~ comma_part ~ ("," ~ comma_part)* ~ EOI }
+comma_part  = @{ plain_run ~ ((quoted_run | group | neg_group | !"," ~ ANY) ~ plain_run)* }
+colon_parts = ${ SOI ~ colon_part ~ (":" ~ colon_part)* ~ EOI }
+colon_part  = @{ plain_run ~ ((quoted_run | group | neg_group | !":" ~ ANY) ~ plain_run)* }
+plain_run   = @{ (!("," | ":" | "\"" | "(" | "[" | ")" | "]") ~ ANY)* }
+quoted_run  = _{ "\"" ~ (!"\"" ~ ANY)* ~ ("\"" | EOI) }
+group       = _{ opener ~ (quoted_run | group | !closer ~ ANY)* ~ (closer | EOI) }
+neg_group   = _{ closer ~ (quoted_run | neg_group | !opener ~ ANY)* ~ (opener | EOI) }
+opener      = _{ "(" | "[" }
+closer      = _{ ")" | "]" }
+
+// A text in `"…"` or `'…'` (with `\"` for a quote), else the text itself.
+unquoted  = ${ SOI ~ ws* ~ (dq_whole | sq_whole | raw_whole) ~ EOI }
+dq_whole  = ${ "\"" ~ (esc_quote | dq_plain)* ~ "\"" ~ ws* ~ &EOI }
+sq_whole  = ${ "'" ~ (esc_quote | sq_plain)* ~ "'" ~ ws* ~ &EOI }
+esc_quote = @{ "\\\"" ~ !(ws* ~ EOI) }
+dq_plain  = @{ (!("\"" ~ ws* ~ EOI) ~ !esc_quote ~ ANY ~ (!("\"" | "\\") ~ ANY)*)+ }
+sq_plain  = @{ (!("'" ~ ws* ~ EOI) ~ !esc_quote ~ ANY ~ (!("'" | "\\") ~ ANY)*)+ }
+raw_whole = @{ (!ws ~ ANY)* ~ (!(ws* ~ EOI) ~ ANY ~ (!ws ~ ANY)*)* }
+
+// ---- expressions ----
+
+WHITESPACE = _{ WHITE_SPACE }
+
+lexemes  = { SOI ~ (token | bad_char)* ~ EOI }
+bad_char = @{ ANY }
+token    = _{ string | number | ident | op }
+
+string     = ${ dq_str | sq_str | curly_str }
+dq_str     = ${ "\"" ~ (str_esc | dq_chunk)* ~ ("\"" | EOI) }
+sq_str     = ${ "'" ~ (str_esc | sq_chunk)* ~ ("'" | EOI) }
+curly_str  = ${ "“" ~ (str_esc | curly_chunk)* ~ ("”" | EOI) }
+str_esc    = @{ "\\" ~ ANY }
+// A backslash at the very end stands for itself.
+dq_chunk    = @{ (!("\"" | "\\") ~ ANY | "\\" ~ &EOI)+ }
+sq_chunk    = @{ (!("'" | "\\") ~ ANY | "\\" ~ &EOI)+ }
+curly_chunk = @{ (!("”" | "\\") ~ ANY | "\\" ~ &EOI)+ }
+// `1,250.50`: a comma followed by a digit belongs to the number.
+number     = @{ (ASCII_DIGIT | "." ~ &ASCII_DIGIT) ~ (ASCII_DIGIT | "." | "," ~ &ASCII_DIGIT)* }
+// `$x`, `row.title`
+ident      = @{ ("$" | ident_start) ~ ident_char* }
+ident_start = _{ "_" | ALPHABETIC }
+ident_char  = _{ ALPHABETIC | NUMBER | "_" | "." }
+op         = @{
+    "<=" | ">=" | "==" | "!=" | "&&" | "||" | "<" | ">" | "+" | "-" | "*" | "/"
+    | "(" | ")" | "!" | "[" | "]" | "," | "%" | "="
+}
+
+// Words are whole identifiers, in any case, with or without `$`.
+kw_or    = @{ "$"? ~ ^"or" ~ !ident_char }
+kw_and   = @{ "$"? ~ ^"and" ~ !ident_char }
+kw_not   = @{ "$"? ~ ^"not" ~ !ident_char }
+kw_is    = @{ "$"? ~ ^"is" ~ !ident_char }
+kw_test  = @{ "$"? ~ ^"test" ~ !ident_char }
+kw_items = @{ "$"? ~ ^"items" ~ !ident_char }
+kw_next  = @{ "$"? ~ ^"next" ~ !ident_char }
+// Words that end `sec.section name`.
+kw_field_end = @{
+    "$"? ~ (^"and" | ^"or" | ^"not" | ^"is" | ^"in" | ^"then" | ^"do" | ^"true" | ^"false" | ^"null")
+    ~ !ident_char
+}
+
+// A stray token after a whole expression is an error (`trailing`).
+expression = { SOI ~ or_expr ~ (EOI | trailing)? }
+trailing   = { token }
+
+or_expr  = { and_expr ~ (or_op ~ and_expr)* }
+and_expr = { not_expr ~ (and_op ~ not_expr)* }
+not_expr = { not_op ~ not_expr | cmp_expr }
+cmp_expr = { add_expr ~ ((cmp_op | kw_is ~ kw_not?) ~ add_expr)? }
+add_expr = { mul_expr ~ (add_op ~ mul_expr)* }
+mul_expr = { atom ~ (mul_op ~ atom)* }
+
+or_op  = @{ kw_or | "||" }
+and_op = @{ kw_and | "&&" }
+not_op = @{ kw_not | "!" ~ !"=" }
+cmp_op = @{ "<=" | ">=" | "==" | "!=" | "<" | ">" | "=" }
+add_op = @{ "+" | "-" }
+mul_op = @{ "*" | "/" | "%" }
+
+// In the order they are tried; `bad_atom` is the error (a stray token, or
+// nothing left).
+atom = {
+    number | string | effect | lit_null | call | lit_true | lit_false | quoted_field | bracket_field
+    | spaced_field | var | paren | list | neg | bad_atom
+}
+// `test "…"`, `items "…"`, `next page` (not `test(…)`: a function).
+effect    = { (kw_test | kw_items) ~ !"(" ~ string? | kw_next ~ !"(" ~ (string | next_what)? }
+next_what = { !(kw_and | kw_or) ~ ident }
+lit_null  = @{ "$"? ~ (^"null" | ^"none" | ^"nil") ~ !ident_char }
+lit_true  = @{ "$"? ~ (^"true" | ^"yes") ~ !ident_char }
+lit_false = @{ "$"? ~ (^"false" | ^"no") ~ !ident_char }
+call      = { ident ~ "(" ~ call_args }
+call_args = { close_paren | or_expr ~ ("," ~ call_args | close_paren)? }
+// `row."prep time"`, `row["prep time"]`, `sec.section name`: a field in words.
+quoted_field  = { dot_ident ~ string }
+dot_ident     = @{ ("$" | ident_start) ~ (!("." ~ !ident_char) ~ ident_char)* ~ "." ~ !ident_char }
+bracket_field = { ident ~ "[" ~ string ~ "]" }
+spaced_field  = { dotted_ident ~ (!kw_field_end ~ ident)+ }
+dotted_ident  = @{ &(("$" | ident_start) ~ (!"." ~ ident_char)* ~ ".") ~ ident }
+var           = { ident }
+paren         = { "(" ~ or_expr ~ close_paren? }
+list          = { "[" ~ list_items }
+list_items    = { close_bracket | or_expr ~ ("," ~ list_items | close_bracket)? }
+neg           = { "-" ~ atom }
+bad_atom      = { token? }
+close_paren   = { ")" }
+close_bracket = { "]" }

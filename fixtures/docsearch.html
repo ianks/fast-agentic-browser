@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Docs · Cloudly</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body><header><strong>Cloudly Docs</strong><form id="f" style="margin-left:auto"><input id="s" type="search" placeholder="Search documentation…" aria-label="Search documentation"></form></header>
+<main><h1>Getting started</h1><p>Install the CLI and run <code>cloudly init</code>.</p><div id="res"></div></main>
+<script>q('#f').onsubmit = async (e) => { e.preventDefault(); const t = q('#s').value.trim(); await rec({ event: 'docsearch', q: t }); q('#res').innerHTML = `<h2>Results for "${t}"</h2><ul><li><a href="#">Billing and plans</a></li><li><a href="#">Usage limits</a></li></ul>`; };</script>
+</body></html>

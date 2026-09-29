@@ -1,0 +1,140 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Console · Parcelwise</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+.shell{display:flex;min-height:calc(100vh - 44px)}
+nav.side{width:190px;background:#f8fafc;border-right:1px solid #e5e7eb;padding:14px 0}
+nav.side a{display:block;padding:7px 18px;color:#334155;text-decoration:none}
+nav.side a[aria-current=page]{background:#e0e7ff;color:#1e3a8a;font-weight:600}
+.shell main{max-width:1000px;margin:20px 28px;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{border:1px solid #e5e7eb;border-radius:8px;padding:10px}.kpi b{display:block;font-size:20px}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:#e5e7eb}
+.b-Overdue{background:#fee2e2;color:#991b1b}.b-Open{background:#fef9c3;color:#854d0e}.b-Paid{background:#dcfce7;color:#166534}
+.b-Active{background:#dcfce7;color:#166534}.b-On-hold{background:#fde68a;color:#78350f}.b-Suspended{background:#fecaca;color:#7f1d1d}
+.tabs button[aria-pressed=true]{background:#1f2937;color:#fff}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+</style></head>
+<body><header><strong>Parcelwise</strong><span class="muted" style="color:#94a3b8">Console · Workspace: EU-North</span><span style="margin-left:auto">Signed in as r.achterberg</span></header>
+<div class="shell">
+<nav class="side" aria-label="Console">
+  <a href="#/overview" data-r="overview">Overview</a>
+  <a href="#/accounts" data-r="accounts">Accounts</a>
+  <a href="#/shipments" data-r="shipments">Shipments</a>
+  <a href="#/billing" data-r="billing">Billing</a>
+  <a href="#/team" data-r="team">Team</a>
+  <a href="#/settings" data-r="settings">Settings</a>
+</nav>
+<main id="view"><p class="muted">Loading…</p></main>
+</div>
+<div id="modal"></div>
+<script>
+const DATA = {"accounts":[{"id":"acc-1001","name":"Halvorsen Freight AS","plan":"Enterprise","country":"Norway","mrr":4820},{"id":"acc-1002","name":"Halvorsen Fresh Foods","plan":"Growth","country":"Norway","mrr":1290},{"id":"acc-1003","name":"Brightwater Mills","plan":"Enterprise","country":"United Kingdom","mrr":7310},{"id":"acc-1004","name":"Kobayashi Textiles","plan":"Growth","country":"Japan","mrr":2150},{"id":"acc-1005","name":"Ostrava Cycle Works","plan":"Starter","country":"Czechia","mrr":390},{"id":"acc-1006","name":"Meridian Apothecary","plan":"Growth","country":"United States","mrr":1840},{"id":"acc-1007","name":"Tallgrass Outfitters","plan":"Growth","country":"United States","mrr":2460},{"id":"acc-1008","name":"Vireo Ceramics","plan":"Starter","country":"Portugal","mrr":520},{"id":"acc-1009","name":"Corrib Coffee Roasters","plan":"Starter","country":"Ireland","mrr":610},{"id":"acc-1010","name":"Sundqvist Marine","plan":"Enterprise","country":"Sweden","mrr":5980},{"id":"acc-1011","name":"Pampas Leatherworks","plan":"Growth","country":"Argentina","mrr":1170},{"id":"acc-1012","name":"Nakuru Botanicals","plan":"Starter","country":"Kenya","mrr":440},{"id":"acc-1013","name":"Ferro & Pine","plan":"Growth","country":"Italy","mrr":1630},{"id":"acc-1014","name":"Quillon Paper Co.","plan":"Starter","country":"Canada","mrr":350}],"invoices":[{"id":"INV-26-4359","account":"Tallgrass Outfitters","issued":"2026-09-16","due":"2026-10-16","amount":"$2,392.89","status":"Open"},{"id":"INV-26-4149","account":"Vireo Ceramics","issued":"2026-09-12","due":"2026-10-12","amount":"$548.48","status":"Open"},{"id":"INV-26-4303","account":"Corrib Coffee Roasters","issued":"2026-09-12","due":"2026-10-12","amount":"$574.05","status":"Open"},{"id":"INV-26-4226","account":"Halvorsen Fresh Foods","issued":"2026-09-02","due":"2026-10-02","amount":"$1,290.00","status":"Open"},{"id":"INV-26-4107","account":"Halvorsen Fresh Foods","issued":"2026-08-31","due":"2026-09-30","amount":"$1,332.00","status":"Open"},{"id":"INV-26-4198","account":"Pampas Leatherworks","issued":"2026-08-30","due":"2026-09-29","amount":"$1,182.93","status":"Open"},{"id":"INV-26-4219","account":"Halvorsen Fresh Foods","issued":"2026-08-30","due":"2026-09-29","amount":"$1,290.00","status":"Open"},{"id":"INV-26-4331","account":"Vireo Ceramics","issued":"2026-08-30","due":"2026-09-29","amount":"$442.84","status":"Open"},{"id":"INV-26-4247","account":"Quillon Paper Co.","issued":"2026-08-20","due":"2026-09-19","amount":"$379.82","status":"Paid"},{"id":"INV-26-4282","account":"Halvorsen Freight AS","issued":"2026-08-20","due":"2026-09-19","amount":"$388.50","status":"Overdue"},{"id":"INV-26-4366","account":"Kobayashi Textiles","issued":"2026-08-15","due":"2026-09-14","amount":"$2,088.16","status":"Paid"},{"id":"INV-26-4100","account":"Halvorsen Fresh Foods","issued":"2026-08-11","due":"2026-09-10","amount":"$1,259.22","status":"Paid"},{"id":"INV-26-4205","account":"Pampas Leatherworks","issued":"2026-08-11","due":"2026-09-10","amount":"$1,209.98","status":"Paid"},{"id":"INV-26-4135","account":"Halvorsen Fresh Foods","issued":"2026-08-04","due":"2026-09-03","amount":"$1,219.53","status":"Paid"},{"id":"INV-26-4289","account":"Halvorsen Freight AS","issued":"2026-08-02","due":"2026-09-01","amount":"$440.10","status":"Overdue"},{"id":"INV-26-4212","account":"Halvorsen Freight AS","issued":"2026-07-29","due":"2026-08-28","amount":"$412.00","status":"Overdue"},{"id":"INV-26-4261","account":"Halvorsen Fresh Foods","issued":"2026-07-28","due":"2026-08-27","amount":"$1,290.00","status":"Overdue"},{"id":"INV-26-4191","account":"Tallgrass Outfitters","issued":"2026-07-23","due":"2026-08-22","amount":"$2,547.17","status":"Paid"},{"id":"INV-26-4240","account":"Kobayashi Textiles","issued":"2026-07-22","due":"2026-08-21","amount":"$2,150.00","status":"Overdue"},{"id":"INV-26-4268","account":"Ostrava Cycle Works","issued":"2026-07-19","due":"2026-08-18","amount":"$358.90","status":"Paid"},{"id":"INV-26-4128","account":"Brightwater Mills","issued":"2026-07-16","due":"2026-08-15","amount":"$13,420.00","status":"Overdue"},{"id":"INV-26-4156","account":"Halvorsen Freight AS","issued":"2026-07-16","due":"2026-08-15","amount":"$399.75","status":"Overdue"},{"id":"INV-26-4275","account":"Halvorsen Freight AS","issued":"2026-07-16","due":"2026-08-15","amount":"$4,803.15","status":"Paid"},{"id":"INV-26-4324","account":"Brightwater Mills","issued":"2026-07-11","due":"2026-08-10","amount":"$11,905.50","status":"Overdue"},{"id":"INV-26-4170","account":"Sundqvist Marine","issued":"2026-07-06","due":"2026-08-05","amount":"$5,120.00","status":"Overdue"},{"id":"INV-26-4184","account":"Sundqvist Marine","issued":"2026-07-04","due":"2026-08-03","amount":"$6,056.27","status":"Paid"},{"id":"INV-26-4310","account":"Tallgrass Outfitters","issued":"2026-07-04","due":"2026-08-03","amount":"$2,460.00","status":"Overdue"},{"id":"INV-26-4387","account":"Brightwater Mills","issued":"2026-07-01","due":"2026-07-31","amount":"$12,840.00","status":"Overdue"},{"id":"INV-26-4121","account":"Sundqvist Marine","issued":"2026-06-30","due":"2026-07-30","amount":"$4,988.00","status":"Overdue"},{"id":"INV-26-4163","account":"Meridian Apothecary","issued":"2026-06-29","due":"2026-07-29","amount":"$1,879.37","status":"Paid"},{"id":"INV-26-4296","account":"Vireo Ceramics","issued":"2026-06-29","due":"2026-07-29","amount":"$577.07","status":"Paid"},{"id":"INV-26-4142","account":"Ferro & Pine","issued":"2026-06-27","due":"2026-07-27","amount":"$1,589.80","status":"Paid"},{"id":"INV-26-4114","account":"Halvorsen Fresh Foods","issued":"2026-06-24","due":"2026-07-24","amount":"$1,314.50","status":"Overdue"},{"id":"INV-26-4373","account":"Sundqvist Marine","issued":"2026-06-24","due":"2026-07-24","amount":"$6,062.09","status":"Paid"},{"id":"INV-26-4254","account":"Ostrava Cycle Works","issued":"2026-06-20","due":"2026-07-20","amount":"$338.68","status":"Paid"},{"id":"INV-26-4338","account":"Halvorsen Fresh Foods","issued":"2026-06-17","due":"2026-07-17","amount":"$1,322.02","status":"Paid"},{"id":"INV-26-4317","account":"Pampas Leatherworks","issued":"2026-06-04","due":"2026-07-04","amount":"$1,103.73","status":"Paid"},{"id":"INV-26-4345","account":"Sundqvist Marine","issued":"2026-06-03","due":"2026-07-03","amount":"$6,052.66","status":"Paid"},{"id":"INV-26-4352","account":"Kobayashi Textiles","issued":"2026-05-30","due":"2026-06-29","amount":"$2,199.10","status":"Paid"},{"id":"INV-26-4233","account":"Halvorsen Freight AS","issued":"2026-05-29","due":"2026-06-28","amount":"$4,745.26","status":"Paid"},{"id":"INV-26-4177","account":"Corrib Coffee Roasters","issued":"2026-05-26","due":"2026-06-25","amount":"$614.89","status":"Paid"},{"id":"INV-26-4380","account":"Nakuru Botanicals","issued":"2026-05-26","due":"2026-06-25","amount":"$376.82","status":"Paid"}]};
+const ACCT = Object.fromEntries(DATA.accounts.map((a) => [a.id, Object.assign(a, { status: 'Active' })]));
+const byName = Object.fromEntries(DATA.accounts.map((a) => [a.name, a]));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let invFilter = 'All';
+let acctSearch = '';
+let seq = 0;
+
+const views = {
+  overview() {
+    const overdueAmt = DATA.invoices.filter((i) => i.status === 'Overdue').length;
+    return `<h1>Overview</h1>
+    <div class="kpis"><div class="kpi"><span class="muted">Shipments today</span><b>1,284</b></div><div class="kpi"><span class="muted">On-time rate (7d)</span><b>96.2%</b></div>
+    <div class="kpi"><span class="muted">Active accounts</span><b>${DATA.accounts.length}</b></div><div class="kpi"><span class="muted">Invoices needing attention</span><b>${overdueAmt}</b></div></div>
+    <h2>Top accounts by volume (30d)</h2>
+    <table><thead><tr><th>Account</th><th>Parcels</th><th>Exceptions</th></tr></thead><tbody>
+    <tr><td>Brightwater Mills</td><td>18,420</td><td>31</td></tr><tr><td>Sundqvist Marine</td><td>12,905</td><td>12</td></tr>
+    <tr><td>Halvorsen Fresh Foods</td><td>9,377</td><td>44</td></tr><tr><td>Halvorsen Freight AS</td><td>8,610</td><td>9</td></tr>
+    <tr><td>Tallgrass Outfitters</td><td>5,142</td><td>6</td></tr></tbody></table>
+    <p class="muted">Billing details live under <a href="#/billing">Billing</a>.</p>`;
+  },
+  accounts() {
+    const rows = DATA.accounts.filter((a) => a.name.toLowerCase().includes(acctSearch.toLowerCase()));
+    return `<h1>Accounts</h1><div class="row"><label for="as" style="margin:0">Search accounts</label><input id="as" type="search" value="${esc(acctSearch)}" placeholder="Name or ID"></div>
+    <table><thead><tr><th>Account</th><th>ID</th><th>Plan</th><th>Country</th><th>MRR</th><th>Status</th><th></th></tr></thead><tbody>
+    ${rows.map((a) => `<tr><td>${esc(a.name)}</td><td class="muted">${a.id}</td><td>${a.plan}</td><td>${a.country}</td><td class="num">$${a.mrr.toLocaleString('en-US')}</td><td><span class="badge b-${a.status.replace(' ', '-')}">${a.status}</span></td><td><a href="#/accounts/${a.id}">Manage</a></td></tr>`).join('')}
+    </tbody></table>${rows.length ? '' : '<p>No accounts match.</p>'}`;
+  },
+  account(id) {
+    const a = ACCT[id];
+    if (!a) return '<h1>Account not found</h1>';
+    return `<p><a href="#/accounts">← All accounts</a></p><h1>${esc(a.name)}</h1>
+    <p><span class="badge b-${a.status.replace(' ', '-')}">${a.status}</span> <span class="muted">${a.id} · ${a.plan} plan · ${a.country}</span></p>
+    <div class="card"><h3>Contacts</h3><p>Primary: ops@${a.name.toLowerCase().replace(/[^a-z]+/g, '')}.example · Billing contact on file</p></div>
+    <div class="card"><h3>Service</h3><p>Pickup window 08:00–17:00 · Default service: Economy 48h · Label format: ZPL</p></div>
+    <div class="row"><button id="edit">Edit details</button><button id="hold" ${a.status !== 'Active' ? 'disabled' : ''}>Place on hold</button><button id="susp" style="color:#b91c1c;border-color:#b91c1c">Suspend account</button></div>
+    <p id="amsg" role="status"></p>`;
+  },
+  shipments() {
+    return `<h1>Shipments</h1><p class="muted">Live shipment tracking across all accounts.</p><table><thead><tr><th>Tracking</th><th>Account</th><th>Status</th></tr></thead><tbody>
+    ${DATA.accounts.slice(0, 9).map((a, i) => `<tr><td>PW${7730041 + i * 97}</td><td>${esc(a.name)}</td><td>${['In transit', 'Delivered', 'Out for delivery'][i % 3]}</td></tr>`).join('')}</tbody></table>`;
+  },
+  billing() {
+    const inv = DATA.invoices.filter((i) => invFilter === 'All' || i.status === invFilter);
+    return `<h1>Billing</h1>
+    <div class="kpis"><div class="kpi"><span class="muted">Collected (Sep)</span><b>$214,380</b></div><div class="kpi"><span class="muted">Outstanding</span><b>$73,912</b></div>
+    <div class="kpi"><span class="muted">Largest overdue balance</span><b style="font-size:15px">Brightwater Mills</b></div><div class="kpi"><span class="muted">DSO</span><b>38 days</b></div></div>
+    <h2>Invoices</h2><div class="row tabs" role="group" aria-label="Invoice status">${['All', 'Open', 'Overdue', 'Paid'].map((s) => `<button data-f="${s}" aria-pressed="${s === invFilter}">${s}</button>`).join('')}</div>
+    <table><thead><tr><th>Invoice</th><th>Account</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+    ${inv.map((i) => `<tr><td>${i.id}</td><td>${esc(i.account)}</td><td>${i.issued}</td><td>${i.due}</td><td class="num">${i.amount}</td><td><span class="badge b-${i.status}">${i.status}</span></td></tr>`).join('')}
+    </tbody></table><p class="muted">${inv.length} invoices</p>`;
+  },
+  team() {
+    return `<h1>Team</h1><table><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody><tr><td>Roos Achterberg</td><td>Owner</td></tr><tr><td>Bilal Chaudhry</td><td>Finance</td></tr><tr><td>Maren Kvist</td><td>Support</td></tr></tbody></table>`;
+  },
+  settings() {
+    return `<h1>Settings</h1><label for="tz">Workspace time zone</label><select id="tz"><option>Europe/Oslo</option><option>Europe/Amsterdam</option></select><p class="muted">Changes here apply to the whole workspace.</p>`;
+  },
+};
+
+async function route() {
+  const parts = (location.hash.replace(/^#\/?/, '') || 'overview').split('/');
+  const name = parts[0] in views ? parts[0] : 'overview';
+  qa('nav.side a').forEach((a) => a.dataset.r === name ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  const v = q('#view');
+  v.innerHTML = '<p class="muted">Loading…</p>';
+  const my = ++seq;
+  await later(name === 'billing' ? 450 : 250);
+  if (my !== seq) return;
+  v.innerHTML = name === 'accounts' && parts[1] ? views.account(parts[1]) : views[name]();
+  wire(name, parts[1]);
+}
+
+function wire(name, id) {
+  if (name === 'billing') qa('[data-f]').forEach((b) => b.onclick = async () => { invFilter = b.dataset.f; q('#view').innerHTML = '<p class="muted">Loading…</p>'; await later(250); q('#view').innerHTML = views.billing(); wire('billing'); });
+  if (name === 'accounts' && !id) q('#as').oninput = (e) => { acctSearch = e.target.value; const pos = e.target.selectionStart; q('#view').innerHTML = views.accounts(); wire('accounts'); const s = q('#as'); s.focus(); s.setSelectionRange(pos, pos); };
+  if (name === 'accounts' && id && ACCT[id]) {
+    const a = ACCT[id];
+    q('#edit').onclick = () => { q('#amsg').textContent = 'Editing is disabled for accounts with an active contract. Contact your account manager.'; };
+    q('#hold').onclick = () => dialog(a, 'hold');
+    q('#susp').onclick = () => dialog(a, 'suspend');
+  }
+  if (name === 'settings') q('#tz').onchange = (e) => rec({ event: 'workspace_timezone', tz: e.target.value });
+}
+
+function dialog(a, kind) {
+  const hold = kind === 'hold';
+  q('#modal').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dh">
+    <h2 id="dh">${hold ? 'Place account on hold' : 'Suspend account'}</h2>
+    <p>${hold ? `New shipments for <b>${esc(a.name)}</b> will be paused until the hold is released.` : `<b>${esc(a.name)}</b> will lose API access immediately.`}</p>
+    <label for="reason">Reason</label><select id="reason"><option value="">Select a reason…</option><option>Customer request</option><option>Overdue invoices</option><option>Fraud review</option><option>Compliance check</option><option>Other</option></select>
+    <label for="note">Internal note (optional)</label><textarea id="note" rows="2"></textarea>
+    <p id="derr" role="alert" style="color:#b91c1c"></p>
+    <div class="row"><button id="dc">Cancel</button><button class="primary" id="dok">${hold ? 'Place on hold' : 'Suspend'}</button></div></div></div>`;
+  q('#dc').onclick = () => { q('#modal').innerHTML = ''; };
+  q('#dok').onclick = async () => {
+    const reason = q('#reason').value;
+    if (!reason) { q('#derr').textContent = 'Choose a reason.'; return; }
+    q('#dok').disabled = true;
+    await later(350);
+    await rec({ event: kind, account: a.name, id: a.id, reason, note: q('#note').value.trim() });
+    a.status = hold ? 'On hold' : 'Suspended';
+    q('#modal').innerHTML = '';
+    q('#view').innerHTML = views.account(a.id); wire('accounts', a.id);
+    q('#amsg').textContent = hold ? `${a.name} is now on hold (${reason}).` : `${a.name} has been suspended.`;
+  };
+}
+
+addEventListener('hashchange', route);
+route();
+</script></body></html>

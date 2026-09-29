@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Larkfield CRM</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  header { background: #14532d; }
+  header a[aria-current=page] { color: #fff; font-weight: 700; text-decoration: underline; }
+  main { max-width: 1100px; }
+  .notice { background: #fffbeb; border: 1px solid #fde68a; padding: 10px 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .toolbar { display: flex; gap: 8px; align-items: center; margin: 14px 0; }
+  .toolbar input[type=search] { width: 240px; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 360px; background: #fff; border-left: 1px solid #ddd; box-shadow: -4px 0 16px rgba(0,0,0,.08); padding: 20px; overflow: auto; z-index: 8; }
+  .drawer dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px; }
+  .drawer dt { color: #6b7280; }
+  .drawer dd { margin: 0; }
+  .merge td, .merge th { vertical-align: top; }
+  .merge label { font-weight: 400; display: flex; gap: 6px; align-items: flex-start; margin: 0; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; }
+  .pager button[aria-current=page] { background: #14532d; color: #fff; }
+  th button { background: none; border: 0; padding: 0; font-weight: 600; cursor: pointer; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .stage { font-size: 12px; padding: 1px 7px; border-radius: 9px; background: #f3f4f6; white-space: nowrap; }
+  .stage.won { background: #dcfce7; } .stage.lost { background: #fee2e2; }
+</style>
+</head>
+<body>
+<header><strong>Larkfield</strong><a href="#/contacts" data-top="contacts">Contacts</a><a href="#/deals" data-top="deals">Deals</a><a href="#/reports" data-top="reports">Reports</a><span style="margin-left:auto">Wren Takahashi · Sales ops</span></header>
+<main id="view"></main>
+<aside class="drawer" id="drawer" hidden aria-label="Contact details"></aside>
+<div class="overlay" id="confirm" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cf-h">
+    <h3 id="cf-h" style="margin-top:0"></h3>
+    <div id="cf-body"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:16px"><button type="button" id="cf-cancel">Cancel</button><button type="button" class="primary" id="cf-ok"></button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const CONTACTS = [
+    { id: 'C-0977', name: 'Adrien Aubert', email: 'adrien@orrerylabs.fr', phone: '+33 6 70 11 22 93', company: 'Orrery Labs', title: 'CTO', owner: 'Kasimir Olsen', created: '2023-09-30', last: '2026-02-11' },
+    { id: 'C-1042', name: 'Delphine Aubert', email: 'd.aubert@orrerylabs.fr', phone: '+33 6 12 48 90 71', company: 'Orrery Labs', title: 'Head of Procurement', owner: 'Kasimir Olsen', created: '2024-11-03', last: '2026-01-29' },
+    { id: 'C-1187', name: 'Delphine Aubert', email: 'delphine@orrerylabs.com', phone: '+33 6 12 48 90 17', company: 'Orrery Labs SAS', title: 'Procurement Lead', owner: 'Wren Takahashi', created: '2026-01-22', last: '2026-03-02' },
+    { id: 'C-1203', name: 'Delphine Aubert-Moreau', email: 'delphine.am@quillfeather.io', phone: '+33 7 55 21 30 04', company: 'Quillfeather', title: 'CFO', owner: 'Wren Takahashi', created: '2025-05-14', last: '2026-02-20' },
+    { id: 'C-1110', name: 'Signe Holm', email: 'signe.holm@brackwater.dk', phone: '+45 22 81 40 17', company: 'Brackwater Foods', title: 'Operations Director', owner: 'Mireille Dubois', created: '2025-02-07', last: '2026-02-03' },
+    { id: 'C-1195', name: 'Signe Holm', email: 'sh@brackwaterfoods.com', phone: '+45 22 81 40 17', company: 'Brackwater Foods', title: 'COO', owner: 'Eero Lindahl', created: '2026-02-01', last: '2026-02-27' },
+    { id: 'C-1011', name: 'Mateus Ribeiro', email: 'mateus.ribeiro@tamsinrail.pt', phone: '+351 912 004 318', company: 'Tamsin Rail', title: 'IT Manager', owner: 'Priya Natarajan', created: '2024-12-12', last: '2026-03-05' },
+    { id: 'C-1066', name: 'Lale Demir', email: 'lale@fennickrobotics.com', phone: '+90 532 118 44 09', company: 'Fennick Robotics', title: 'VP Engineering', owner: 'Eero Lindahl', created: '2025-03-19', last: '2026-01-14' },
+    { id: 'C-1128', name: 'Priit Kask', email: 'priit.kask@northmoor.ee', phone: '+372 5341 2290', company: 'Northmoor Energy', title: 'Procurement Manager', owner: 'Mireille Duval', created: '2025-06-30', last: '2026-02-26' },
+    { id: 'C-1154', name: 'Noor Haddad', email: 'noor@sundialpharma.com', phone: '+971 50 441 2087', company: 'Sundial Pharma', title: 'Head of Compliance', owner: 'Mireille Dubois', created: '2025-09-08', last: '2026-03-09' },
+    { id: 'C-1172', name: 'Evander Lowe', email: 'e.lowe@gildersleeve.law', phone: '+44 20 7946 0331', company: 'Gildersleeve Law', title: 'Managing Partner', owner: 'Kasimir Olsen', created: '2025-11-21', last: '2026-02-17' },
+    { id: 'C-1199', name: 'Ruth Okafor', email: 'ruth.okafor@ashgrove.ac.uk', phone: '+44 7700 900712', company: 'Ashgrove Schools', title: 'Bursar', owner: 'Priya Natarajan', created: '2026-02-09', last: '2026-03-08' },
+  ];
+  const DEALS = /*DATA*/[
+    {"id": "D-3101", "name": "Saffron Line Cruises — Seat expansion", "account": "Saffron Line Cruises", "owner": "Mireille Dubois", "stage": "Closed won", "amount": 39750, "close": "2026-06-30"},
+    {"id": "D-3102", "name": "Pennywhistle Toys — Annual licence renewal", "account": "Pennywhistle Toys", "owner": "Mireille Dubois", "stage": "Closed lost", "amount": 93000, "close": "2026-05-28"},
+    {"id": "D-3103", "name": "Northmoor Energy — Data residency pack", "account": "Northmoor Energy", "owner": "Mireille Duval", "stage": "Prospecting", "amount": 106800, "close": "2026-05-20"},
+    {"id": "D-3104", "name": "Quillfeather — Multi-site rollout", "account": "Quillfeather", "owner": "Eero Lindahl", "stage": "Proposal", "amount": 44500, "close": "2026-07-09"},
+    {"id": "D-3105", "name": "Veldt Outdoor — Annual licence renewal", "account": "Veldt Outdoor", "owner": "Priya Natarajan", "stage": "Closed lost", "amount": 150000, "close": "2026-05-20"},
+    {"id": "D-3106", "name": "Brackwater Foods — Annual licence renewal", "account": "Brackwater Foods", "owner": "Mireille Duval", "stage": "Closed won", "amount": 97000, "close": "2026-05-28"},
+    {"id": "D-3107", "name": "Cobble & Finch — Enterprise upgrade", "account": "Cobble & Finch", "owner": "Priya Natarajan", "stage": "Proposal", "amount": 23250, "close": "2026-09-13"},
+    {"id": "D-3108", "name": "Saffron Line Cruises — Onboarding services", "account": "Saffron Line Cruises", "owner": "Wren Takahashi", "stage": "Negotiation", "amount": 19500, "close": "2026-09-23"},
+    {"id": "D-3109", "name": "Pennywhistle Toys — Analytics add-on", "account": "Pennywhistle Toys", "owner": "Mireille Duval", "stage": "Negotiation", "amount": 79250, "close": "2026-05-25"},
+    {"id": "D-3110", "name": "Gildersleeve Law — Support tier uplift", "account": "Gildersleeve Law", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 36900, "close": "2026-05-11"},
+    {"id": "D-3111", "name": "Orrery Labs — Pilot expansion", "account": "Orrery Labs", "owner": "Kasimir Olsen", "stage": "Prospecting", "amount": 98050, "close": "2026-09-01"},
+    {"id": "D-3112", "name": "Ironbark Timber — Pilot expansion", "account": "Ironbark Timber", "owner": "Mireille Dubois", "stage": "Closed lost", "amount": 107700, "close": "2026-01-13"},
+    {"id": "D-3113", "name": "Dovecote Insurance — Pilot expansion", "account": "Dovecote Insurance", "owner": "Eero Lindahl", "stage": "Closed won", "amount": 58000, "close": "2026-06-17"},
+    {"id": "D-3114", "name": "Kittering Logistics — Multi-site rollout", "account": "Kittering Logistics", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 33000, "close": "2026-06-03"},
+    {"id": "D-3115", "name": "Pellmell Studios — Multi-site rollout", "account": "Pellmell Studios", "owner": "Mireille Duval", "stage": "Closed won", "amount": 43350, "close": "2026-01-17"},
+    {"id": "D-3116", "name": "Tamsin Rail — Enterprise upgrade", "account": "Tamsin Rail", "owner": "Mireille Dubois", "stage": "Proposal", "amount": 8600, "close": "2026-04-22"},
+    {"id": "D-3117", "name": "Northmoor Energy — Analytics add-on", "account": "Northmoor Energy", "owner": "Kasimir Olsen", "stage": "Prospecting", "amount": 55800, "close": "2026-09-10"},
+    {"id": "D-3118", "name": "Marisol Resorts — Annual licence renewal", "account": "Marisol Resorts", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 41000, "close": "2026-04-02"},
+    {"id": "D-3119", "name": "Marisol Resorts — Pilot expansion", "account": "Marisol Resorts", "owner": "Eero Lindahl", "stage": "Closed won", "amount": 44250, "close": "2026-04-30"},
+    {"id": "D-3120", "name": "Pennywhistle Toys — Data residency pack", "account": "Pennywhistle Toys", "owner": "Mireille Duval", "stage": "Closed won", "amount": 106600, "close": "2025-12-10"},
+    {"id": "D-3121", "name": "Kittering Logistics — Analytics add-on", "account": "Kittering Logistics", "owner": "Eero Lindahl", "stage": "Negotiation", "amount": 115600, "close": "2026-09-01"},
+    {"id": "D-3122", "name": "Ostrava Glassworks — Data residency pack", "account": "Ostrava Glassworks", "owner": "Mireille Duval", "stage": "Proposal", "amount": 110050, "close": "2026-08-27"},
+    {"id": "D-3123", "name": "Pennywhistle Toys — Onboarding services", "account": "Pennywhistle Toys", "owner": "Priya Natarajan", "stage": "Closed lost", "amount": 88000, "close": "2026-06-12"},
+    {"id": "D-3124", "name": "Saffron Line Cruises — Pilot expansion", "account": "Saffron Line Cruises", "owner": "Mireille Dubois", "stage": "Closed won", "amount": 61200, "close": "2026-04-08"},
+    {"id": "D-3125", "name": "Ashgrove Schools — Pilot expansion", "account": "Ashgrove Schools", "owner": "Mireille Duval", "stage": "Closed won", "amount": 52300, "close": "2026-04-15"},
+    {"id": "D-3126", "name": "Tamsin Rail — Data residency pack", "account": "Tamsin Rail", "owner": "Wren Takahashi", "stage": "Closed won", "amount": 64000, "close": "2026-06-09"},
+    {"id": "D-3127", "name": "Kittering Logistics — Annual licence renewal", "account": "Kittering Logistics", "owner": "Eero Lindahl", "stage": "Closed won", "amount": 128550, "close": "2025-10-17"},
+    {"id": "D-3128", "name": "Fennick Robotics — Multi-site rollout", "account": "Fennick Robotics", "owner": "Eero Lindahl", "stage": "Closed lost", "amount": 15450, "close": "2026-04-22"},
+    {"id": "D-3129", "name": "Marisol Resorts — Enterprise upgrade", "account": "Marisol Resorts", "owner": "Eero Lindahl", "stage": "Closed won", "amount": 45550, "close": "2026-01-12"},
+    {"id": "D-3130", "name": "Kittering Logistics — Data residency pack", "account": "Kittering Logistics", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 54800, "close": "2025-12-08"},
+    {"id": "D-3131", "name": "Brackwater Foods — Enterprise upgrade", "account": "Brackwater Foods", "owner": "Wren Takahashi", "stage": "Closed won", "amount": 120000, "close": "2026-07-01"},
+    {"id": "D-3132", "name": "Brackwater Foods — Multi-site rollout", "account": "Brackwater Foods", "owner": "Eero Lindahl", "stage": "Closed won", "amount": 119700, "close": "2026-02-27"},
+    {"id": "D-3133", "name": "Sundial Pharma — Enterprise upgrade", "account": "Sundial Pharma", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 64550, "close": "2025-11-13"},
+    {"id": "D-3134", "name": "Fennick Robotics — Pilot expansion", "account": "Fennick Robotics", "owner": "Mireille Duval", "stage": "Closed won", "amount": 83250, "close": "2026-08-14"},
+    {"id": "D-3135", "name": "Tamsin Rail — Seat expansion", "account": "Tamsin Rail", "owner": "Eero Lindahl", "stage": "Negotiation", "amount": 140000, "close": "2026-06-26"},
+    {"id": "D-3136", "name": "Ostrava Glassworks — Enterprise upgrade", "account": "Ostrava Glassworks", "owner": "Priya Natarajan", "stage": "Prospecting", "amount": 24750, "close": "2026-06-03"},
+    {"id": "D-3137", "name": "Sundial Pharma — Onboarding services", "account": "Sundial Pharma", "owner": "Mireille Dubois", "stage": "Closed won", "amount": 84500, "close": "2026-05-19"},
+    {"id": "D-3138", "name": "Veldt Outdoor — Enterprise upgrade", "account": "Veldt Outdoor", "owner": "Mireille Dubois", "stage": "Closed won", "amount": 49850, "close": "2026-08-19"},
+    {"id": "D-3139", "name": "Fennick Robotics — Support tier uplift", "account": "Fennick Robotics", "owner": "Wren Takahashi", "stage": "Closed won", "amount": 95000, "close": "2026-03-31"},
+    {"id": "D-3140", "name": "Quillfeather — Support tier uplift", "account": "Quillfeather", "owner": "Mireille Dubois", "stage": "Proposal", "amount": 60750, "close": "2026-08-08"},
+    {"id": "D-3141", "name": "Hollowmere Clinics — Multi-site rollout", "account": "Hollowmere Clinics", "owner": "Wren Takahashi", "stage": "Closed lost", "amount": 70400, "close": "2026-05-15"},
+    {"id": "D-3142", "name": "Pellmell Studios — Data residency pack", "account": "Pellmell Studios", "owner": "Eero Lindahl", "stage": "Negotiation", "amount": 117350, "close": "2026-05-08"},
+    {"id": "D-3143", "name": "Saffron Line Cruises — Support tier uplift", "account": "Saffron Line Cruises", "owner": "Priya Natarajan", "stage": "Closed won", "amount": 45500, "close": "2026-05-06"},
+    {"id": "D-3144", "name": "Saffron Line Cruises — Multi-site rollout", "account": "Saffron Line Cruises", "owner": "Eero Lindahl", "stage": "Negotiation", "amount": 128950, "close": "2026-09-01"},
+    {"id": "D-3145", "name": "Ashgrove Schools — Multi-site rollout", "account": "Ashgrove Schools", "owner": "Wren Takahashi", "stage": "Closed won", "amount": 72000, "close": "2026-04-21"},
+    {"id": "D-3146", "name": "Ashgrove Schools — Platform migration", "account": "Ashgrove Schools", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 29800, "close": "2026-06-22"},
+    {"id": "D-3147", "name": "Ashgrove Schools — Enterprise upgrade", "account": "Ashgrove Schools", "owner": "Kasimir Olsen", "stage": "Closed won", "amount": 38500, "close": "2026-04-27"},
+    {"id": "D-3148", "name": "Hollowmere Clinics — Analytics add-on", "account": "Hollowmere Clinics", "owner": "Priya Natarajan", "stage": "Closed lost", "amount": 91900, "close": "2026-06-12"}
+  ]/*END*/;
+  const st = { search: '', sel: new Set(), merge: null, dealPage: 1, dealStage: '', dealSort: null, busy: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const usd = (n) => '$' + n.toLocaleString('en-US');
+  const fmtDate = (s) => { const [y, m, d] = s.split('-').map(Number); return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`; };
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const view = q('#view');
+  const byId = (id) => CONTACTS.find((c) => c.id === id);
+  const dupPairs = () => {
+    const out = []; const seen = new Map();
+    for (const c of CONTACTS) { const k = c.name.toLowerCase(); if (seen.has(k)) out.push([seen.get(k), c]); else seen.set(k, c); }
+    return out;
+  };
+  let confirmFn = null;
+  const openConfirm = (title, body, okLabel, fn) => { q('#cf-h').textContent = title; q('#cf-body').innerHTML = body; q('#cf-ok').textContent = okLabel; confirmFn = fn; q('#confirm').hidden = false; };
+  q('#cf-cancel').addEventListener('click', () => { q('#confirm').hidden = true; confirmFn = null; });
+  q('#cf-ok').addEventListener('click', async () => { const fn = confirmFn; if (!fn) return; q('#cf-ok').disabled = true; await fn(); q('#cf-ok').disabled = false; q('#confirm').hidden = true; confirmFn = null; });
+
+  function route() {
+    const parts = (location.hash || '#/contacts').slice(2).split('/');
+    qa('[data-top]').forEach((a) => (a.dataset.top === (parts[0] === 'merge' || parts[0] === 'duplicates' ? 'contacts' : parts[0]) ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
+    q('#drawer').hidden = true;
+    if (parts[0] === 'deals') return renderDeals();
+    if (parts[0] === 'reports') { view.innerHTML = '<h1>Reports</h1><p class="muted">Saved reports are being migrated to the new analytics workspace. Check back next week.</p>'; return; }
+    if (parts[0] === 'duplicates') return renderDupes();
+    if (parts[0] === 'merge') return renderMerge(parts[1], parts[2]);
+    renderContacts();
+  }
+
+  // ---------- contacts ----------
+  function renderContacts() {
+    const t = st.search.toLowerCase();
+    const rows = CONTACTS.filter((c) => !t || [c.name, c.email, c.company].some((v) => v.toLowerCase().includes(t)));
+    const d = dupPairs();
+    view.innerHTML = `<h1>Contacts</h1>
+      ${d.length ? `<div class="notice" role="status"><span>We found ${d.length} possible duplicate${d.length > 1 ? 's' : ''} in your contacts.</span><a href="#/duplicates">Review duplicates</a></div>` : ''}
+      <div class="toolbar"><input type="search" id="csearch" aria-label="Search contacts" placeholder="Search name, email or company" value="${esc(st.search)}">
+        <button type="button" id="merge-sel" ${st.sel.size === 2 ? '' : 'disabled'}>Merge selected</button><button type="button" id="del-sel" ${st.sel.size ? '' : 'disabled'}>Delete selected</button><span class="muted">${st.sel.size} selected</span></div>
+      <table><thead><tr><th><span class="muted">Select</span></th><th>Name</th><th>Email</th><th>Company</th><th>Phone</th><th>Owner</th><th>Created</th></tr></thead>
+      <tbody>${rows.map((c) => `<tr><td><input type="checkbox" data-sel="${c.id}" aria-label="Select ${esc(c.name)} (${c.id})" ${st.sel.has(c.id) ? 'checked' : ''}></td><td><a href="#/contacts" data-open="${c.id}">${esc(c.name)}</a></td><td>${esc(c.email)}</td><td>${esc(c.company)}</td><td>${esc(c.phone)}</td><td>${esc(c.owner)}</td><td>${fmtDate(c.created)}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">No contacts match.</td></tr>'}</tbody></table>`;
+    q('#csearch').addEventListener('input', (e) => { st.search = e.target.value; const pos = e.target.value.length; renderContacts(); const i = q('#csearch'); i.focus(); try { i.setSelectionRange(pos, pos); } catch (_) {} });
+    view.onchange = (e) => { const cb = e.target.closest('[data-sel]'); if (!cb) return; cb.checked ? st.sel.add(cb.dataset.sel) : st.sel.delete(cb.dataset.sel); renderContacts(); };
+    view.onclick = (e) => { const a = e.target.closest('[data-open]'); if (a) { e.preventDefault(); openDrawer(a.dataset.open); } };
+    q('#merge-sel').addEventListener('click', () => { const [a, b] = [...st.sel]; location.hash = `#/merge/${a}/${b}`; });
+    q('#del-sel').addEventListener('click', () => {
+      const ids = [...st.sel];
+      openConfirm(`Delete ${ids.length} contact${ids.length > 1 ? 's' : ''}?`, '<p>Deleted contacts can\'t be recovered.</p>', 'Delete', async () => {
+        await later(300); await rec({ event: 'contacts_delete', ids: ids.sort().join(',') });
+        ids.forEach((id) => { const i = CONTACTS.findIndex((c) => c.id === id); if (i >= 0) CONTACTS.splice(i, 1); }); st.sel.clear(); renderContacts(); toast('Contacts deleted.');
+      });
+    });
+  }
+  function openDrawer(id) {
+    const c = byId(id); const d = q('#drawer');
+    d.innerHTML = `<div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(c.name)}</h2><button type="button" id="dr-close" aria-label="Close details">✕</button></div><p class="muted">${c.id}</p>
+      <dl id="dr-dl"><dt>Email</dt><dd>${esc(c.email)}</dd><dt>Phone</dt><dd>${esc(c.phone)}</dd><dt>Company</dt><dd>${esc(c.company)}</dd><dt>Job title</dt><dd>${esc(c.title)}</dd><dt>Owner</dt><dd>${esc(c.owner)}</dd><dt>Created</dt><dd>${fmtDate(c.created)}</dd><dt>Last activity</dt><dd>${fmtDate(c.last)}</dd></dl>
+      <div id="dr-edit" hidden><label for="ed-email">Email</label><input id="ed-email" type="email" value="${esc(c.email)}"><label for="ed-phone">Phone</label><input id="ed-phone" type="text" value="${esc(c.phone)}"><div class="row" style="margin-top:10px"><button type="button" id="ed-cancel">Cancel</button><button type="button" class="primary" id="ed-save">Save contact</button></div></div>
+      <div class="row" style="margin-top:14px" id="dr-actions"><button type="button" id="dr-edit-btn">Edit</button></div>`;
+    d.hidden = false;
+    q('#dr-close').onclick = () => (d.hidden = true);
+    q('#dr-edit-btn').onclick = () => { q('#dr-edit').hidden = false; q('#dr-actions').hidden = true; };
+    q('#ed-cancel').onclick = () => { q('#dr-edit').hidden = true; q('#dr-actions').hidden = false; };
+    q('#ed-save').onclick = async () => {
+      const email = q('#ed-email').value.trim(); const phone = q('#ed-phone').value.trim();
+      await later(250); await rec({ event: 'contact_edit', id: c.id, email, phone });
+      c.email = email; c.phone = phone; toast('Contact saved.'); openDrawer(c.id); if (!location.hash.startsWith('#/merge')) renderContacts();
+    };
+  }
+  function renderDupes() {
+    const d = dupPairs();
+    view.innerHTML = `<p><a href="#/contacts">← Contacts</a></p><h1>Possible duplicates</h1>${d.length ? d.map(([a, b]) => `<div class="card row" style="justify-content:space-between"><div><strong>${esc(a.name)}</strong> <span class="muted">${a.id} · ${esc(a.email)}</span><br><strong>${esc(b.name)}</strong> <span class="muted">${b.id} · ${esc(b.email)}</span></div><div class="row"><button type="button" data-dismiss="${a.id}-${b.id}">Not a duplicate</button><a class="btn" href="#/merge/${a.id}/${b.id}">Review merge</a></div></div>`).join('') : '<p class="muted">No duplicates left.</p>'}`;
+    view.onclick = async (e) => { const b = e.target.closest('[data-dismiss]'); if (!b) return; b.disabled = true; await rec({ event: 'duplicate_dismiss', pair: b.dataset.dismiss }); b.closest('.card').remove(); toast('Marked as not a duplicate.'); };
+    view.onchange = null;
+  }
+
+  // ---------- merge ----------
+  const FIELDS = [['name', 'Name'], ['email', 'Email'], ['phone', 'Phone'], ['company', 'Company'], ['title', 'Job title'], ['owner', 'Owner']];
+  function renderMerge(id1, id2) {
+    const a0 = byId(id1); const b0 = byId(id2);
+    if (!a0 || !b0 || a0 === b0) { view.innerHTML = '<p>Pick two different contacts to merge. <a href="#/contacts">Back to contacts</a></p>'; return; }
+    // newer record is shown first
+    const [L, R] = a0.created >= b0.created ? [a0, b0] : [b0, a0];
+    st.merge = { L, R };
+    const radio = (f, side, c) => `<label><input type="radio" name="f-${f}" value="${side}" ${side === 'L' ? 'checked' : ''}> ${esc(c[f])}</label>`;
+    view.innerHTML = `<p><a href="#/contacts">← Contacts</a></p><h1>Merge contacts</h1>
+      <p class="muted">Choose which record survives and which value to keep for each field. The other record is removed and its notes, emails and deals move to the surviving record.</p>
+      <table class="merge"><thead><tr><th></th><th>${L.id} · created ${fmtDate(L.created)}</th><th>${R.id} · created ${fmtDate(R.created)}</th></tr></thead><tbody>
+      <tr><th>Surviving record</th><td><label><input type="radio" name="primary" value="L" checked> Keep ${L.id}</label></td><td><label><input type="radio" name="primary" value="R"> Keep ${R.id}</label></td></tr>
+      ${FIELDS.map(([f, lab]) => L[f] === R[f] ? `<tr><th>${lab}</th><td colspan="2">${esc(L[f])} <span class="muted">(same in both)</span></td></tr>` : `<tr><th>${lab}</th><td>${radio(f, 'L', L)}</td><td>${radio(f, 'R', R)}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="row" style="margin-top:16px"><a class="btn" href="#/contacts">Cancel</a><button type="button" class="primary" id="do-merge">Merge contacts</button></div>`;
+    view.onclick = null; view.onchange = null;
+    q('#do-merge').addEventListener('click', () => {
+      const pick = (n) => (qa(`input[name="${n}"]`).find((r) => r.checked) || {}).value || 'L';
+      const P = pick('primary') === 'L' ? L : R; const S = P === L ? R : L;
+      const out = {}; for (const [f] of FIELDS) out[f] = L[f] === R[f] ? L[f] : (pick('f-' + f) === 'L' ? L : R)[f];
+      openConfirm(`Merge into ${P.id}?`, `<p>${S.id} will be deleted and its activity moved to ${P.id}. This can't be undone.</p><dl style="display:grid;grid-template-columns:90px 1fr;gap:4px">${FIELDS.map(([f, lab]) => `<dt class="muted">${lab}</dt><dd style="margin:0">${esc(out[f])}</dd>`).join('')}</dl>`, 'Merge', async () => {
+        await later(500);
+        await rec({ event: 'contacts_merge', primary: P.id, secondary: S.id, ...out });
+        Object.assign(P, out); CONTACTS.splice(CONTACTS.indexOf(S), 1); st.sel.clear();
+        toast(`Merged into ${P.id}.`); location.hash = '#/contacts';
+      });
+    });
+  }
+
+  // ---------- deals ----------
+  const PER = 12;
+  function renderDeals() {
+    let rows = DEALS.filter((d) => !st.dealStage || d.stage === st.dealStage);
+    if (st.dealSort) { const [k, dir] = st.dealSort; rows = rows.slice().sort((a, b) => (a[k] < b[k] ? -1 : a[k] > b[k] ? 1 : 0) * dir); }
+    const pages = Math.max(1, Math.ceil(rows.length / PER)); if (st.dealPage > pages) st.dealPage = pages;
+    const slice = rows.slice((st.dealPage - 1) * PER, st.dealPage * PER);
+    const hdr = (k, lab, cls = '') => `<th class="${cls}"><button type="button" data-sort="${k}">${lab}${st.dealSort && st.dealSort[0] === k ? (st.dealSort[1] > 0 ? ' ▲' : ' ▼') : ''}</button></th>`;
+    const stages = ['Prospecting', 'Proposal', 'Negotiation', 'Closed won', 'Closed lost'];
+    view.innerHTML = `<h1>Deals</h1><div class="toolbar"><label for="stage" style="margin:0">Stage</label><select id="stage" style="width:180px"><option value="">All stages</option>${stages.map((s) => `<option ${st.dealStage === s ? 'selected' : ''}>${s}</option>`).join('')}</select><span class="muted">${rows.length} deals</span></div>
+      <table><thead><tr>${hdr('id', 'ID')}${hdr('name', 'Deal')}${hdr('owner', 'Owner')}${hdr('stage', 'Stage')}${hdr('amount', 'Amount', 'num')}${hdr('close', 'Close date')}</tr></thead>
+      <tbody>${slice.map((d) => `<tr><td class="muted">${d.id}</td><td>${esc(d.name)}</td><td>${esc(d.owner)}</td><td><span class="stage ${d.stage === 'Closed won' ? 'won' : d.stage === 'Closed lost' ? 'lost' : ''}">${d.stage}</span></td><td class="num">${usd(d.amount)}</td><td>${fmtDate(d.close)}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">No deals.</td></tr>'}</tbody></table>
+      <nav class="pager" aria-label="Pagination"><button type="button" data-page="prev" ${st.dealPage === 1 ? 'disabled' : ''}>Previous</button>${Array.from({ length: pages }, (_, i) => `<button type="button" data-page="${i + 1}" ${i + 1 === st.dealPage ? 'aria-current="page"' : ''} aria-label="Page ${i + 1}">${i + 1}</button>`).join('')}<button type="button" data-page="next" ${st.dealPage === pages ? 'disabled' : ''}>Next</button><span class="muted">Page ${st.dealPage} of ${pages}</span></nav>`;
+    q('#stage').addEventListener('change', (e) => { st.dealStage = e.target.value; st.dealPage = 1; renderDeals(); });
+    view.onchange = null;
+    view.onclick = (e) => {
+      const s = e.target.closest('[data-sort]'); const p = e.target.closest('[data-page]');
+      if (s) { const k = s.dataset.sort; st.dealSort = st.dealSort && st.dealSort[0] === k ? [k, -st.dealSort[1]] : [k, 1]; st.dealPage = 1; renderDeals(); }
+      if (p) { const v = p.dataset.page; st.dealPage = v === 'prev' ? st.dealPage - 1 : v === 'next' ? st.dealPage + 1 : +v; renderDeals(); }
+    };
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

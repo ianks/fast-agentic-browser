@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Almanac Calendar</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fff; }
+  .top { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid #e5e7eb; }
+  .top .logo { font-weight: 800; color: #b45309; margin-right: 12px; }
+  .layout { display: grid; grid-template-columns: 230px 1fr; }
+  .mini { padding: 14px; border-right: 1px solid #e5e7eb; }
+  .mini table { font-size: 12px; } .mini td, .mini th { padding: 2px; text-align: center; border: 0; }
+  .mini button { padding: 2px 4px; font-size: 12px; border: 0; background: none; width: 26px; }
+  .mini button.inweek { background: #fef3c7; }
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); min-height: 560px; }
+  .day { border-right: 1px solid #f1f5f9; padding: 6px; }
+  .day h3 { font-size: 13px; margin: 0 0 8px; color: #475569; font-weight: 600; }
+  .day h3.today { color: #b45309; }
+  .ev { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid #d97706; background: #fffbeb; border-radius: 4px; padding: 4px 6px; margin-bottom: 6px; font-size: 12px; cursor: pointer; }
+  .ev.c2 { border-color: #2563eb; background: #eff6ff; } .ev.c3 { border-color: #16a34a; background: #f0fdf4; }
+  .ev b { display: block; font-size: 12px; }
+  .pop { position: fixed; top: 120px; left: 50%; transform: translateX(-50%); width: 380px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,.18); padding: 16px 18px; z-index: 12; }
+  .chip { display: inline-block; font-size: 12px; background: #f1f5f9; border-radius: 10px; padding: 1px 8px; margin: 2px; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="top"><span class="logo">Almanac</span><button type="button" id="today">Today</button><button type="button" id="prev" aria-label="Previous week">‹</button><button type="button" id="next" aria-label="Next week">›</button><strong id="range"></strong><span style="margin-left:auto" class="muted">Calendar of Priscilla Adjei-Mensah</span></div>
+<div class="layout">
+  <aside class="mini" aria-label="Mini calendar"><div id="mini"></div><p class="muted" style="font-size:12px">Click a date to jump to its week.</p></aside>
+  <section class="week" id="week" aria-label="Week view"></section>
+</div>
+<div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="pop-h" hidden></div>
+<div class="overlay" id="edit" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ed-h" style="width:460px">
+    <h3 id="ed-h" style="margin-top:0">Edit event</h3>
+    <label for="ed-title">Title</label><input id="ed-title" type="text" style="width:400px">
+    <label for="ed-date">Date</label><input id="ed-date" type="text" placeholder="YYYY-MM-DD" style="width:140px">
+    <div class="row"><div><label for="ed-start">Starts</label><select id="ed-start" style="width:120px"></select></div><div><label for="ed-end">Ends</label><select id="ed-end" style="width:120px"></select></div></div>
+    <label for="ed-loc">Location</label><input id="ed-loc" type="text" style="width:400px">
+    <div class="err" id="ed-err" role="alert" hidden></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="ed-cancel">Cancel</button><button type="button" class="primary" id="ed-save">Save</button></div>
+  </div>
+</div>
+<div class="overlay" id="notify" hidden>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="nt-h" aria-describedby="nt-b">
+    <h3 id="nt-h" style="margin-top:0">Send updated invitations?</h3>
+    <p id="nt-b"></p>
+    <div class="row" style="justify-content:flex-end"><button type="button" id="nt-back">Back to editing</button><button type="button" id="nt-no">Don't send</button><button type="button" class="primary" id="nt-yes">Send</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const E = (id, title, date, start, end, loc, guests, c = '') => ({ id, title, date, start, end, loc, guests, c });
+  const EVENTS = [
+    E('ev101', 'Team stand-up', '2026-05-05', '09:15', '09:30', 'Zoom', ['Team'], 'c2'),
+    E('ev102', 'Quarterly supplier review — Brackenridge Mills', '2026-05-07', '10:00', '11:30', 'Room Juniper', ['Hamish Brackenridge', 'Nkechi Obi'], ''),
+    E('ev103', 'Lunch with Ines', '2026-05-08', '12:30', '13:30', 'Café Sélune', [], 'c3'),
+    E('ev104', 'Team stand-up', '2026-05-12', '09:15', '09:30', 'Zoom', ['Team'], 'c2'),
+    E('ev105', 'Quarterly supplier review — Brackenridge Mills (prep)', '2026-05-13', '16:00', '16:30', 'Desk', ['Nkechi Obi'], ''),
+    E('ev106', 'Quarterly supplier review — Brackenridge Mills', '2026-05-14', '10:00', '11:30', 'Room Juniper', ['Hamish Brackenridge', 'Nkechi Obi', 'Tomasz Kowal'], ''),
+    E('ev107', 'Quarterly supplier review — Brackenbury Tiles', '2026-05-14', '14:00', '15:00', 'Room Alder', ['Rosa Brackenbury'], ''),
+    E('ev108', 'Dentist', '2026-05-15', '08:30', '09:15', 'Kensal Dental', [], 'c3'),
+    E('ev109', 'Team stand-up', '2026-05-19', '09:15', '09:30', 'Zoom', ['Team'], 'c2'),
+    E('ev110', 'Quarterly supplier review — Brackenridge Mills', '2026-05-21', '10:00', '11:30', 'Room Juniper', ['Hamish Brackenridge'], ''),
+  ];
+  const TODAY = '2026-05-05';
+  const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const parse = (s) => new Date(s + 'T00:00:00Z');
+  const addDays = (s, n) => { const d = parse(s); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
+  const mondayOf = (s) => { const d = parse(s); const k = (d.getUTCDay() + 6) % 7; return addDays(s, -k); };
+  const label = (s) => { const d = parse(s); return `${DOW[(d.getUTCDay() + 6) % 7]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; };
+  const TIMES = []; for (let m = 7 * 60; m <= 21 * 60; m += 15) TIMES.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
+  const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const st = { week: mondayOf(TODAY), open: null, draft: null };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  q('#ed-start').innerHTML = TIMES.map((t) => `<option>${t}</option>`).join(''); q('#ed-end').innerHTML = q('#ed-start').innerHTML;
+
+  function render() {
+    const days = Array.from({ length: 7 }, (_, i) => addDays(st.week, i));
+    q('#range').textContent = `${label(days[0])} – ${label(days[6])} 2026`;
+    q('#week').innerHTML = days.map((d) => `<div class="day" role="group" aria-label="${label(d)}"><h3 class="${d === TODAY ? 'today' : ''}">${label(d)}</h3>${EVENTS.filter((e) => e.date === d).sort((a, b) => a.start.localeCompare(b.start)).map((e) => `<button type="button" class="ev ${e.c}" data-ev="${e.id}" aria-label="${esc(e.title)}, ${label(d)}, ${e.start} to ${e.end}"><b>${e.start}–${e.end}</b>${esc(e.title)}</button>`).join('')}</div>`).join('');
+    const m0 = '2026-05-01'; const lead = (parse(m0).getUTCDay() + 6) % 7; const cells = [];
+    for (let i = 0; i < lead; i++) cells.push('<td></td>');
+    for (let d = 1; d <= 31; d++) { const s = `2026-05-${String(d).padStart(2, '0')}`; cells.push(`<td><button type="button" data-jump="${s}" class="${mondayOf(s) === st.week ? 'inweek' : ''}" aria-label="${label(s)} 2026">${d}</button></td>`); }
+    let rows = ''; for (let i = 0; i < cells.length; i += 7) rows += `<tr>${cells.slice(i, i + 7).join('')}</tr>`;
+    q('#mini').innerHTML = `<strong>May 2026</strong><table><thead><tr>${DOW.map((d) => `<th>${d[0]}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  q('#prev').onclick = () => { st.week = addDays(st.week, -7); closePop(); render(); };
+  q('#next').onclick = () => { st.week = addDays(st.week, 7); closePop(); render(); };
+  q('#today').onclick = () => { st.week = mondayOf(TODAY); closePop(); render(); };
+  q('#mini').addEventListener('click', (e) => { const b = e.target.closest('[data-jump]'); if (b) { st.week = mondayOf(b.dataset.jump); closePop(); render(); } });
+  const closePop = () => { q('#pop').hidden = true; st.open = null; };
+  q('#week').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ev]'); if (!b) return;
+    const ev = EVENTS.find((x) => x.id === b.dataset.ev); st.open = ev;
+    const p = q('#pop'); p.hidden = false;
+    p.innerHTML = `<h3 id="pop-h" style="margin:0 0 4px">${esc(ev.title)}</h3><div>${label(ev.date)} 2026 · ${ev.start}–${ev.end}</div><div class="muted">${esc(ev.loc)}</div><div style="margin-top:6px">${ev.guests.map((g) => `<span class="chip">${esc(g)}</span>`).join('') || '<span class="muted">No guests</span>'}</div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button type="button" id="pop-del">Delete</button><button type="button" id="pop-close">Close</button><button type="button" class="primary" id="pop-edit">Edit</button></div>`;
+    q('#pop-close').onclick = closePop;
+    q('#pop-del').onclick = async () => { await rec({ event: 'event_delete', event_id: ev.id, title: ev.title, date: ev.date }); EVENTS.splice(EVENTS.indexOf(ev), 1); closePop(); render(); toast('Event deleted.'); };
+    q('#pop-edit').onclick = () => openEdit(ev);
+  });
+  function openEdit(ev) {
+    closePop(); st.draft = ev;
+    q('#ed-title').value = ev.title; q('#ed-date').value = ev.date; q('#ed-start').value = ev.start; q('#ed-end').value = ev.end; q('#ed-loc').value = ev.loc;
+    q('#ed-err').hidden = true; q('#edit').hidden = false;
+  }
+  q('#ed-cancel').onclick = () => { q('#edit').hidden = true; st.draft = null; };
+  let pending = null;
+  q('#ed-save').onclick = () => {
+    const ev = st.draft; const err = (m) => { q('#ed-err').textContent = m; q('#ed-err').hidden = !m; };
+    const v = { title: q('#ed-title').value.trim(), date: q('#ed-date').value.trim(), start: q('#ed-start').value, end: q('#ed-end').value, loc: q('#ed-loc').value.trim() };
+    if (!v.title) return err('Add a title.');
+    if (!/^2026-\d{2}-\d{2}$/.test(v.date) || isNaN(parse(v.date))) return err('Enter the date as YYYY-MM-DD.');
+    if (toMin(v.end) <= toMin(v.start)) return err('The end time must be after the start time.');
+    err(''); pending = v;
+    if (ev.guests.length) { q('#nt-b').textContent = `${ev.guests.length} guest(s) will get an email about the new time.`; q('#edit').hidden = true; q('#notify').hidden = false; }
+    else commit(false);
+  };
+  q('#nt-back').onclick = () => { q('#notify').hidden = true; q('#edit').hidden = false; };
+  q('#nt-no').onclick = () => commit(false);
+  q('#nt-yes').onclick = () => commit(true);
+  async function commit(notify) {
+    const ev = st.draft; const v = pending;
+    q('#notify').hidden = true; q('#edit').hidden = true;
+    await later(300);
+    await rec({ event: 'event_update', event_id: ev.id, title: v.title, date: v.date, start: v.start, end: v.end, location: v.loc, notify: ev.guests.length ? (notify ? 'yes' : 'no') : 'n/a' });
+    Object.assign(ev, v); st.draft = null; pending = null; render(); toast(notify ? 'Saved and guests notified.' : 'Saved.');
+  }
+  render();
+})();
+</script>
+</body>
+</html>

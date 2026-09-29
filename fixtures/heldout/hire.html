@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cobblestone Hire</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f8fafc; }
+  .app { display: grid; grid-template-columns: 210px 1fr; min-height: 100vh; }
+  .nav { background: #111827; padding: 16px 10px; }
+  .nav .logo { color: #fbbf24; font-weight: 800; margin: 0 8px 18px; }
+  .nav a { display: block; color: #d1d5db; text-decoration: none; padding: 8px 10px; border-radius: 6px; }
+  .nav a[aria-current=page] { background: #374151; color: #fff; }
+  .content { padding: 22px 28px; }
+  .pill { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #e5e7eb; }
+  .pill.open { background: #dcfce7; } .pill.closed { background: #fee2e2; } .pill.draft { background: #fef3c7; }
+  .stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: start; }
+  .col { background: #f1f5f9; border-radius: 10px; padding: 10px; min-height: 120px; }
+  .col h3 { margin: 0 0 8px; font-size: 14px; }
+  .cand { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; position: relative; }
+  .cand .top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .menu { position: absolute; right: 6px; top: 34px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12); z-index: 5; min-width: 200px; padding: 4px 0; }
+  .menu [role=menuitem] { display: block; width: 100%; text-align: left; border: 0; background: none; border-radius: 0; padding: 7px 12px; }
+  .menu [role=menuitem]:hover { background: #f1f5f9; }
+  .kebab { padding: 2px 8px; }
+  .profile dl { display: grid; grid-template-columns: 220px 1fr; gap: 8px; }
+  .profile dt { color: #64748b; } .profile dd { margin: 0; }
+  .wiz { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; max-width: 640px; }
+  .steps { display: flex; gap: 18px; margin-bottom: 14px; color: #94a3b8; }
+  .steps .on { color: #111827; font-weight: 700; }
+  .cb { position: relative; width: 320px; }
+  [role=listbox] { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #cbd5e1; margin: 2px 0 0; padding: 4px 0; list-style: none; z-index: 6; border-radius: 6px; }
+  [role=option] { padding: 6px 10px; cursor: pointer; }
+  [role=option][aria-selected=true] { background: #e0f2fe; }
+  .sw { display: inline-flex; align-items: center; gap: 8px; border: 0; background: none; padding: 0; }
+  .sw .track { width: 36px; height: 20px; border-radius: 10px; background: #cbd5e1; position: relative; }
+  .sw .track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .sw[aria-checked=true] .track { background: #16a34a; }
+  .sw[aria-checked=true] .track::after { left: 18px; }
+  .boards label { font-weight: 400; display: flex; gap: 8px; align-items: center; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Main">
+    <div class="logo">Cobblestone Hire</div>
+    <a href="#/jobs" data-top="jobs">Jobs</a>
+    <a href="#/candidates" data-top="candidates">Candidates</a>
+    <a href="#/reports" data-top="reports">Reports</a>
+    <a href="#/settings" data-top="settings">Settings</a>
+  </nav>
+  <main class="content" id="view" style="max-width:none;margin:0"></main>
+</div>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0"></h3>
+    <div id="dlg-b"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes"></button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const JOBS = [
+    { id: 'J-310', title: 'Backend Engineer (Rust)', dept: 'Engineering', loc: 'Lisbon, Portugal (Hybrid)', status: 'Open' },
+    { id: 'J-311', title: 'Senior Backend Engineer (Rust)', dept: 'Engineering', loc: 'Remote (EU)', status: 'Open' },
+    { id: 'J-305', title: 'Platform Engineer (Go)', dept: 'Engineering', loc: 'Berlin, Germany (On-site)', status: 'Open' },
+    { id: 'J-298', title: 'Product Designer', dept: 'Design', loc: 'Lisbon, Portugal (Hybrid)', status: 'Open' },
+    { id: 'J-290', title: 'Data Analyst', dept: 'Data', loc: 'Porto, Portugal (On-site)', status: 'Closed' },
+  ];
+  const STAGES = ['Applied', 'Screen', 'Technical interview', 'Offer'];
+  const CANDS = {
+    'P-501': { name: 'Tomasz Wierzbicki', loc: 'Kraków, Poland', rust: 6, visa: 'No', start: '2026-06-01', notice: '2 months', current: 'Senior Engineer at Vistula Freight' },
+    'P-502': { name: 'Amara Okoye', loc: 'Lagos, Nigeria', rust: 7, visa: 'Yes — needs EU work permit', start: '2026-04-20', notice: 'Immediate', current: 'Staff Engineer at Harmattan Pay' },
+    'P-503': { name: 'Linnea Sjöberg', loc: 'Gothenburg, Sweden', rust: 4, visa: 'No', start: '2026-04-27', notice: '1 month', current: 'Backend Engineer at Kattegat Games' },
+    'P-504': { name: 'Rafael Quintero', loc: 'Valencia, Spain', rust: 5, visa: 'No', start: '2026-05-11', notice: '1 month', current: 'Software Engineer at Albufera Energy' },
+    'P-505': { name: 'Hana Murakami', loc: 'Amsterdam, Netherlands', rust: 9, visa: 'No', start: '2026-07-15', notice: '3 months', current: 'Principal Engineer at Dijkstra Labs' },
+    'P-506': { name: 'Rafaela Quintero-Díaz', loc: 'Madrid, Spain', rust: 8, visa: 'No', start: '2026-04-15', notice: 'Immediate', current: 'Freelance' },
+    'P-507': { name: 'Oskar Brennan', loc: 'Dublin, Ireland', rust: 2, visa: 'No', start: '2026-05-04', notice: '1 month', current: 'Graduate Engineer at Liffey Data' },
+    'P-508': { name: 'Chiara Benedetti', loc: 'Turin, Italy', rust: 6, visa: 'No', start: '2026-05-25', notice: '6 weeks', current: 'Backend Lead at Mole Robotics' },
+  };
+  // applications: [id, candidate, job, stage]
+  const APPS = [
+    ['A-01', 'P-501', 'J-310', 'Screen'], ['A-02', 'P-502', 'J-310', 'Screen'], ['A-03', 'P-503', 'J-310', 'Screen'], ['A-04', 'P-504', 'J-310', 'Screen'],
+    ['A-05', 'P-505', 'J-310', 'Screen'], ['A-06', 'P-506', 'J-310', 'Applied'], ['A-07', 'P-507', 'J-310', 'Applied'], ['A-08', 'P-508', 'J-310', 'Technical interview'],
+    ['A-09', 'P-504', 'J-305', 'Screen'], ['A-10', 'P-508', 'J-311', 'Screen'], ['A-11', 'P-501', 'J-311', 'Applied'],
+  ].map(([id, cand, job, stage]) => ({ id, cand, job, stage }));
+  const LOCS = ['Porto, Portugal (On-site)', 'Porto, Portugal (Hybrid)', 'Porto Alegre, Brazil (Hybrid)', 'Lisbon, Portugal (Hybrid)', 'Lisbon, Portugal (On-site)', 'Remote (Portugal only)', 'Remote (EU)', 'Berlin, Germany (On-site)'];
+  const MANAGERS = ['Benedito Lobato', 'Benedita Lobo', 'Bernadette Lobb', 'Gaspar Teles', 'Inês Couto'];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fd = (s) => { const [y, m, d] = s.split('-').map(Number); return `${d} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1]} ${y}`; };
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const view = q('#view');
+  let dlgFn = null;
+  const dialog = (h, body, yes, fn) => { q('#dlg-h').textContent = h; q('#dlg-b').innerHTML = body; q('#dlg-yes').textContent = yes; dlgFn = fn; q('#dlg').hidden = false; };
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; dlgFn = null; };
+  q('#dlg-yes').onclick = async () => { const f = dlgFn; if (!f) return; q('#dlg-yes').disabled = true; await f(); q('#dlg-yes').disabled = false; q('#dlg').hidden = true; dlgFn = null; };
+  document.addEventListener('click', (e) => { if (!e.target.closest('.cand')) qa('.menu').forEach((m) => { m.hidden = true; }); qa('.kebab').forEach((k) => { if (!e.target.closest('.cand')) k.setAttribute('aria-expanded', 'false'); }); });
+
+  function route() {
+    const p = (location.hash || '#/jobs').slice(2).split('/');
+    qa('[data-top]').forEach((a) => (a.dataset.top === (p[0] === 'job' || p[0] === 'new' ? 'jobs' : p[0] === 'candidate' ? 'candidates' : p[0]) ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
+    view.onclick = null; view.onchange = null;
+    if (p[0] === 'job') return renderJob(p[1]);
+    if (p[0] === 'candidate') return renderCandidate(p[1]);
+    if (p[0] === 'candidates') return renderCandidates();
+    if (p[0] === 'new') return renderNew();
+    if (p[0] === 'reports' || p[0] === 'settings') { view.innerHTML = `<h1>${p[0] === 'reports' ? 'Reports' : 'Settings'}</h1><p class="muted">You don't have access to this area. Ask an admin.</p>`; return; }
+    renderJobs();
+  }
+  function renderJobs() {
+    view.innerHTML = `<div class="row" style="justify-content:space-between"><h1>Jobs</h1><a class="btn" href="#/new">+ New job</a></div>
+      <table><thead><tr><th>Job</th><th>Department</th><th>Location</th><th>Candidates</th><th>Status</th></tr></thead><tbody>${JOBS.map((j) => `<tr><td><a href="#/job/${j.id}">${esc(j.title)}</a> <span class="muted">${j.id}</span></td><td>${esc(j.dept)}</td><td>${esc(j.loc)}</td><td>${APPS.filter((a) => a.job === j.id).length}</td><td><span class="pill ${j.status.toLowerCase()}">${j.status}</span></td></tr>`).join('')}</tbody></table>`;
+  }
+  function renderCandidates() {
+    view.innerHTML = `<h1>Candidates</h1><table><thead><tr><th>Name</th><th>Location</th><th>Applications</th></tr></thead><tbody>${Object.entries(CANDS).map(([id, c]) => `<tr><td><a href="#/candidate/${id}">${esc(c.name)}</a></td><td>${esc(c.loc)}</td><td>${APPS.filter((a) => a.cand === id).map((a) => esc(JOBS.find((j) => j.id === a.job).title) + ' — ' + a.stage).join('<br>')}</td></tr>`).join('')}</tbody></table>`;
+  }
+  function renderJob(id) {
+    const j = JOBS.find((x) => x.id === id); if (!j) { view.innerHTML = '<p>Job not found.</p>'; return; }
+    const apps = APPS.filter((a) => a.job === id);
+    view.innerHTML = `<p><a href="#/jobs">← Jobs</a></p><h1>${esc(j.title)} <span class="pill ${j.status.toLowerCase()}">${j.status}</span></h1><p class="muted">${j.id} · ${esc(j.dept)} · ${esc(j.loc)}</p>
+      <div class="stages">${STAGES.map((s) => `<section class="col" aria-label="${s}"><h3>${s} (${apps.filter((a) => a.stage === s).length})</h3>${apps.filter((a) => a.stage === s).map((a) => { const c = CANDS[a.cand]; return `<div class="cand"><div class="top"><a href="#/candidate/${a.cand}">${esc(c.name)}</a><button type="button" class="kebab" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for ${esc(c.name)}" data-kebab="${a.id}">⋯</button></div><div class="muted">${esc(c.loc)}</div>
+        <div class="menu" role="menu" aria-label="Actions for ${esc(c.name)}" id="m-${a.id}" hidden>${STAGES.filter((x) => x !== s).map((x) => `<button type="button" role="menuitem" data-move="${a.id}" data-to="${x}">Move to ${x}</button>`).join('')}<button type="button" role="menuitem" data-reject="${a.id}">Reject candidate</button></div></div>`; }).join('') || '<p class="muted">No candidates</p>'}</section>`).join('')}</div>`;
+    view.onclick = (e) => {
+      const k = e.target.closest('[data-kebab]');
+      if (k) { const m = q('#m-' + k.dataset.kebab); const open = m.hidden; qa('.menu').forEach((x) => { x.hidden = true; }); qa('.kebab').forEach((x) => x.setAttribute('aria-expanded', 'false')); m.hidden = !open; k.setAttribute('aria-expanded', String(open)); return; }
+      const mv = e.target.closest('[data-move]'); const rj = e.target.closest('[data-reject]');
+      if (mv) moveApp(APPS.find((a) => a.id === mv.dataset.move), mv.dataset.to, () => renderJob(id));
+      if (rj) rejectApp(APPS.find((a) => a.id === rj.dataset.reject), () => renderJob(id));
+    };
+  }
+  async function moveApp(a, to, after) {
+    qa('.menu').forEach((x) => { x.hidden = true; });
+    await later(250);
+    await rec({ event: 'candidate_stage', candidate: CANDS[a.cand].name, candidate_id: a.cand, job: a.job, from: a.stage, to });
+    a.stage = to; toast(`${CANDS[a.cand].name} moved to ${to}.`); after();
+  }
+  function rejectApp(a, after) {
+    qa('.menu').forEach((x) => { x.hidden = true; });
+    dialog(`Reject ${CANDS[a.cand].name}?`, `<p>They'll be removed from ${esc(JOBS.find((j) => j.id === a.job).title)} and sent the standard rejection email.</p>`, 'Reject', async () => {
+      await later(250); await rec({ event: 'candidate_reject', candidate: CANDS[a.cand].name, candidate_id: a.cand, job: a.job });
+      APPS.splice(APPS.indexOf(a), 1); toast('Candidate rejected.'); after();
+    });
+  }
+  function renderCandidate(id) {
+    const c = CANDS[id]; if (!c) { view.innerHTML = '<p>Candidate not found.</p>'; return; }
+    const apps = APPS.filter((a) => a.cand === id);
+    view.innerHTML = `<p><a href="javascript:history.back()" id="back">← Back</a></p><div class="profile"><h1>${esc(c.name)}</h1><p class="muted">${esc(c.current)}</p>
+      <dl><dt>Location</dt><dd>${esc(c.loc)}</dd><dt>Professional Rust experience</dt><dd>${c.rust} year${c.rust === 1 ? '' : 's'}</dd><dt>Needs visa sponsorship</dt><dd>${esc(c.visa)}</dd><dt>Notice period</dt><dd>${esc(c.notice)}</dd><dt>Earliest start date</dt><dd>${fd(c.start)}</dd></dl>
+      <h2>Applications</h2>${apps.map((a) => `<div class="card row" style="justify-content:space-between"><div><strong>${esc(JOBS.find((j) => j.id === a.job).title)}</strong> <span class="muted">${a.job}</span><br>Stage: ${a.stage}</div><div class="row"><label for="mv-${a.id}" style="margin:0;font-weight:400">Move to</label><select id="mv-${a.id}" style="width:190px">${STAGES.map((s) => `<option ${s === a.stage ? 'selected' : ''}>${s}</option>`).join('')}</select><button type="button" data-apply="${a.id}">Update stage</button></div></div>`).join('')}</div>`;
+    q('#back').onclick = (e) => { e.preventDefault(); history.back(); };
+    view.onclick = (e) => { const b = e.target.closest('[data-apply]'); if (!b) return; const a = APPS.find((x) => x.id === b.dataset.apply); const to = q('#mv-' + a.id).value; if (to === a.stage) return toast('That\'s already the current stage.'); moveApp(a, to, () => renderCandidate(id)); };
+  }
+
+  // ---------- new job wizard ----------
+  const nj = { step: 1, title: '', dept: '', loc: '', type: '', manager: '', cur: 'USD', period: 'year', min: '', max: '', show: false, boards: { linkedin: true, otta: false, glassdoor: false } };
+  function renderNew() {
+    const steps = `<div class="steps"><span class="${nj.step === 1 ? 'on' : ''}">1 · Details</span><span class="${nj.step === 2 ? 'on' : ''}">2 · Compensation</span><span class="${nj.step === 3 ? 'on' : ''}">3 · Publish</span></div>`;
+    let body = '';
+    if (nj.step === 1) body = `<label for="j-title">Job title</label><input id="j-title" type="text" value="${esc(nj.title)}">
+      <label for="j-dept">Department</label><select id="j-dept"><option value="">Select…</option>${['Engineering', 'Data', 'Design', 'Operations', 'Finance', 'People'].map((d) => `<option ${nj.dept === d ? 'selected' : ''}>${d}</option>`).join('')}</select>
+      <label for="j-loc">Location</label><div class="cb"><input id="j-loc" type="text" role="combobox" aria-expanded="false" aria-controls="j-loc-list" aria-autocomplete="list" autocomplete="off" value="${esc(nj.loc)}" placeholder="Start typing a city or Remote"><ul id="j-loc-list" role="listbox" aria-label="Locations" hidden></ul></div>
+      <fieldset style="border:0;padding:0;margin-top:10px"><legend style="font-weight:600">Employment type</legend>${['Full-time', 'Part-time', 'Contract', 'Internship'].map((t) => `<label style="font-weight:400;display:inline-flex;gap:6px;margin-right:14px"><input type="radio" name="j-type" value="${t}" ${nj.type === t ? 'checked' : ''}> ${t}</label>`).join('')}</fieldset>
+      <label for="j-mgr">Hiring manager</label><select id="j-mgr"><option value="">Select…</option>${MANAGERS.map((m) => `<option ${nj.manager === m ? 'selected' : ''}>${m}</option>`).join('')}</select>`;
+    else if (nj.step === 2) body = `<div class="row" style="align-items:flex-end"><div><label for="j-cur">Currency</label><select id="j-cur" style="width:120px">${['USD', 'EUR', 'GBP', 'BRL'].map((c) => `<option ${nj.cur === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div><div><label for="j-per">Pay period</label><select id="j-per" style="width:140px">${[['year', 'Per year'], ['month', 'Per month'], ['hour', 'Per hour']].map(([v, t]) => `<option value="${v}" ${nj.period === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+      <div class="row"><div><label for="j-min">Salary from</label><input id="j-min" type="text" style="width:140px" value="${esc(nj.min)}"></div><div><label for="j-max">Salary to</label><input id="j-max" type="text" style="width:140px" value="${esc(nj.max)}"></div></div>
+      <div style="margin-top:14px"><button type="button" class="sw" role="switch" id="j-show" aria-checked="${nj.show}"><span class="track"></span> Show salary range on the posting</button></div>`;
+    else body = `<p>Where should <strong>${esc(nj.title)}</strong> be advertised?</p><div class="boards">
+      <label><input type="checkbox" checked disabled> Cobblestone careers site (always included)</label>
+      <label><input type="checkbox" id="b-linkedin" ${nj.boards.linkedin ? 'checked' : ''}> LinkedIn Jobs — sponsored (€299 per 30 days)</label>
+      <label><input type="checkbox" id="b-otta" ${nj.boards.otta ? 'checked' : ''}> Otta (free)</label>
+      <label><input type="checkbox" id="b-glassdoor" ${nj.boards.glassdoor ? 'checked' : ''}> Glassdoor (free)</label></div>`;
+    view.innerHTML = `<p><a href="#/jobs">← Jobs</a></p><h1>New job</h1><div class="wiz">${steps}${body}<div class="err" id="j-err" role="alert" hidden></div>
+      <div class="row" style="margin-top:16px">${nj.step > 1 ? '<button type="button" id="j-back">Back</button>' : '<a class="btn" href="#/jobs">Cancel</a>'}<button type="button" id="j-draft">Save as draft</button>${nj.step < 3 ? '<button type="button" class="primary" id="j-next">Continue</button>' : '<button type="button" class="primary" id="j-pub">Publish job</button>'}</div></div>`;
+    const err = (m) => { q('#j-err').textContent = m; q('#j-err').hidden = !m; };
+    const collect = () => {
+      if (nj.step === 1) { nj.title = q('#j-title').value.trim().replace(/\s+/g, ' '); nj.dept = q('#j-dept').value; nj.type = (qa('input[name=j-type]').find((r) => r.checked) || {}).value || ''; nj.manager = q('#j-mgr').value; }
+      if (nj.step === 2) { nj.cur = q('#j-cur').value; nj.period = q('#j-per').value; nj.min = q('#j-min').value.trim(); nj.max = q('#j-max').value.trim(); }
+      if (nj.step === 3) { nj.boards = { linkedin: q('#b-linkedin').checked, otta: q('#b-otta').checked, glassdoor: q('#b-glassdoor').checked }; }
+    };
+    if (nj.step === 1) wireLoc();
+    if (nj.step === 2) q('#j-show').onclick = () => { nj.show = !nj.show; q('#j-show').setAttribute('aria-checked', String(nj.show)); };
+    const back = q('#j-back'); if (back) back.onclick = () => { collect(); nj.step--; renderNew(); };
+    const num = (s) => s.replace(/[\s,€$£]/g, '');
+    const validate = () => {
+      if (nj.step === 1) {
+        if (!nj.title) return 'Enter a job title.';
+        if (!nj.dept) return 'Choose a department.';
+        if (!LOCS.includes(nj.loc)) return 'Choose a location from the list.';
+        if (!nj.type) return 'Choose an employment type.';
+        if (!nj.manager) return 'Choose a hiring manager.';
+      }
+      if (nj.step === 2) {
+        const a = num(nj.min), b = num(nj.max);
+        if (!/^\d+$/.test(a) || !/^\d+$/.test(b)) return 'Enter salaries as whole numbers, e.g. 38000 (no "k").';
+        if (+a >= +b) return '"Salary to" must be higher than "Salary from".';
+      }
+      return '';
+    };
+    const next = q('#j-next'); if (next) next.onclick = () => { collect(); const m = validate(); if (m) return err(m); nj.step++; renderNew(); };
+    q('#j-draft').onclick = async () => { collect(); if (!nj.title) return err('Enter a job title before saving.'); await later(200); await rec({ event: 'job_draft_save', title: nj.title }); toast('Draft saved.'); };
+    const pub = q('#j-pub');
+    if (pub) pub.onclick = () => {
+      collect();
+      const boards = ['careers'].concat(nj.boards.linkedin ? ['linkedin'] : [], nj.boards.otta ? ['otta'] : [], nj.boards.glassdoor ? ['glassdoor'] : []);
+      dialog(`Publish “${nj.title}”?`, `<p>It will go live on: ${boards.map((b) => ({ careers: 'Cobblestone careers site', linkedin: 'LinkedIn Jobs (€299 will be charged)', otta: 'Otta', glassdoor: 'Glassdoor' }[b])).join(', ')}.</p>`, 'Publish', async () => {
+        await later(400);
+        await rec({ event: 'job_publish', title: nj.title, department: nj.dept, location: nj.loc, type: nj.type, manager: nj.manager, currency: nj.cur, period: nj.period, salary_min: num(nj.min), salary_max: num(nj.max), show_salary: nj.show ? 'yes' : 'no', boards: boards.sort().join(',') });
+        JOBS.unshift({ id: 'J-320', title: nj.title, dept: nj.dept, loc: nj.loc, status: 'Open' });
+        Object.assign(nj, { step: 1, title: '', dept: '', loc: '', type: '', manager: '', cur: 'USD', period: 'year', min: '', max: '', show: false, boards: { linkedin: true, otta: false, glassdoor: false } });
+        toast('Job published.'); location.hash = '#/jobs';
+      });
+    };
+  }
+  function wireLoc() {
+    const input = q('#j-loc'); const list = q('#j-loc-list'); let act = -1; let shown = [];
+    const draw = () => { const t = input.value.trim().toLowerCase(); shown = LOCS.filter((l) => !t || l.toLowerCase().includes(t)); list.innerHTML = shown.map((l, i) => `<li role="option" id="loc-${i}" aria-selected="${i === act}" data-loc="${esc(l)}">${esc(l)}</li>`).join('') || '<li class="muted" style="padding:6px 10px">No locations found</li>'; list.hidden = false; input.setAttribute('aria-expanded', 'true'); input.setAttribute('aria-activedescendant', act >= 0 ? 'loc-' + act : ''); };
+    const pick = (l) => { nj.loc = l; input.value = l; list.hidden = true; input.setAttribute('aria-expanded', 'false'); act = -1; };
+    input.addEventListener('input', () => { nj.loc = ''; act = -1; draw(); });
+    input.addEventListener('focus', draw);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); act = Math.min(act + 1, shown.length - 1); draw(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); act = Math.max(act - 1, 0); draw(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (act >= 0 && shown[act]) pick(shown[act]); }
+      else if (e.key === 'Escape') { list.hidden = true; input.setAttribute('aria-expanded', 'false'); }
+    });
+    list.addEventListener('mousedown', (e) => e.preventDefault());
+    list.addEventListener('click', (e) => { const li = e.target.closest('[data-loc]'); if (li) pick(li.dataset.loc); });
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

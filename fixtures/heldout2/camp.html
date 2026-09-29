@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wren Hollow Day Camps · Summer 2027</title>
+<script src="../common.js"></script>
+<style>
+  :root { --green: #2f5d3a; --green-d: #1e3f26; --leaf: #6a9a4b; --sun: #f6c445; --sun-l: #fff5d1; --ink: #22302a; --muted: #5d6b62; --line: #dde5d8; --bg: #f6f7f0; --err: #b3261e; --card: #fff; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Avenir Next", "Nunito", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: var(--green); }
+  .top { background: var(--green); color: #fff; display: flex; align-items: center; gap: 28px; padding: 0 28px; height: 64px; }
+  .logo { color: #fff; text-decoration: none; display: flex; align-items: baseline; gap: 6px; font-size: 20px; }
+  .logo span { font-size: 13px; color: #cfe3c7; }
+  .top nav { display: flex; gap: 4px; }
+  .top nav a { color: #e4f0de; text-decoration: none; padding: 8px 14px; border-radius: 20px; }
+  .top nav a.on { background: var(--sun); color: var(--green-d); font-weight: 700; }
+  .top .who { margin-left: auto; font-size: 13px; color: #d6e8cf; display: flex; gap: 12px; align-items: center; }
+  .top .who .av { width: 32px; height: 32px; border-radius: 50%; background: var(--sun); color: var(--green-d); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+  main { max-width: 1040px; margin: 0 auto; padding: 26px 24px 40px; }
+  h1 { font-size: 28px; margin: 0 0 8px; color: var(--green-d); }
+  h2 { font-size: 20px; margin: 0 0 12px; color: var(--green-d); }
+  h3 { font-size: 16px; margin: 18px 0 8px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin-bottom: 18px; }
+  .btn { font: inherit; display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 22px; border: 1.5px solid var(--green); background: #fff; color: var(--green); cursor: pointer; text-decoration: none; font-weight: 600; }
+  .btn.primary { background: var(--green); color: #fff; }
+  .btn.sun { background: var(--sun); border-color: var(--sun); color: var(--green-d); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .link { background: none; border: 0; color: var(--green); text-decoration: underline; cursor: pointer; font: inherit; padding: 0 4px; }
+  .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 26px; align-items: center; background: linear-gradient(135deg, #e9f2e1, #fdf6dc); border-radius: 22px; padding: 30px 32px; margin-bottom: 22px; }
+  .hero h1 { font-size: 32px; line-height: 1.2; }
+  .kicker { text-transform: uppercase; letter-spacing: 1.2px; font-size: 12px; color: var(--leaf); font-weight: 700; margin: 0 0 6px; }
+  .hero .cta { display: flex; gap: 10px; margin-top: 16px; }
+  .note { background: #fff; border-radius: 16px; padding: 16px 18px; border: 1px dashed var(--leaf); }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  details { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 10px; background: #e6f0df; color: var(--green-d); }
+  .badge.full { background: #fde2e0; color: #8f1d15; }
+  .badge.off { background: #eceeea; color: #6b726c; }
+  .steps { display: flex; list-style: none; padding: 0; margin: 16px 0 18px; gap: 8px; counter-reset: s; }
+  .steps li { flex: 1; padding: 8px 10px; border-radius: 12px; background: #eceee6; color: #7b857c; font-size: 13px; font-weight: 600; }
+  .steps li.on { background: var(--green); color: #fff; }
+  .steps li.done { background: #d8e8cc; color: var(--green-d); }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .rcard { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; cursor: pointer; background: #fff; }
+  .rcard:has(input:checked) { border-color: var(--green); background: #f0f7eb; box-shadow: 0 0 0 2px #cfe4c2; }
+  .rcard b { display: block; }
+  .rcard .muted { display: block; }
+  label.field { display: block; font-weight: 600; margin: 12px 0 4px; }
+  input[type=text], input[type=tel], input[type=date], input[type=email], select, textarea { font: inherit; padding: 8px 10px; border: 1.5px solid #c7d1c2; border-radius: 10px; width: 320px; background: #fff; }
+  textarea { width: 100%; min-height: 70px; }
+  input:focus, select:focus, textarea:focus { outline: 3px solid #f9dd83; border-color: var(--green); }
+  .banner { border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; }
+  .banner.sun { background: var(--sun-l); border: 1px solid #f0d77a; }
+  .banner.ok { background: #e3f3dc; border: 1px solid #b8dca8; }
+  .switch-row { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; margin-bottom: 12px; }
+  .switch-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .track { width: 44px; height: 24px; border-radius: 12px; background: #c9d0c4; position: relative; flex: none; transition: background .15s; }
+  .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch-row input:checked + .track { background: var(--green); }
+  .switch-row input:checked + .track::after { left: 23px; }
+  .switch-row input:focus-visible + .track { outline: 3px solid #f9dd83; }
+  .weeks { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+  .week { border-bottom: 1px solid var(--line); }
+  .week:last-child { border-bottom: 0; }
+  .week label.wk { display: grid; grid-template-columns: 26px 1fr 80px 190px; gap: 10px; align-items: center; padding: 12px 14px; cursor: pointer; }
+  .week.dis label.wk { cursor: default; color: #7c857e; }
+  .week .wk-main b { display: block; }
+  .wk-price { font-weight: 700; }
+  .week label.wl { display: flex; gap: 8px; align-items: center; padding: 0 14px 12px 50px; font-size: 14px; cursor: pointer; }
+  .total { margin-top: 12px; font-weight: 600; }
+  fieldset.fs { border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin: 0 0 14px; }
+  fieldset.fs legend { font-weight: 700; padding: 0 6px; }
+  .chk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 14px; }
+  label.chk, label.inline, label.rline { display: flex; gap: 8px; align-items: center; font-weight: 400; cursor: pointer; padding: 3px 0; }
+  label.inline { display: inline-flex; margin-right: 22px; }
+  label.consent { background: #fff8e1; border-radius: 10px; padding: 8px 10px; margin-top: 8px; }
+  .pickups { list-style: none; padding: 0; margin: 0 0 10px; }
+  .pickups li { padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; background: #fff; }
+  .subcard { border: 1px dashed var(--leaf); border-radius: 14px; padding: 12px 16px; margin: 8px 0 12px; background: #fbfdf8; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .err { color: var(--err); font-weight: 600; margin-top: 12px; }
+  .wiz-actions { display: flex; justify-content: space-between; margin-top: 18px; }
+  .wiz-actions .spacer { flex: 1; }
+  dl.summary { display: grid; grid-template-columns: 180px 1fr; gap: 6px 14px; margin: 0 0 16px; }
+  dl.summary dt { color: var(--muted); }
+  dl.summary dd { margin: 0; }
+  .cost td:last-child, .cost th:last-child { text-align: right; }
+  .cost tr.tot td { font-weight: 800; border-top: 2px solid var(--ink); }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .sess { display: grid; grid-template-columns: 1fr 200px; gap: 16px; }
+  .sess .meta { text-align: right; }
+  .toast { position: fixed; right: 22px; bottom: 22px; background: var(--green-d); color: #fff; padding: 12px 18px; border-radius: 12px; z-index: 30; }
+  footer.foot { background: #213a28; color: #c7d8c0; padding: 26px 28px; font-size: 13px; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; }
+  footer.foot a { color: #f3dc8a; display: block; margin: 3px 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="#/">🐦 <b>Wren Hollow</b><span>Day Camps</span></a>
+  <nav aria-label="Main">
+    <a href="#/" data-nav="">Home</a>
+    <a href="#/sessions" data-nav="sessions">Summer 2027 sessions</a>
+    <a href="#/register" data-nav="register">Register</a>
+    <a href="#/account" data-nav="account">My account</a>
+  </nav>
+  <div class="who"><span>Signed in as <b>Dana Albescu</b></span><span class="av" aria-hidden="true">DA</span></div>
+</header>
+<main id="main"></main>
+<footer class="foot">
+  <div><b style="color:#fff">Wren Hollow Nature Centre</b><br>1180 Millpond Road, Ashford Glen · (555) 014-3300 · camps@wrenhollow.org<br>Camp office: Mon–Fri 9:00 am–4:00 pm. ACA-accredited day camp since 1998.</div>
+  <div><a href="#/info/policies">Policies &amp; refunds</a><a href="#/info/financial-aid">Financial aid</a><a href="#/info/safety">Staff &amp; safety</a></div>
+  <div><a href="#/info/contact">Contact us</a><a href="#/info/careers">Work at camp</a><a href="#/sessions">Summer 2027 weeks</a></div>
+</footer>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3500); };
+  const usd = (n) => '$' + (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
+
+  const SESSIONS = [
+    { id: 'pond-explorers-2027-06-28', name: 'Pond & Stream Explorers', dates: '28 June – 2 July 2027', price: 385, ages: [8, 13], spots: 6, blurb: 'Dip-netting, bug hunts and building a floating pond-study raft.' },
+    { id: 'makers-2027-07-06', name: "Makers' Workshop", dates: '6–9 July 2027 (Tue–Fri, 4 days)', price: 310, ages: [8, 13], spots: 11, blurb: 'Whittling, weaving and simple woodwork in the barn workshop. Closed Monday 5 July.' },
+    { id: 'junior-robotics-2027-07-12', name: 'Junior Robotics', dates: '12–16 July 2027', price: 425, ages: [8, 11], spots: 4, blurb: 'Build and program a trail-following rover with our partners from Ashford STEM Club.' },
+    { id: 'stream-ecology-2027-07-19', name: 'Stream Ecology', dates: '19–23 July 2027', price: 395, ages: [8, 13], spots: 0, waitlist: 7, blurb: 'Water testing, fish surveys and a mini research project on Millpond Brook.' },
+    { id: 'junior-robotics-ii-2027-07-26', name: 'Junior Robotics II', dates: '26–30 July 2027', price: 425, ages: [8, 11], spots: 9, blurb: 'Sensors, remote control and a rover obstacle course. Junior Robotics recommended first.' },
+    { id: 'forest-engineers-2027-08-02', name: 'Forest Engineers', dates: '2–6 August 2027', price: 405, ages: [8, 13], spots: 3, blurb: 'Rope bridges, shelters and a working water wheel — engineering with what the forest gives us.' },
+    { id: 'wild-kitchen-2027-08-09', name: 'Wild Kitchen', dates: '9–13 August 2027', price: 395, ages: [8, 13], spots: 8, blurb: 'Campfire cooking, foraging basics and a Friday family feast.' },
+    { id: 'camp-olympics-2027-08-16', name: 'Camp Olympics', dates: '16–20 August 2027', price: 385, ages: [8, 13], spots: 14, blurb: 'Team challenges, canoe relays and the legendary mud run to close the summer.' },
+  ];
+  const KIDS = [
+    { id: 'C-1', first: 'Nico', last: 'Albescu', dob: '2017-05-09', returning: true, history: '2025, 2026' },
+    { id: 'C-2', first: 'Ilinca', last: 'Albescu', dob: '2014-11-21', returning: false },
+  ];
+  const ALLERGIES = [['none', 'No known allergies'], ['peanuts', 'Peanuts'], ['tree-nuts', 'Tree nuts'], ['dairy', 'Dairy'], ['eggs', 'Eggs'], ['shellfish', 'Shellfish'], ['gluten', 'Gluten'], ['stings', 'Insect stings'], ['other', 'Other']];
+  const SWIM = [['non-swimmer', 'Non-swimmer', 'stays in the shallow area with a buddy and a counsellor'], ['beginner', 'Beginner', 'can swim a few metres; uses the shallow end'], ['intermediate', 'Intermediate', 'swims 25 m without stopping and treads water for 1 minute'], ['advanced', 'Advanced', 'swims 50 m confidently in any stroke; can use the deep end']];
+  const RELS = [['parent', 'Parent'], ['grandparent', 'Grandparent'], ['aunt-uncle', 'Aunt/Uncle'], ['sibling', 'Sibling (18+)'], ['friend', 'Family friend'], ['nanny', 'Nanny/Childminder'], ['other', 'Other']];
+  const EXTRAS = [['before', 'Before care', 45, 'week', '7:30–9:00 am drop-off with breakfast club and quiet games'], ['after', 'After care', 60, 'week', '3:30–6:00 pm with free play, a snack and a homework corner'], ['lunch', 'Lunch plan', 35, 'week', 'hot lunch and fruit every day; allergy-aware menus'], ['tshirt', 'Camp T-shirt', 18, 'once', "organic cotton, 2027 design by last summer's campers"]];
+  const ACCOUNT_PICKUPS = [['Dana Albescu', 'Parent', '(555) 014-2230', 'account holder'], ['Mihai Albescu', 'Parent', '(555) 014-9917', '']];
+  const REGS = [
+    { year: '2026', camper: 'Nico Albescu', weeks: 'Junior Robotics (13–17 Jul 2026), Forest Engineers (3–7 Aug 2026)', status: 'Completed' },
+    { year: '2025', camper: 'Nico Albescu', weeks: 'Pond & Stream Explorers (30 Jun–4 Jul 2025)', status: 'Completed' },
+  ];
+
+  const ageOn = (dob, at = '2027-06-28') => { const [y, m, d] = dob.split('-').map(Number); const [Y, M, D] = at.split('-').map(Number); return Y - y - ((M < m || (M === m && D < d)) ? 1 : 0); };
+  const eligible = (s, age) => age >= s.ages[0] && age <= s.ages[1];
+  const relLabel = (v) => (RELS.find((r) => r[0] === v) || [, v])[1];
+
+  const W = {};
+  function resetWizard() {
+    Object.assign(W, { step: 0, camper: null, newChild: { first: '', last: '', dob: '' }, pass: false, picks: new Set(), waitlist: new Set(), allergies: new Set(), allergyOther: '', epipen: '', epiConsent: false, meds: '', swim: '', healthConfirm: false, pickups: [], adding: false, extras: { before: false, after: false, lunch: false, tshirt: false }, payment: 'deposit', donation: '0', done: null, busy: false });
+  }
+  resetWizard();
+  function kid() {
+    if (W.camper === 'new') { const n = W.newChild; return { id: 'new', first: norm(n.first) || 'your child', last: norm(n.last), dob: n.dob, returning: false }; }
+    return KIDS.find((k) => k.id === W.camper) || null;
+  }
+  const kidAge = (k) => (k && /^\d{4}-\d{2}-\d{2}$/.test(k.dob || '') ? ageOn(k.dob) : 0);
+  function selectCamper(id) {
+    if (W.camper === id) return;
+    W.camper = id;
+    const k = kid();
+    const ret = !!(k && k.returning);
+    Object.assign(W, { pass: ret, picks: new Set(), waitlist: new Set(), allergies: new Set(ret ? ['none'] : []), allergyOther: '', epipen: '', epiConsent: false, meds: '', swim: ret ? 'beginner' : '', healthConfirm: false, pickups: [], adding: false, extras: { before: false, after: false, lunch: false, tshirt: false } });
+  }
+  function selectedSessions() {
+    const age = kidAge(kid());
+    if (W.pass) return SESSIONS.filter((s) => eligible(s, age) && s.spots > 0);
+    return SESSIONS.filter((s) => W.picks.has(s.id));
+  }
+  const hasAllergy = () => W.allergies.size > 0 && !W.allergies.has('none');
+  function costs() {
+    const ss = selectedSessions();
+    const wk = ss.length;
+    const sub = ss.reduce((a, s) => a + s.price, 0);
+    const disc = W.pass ? Math.round(sub * 15) / 100 : 0;
+    const ex = (W.extras.before ? 45 * wk : 0) + (W.extras.after ? 60 * wk : 0) + (W.extras.lunch ? 35 * wk : 0) + (W.extras.tshirt ? 18 : 0);
+    const don = +W.donation;
+    const total = sub - disc + ex + don;
+    const due = W.payment === 'deposit' ? 100 * wk + don : total;
+    return { ss, wk, sub, disc, ex, don, total, due };
+  }
+
+  // ------------------------------------------------------------ pages
+  function home() {
+    return `<section class="hero"><div><p class="kicker">Summer 2027 · Ages 8–13</p><h1>Muddy boots, big questions and a whole summer outdoors.</h1>
+      <p>Week-long nature, science and making camps on 40 acres of woodland, meadow and streams at Millpond Road. Small groups (1 counsellor to 8 campers), daily swim time and a lot of mud.</p>
+      <div class="cta"><a class="btn sun" href="#/register">Register a camper</a><a class="btn" href="#/sessions">Browse the weeks</a></div></div>
+      <div class="note"><b>Priority registration is open</b><p class="muted" style="margin:6px 0 0">Returning families and their siblings can register now until 15 October 2026. General registration opens on 1 November 2026. A $100 deposit per week holds your place; the balance is due on 1 May 2027.</p></div></section>
+      <div class="grid3">
+        <div class="card"><h3 style="margin-top:0">🌲 Outdoors all day</h3><p class="muted">Every week is built around real fieldwork — streams, forest and meadow — with a covered barn for rainy days.</p></div>
+        <div class="card"><h3 style="margin-top:0">🧑‍🔬 Small groups</h3><p class="muted">Groups of 8 with trained counsellors, a camp nurse on site, and a lifeguard at every swim session.</p></div>
+        <div class="card"><h3 style="margin-top:0">🎒 Flexible weeks</h3><p class="muted">Choose single weeks or the Full-Summer Pass (15% off). Before care, after care and a lunch plan are available.</p></div>
+      </div>
+      <div class="card"><h2>Summer 2027 at a glance</h2><table><thead><tr><th>Week</th><th>Dates</th><th>Ages</th><th>Price</th><th>Availability</th></tr></thead><tbody>
+      ${SESSIONS.map((s) => `<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.dates)}</td><td>${s.ages[0]}–${s.ages[1]}</td><td>${usd(s.price)}</td><td>${s.spots ? `${s.spots} spots left` : '<span class="badge full">Full</span> waitlist open'}</td></tr>`).join('')}
+      </tbody></table><p><a href="#/sessions">See full week descriptions</a></p></div>
+      <div class="card"><h2>Questions families ask</h2>
+        <details><summary>What should my child bring each day?</summary><p class="muted">A packed lunch (unless you add the lunch plan), a refillable water bottle, sunscreen, a swimsuit and towel, closed-toe shoes that can get wet, and a change of clothes.</p></details>
+        <details><summary>How does the waitlist work?</summary><p class="muted">If a week is full you can join its waitlist at no cost. We'll email you if a place opens, and you'll have 48 hours to accept it.</p></details>
+        <details><summary>Can I change weeks after registering?</summary><p class="muted">Yes — free of charge until 1 May 2027, subject to availability. After that, changes cost $25 per week.</p></details>
+        <details><summary>Do you offer financial aid?</summary><p class="muted">Yes. Our scholarship fund covers up to 90% of fees. Apply from the <a href="#/info/financial-aid">financial aid page</a>.</p></details>
+        <details><summary>What is your allergy policy?</summary><p class="muted">We are a nut-aware camp. Staff are trained to use epinephrine auto-injectors, and we need written authorisation for each camper who carries one.</p></details>
+        <details><summary>Who can pick my child up?</summary><p class="muted">Only adults listed as authorised pickups on the registration. We check photo ID every time.</p></details>
+      </div>`;
+  }
+  function sessionsPage() {
+    return `<h1>Summer 2027 sessions</h1><p class="muted">Camp runs Monday to Friday, 9:00 am to 3:30 pm. All weeks are for ages 8–13 unless noted.</p>
+      ${SESSIONS.map((s) => `<div class="card sess"><div><h2 style="margin-bottom:4px">${esc(s.name)}</h2><div class="muted">${esc(s.dates)} · Ages ${s.ages[0]}–${s.ages[1]}</div><p>${esc(s.blurb)}</p>
+        <details><summary>A typical day</summary><p class="muted">9:00 arrival circle · 9:30 field session · 11:30 swim time · 12:15 lunch · 1:00 project time · 2:45 free choice · 3:15 closing circle.</p></details></div>
+        <div class="meta"><div style="font-size:22px;font-weight:800">${usd(s.price)}</div><div class="muted">${s.spots ? `${s.spots} spots left` : `Full · ${s.waitlist} families waiting`}</div><p><a class="btn ${s.spots ? 'primary' : ''}" href="#/register">${s.spots ? 'Register' : 'Waitlist'}</a></p></div></div>`).join('')}`;
+  }
+  function accountPage() {
+    return `<h1>My account</h1>
+      <div class="card"><h2>Dana Albescu</h2><p class="muted">dana.albescu@lindenpost.net · (555) 014-2230 · 42 Orchard Lane, Ashford Glen</p></div>
+      <div class="card"><h2>Children</h2><table><thead><tr><th>Name</th><th>Date of birth</th><th>Age this summer</th><th>Camper since</th></tr></thead><tbody>
+      ${KIDS.map((k) => `<tr><td><b>${k.first} ${k.last}</b></td><td>${new Date(k.dob + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</td><td>${ageOn(k.dob)}</td><td>${k.returning ? '2025' : '—'}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="card"><h2>Registrations</h2><table><thead><tr><th>Summer</th><th>Camper</th><th>Weeks</th><th>Status</th></tr></thead><tbody>
+      ${REGS.map((r) => `<tr><td>${r.year}</td><td>${esc(r.camper)}</td><td>${esc(r.weeks)}</td><td>${esc(r.status)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="card"><h2>Authorised pickups on file</h2><ul class="pickups">${ACCOUNT_PICKUPS.map((p) => `<li><b>${p[0]}</b> · ${p[1]} · ${p[2]}${p[3] ? ` <span class="muted">(${p[3]})</span>` : ''}</li>`).join('')}</ul></div>
+      <div class="card"><h2>Communication preferences</h2>
+        <label class="chk"><input type="checkbox" id="cp-weekly" checked> Weekly camp newsletter during the summer</label>
+        <label class="chk"><input type="checkbox" id="cp-photos"> Photo gallery notifications</label>
+        <label class="chk"><input type="checkbox" id="cp-sms" checked> Text me urgent updates (weather closures, early pickup)</label>
+        <p><button type="button" class="btn" id="cp-save">Save preferences</button></p></div>
+      <div class="card"><h2>Payment method</h2><p>Visa ending 3308 · expires 04/28</p></div>`;
+  }
+  const INFO = {
+    policies: ['Policies & refunds', 'Deposits are refundable until 1 March 2027. Week changes are free until 1 May 2027. The balance is due on 1 May 2027. Waitlist places are free.'],
+    'financial-aid': ['Financial aid', 'Our scholarship fund, supported by family donations, covers 25–90% of camp fees for families who need it. Applications for 2027 open on 1 November 2026.'],
+    safety: ['Staff & safety', 'All staff are background-checked and trained in first aid, CPR and epinephrine administration. A registered nurse is on site every day.'],
+    contact: ['Contact us', 'Camp office: (555) 014-3300 · camps@wrenhollow.org · Mon–Fri 9:00 am–4:00 pm.'],
+    careers: ['Work at camp', 'We hire counsellors (18+) and junior counsellors (16–17) each spring. Applications open in January.'],
+  };
+
+  // ------------------------------------------------------------ wizard
+  const STEPS = ['Camper', 'Weeks', 'Health & safety', 'Pickup & extras', 'Review & pay'];
+  function wizard() {
+    if (W.done) {
+      const d = W.done;
+      return `<h1>Registration complete</h1><div class="card"><div class="banner ok">🎉 <b>${esc(d.camper)} is registered for Summer 2027.</b> Confirmation <b>${d.ref}</b>. We've emailed the details to dana.albescu@lindenpost.net.</div>
+        <dl class="summary"><dt>Weeks</dt><dd>${d.weeks || '—'}</dd><dt>Waitlist</dt><dd>${d.wl || '—'}</dd><dt>Paid today</dt><dd>${d.paid}</dd></dl>
+        <button type="button" class="btn" id="again">Register another camper</button> <a class="btn" href="#/account">Go to my account</a></div>`;
+    }
+    let h = `<h1>Register for Summer 2027</h1><ol class="steps">${STEPS.map((s, i) => `<li class="${i === W.step ? 'on' : i < W.step ? 'done' : ''}">${i + 1}. ${s}</li>`).join('')}</ol><div class="card" id="wiz">`;
+    h += [step0, step1, step2, step3, step4][W.step]();
+    h += `<div class="err" id="wiz-err" role="alert" hidden></div><div class="wiz-actions">${W.step > 0 ? '<button type="button" class="btn" id="wiz-back">Back</button>' : '<span></span>'}<button type="button" class="btn primary" id="wiz-next">${W.step === 4 ? 'Complete registration' : 'Continue'}</button></div></div>`;
+    return h;
+  }
+  function step0() {
+    const nc = W.newChild;
+    return `<h2>Who are you registering?</h2><div class="cards" role="radiogroup" aria-label="Camper">
+      ${KIDS.map((k) => `<label class="rcard"><input type="radio" name="camper" value="${k.id}" ${W.camper === k.id ? 'checked' : ''}><span><b>${k.first} ${k.last}</b><span class="muted">Age ${ageOn(k.dob)} this summer · ${k.returning ? 'Returning camper (' + k.history + ')' : 'First summer with us'}</span></span></label>`).join('')}
+      <label class="rcard"><input type="radio" name="camper" value="new" ${W.camper === 'new' ? 'checked' : ''}><span><b>Add another child</b><span class="muted">Create a new camper profile</span></span></label></div>
+      ${W.camper === 'new' ? `<div class="subcard"><label class="field" for="nc-first">First name</label><input type="text" id="nc-first" value="${esc(nc.first)}"><label class="field" for="nc-last">Last name</label><input type="text" id="nc-last" value="${esc(nc.last)}"><label class="field" for="nc-dob">Date of birth</label><input type="date" id="nc-dob" value="${esc(nc.dob)}"></div>` : ''}`;
+  }
+  function weekRow(s, age) {
+    const elig = eligible(s, age), full = s.spots === 0;
+    const checked = W.pass ? (elig && !full) : W.picks.has(s.id);
+    const dis = W.pass || !elig || full;
+    const status = full ? `<span class="badge full">Full</span> <span class="muted">${s.waitlist} on waitlist</span>` : !elig ? `<span class="badge off">Ages ${s.ages[0]}–${s.ages[1]}</span>` : `<span class="muted">${s.spots} spots left</span>`;
+    return `<div class="week${dis && !(W.pass && elig && !full) ? ' dis' : ''}"><label class="wk"><input type="checkbox" class="wk-cb" value="${s.id}" ${checked ? 'checked' : ''} ${dis ? 'disabled' : ''}><span class="wk-main"><b>${esc(s.name)}</b><span class="muted">${esc(s.dates)} · Ages ${s.ages[0]}–${s.ages[1]}</span></span><span class="wk-price">${usd(s.price)}</span><span class="wk-status">${status}</span></label>
+      ${full && elig ? `<label class="wl"><input type="checkbox" class="wl-cb" value="${s.id}" ${W.waitlist.has(s.id) ? 'checked' : ''}> Join the waitlist for ${esc(s.name)} <span class="muted">(free — we'll email you if a place opens)</span></label>` : ''}</div>`;
+  }
+  function step1() {
+    const k = kid(), age = kidAge(k), c = costs();
+    let h = '';
+    if (k.returning) h += `<div class="banner sun">👋 <b>Welcome back, ${esc(k.first)}!</b> We've pre-selected the Full-Summer Pass — every week ${esc(k.first)} is eligible for that still has space, with 15% off. You can switch it off to choose individual weeks.</div>`;
+    h += `<h2>Choose ${esc(k.first)}'s weeks</h2><p class="muted">${esc(k.first)} will be ${age} on the first day of camp.</p>`;
+    h += `<label class="switch-row"><input type="checkbox" role="switch" id="pass" ${W.pass ? 'checked' : ''}><span class="track"></span><span><b>Full-Summer Pass</b> <span class="muted">— every eligible week with space, 15% off</span></span></label>`;
+    h += `<div class="weeks">${SESSIONS.map((s) => weekRow(s, age)).join('')}</div>`;
+    h += `<div class="total">${c.wk} ${c.wk === 1 ? 'week' : 'weeks'} selected · ${usd(c.sub)}${c.disc ? ` − ${usd(c.disc)} pass discount = ${usd(c.sub - c.disc)}` : ''}${W.waitlist.size ? ` · waitlist: ${W.waitlist.size}` : ''}</div>`;
+    return h;
+  }
+  function step2() {
+    const k = kid(), n = esc(k.first);
+    let h = `<h2>Health &amp; safety for ${n}</h2>`;
+    if (k.returning) h += `<p class="muted">We've filled this in from ${n}'s 2026 health form. Please check it's still correct.</p>`;
+    h += `<fieldset class="fs"><legend>Allergies</legend><div class="chk-grid">${ALLERGIES.map(([v, l]) => `<label class="chk"><input type="checkbox" class="alg" value="${v}" ${W.allergies.has(v) ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+      ${W.allergies.has('other') ? `<label class="field" for="alg-other">Describe the other allergy</label><input type="text" id="alg-other" value="${esc(W.allergyOther)}">` : ''}</fieldset>`;
+    if (hasAllergy()) {
+      h += `<fieldset class="fs" id="epi-q"><legend>Does ${n} carry an epinephrine auto-injector (EpiPen)?</legend>
+        <label class="inline"><input type="radio" name="epi" value="yes" ${W.epipen === 'yes' ? 'checked' : ''}> Yes</label><label class="inline"><input type="radio" name="epi" value="no" ${W.epipen === 'no' ? 'checked' : ''}> No</label>
+        ${W.epipen === 'yes' ? `<label class="chk consent"><input type="checkbox" id="epi-consent" ${W.epiConsent ? 'checked' : ''}> I authorise Wren Hollow staff to administer epinephrine in an emergency</label><p class="muted">Please send the auto-injector in ${n}'s backpack every day, labelled with their name.</p>` : ''}</fieldset>`;
+    }
+    h += `<label class="field" for="meds">Daily medications or other health notes (optional)</label><textarea id="meds">${esc(W.meds)}</textarea>`;
+    h += `<fieldset class="fs" style="margin-top:14px"><legend>Swimming ability</legend>${SWIM.map(([v, l, d]) => `<label class="rline"><input type="radio" name="swim" value="${v}" ${W.swim === v ? 'checked' : ''}> <span><b>${l}</b> <span class="muted">— ${d}</span></span></label>`).join('')}</fieldset>`;
+    if (k.returning) h += `<label class="chk consent"><input type="checkbox" id="health-ok" ${W.healthConfirm ? 'checked' : ''}> I confirm ${n}'s health information is up to date</label>`;
+    return h;
+  }
+  function step3() {
+    const n = esc(kid().first);
+    let h = `<h2>Pickup &amp; extras</h2><h3>Authorised pickups</h3><p class="muted">Only these adults can collect ${n}. We check photo ID at every pickup.</p><ul class="pickups">
+      ${ACCOUNT_PICKUPS.map((p) => `<li><b>${p[0]}</b> · ${p[1]} · ${p[2]}${p[3] ? ` <span class="muted">(${p[3]})</span>` : ''}</li>`).join('')}
+      ${W.pickups.map((p, i) => `<li><b>${esc(p.name)}</b> · ${esc(relLabel(p.rel))} · ${esc(p.phoneRaw)} <button type="button" class="link" data-rm="${i}" aria-label="Remove ${esc(p.name)}">Remove</button></li>`).join('')}</ul>`;
+    if (W.adding) {
+      h += `<div class="subcard" id="pp-form"><b>Add an authorised pickup</b>
+        <label class="field" for="pp-name">Full name</label><input type="text" id="pp-name" autocomplete="off">
+        <label class="field" for="pp-rel">Relationship to ${n}</label><select id="pp-rel"><option value="">Choose…</option>${RELS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+        <label class="field" for="pp-phone">Phone number</label><input type="tel" id="pp-phone" autocomplete="off">
+        <div class="err" id="pp-err" role="alert" hidden></div>
+        <div class="row" style="margin-top:12px"><button type="button" class="btn" id="pp-cancel">Cancel</button><button type="button" class="btn primary" id="pp-save">Save person</button></div></div>`;
+    } else h += `<button type="button" class="btn" id="pp-add">+ Add a person</button>`;
+    h += `<h3>Extras</h3>${EXTRAS.map(([v, l, p, per, d]) => `<label class="chk"><input type="checkbox" class="ex" value="${v}" ${W.extras[v] ? 'checked' : ''}> <span><b>${l}</b> (+${usd(p)}${per === 'week' ? '/week' : ''}) <span class="muted">— ${d}</span></span></label>`).join('')}`;
+    return h;
+  }
+  function step4() {
+    const k = kid(), c = costs();
+    const wl = SESSIONS.filter((s) => W.waitlist.has(s.id));
+    const exNames = EXTRAS.filter(([v]) => W.extras[v]).map(([, l]) => l);
+    let rows = c.ss.map((s) => `<tr><td>${esc(s.name)} <span class="muted">(${esc(s.dates)})</span></td><td>${usd(s.price)}</td></tr>`).join('');
+    if (c.disc) rows += `<tr><td>Full-Summer Pass discount (15%)</td><td>−${usd(c.disc)}</td></tr>`;
+    for (const [v, l, p, per] of EXTRAS) if (W.extras[v]) rows += `<tr><td>${l}${per === 'week' ? ` × ${c.wk} ${c.wk === 1 ? 'week' : 'weeks'}` : ''}</td><td>${usd(per === 'week' ? p * c.wk : p)}</td></tr>`;
+    if (c.don) rows += `<tr><td>Scholarship fund donation</td><td>${usd(c.don)}</td></tr>`;
+    rows += `<tr class="tot"><td>Summer total</td><td>${usd(c.total)}</td></tr>`;
+    return `<h2>Review &amp; pay</h2><dl class="summary">
+      <dt>Camper</dt><dd>${esc(k.first + ' ' + k.last)}</dd>
+      <dt>Weeks</dt><dd>${c.ss.map((s) => esc(s.name)).join(', ') || '—'}${W.pass ? ' <span class="badge">Full-Summer Pass</span>' : ''}</dd>
+      <dt>Waitlist</dt><dd>${wl.map((s) => esc(s.name)).join(', ') || '—'}</dd>
+      <dt>Allergies</dt><dd>${W.allergies.has('none') ? 'None' : ALLERGIES.filter(([v]) => W.allergies.has(v)).map(([v, l]) => v === 'other' ? 'Other: ' + esc(W.allergyOther) : l).join(', ')}${hasAllergy() ? ` · EpiPen: ${W.epipen === 'yes' ? 'yes (staff authorised)' : 'no'}` : ''}</dd>
+      <dt>Swimming</dt><dd>${(SWIM.find((s) => s[0] === W.swim) || [, '—'])[1]}</dd>
+      <dt>Extra pickups</dt><dd>${W.pickups.map((p) => `${esc(p.name)} (${esc(relLabel(p.rel))}, ${esc(p.phoneRaw)})`).join('; ') || '—'}</dd>
+      <dt>Extras</dt><dd>${exNames.join(', ') || 'None'}</dd></dl>
+      <table class="cost"><thead><tr><th>Item</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>
+      <fieldset class="fs" style="margin-top:16px"><legend>Payment</legend>
+        <label class="rline"><input type="radio" name="pay" value="deposit" ${W.payment === 'deposit' ? 'checked' : ''}> <span><b>Pay deposit now ($100 per week)</b> <span class="muted">— balance due 1 May 2027</span></span></label>
+        <label class="rline"><input type="radio" name="pay" value="full" ${W.payment === 'full' ? 'checked' : ''}> <span><b>Pay in full</b></span></label></fieldset>
+      <label class="field" for="donation">Scholarship fund donation</label>
+      <select id="donation">${[['0', '$0 — not this time'], ['10', '$10'], ['25', '$25'], ['50', '$50'], ['100', '$100']].map(([v, l]) => `<option value="${v}" ${W.donation === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <p class="muted">Your donation helps another family come to camp. 100% goes to the scholarship fund.</p>
+      <p><b>Due today: ${usd(c.due)}</b> <span class="muted">· charged to Visa ending 3308</span></p>`;
+  }
+
+  function validate() {
+    const k = kid();
+    if (W.step === 0) {
+      if (!W.camper) return 'Choose which child you are registering.';
+      if (W.camper === 'new') {
+        const n = W.newChild;
+        if (!norm(n.first) || !norm(n.last)) return "Enter your child's first and last name.";
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(n.dob)) return 'Enter a date of birth.';
+        const a = ageOn(n.dob);
+        if (a < 8 || a > 13) return 'Campers must be 8 to 13 years old on 28 June 2027.';
+      }
+    }
+    if (W.step === 1 && selectedSessions().length + W.waitlist.size === 0) return 'Choose at least one week (or join a waitlist).';
+    if (W.step === 2) {
+      if (!W.allergies.size) return "Tell us about allergies — tick 'No known allergies' if there are none.";
+      if (W.allergies.has('other') && !norm(W.allergyOther)) return 'Describe the other allergy.';
+      if (hasAllergy() && !W.epipen) return `Tell us whether ${k.first} carries an epinephrine auto-injector.`;
+      if (hasAllergy() && W.epipen === 'yes' && !W.epiConsent) return 'To bring an auto-injector to camp you need to authorise staff to administer it.';
+      if (!W.swim) return `Choose ${k.first}'s swimming ability.`;
+      if (k.returning && !W.healthConfirm) return `Please confirm ${k.first}'s health information is up to date.`;
+    }
+    if (W.step === 3 && W.adding) {
+      const any = ['#pp-name', '#pp-phone'].some((s) => q(s) && q(s).value.trim()) || (q('#pp-rel') && q('#pp-rel').value);
+      if (any) return "Select 'Save person' to add them, or Cancel.";
+    }
+    return '';
+  }
+  function showErr(m) { const e = q('#wiz-err'); if (e) { e.textContent = m; e.hidden = !m; } }
+
+  async function complete() {
+    if (W.busy) return;
+    const k = kid(), c = costs();
+    W.busy = true;
+    const b = q('#wiz-next'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Registering…';
+    await sleep(900);
+    const hasA = hasAllergy();
+    const o = {
+      event: 'camp_registration', camper: norm(k.first + ' ' + k.last), camper_id: k.id,
+      sessions: c.ss.map((s) => s.id).sort().join(','), waitlist: [...W.waitlist].sort().join(','), pass: W.pass ? 'yes' : 'no',
+      allergies: W.allergies.has('none') || !W.allergies.size ? 'none' : [...W.allergies].sort().join(','),
+      allergy_other: W.allergies.has('other') ? norm(W.allergyOther) : '',
+      epipen: hasA ? W.epipen : '', epi_consent: hasA && W.epipen === 'yes' ? (W.epiConsent ? 'yes' : 'no') : '',
+      swim: W.swim, extra_pickups: W.pickups.map((p) => `${p.name}|${p.rel}|${p.phone}`).join('; '),
+      before_care: W.extras.before ? 'yes' : 'no', after_care: W.extras.after ? 'yes' : 'no', lunch: W.extras.lunch ? 'yes' : 'no', tshirt: W.extras.tshirt ? 'yes' : 'no',
+      donation: (+W.donation).toFixed(2), payment: W.payment, amount_due: c.due.toFixed(2),
+    };
+    await post(o);
+    const ref = 'WH27-' + (40817 + REGS.length);
+    REGS.unshift({ year: '2027', camper: o.camper, weeks: c.ss.map((s) => s.name).join(', ') + (W.waitlist.size ? ' · waitlist: ' + SESSIONS.filter((s) => W.waitlist.has(s.id)).map((s) => s.name).join(', ') : ''), status: 'Registered' });
+    W.done = { ref, camper: o.camper, weeks: c.ss.map((s) => esc(s.name)).join(', '), wl: SESSIONS.filter((s) => W.waitlist.has(s.id)).map((s) => esc(s.name)).join(', '), paid: usd(c.due) };
+    W.busy = false;
+    render();
+  }
+
+  // ------------------------------------------------------------ router
+  function route() { return location.hash.replace(/^#\/?/, ''); }
+  function render() {
+    const r = route();
+    qa('.top nav a').forEach((a) => a.classList.toggle('on', a.dataset.nav === r.split('/')[0]));
+    let h;
+    if (r === '') h = home();
+    else if (r === 'sessions') h = sessionsPage();
+    else if (r === 'register') h = wizard();
+    else if (r === 'account') h = accountPage();
+    else if (r.startsWith('info/') && INFO[r.slice(5)]) { const [t, b] = INFO[r.slice(5)]; h = `<h1>${t}</h1><div class="card"><p>${b}</p><p><a href="#/">Back to home</a></p></div>`; }
+    else h = `<h1>Page not found</h1><p><a href="#/">Go to the home page</a></p>`;
+    q('#main').innerHTML = h;
+  }
+  window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+
+  const main = q('#main');
+  main.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'camper') { selectCamper(t.value); render(); return; }
+    if (t.id === 'pass') { W.pass = t.checked; render(); return; }
+    if (t.classList.contains('wk-cb')) { t.checked ? W.picks.add(t.value) : W.picks.delete(t.value); render(); return; }
+    if (t.classList.contains('wl-cb')) { t.checked ? W.waitlist.add(t.value) : W.waitlist.delete(t.value); render(); return; }
+    if (t.classList.contains('alg')) {
+      if (t.checked) { if (t.value === 'none') W.allergies = new Set(['none']); else { W.allergies.delete('none'); W.allergies.add(t.value); } }
+      else W.allergies.delete(t.value);
+      if (!hasAllergy()) { W.epipen = ''; W.epiConsent = false; }
+      render(); return;
+    }
+    if (t.name === 'epi') { W.epipen = t.value; if (t.value !== 'yes') W.epiConsent = false; render(); return; }
+    if (t.id === 'epi-consent') { W.epiConsent = t.checked; return; }
+    if (t.name === 'swim') { W.swim = t.value; return; }
+    if (t.id === 'health-ok') { W.healthConfirm = t.checked; return; }
+    if (t.classList.contains('ex')) { W.extras[t.value] = t.checked; return; }
+    if (t.name === 'pay') { W.payment = t.value; render(); return; }
+    if (t.id === 'donation') { W.donation = t.value; render(); return; }
+    if (t.id === 'nc-dob') { W.newChild.dob = t.value; return; }
+  });
+  main.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'nc-first') W.newChild.first = t.value;
+    if (t.id === 'nc-last') W.newChild.last = t.value;
+    if (t.id === 'nc-dob') W.newChild.dob = t.value;
+    if (t.id === 'alg-other') W.allergyOther = t.value;
+    if (t.id === 'meds') W.meds = t.value;
+  });
+  main.addEventListener('click', async (e) => {
+    const t = e.target;
+    if (t.closest('#wiz-next')) {
+      if (W.step === 4) { complete(); return; }
+      const m = validate(); if (m) { showErr(m); return; }
+      W.step++; render(); window.scrollTo(0, 0); return;
+    }
+    if (t.closest('#wiz-back')) { if (W.step > 0) { W.step--; render(); } return; }
+    if (t.closest('#pp-add')) { W.adding = true; render(); const n = q('#pp-name'); if (n) n.focus(); return; }
+    if (t.closest('#pp-cancel')) { W.adding = false; render(); return; }
+    if (t.closest('#pp-save')) {
+      const name = norm(q('#pp-name').value), rel = q('#pp-rel').value, raw = q('#pp-phone').value.trim();
+      const digits = raw.replace(/\D/g, '');
+      const err = (m) => { const el = q('#pp-err'); el.textContent = m; el.hidden = false; };
+      if (!name || name.split(' ').length < 2) return err("Enter the person's full name.");
+      if (!rel) return err('Choose their relationship to the camper.');
+      if (digits.length < 10 || digits.length > 15) return err('Enter a phone number we can reach them on, including the area code.');
+      W.pickups.push({ name, rel, phone: raw.startsWith('+') ? '+' + digits : digits, phoneRaw: raw });
+      W.adding = false; render(); toast(`${name} added as an authorised pickup.`); return;
+    }
+    const rm = t.closest('[data-rm]'); if (rm) { W.pickups.splice(+rm.dataset.rm, 1); render(); return; }
+    if (t.closest('#again')) { resetWizard(); render(); window.scrollTo(0, 0); return; }
+    if (t.closest('#cp-save')) {
+      const b = t.closest('#cp-save'); b.disabled = true;
+      const o = { event: 'account_preferences_update', newsletter: q('#cp-weekly').checked ? 'yes' : 'no', photos: q('#cp-photos').checked ? 'yes' : 'no', sms: q('#cp-sms').checked ? 'yes' : 'no' };
+      await sleep(500);
+      await post(o);
+      b.disabled = false; toast('Preferences saved.');
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

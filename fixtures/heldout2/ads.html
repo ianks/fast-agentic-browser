@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pellucid Ads Manager</title>
+<script src="../common.js"></script>
+<script src="ads_data.js"></script>
+<style>
+  :root { --indigo: #4338ca; --indigo-d: #3730a3; --indigo-l: #eef0ff; --ink: #1c2033; --muted: #6b7086; --line: #e4e6ef; --bg: #f7f8fc; --green: #15803d; --amber: #b45309; --red: #b91c1c; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 13.5px/1.45 Inter, "SF Pro Text", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: var(--indigo); text-decoration: none; }
+  button { font: inherit; }
+  header.top { height: 54px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 0 18px; position: sticky; top: 0; z-index: 15; }
+  .logo { font-weight: 800; font-size: 17px; color: var(--ink); letter-spacing: -.2px; }
+  .logo b { color: var(--indigo); }
+  .prod { color: var(--muted); border-left: 1px solid var(--line); padding-left: 12px; font-size: 13px; }
+  .gsearch input { width: 320px; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 12px; font: inherit; }
+  .iconbtn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; position: relative; }
+  .iconbtn .dot { position: absolute; top: -3px; right: -3px; background: var(--red); color: #fff; font-size: 10px; border-radius: 8px; padding: 0 5px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--indigo); color: #fff; border: 0; cursor: pointer; font-weight: 700; font-size: 12px; }
+  .spacer { flex: 1; }
+  .lb { position: relative; display: inline-block; }
+  .lb > button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 30px 7px 11px; cursor: pointer; position: relative; text-align: left; white-space: nowrap; }
+  .lb > button::after { content: "▾"; position: absolute; right: 10px; color: var(--muted); }
+  .lb [role=listbox] { position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(20,24,60,.14); list-style: none; margin: 0; padding: 4px; z-index: 30; }
+  .lb [role=option] { padding: 7px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .lb [role=option]:hover { background: var(--indigo-l); }
+  .lb [role=option][aria-selected=true] { background: var(--indigo-l); color: var(--indigo-d); font-weight: 600; }
+  .lb [role=option] small { color: var(--muted); margin-left: 8px; font-weight: 400; }
+  .shell { display: grid; grid-template-columns: 188px 1fr; min-height: calc(100vh - 54px); }
+  nav.side { background: #fff; border-right: 1px solid var(--line); padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  nav.side a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; color: #353a52; }
+  nav.side a:hover { background: var(--bg); }
+  nav.side a.on { background: var(--indigo-l); color: var(--indigo-d); font-weight: 600; }
+  nav.side .ic { width: 18px; text-align: center; opacity: .8; }
+  nav.side .sep { border-top: 1px solid var(--line); margin: 10px 4px; }
+  main { padding: 18px 20px 30px; min-width: 0; }
+  .pagehead { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
+  .crumb { color: var(--muted); font-size: 12.5px; }
+  h1 { font-size: 22px; margin: 2px 0 0; font-weight: 700; letter-spacing: -.3px; }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .btn { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 13px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+  .btn:hover { border-color: #c9cce0; }
+  .btn.pri { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+  .btn.danger { color: var(--red); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .leveltabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  .leveltabs a { padding: 8px 14px; color: var(--muted); border-bottom: 2px solid transparent; font-weight: 500; }
+  .leveltabs a[aria-selected=true] { color: var(--indigo-d); border-bottom-color: var(--indigo); }
+  .views { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; color: var(--muted); font-size: 12.5px; }
+  .views button { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 3px 11px; cursor: pointer; font-size: 12.5px; }
+  .views button.on { background: var(--indigo-l); border-color: #c7cbfb; color: var(--indigo-d); }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 10px 10px 0 0; padding: 10px 12px; }
+  .toolbar label { font-size: 12px; color: var(--muted); }
+  .fpair { display: inline-flex; align-items: center; gap: 6px; }
+  .toolbar select, .toolbar input { border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font: inherit; background: #fff; }
+  .toolbar input[type=text] { width: 150px; }
+  .toolbar input[type=search] { width: 190px; }
+  .bulk { display: flex; gap: 8px; align-items: center; background: var(--indigo-l); border: 1px solid #c7cbfb; border-top: 0; padding: 8px 12px; }
+  .bulk b { color: var(--indigo-d); margin-right: 6px; }
+  .tablewrap { position: relative; background: #fff; border: 1px solid var(--line); border-top: 0; overflow-x: auto; }
+  .tablewrap.loading table { opacity: .35; }
+  .tablewrap .loader { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 60px; color: var(--indigo-d); font-weight: 600; }
+  table.grid { border-collapse: collapse; width: 100%; }
+  table.grid th, table.grid td { padding: 8px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  table.grid td.cn { white-space: normal; }
+  .cnw { display: flex; align-items: flex-start; gap: 4px; }
+  .cnw > div { min-width: 180px; max-width: 250px; }
+  table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; background: #fbfbfe; }
+  table.grid th button.sort { border: 0; background: none; color: inherit; font-weight: 600; cursor: pointer; padding: 0; font-size: 12px; }
+  table.grid td.num, table.grid th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.grid tr:hover td { background: #fafaff; }
+  table.grid tr.sel td { background: #f3f4ff; }
+  .cname { font-weight: 600; color: var(--ink); }
+  .cname:hover { color: var(--indigo); text-decoration: underline; }
+  .sub { color: var(--muted); font-size: 11.5px; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; border-radius: 10px; padding: 1px 9px; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.active { background: #e7f6ec; color: var(--green); }
+  .pill.paused { background: #fff4e0; color: var(--amber); }
+  .pill.ended { background: #eef0f4; color: #57607a; }
+  .pill.draft { background: #fff; color: #7c7fa0; border: 1px dashed #c3c6da; }
+  .tgl { display: inline-flex; cursor: pointer; }
+  .tgl input { appearance: none; -webkit-appearance: none; width: 34px; height: 19px; border-radius: 10px; background: #cfd2e2; position: relative; cursor: pointer; margin: 0; transition: background .15s; }
+  .tgl input::before { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .tgl input:checked { background: var(--indigo); }
+  .tgl input:checked::before { left: 17px; }
+  .tgl input:disabled { opacity: .45; cursor: not-allowed; }
+  .more { border: 0; background: none; cursor: pointer; font-size: 17px; line-height: 1; padding: 2px 8px; border-radius: 6px; color: var(--muted); }
+  .more:hover { background: var(--bg); }
+  .menu { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(20,24,60,.16); padding: 4px; z-index: 40; min-width: 160px; }
+  .menu [role=menuitem] { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+  .menu [role=menuitem]:hover { background: var(--indigo-l); }
+  .menu [role=menuitem].danger { color: var(--red); }
+  .pager { display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 10px 10px; padding: 8px 12px; color: var(--muted); }
+  .pager select { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font: inherit; }
+  .pager .pages { display: flex; gap: 3px; margin-left: auto; }
+  .pager .pages button { min-width: 30px; border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 3px 7px; cursor: pointer; }
+  .pager .pages button[aria-current=page] { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+  .pager .pages button:disabled { opacity: .45; cursor: default; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+  .tile { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .tile .v { font-size: 21px; font-weight: 700; margin-top: 2px; }
+  .tile .l { color: var(--muted); font-size: 12px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 130px; padding-top: 6px; border-bottom: 1px solid var(--line); }
+  .bars i { flex: 1; background: linear-gradient(#6366f1, #4338ca); border-radius: 3px 3px 0 0; min-height: 1px; }
+  .hbar { display: grid; grid-template-columns: 110px 1fr 90px; gap: 10px; align-items: center; margin: 6px 0; }
+  .hbar .track { height: 10px; background: var(--indigo-l); border-radius: 5px; overflow: hidden; }
+  .hbar .track i { display: block; height: 100%; background: var(--indigo); }
+  .two { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,24,50,.42); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .dialog { background: #fff; border-radius: 12px; width: 480px; max-height: 80vh; overflow: auto; padding: 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .dialog h3 { margin: 0 0 8px; font-size: 17px; }
+  .dialog ul { padding-left: 18px; margin: 8px 0; }
+  .dialog .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 400px; background: #fff; border-left: 1px solid var(--line); box-shadow: -10px 0 40px rgba(20,24,60,.14); z-index: 45; padding: 20px 22px; overflow: auto; }
+  .fld { margin-bottom: 12px; }
+  .fld label { display: block; font-weight: 600; font-size: 12.5px; margin-bottom: 4px; }
+  .fld input, .fld select { width: 100%; border: 1px solid #d3d6e4; border-radius: 8px; padding: 7px 10px; font: inherit; }
+  .err { color: var(--red); font-size: 12.5px; }
+  .pop { position: absolute; top: 48px; right: 16px; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(20,24,60,.16); width: 320px; padding: 10px; z-index: 40; }
+  .pop .it { padding: 8px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1c2033; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 60; }
+  .colpop { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(20,24,60,.16); padding: 8px 12px; z-index: 30; }
+  .colpop label { display: flex; gap: 8px; padding: 4px 0; cursor: pointer; }
+  .creative { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .creative .c { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .creative .c .th { height: 120px; }
+  .creative .c div.m { padding: 8px 10px; font-size: 12.5px; }
+  footer.foot { display: flex; gap: 16px; padding: 12px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); background: #fff; }
+  footer.foot a { color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="#/overview">◈ <b>Pellucid</b></a><span class="prod">Ads Manager</span>
+  <div class="lb" id="acct-lb"><button type="button" id="acct-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Ad account"></button><ul role="listbox" aria-label="Ad account" hidden></ul></div>
+  <div class="gsearch"><input type="search" id="gsearch" aria-label="Search Pellucid" placeholder="Search campaigns by name or ID"></div>
+  <div class="spacer"></div>
+  <button type="button" class="iconbtn" id="help-btn" aria-label="Help">?</button>
+  <button type="button" class="iconbtn" id="bell-btn" aria-label="Notifications">🔔<span class="dot">3</span></button>
+  <button type="button" class="avatar" id="me-btn" aria-label="Account menu">FH</button>
+</header>
+<div class="shell">
+  <nav class="side" aria-label="Ads Manager">
+    <a href="#/overview" data-r="overview"><span class="ic" aria-hidden="true">◔</span>Overview</a>
+    <a href="#/campaigns" data-r="campaigns"><span class="ic" aria-hidden="true">▤</span>Campaigns</a>
+    <a href="#/adsets" data-r="adsets"><span class="ic" aria-hidden="true">▥</span>Ad sets</a>
+    <a href="#/ads" data-r="ads"><span class="ic" aria-hidden="true">▦</span>Ads</a>
+    <div class="sep"></div>
+    <a href="#/audiences" data-r="audiences"><span class="ic" aria-hidden="true">◎</span>Audiences</a>
+    <a href="#/creative" data-r="creative"><span class="ic" aria-hidden="true">◧</span>Creative library</a>
+    <a href="#/reports" data-r="reports"><span class="ic" aria-hidden="true">▨</span>Reports</a>
+    <div class="sep"></div>
+    <a href="#/billing" data-r="billing"><span class="ic" aria-hidden="true">▭</span>Billing</a>
+    <a href="#/settings" data-r="settings"><span class="ic" aria-hidden="true">⚙</span>Settings</a>
+    <div class="sep"></div>
+    <a href="#/help" data-r="help"><span class="ic" aria-hidden="true">?</span>Help centre</a>
+  </nav>
+  <main id="main"></main>
+</div>
+<footer class="foot"><span>© 2026 Pellucid Advertising AB</span><a href="#/help">Advertising policies</a><a href="#/help">Terms</a><a href="#/help">Privacy</a><a href="#/help">Status</a><span style="margin-left:auto">Data updated 24 Sep 2026, 06:00 CEST · reporting through 23 Sep</span></footer>
+<div id="pop-root"></div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const DATA = window.PELLUCID_DATA;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3200); };
+  const group = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const money = (cents) => (cents < 0 ? '-' : '') + '$' + group(Math.floor(Math.abs(cents) / 100)) + '.' + String(Math.abs(cents) % 100).padStart(2, '0');
+  const toCents = (s) => Math.round(parseFloat(s) * 100);
+
+  const RANGES = [
+    { k: 'last7', label: 'Last 7 days', sub: '17 – 23 Sep 2026' },
+    { k: 'last30', label: 'Last 30 days', sub: '25 Aug – 23 Sep 2026' },
+    { k: 'sep', label: 'This month', sub: '1 – 23 Sep 2026' },
+    { k: 'aug', label: 'August 2026', sub: '1 – 31 Aug 2026' },
+    { k: 'jul', label: 'July 2026', sub: '1 – 31 Jul 2026' },
+    { k: 'lifetime', label: 'Lifetime', sub: 'All dates' },
+  ];
+  const STATUS_LABEL = { active: 'Active', paused: 'Paused', ended: 'Ended', draft: 'Draft' };
+  const COLS = [
+    { k: 'impr', label: 'Impressions' }, { k: 'clicks', label: 'Clicks' }, { k: 'ctr', label: 'CTR' }, { k: 'conv', label: 'Conversions' },
+  ];
+  const campaigns = DATA.campaigns.map((c) => ({ ...c }));
+  let nextId = 4200;
+  const blankFilters = () => ({ status: '', market: '', owner: '', search: '' });
+  const st = { account: 'nordics', range: 'last30', f: blankFilters(), sort: { k: 'name', dir: 1 }, page: 1, size: 10, sel: new Set(), loading: false, hide: new Set(), view: 'all', recs: [true, true], adsPage: 1 };
+
+  const acct = () => DATA.accounts.find((a) => a.id === st.account);
+  const acctCampaigns = () => campaigns.filter((c) => c.account === st.account && c.status !== 'archived');
+  function metrics(c, key) {
+    const spend = toCents(c.spend[key]);
+    const impr = spend ? Math.round((spend / 100 / c.cpm) * 1000) : 0;
+    const clicks = Math.round(impr * c.ctr);
+    const conv = Math.round(clicks * c.cvr);
+    return { spend, impr, clicks, ctr: impr ? clicks / impr : null, conv };
+  }
+  function filtered() {
+    const f = st.f; const own = f.owner.trim().toLowerCase(); const s = f.search.trim().toLowerCase();
+    let list = acctCampaigns().filter((c) => (!f.status || c.status === f.status) && (!f.market || c.market === f.market) && (!own || c.owner.toLowerCase().includes(own)) && (!s || c.name.toLowerCase().includes(s) || c.id.toLowerCase().includes(s)));
+    const k = st.sort.k, dir = st.sort.dir;
+    const val = (c) => {
+      if (k === 'name' || k === 'market' || k === 'owner') return c[k].toLowerCase();
+      if (k === 'status') return ['active', 'paused', 'draft', 'ended'].indexOf(c.status);
+      if (k === 'budget') return toCents(c.budget);
+      const m = metrics(c, st.range);
+      return k === 'ctr' ? (m.ctr ?? -1) : m[k];
+    };
+    list.sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : a.name.localeCompare(b.name)) * dir; });
+    return list;
+  }
+
+  // ------------------------------------------------------------ header: account listbox
+  function renderAcct() {
+    q('#acct-btn').textContent = acct().name;
+    q('#acct-btn').setAttribute('aria-label', `Ad account: ${acct().name}`);
+    q('#acct-lb [role=listbox]').innerHTML = DATA.accounts.map((a) => `<li role="option" data-acct="${a.id}" aria-selected="${a.id === st.account}">${esc(a.name)}<small>${campaigns.filter((c) => c.account === a.id).length} campaigns</small></li>`).join('');
+  }
+  function toggleLb(lb, open) {
+    const list = lb.querySelector('[role=listbox]'); const btn = lb.querySelector('button');
+    if (open === undefined) open = list.hidden;
+    qa('.lb [role=listbox]').forEach((l) => { if (l !== list) { l.hidden = true; l.parentElement.querySelector('button').setAttribute('aria-expanded', 'false'); } });
+    list.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+  }
+  q('#acct-btn').addEventListener('click', () => toggleLb(q('#acct-lb')));
+  q('#acct-lb').addEventListener('click', async (e) => {
+    const o = e.target.closest('[role=option]'); if (!o) return;
+    toggleLb(q('#acct-lb'), false);
+    if (o.dataset.acct === st.account) return;
+    st.account = o.dataset.acct; st.f = blankFilters(); st.page = 1; st.sel.clear(); st.view = 'all';
+    renderAcct();
+    await withLoading();
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.lb')) qa('.lb [role=listbox]').forEach((l) => { if (!l.hidden) { l.hidden = true; l.parentElement.querySelector('button').setAttribute('aria-expanded', 'false'); } });
+    if (!e.target.closest('.menu') && !e.target.closest('.more')) closeMenu();
+    if (!e.target.closest('.pop') && !e.target.closest('#bell-btn, #help-btn, #me-btn')) q('#pop-root').innerHTML = '';
+    if (!e.target.closest('.colpop') && !e.target.closest('#columns-btn')) { const cp = q('.colpop'); if (cp) cp.remove(); }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { qa('.lb [role=listbox]').forEach((l) => (l.hidden = true)); closeMenu(); } });
+  q('#gsearch').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    st.f = blankFilters(); st.f.search = q('#gsearch').value.trim(); st.page = 1; st.sel.clear(); st.view = 'all';
+    if (route()[0] === 'campaigns' && !route()[1]) render(); else location.hash = '#/campaigns';
+  });
+  const pops = {
+    'bell-btn': () => `<div class="pop" role="dialog" aria-label="Notifications"><b>Notifications</b>${[['Budget alert', 'NO | Linen Bedding | Lookalike 2% spent 96% of its daily budget yesterday.'], ['Ad rejected', 'An ad in SE | Candle Season | Catalogue was rejected: text overlay policy.'], ['Invoice ready', 'Your August 2026 invoice for Nordvik Home · Nordics is ready.']].map(([t, d]) => `<div class="it"><b>${t}</b><div>${d}</div></div>`).join('')}</div>`,
+    'help-btn': () => `<div class="pop" role="dialog" aria-label="Help"><b>Help</b><div class="it"><a href="#/help">Help centre</a></div><div class="it"><a href="#/help">Understanding attribution</a></div><div class="it"><a href="#/help">Contact support</a></div></div>`,
+    'me-btn': () => `<div class="pop" role="dialog" aria-label="Account"><b>Freja Holmqvist</b><div class="it">freja.holmqvist@nordvikhome.com<br><span style="color:var(--muted)">Admin · Nordvik Home</span></div><div class="it"><a href="#/settings">Account settings</a></div><div class="it"><button type="button" class="btn" id="logout">Log out</button></div></div>`,
+  };
+  ['bell-btn', 'help-btn', 'me-btn'].forEach((id) => q('#' + id).addEventListener('click', () => { const r = q('#pop-root'); r.innerHTML = r.innerHTML ? '' : pops[id](); }));
+  q('#pop-root').addEventListener('click', (e) => { if (e.target.closest('#logout')) { q('#pop-root').innerHTML = ''; confirmBox('Log out of Pellucid?', 'Log out', () => { q('#main').innerHTML = '<div class="card" style="max-width:420px"><h2>You’ve logged out</h2><p><a href="#/campaigns">Log back in</a></p></div>'; }); } });
+
+  // ------------------------------------------------------------ routing
+  function route() { return (location.hash.replace(/^#\/?/, '') || 'campaigns').split('/'); }
+  function render() {
+    const [r, id] = route();
+    qa('nav.side a').forEach((a) => a.classList.toggle('on', a.dataset.r === r));
+    closeMenu();
+    const m = q('#main');
+    if (r === 'campaigns' && id) m.innerHTML = detailPage(id);
+    else if (r === 'campaigns') { m.innerHTML = campaignsPage(); updateTable(); }
+    else if (r === 'overview') m.innerHTML = overviewPage();
+    else if (r === 'adsets' || r === 'ads') m.innerHTML = childPage(r);
+    else if (r === 'audiences') m.innerHTML = audiencesPage();
+    else if (r === 'creative') m.innerHTML = creativePage();
+    else if (r === 'reports') m.innerHTML = reportsPage();
+    else if (r === 'billing') m.innerHTML = billingPage();
+    else if (r === 'settings') m.innerHTML = settingsPage();
+    else if (r === 'help') m.innerHTML = `<div class="pagehead"><div><div class="crumb">Pellucid</div><h1>Help centre</h1></div></div><div class="card"><details open><summary><b>Why don’t campaign numbers match my invoice?</b></summary><p>Invoices include taxes and all campaigns, including archived ones. Campaign tables show spend for the selected date range only.</p></details><details><summary><b>What happens when I pause a campaign?</b></summary><p>Delivery stops within about 15 minutes. You can resume it at any time.</p></details><details><summary><b>How do I compare periods?</b></summary><p>Use the date range picker above the campaigns table.</p></details></div>`;
+    else m.innerHTML = `<h1>Page not found</h1><p><a href="#/campaigns">Go to Campaigns</a></p>`;
+  }
+  window.addEventListener('hashchange', render);
+  async function withLoading() {
+    st.loading = true;
+    if (route()[0] === 'campaigns' && !route()[1]) updateTable(); else render();
+    await sleep(350 + (st.range.length * 37) % 250);
+    st.loading = false;
+    render();
+  }
+
+  // ------------------------------------------------------------ campaigns list
+  function rangeObj() { return RANGES.find((r) => r.k === st.range); }
+  function campaignsPage() {
+    const markets = [...new Set(acctCampaigns().map((c) => c.market))].sort();
+    const f = st.f; const ro = rangeObj();
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)} › Campaigns</div><h1>Campaigns</h1></div><div class="spacer"></div><button type="button" class="btn" id="export-btn">⤓ Export</button><button type="button" class="btn pri" id="create-btn">＋ Create campaign</button></div>
+      <div class="leveltabs" role="tablist"><a role="tab" aria-selected="true" href="#/campaigns">Campaigns</a><a role="tab" aria-selected="false" href="#/adsets">Ad sets</a><a role="tab" aria-selected="false" href="#/ads">Ads</a></div>
+      <div class="views">Saved views: ${[['all', 'All campaigns'], ['active', 'Active'], ['paused', 'Paused'], ['draft', 'Drafts']].map(([k, l]) => `<button type="button" data-view="${k}" class="${st.view === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div class="toolbar" role="search" aria-label="Filter campaigns">
+        <div class="lb" id="range-lb"><button type="button" id="range-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Date range: ${esc(ro.label)} (${esc(ro.sub)})">📅 ${esc(ro.label)} · ${esc(ro.sub)}</button>
+          <ul role="listbox" aria-label="Date range" hidden>${RANGES.map((r) => `<li role="option" data-range="${r.k}" aria-selected="${r.k === st.range}">${esc(r.label)}<small>${esc(r.sub)}</small></li>`).join('')}</ul></div>
+        <span class="fpair"><label for="f-status">Status</label><select id="f-status"><option value="">All statuses</option>${Object.entries(STATUS_LABEL).map(([k, l]) => `<option value="${k}" ${f.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></span>
+        <span class="fpair"><label for="f-market">Market</label><select id="f-market"><option value="">All markets</option>${markets.map((m) => `<option ${f.market === m ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select></span>
+        <span class="fpair"><label for="f-owner">Owner</label><input type="text" id="f-owner" placeholder="Any owner" value="${esc(f.owner)}" autocomplete="off"></span>
+        <span class="fpair"><label for="f-search">Search</label><input type="search" id="f-search" placeholder="Campaign name or ID" value="${esc(f.search)}" autocomplete="off"></span>
+        <button type="button" class="btn" id="clear-filters">Clear filters</button>
+        <div class="spacer"></div>
+        <button type="button" class="btn" id="columns-btn" aria-haspopup="true">▥ Columns</button>
+      </div>
+      <div class="bulk" id="bulk" role="region" aria-label="Bulk actions" hidden></div>
+      <div class="tablewrap" id="tablewrap"><table class="grid" id="ctable"></table></div>
+      <div class="pager" id="pager"></div>`;
+  }
+  function th(k, label, num) {
+    const on = st.sort.k === k;
+    return `<th class="${num ? 'num' : ''}" aria-sort="${on ? (st.sort.dir === 1 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sort" data-sort="${k}">${label}${on ? (st.sort.dir === 1 ? ' ▲' : ' ▼') : ''}</button></th>`;
+  }
+  function updateTable() {
+    const tbl = q('#ctable'); if (!tbl) return;
+    const list = filtered();
+    const pages = Math.max(1, Math.ceil(list.length / st.size));
+    if (st.page > pages) st.page = pages;
+    const start = (st.page - 1) * st.size;
+    const rows = list.slice(start, start + st.size);
+    const allSel = rows.length > 0 && rows.every((c) => st.sel.has(c.id));
+    const cols = COLS.filter((c) => !st.hide.has(c.k));
+    let h = `<thead><tr><th style="width:30px"><input type="checkbox" id="sel-all" aria-label="Select all rows on this page" ${allSel ? 'checked' : ''} ${rows.length ? '' : 'disabled'}></th><th style="width:50px">On/Off</th>${th('name', 'Campaign')}${th('status', 'Status')}${th('market', 'Market')}${th('owner', 'Owner')}${th('budget', 'Daily budget', 1)}${th('spend', 'Amount spent', 1)}${cols.map((c) => th(c.k, c.label, 1)).join('')}</tr></thead><tbody>`;
+    if (!rows.length) h += `<tr><td colspan="${8 + cols.length}" style="text-align:center;padding:30px;color:var(--muted)">No campaigns match these filters. <button type="button" class="btn" data-clear>Clear filters</button></td></tr>`;
+    for (const c of rows) {
+      const m = metrics(c, st.range);
+      const canToggle = c.status === 'active' || c.status === 'paused';
+      h += `<tr data-id="${c.id}" class="${st.sel.has(c.id) ? 'sel' : ''}">
+        <td><input type="checkbox" class="rowsel" data-id="${c.id}" aria-label="Select ${esc(c.name)}" ${st.sel.has(c.id) ? 'checked' : ''}></td>
+        <td><label class="tgl" title="${canToggle ? (c.status === 'active' ? 'Turn off (pause) this campaign' : 'Turn on (resume) this campaign') : c.status === 'draft' ? 'Publish the draft before turning it on' : 'Ended campaigns can’t be turned on'}"><input type="checkbox" class="onoff" data-id="${c.id}" role="switch" aria-label="On/off: ${esc(c.name)}" ${c.status === 'active' ? 'checked' : ''} ${canToggle ? '' : 'disabled'}></label></td>
+        <td class="cn"><div class="cnw"><div><a class="cname" href="#/campaigns/${c.id}">${esc(c.name)}</a><div class="sub">${c.id} · ${esc(c.objective)}</div></div><button type="button" class="more" data-more="${c.id}" aria-haspopup="menu" aria-label="More actions for ${esc(c.name)}">⋯</button></div></td>
+        <td><span class="pill ${c.status}">${STATUS_LABEL[c.status]}</span></td>
+        <td>${esc(c.market)}</td>
+        <td>${esc(c.owner)}</td>
+        <td class="num">${money(toCents(c.budget))}</td>
+        <td class="num">${st.loading ? '…' : money(m.spend)}</td>
+        ${cols.map((col) => `<td class="num">${st.loading ? '…' : col.k === 'ctr' ? (m.ctr == null ? '—' : (m.ctr * 100).toFixed(2) + '%') : group(m[col.k])}</td>`).join('')}</tr>`;
+    }
+    tbl.innerHTML = h + '</tbody>';
+    const wrap = q('#tablewrap');
+    wrap.classList.toggle('loading', st.loading);
+    const ld = wrap.querySelector('.loader'); if (ld) ld.remove();
+    if (st.loading) wrap.insertAdjacentHTML('beforeend', '<div class="loader" role="status">Updating results…</div>');
+    // pager
+    const pb = []; for (let i = 1; i <= pages; i++) pb.push(`<button type="button" data-page="${i}" ${i === st.page ? 'aria-current="page"' : ''} aria-label="Page ${i}">${i}</button>`);
+    q('#pager').innerHTML = `<label for="page-size">Rows per page</label><select id="page-size">${[10, 25, 50].map((n) => `<option ${n === st.size ? 'selected' : ''}>${n}</option>`).join('')}</select><span id="range-text" style="margin-left:10px">${list.length ? `${start + 1}–${start + rows.length} of ${list.length}` : '0 of 0'}</span>
+      <div class="pages"><button type="button" data-page="${st.page - 1}" aria-label="Previous page" ${st.page <= 1 ? 'disabled' : ''}>‹ Prev</button>${pb.join('')}<button type="button" data-page="${st.page + 1}" aria-label="Next page" ${st.page >= pages ? 'disabled' : ''}>Next ›</button></div>`;
+    // bulk bar
+    const bulk = q('#bulk');
+    bulk.hidden = !st.sel.size;
+    bulk.innerHTML = `<b>${st.sel.size} selected</b><button type="button" class="btn" id="bulk-pause">Pause</button><button type="button" class="btn" id="bulk-resume">Resume</button><button type="button" class="btn" id="bulk-archive">Archive</button><button type="button" class="btn" id="bulk-clear">Clear selection</button>`;
+  }
+  function filtersChanged() { st.page = 1; st.sel.clear(); st.view = 'custom'; qa('.views button').forEach((b) => b.classList.remove('on')); updateTable(); }
+  let debounce;
+  q('#main').addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'f-owner' || t.id === 'f-search') { clearTimeout(debounce); debounce = setTimeout(() => { st.f.owner = q('#f-owner').value; st.f.search = q('#f-search').value; filtersChanged(); }, 250); }
+  });
+  q('#main').addEventListener('change', async (e) => {
+    const t = e.target;
+    if (t.id === 'f-status') { st.f.status = t.value; filtersChanged(); return; }
+    if (t.id === 'f-market') { st.f.market = t.value; filtersChanged(); return; }
+    if (t.id === 'page-size') { st.size = +t.value; st.page = 1; updateTable(); return; }
+    if (t.id === 'sel-all') { const list = filtered(); const rows = list.slice((st.page - 1) * st.size, st.page * st.size); rows.forEach((c) => (t.checked ? st.sel.add(c.id) : st.sel.delete(c.id))); updateTable(); return; }
+    if (t.classList.contains('rowsel')) { t.checked ? st.sel.add(t.dataset.id) : st.sel.delete(t.dataset.id); updateTable(); return; }
+    if (t.classList.contains('onoff')) {
+      const c = campaigns.find((x) => x.id === t.dataset.id);
+      t.disabled = true;
+      await setStatus([c], t.checked ? 'active' : 'paused');
+      toast(`“${c.name}” ${c.status === 'active' ? 'is on' : 'paused'}.`);
+      rerender();
+      return;
+    }
+  });
+  function rerender() { if (route()[0] === 'campaigns' && !route()[1]) updateTable(); else render(); }
+  async function setStatus(list, status) {
+    const changed = [];
+    for (const c of list) {
+      const ok = status === 'paused' ? c.status === 'active' : c.status === 'paused';
+      if (!ok) continue;
+      await sleep(120);
+      c.status = status;
+      await post({ event: 'campaign_status_change', campaign_id: c.id, name: c.name, status, account: c.account });
+      changed.push(c);
+    }
+    return changed;
+  }
+
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const rb = t.closest('#range-btn'); if (rb) { toggleLb(q('#range-lb')); return; }
+    const ro = t.closest('#range-lb [role=option]');
+    if (ro) { toggleLb(q('#range-lb'), false); if (ro.dataset.range !== st.range) { st.range = ro.dataset.range; await withLoading(); } return; }
+    const vw = t.closest('[data-view]');
+    if (vw) { st.view = vw.dataset.view; st.f = blankFilters(); if (st.view !== 'all') st.f.status = st.view; st.page = 1; st.sel.clear(); render(); return; }
+    if (t.closest('#clear-filters') || t.closest('[data-clear]')) { st.f = blankFilters(); st.view = 'all'; st.page = 1; st.sel.clear(); render(); return; }
+    const so = t.closest('[data-sort]');
+    if (so) { const k = so.dataset.sort; st.sort = st.sort.k === k ? { k, dir: -st.sort.dir } : { k, dir: k === 'name' || k === 'market' || k === 'owner' || k === 'status' ? 1 : -1 }; updateTable(); return; }
+    const pg = t.closest('[data-page]');
+    if (pg && !pg.disabled) { st.page = +pg.dataset.page; updateTable(); return; }
+    const mo = t.closest('[data-more]');
+    if (mo) { openMenu(mo); return; }
+    if (t.closest('#bulk-clear')) { st.sel.clear(); updateTable(); return; }
+    if (t.closest('#bulk-pause') || t.closest('#bulk-resume')) { bulkStatus(t.closest('#bulk-pause') ? 'paused' : 'active'); return; }
+    if (t.closest('#bulk-archive')) { bulkArchive(); return; }
+    if (t.closest('#create-btn')) { openCreate(); return; }
+    if (t.closest('#export-btn')) { toast('Export started — we’ll email the CSV to freja.holmqvist@nordvikhome.com.'); return; }
+    if (t.closest('#columns-btn')) { openColumns(t.closest('#columns-btn')); return; }
+    const de = t.closest('[data-detail-edit]'); if (de) { openEdit(campaigns.find((c) => c.id === de.dataset.detailEdit)); return; }
+    const rec1 = t.closest('[data-rec]');
+    if (rec1) {
+      const i = +rec1.dataset.rec, apply = rec1.dataset.act === 'apply';
+      const text = ['Raise the daily budget of FI | Gift Guide | Catalogue from $120.00 to $150.00', 'Turn on Advantage placements for SE | Wool Throws | Broad'][i];
+      if (apply) confirmBox(`Apply this recommendation? ${text}.`, 'Apply', async () => { await post({ event: 'recommendation_apply', recommendation: text }); st.recs[i] = false; render(); toast('Recommendation applied.'); });
+      else { await post({ event: 'recommendation_dismiss', recommendation: text }); st.recs[i] = false; render(); }
+      return;
+    }
+    const cp = t.closest('[data-child-page]'); if (cp) { st.adsPage = +cp.dataset.childPage; render(); return; }
+    if (t.closest('#aud-create')) { openAudience(); return; }
+    if (t.closest('#st-save')) {
+      const tz = q('#st-tz').value, attr = q('#st-attr').value, wk = q('#st-weekly').checked;
+      const b = t.closest('#st-save'); b.disabled = true; b.textContent = 'Saving…'; await sleep(600);
+      await post({ event: 'account_settings_update', account: st.account, time_zone: tz, attribution: attr, weekly_summary: wk ? 'yes' : 'no' });
+      Object.assign(SETTINGS[st.account] || (SETTINGS[st.account] = {}), { tz, attr, wk });
+      b.disabled = false; b.textContent = 'Save changes'; toast('Settings saved.'); return;
+    }
+    const noop = t.closest('[data-noop]'); if (noop) { toast(noop.dataset.noop); return; }
+  });
+
+  // ------------------------------------------------------------ row menu
+  function closeMenu() { const m = q('#rowmenu'); if (m) m.remove(); }
+  function openMenu(btn) {
+    closeMenu();
+    const c = campaigns.find((x) => x.id === btn.dataset.more);
+    const r = btn.getBoundingClientRect();
+    const items = [['edit', 'Edit'], ['dup', 'Duplicate']];
+    if (c.status === 'active') items.push(['pause', 'Pause']);
+    if (c.status === 'paused') items.push(['resume', 'Resume']);
+    items.push(['archive', 'Archive']);
+    document.body.insertAdjacentHTML('beforeend', `<div class="menu" id="rowmenu" role="menu" aria-label="Actions for ${esc(c.name)}" style="top:${r.bottom + window.scrollY + 4}px;left:${Math.max(8, r.right + window.scrollX - 170)}px">${items.map(([k, l]) => `<button type="button" role="menuitem" data-act="${k}" class="${k === 'archive' ? 'danger' : ''}">${l}</button>`).join('')}</div>`);
+    q('#rowmenu').addEventListener('click', async (e) => {
+      const it = e.target.closest('[data-act]'); if (!it) return;
+      const act = it.dataset.act; closeMenu();
+      if (act === 'edit') openEdit(c);
+      if (act === 'dup') openDuplicate(c);
+      if (act === 'pause' || act === 'resume') { const ch = await setStatus([c], act === 'pause' ? 'paused' : 'active'); if (ch.length) toast(`“${c.name}” ${act === 'pause' ? 'paused' : 'resumed'}.`); rerender(); }
+      if (act === 'archive') confirmBox(`Archive “${c.name}”? Archived campaigns stop delivering and are hidden from this list.`, 'Archive', async () => { c.status = 'archived'; st.sel.delete(c.id); await post({ event: 'campaign_archive', campaign_id: c.id, name: c.name }); toast('Campaign archived.'); if (route()[1]) location.hash = '#/campaigns'; else rerender(); });
+    });
+  }
+  function bulkStatus(status) {
+    const sel = campaigns.filter((c) => st.sel.has(c.id));
+    const ok = sel.filter((c) => (status === 'paused' ? c.status === 'active' : c.status === 'paused'));
+    const skip = sel.length - ok.length;
+    const verb = status === 'paused' ? 'Pause' : 'Resume';
+    const d = modal(`<h3>${verb} ${ok.length} ${ok.length === 1 ? 'campaign' : 'campaigns'}?</h3>
+      ${ok.length ? `<p>${status === 'paused' ? 'Delivery stops within about 15 minutes.' : 'Delivery restarts within about 15 minutes.'}</p><ul>${ok.map((c) => `<li>${esc(c.name)} <span class="sub">${c.id}</span></li>`).join('')}</ul>` : `<p>None of the selected campaigns can be ${status === 'paused' ? 'paused — they aren’t active' : 'resumed — they aren’t paused'}.</p>`}
+      ${skip && ok.length ? `<p class="sub">${skip} selected ${skip === 1 ? 'campaign isn’t' : 'campaigns aren’t'} ${status === 'paused' ? 'active' : 'paused'} and will be skipped.</p>` : ''}
+      <div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok ${ok.length ? '' : 'disabled'}>${verb} campaigns</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => {
+      const b = d.querySelector('[data-ok]'); b.disabled = true; b.textContent = status === 'paused' ? 'Pausing…' : 'Resuming…';
+      await sleep(700);
+      const ch = await setStatus(ok, status);
+      closeModal(); st.sel.clear(); rerender();
+      toast(`${ch.length} ${ch.length === 1 ? 'campaign' : 'campaigns'} ${status === 'paused' ? 'paused' : 'resumed'}.`);
+    };
+  }
+  function bulkArchive() {
+    const sel = campaigns.filter((c) => st.sel.has(c.id));
+    confirmBox(`Archive ${sel.length} ${sel.length === 1 ? 'campaign' : 'campaigns'}? Archived campaigns stop delivering and are hidden from this list.`, 'Archive', async () => {
+      for (const c of sel) { c.status = 'archived'; await post({ event: 'campaign_archive', campaign_id: c.id, name: c.name }); }
+      st.sel.clear(); rerender(); toast('Campaigns archived.');
+    });
+  }
+  function openColumns(btn) {
+    const ex = q('.colpop'); if (ex) { ex.remove(); return; }
+    const r = btn.getBoundingClientRect();
+    document.body.insertAdjacentHTML('beforeend', `<div class="colpop" style="top:${r.bottom + window.scrollY + 4}px;left:${r.right + window.scrollX - 190}px"><b>Columns</b>${COLS.map((c) => `<label><input type="checkbox" class="colchk" value="${c.k}" ${st.hide.has(c.k) ? '' : 'checked'}> ${c.label}</label>`).join('')}</div>`);
+    q('.colpop').addEventListener('change', (e) => { const t = e.target; if (!t.classList.contains('colchk')) return; t.checked ? st.hide.delete(t.value) : st.hide.add(t.value); updateTable(); });
+  }
+
+  // ------------------------------------------------------------ detail page
+  function detailPage(id) {
+    const c = campaigns.find((x) => x.id === id);
+    if (!c || c.status === 'archived') return `<h1>Campaign not found</h1><p><a href="#/campaigns">Back to campaigns</a></p>`;
+    const m = metrics(c, st.range); const ro = rangeObj();
+    const m30 = metrics(c, 'last30');
+    const days = Array.from({ length: 30 }, (_, i) => { const base = m30.spend / 30; const w = 0.7 + 0.3 * Math.sin((i + c.id.charCodeAt(6)) * 0.9) + 0.15 * Math.cos(i * 2.3); return Math.max(0, base * w); });
+    const mx = Math.max(1, ...days);
+    const canToggle = c.status === 'active' || c.status === 'paused';
+    const adsets = adsetsFor(c);
+    return `<div class="pagehead"><div><div class="crumb"><a href="#/campaigns">← Campaigns</a> · ${esc(acct().name)}</div><h1>${esc(c.name)}</h1><div class="sub">${c.id} · ${esc(c.objective)} · ${esc(c.market)} · owner ${esc(c.owner)}</div></div><div class="spacer"></div>
+        <span class="pill ${c.status}">${STATUS_LABEL[c.status]}</span><label class="tgl"><input type="checkbox" class="onoff" data-id="${c.id}" role="switch" aria-label="On/off: ${esc(c.name)}" ${c.status === 'active' ? 'checked' : ''} ${canToggle ? '' : 'disabled'}></label>
+        <button type="button" class="btn" data-detail-edit="${c.id}">Edit</button><button type="button" class="more" data-more="${c.id}" aria-haspopup="menu" aria-label="More actions for ${esc(c.name)}">⋯</button></div>
+      <p class="sub">Showing ${esc(ro.label)} (${esc(ro.sub)}). Change the date range on the Campaigns page.</p>
+      <div class="tiles"><div class="tile"><div class="l">Amount spent</div><div class="v">${money(m.spend)}</div></div><div class="tile"><div class="l">Impressions</div><div class="v">${group(m.impr)}</div></div><div class="tile"><div class="l">Clicks</div><div class="v">${group(m.clicks)}</div></div><div class="tile"><div class="l">Conversions</div><div class="v">${group(m.conv)}</div></div></div>
+      <div class="two"><div class="card"><h2>Daily spend, last 30 days</h2><div class="bars">${days.map((d) => `<i style="height:${((d / mx) * 100).toFixed(1)}%"></i>`).join('')}</div><div class="sub" style="display:flex;justify-content:space-between"><span>25 Aug</span><span>23 Sep</span></div></div>
+        <div class="card"><h2>Settings</h2><table class="grid"><tbody><tr><td>Objective</td><td>${esc(c.objective)}</td></tr><tr><td>Daily budget</td><td>${money(toCents(c.budget))}</td></tr><tr><td>Market</td><td>${esc(c.market)}</td></tr><tr><td>Owner</td><td>${esc(c.owner)}</td></tr><tr><td>Created</td><td>${c.created}</td></tr><tr><td>Bid strategy</td><td>Lowest cost</td></tr></tbody></table></div></div>
+      <div class="card"><h2>Ad sets</h2><table class="grid"><thead><tr><th>Ad set</th><th>Status</th><th class="num">Budget share</th><th class="num">Amount spent</th></tr></thead><tbody>${adsets.map((a) => `<tr><td>${esc(a.name)}</td><td><span class="pill ${a.status}">${STATUS_LABEL[a.status]}</span></td><td class="num">${a.share}%</td><td class="num">${money(Math.round((m.spend * a.share) / 100))}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function adsetsFor(c) {
+    const kinds = ['Broad 25–54', 'Lookalike 2%', 'Retargeting 30d', 'Interest: Interior design', 'Catalogue viewers 14d'];
+    const n = c.id.charCodeAt(7) % 2 ? 2 : 3; const s = c.id.charCodeAt(6) % kinds.length;
+    const shares = n === 2 ? [60, 40] : [50, 30, 20];
+    return shares.map((sh, i) => ({ name: `${c.market} · ${kinds[(s + i) % kinds.length]}`, status: c.status, share: sh, campaign: c }));
+  }
+
+  // ------------------------------------------------------------ edit / duplicate / create
+  function openEdit(c) {
+    const owners = [...new Set(campaigns.map((x) => x.owner))].sort();
+    q('#modal-root').innerHTML = `<aside class="drawer" role="dialog" aria-modal="true" aria-label="Edit campaign"><h2 style="font-size:17px">Edit campaign</h2><p class="sub">${c.id}</p>
+      <div class="fld"><label for="ed-name">Campaign name</label><input type="text" id="ed-name" value="${esc(c.name)}"></div>
+      <div class="fld"><label for="ed-budget">Daily budget (USD)</label><input type="text" id="ed-budget" value="${(toCents(c.budget) / 100).toFixed(2)}"></div>
+      <div class="fld"><label for="ed-owner">Owner</label><select id="ed-owner">${owners.map((o) => `<option ${o === c.owner ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>
+      <div class="fld"><label for="ed-end">End date (optional)</label><input type="date" id="ed-end" min="2026-09-24"></div>
+      <div class="err" id="ed-err" hidden></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>Save changes</button></div></aside>`;
+    const d = q('#modal-root .drawer');
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => {
+      const name = norm(d.querySelector('#ed-name').value), budget = d.querySelector('#ed-budget').value.replace(/[$,\s]/g, ''), owner = d.querySelector('#ed-owner').value, end = d.querySelector('#ed-end').value;
+      const err = d.querySelector('#ed-err');
+      if (!name) { err.textContent = 'Enter a campaign name.'; err.hidden = false; return; }
+      if (!/^\d+(\.\d{1,2})?$/.test(budget) || +budget < 5) { err.textContent = 'Daily budget must be at least $5.00.'; err.hidden = false; return; }
+      const b = d.querySelector('[data-ok]'); b.disabled = true; b.textContent = 'Saving…'; await sleep(600);
+      await post({ event: 'campaign_update', campaign_id: c.id, name, budget: (+budget).toFixed(2), owner, end_date: end });
+      Object.assign(c, { name, budget: (+budget).toFixed(2), owner });
+      closeModal(); rerender(); toast('Campaign updated.');
+    };
+  }
+  function openDuplicate(c) {
+    const d = modal(`<h3>Duplicate campaign</h3><p>The copy is created as a draft with the same ad sets and ads.</p><div class="fld"><label for="dup-name">New campaign name</label><input type="text" id="dup-name" value="${esc(c.name)} – Copy"></div><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>Duplicate</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => {
+      const name = norm(d.querySelector('#dup-name').value) || c.name + ' – Copy';
+      await sleep(600);
+      const id = 'CMP-' + nextId++;
+      await post({ event: 'campaign_duplicate', campaign_id: c.id, new_campaign_id: id, new_name: name });
+      campaigns.push({ ...c, id, name, status: 'draft', spend: { jul: '0.00', aug: '0.00', sep: '0.00', last7: '0.00', last30: '0.00', lifetime: '0.00' }, created: '2026-09-24' });
+      closeModal(); rerender(); toast('Draft created.');
+    };
+  }
+  function openCreate() {
+    const markets = [...new Set(acctCampaigns().map((c) => c.market))].sort();
+    const d = modal(`<h3>Create campaign</h3><div class="fld"><label for="cr-name">Campaign name</label><input type="text" id="cr-name"></div><div class="fld"><label for="cr-obj">Objective</label><select id="cr-obj"><option>Sales</option><option>Awareness</option><option>Leads</option><option>App installs</option></select></div><div class="fld"><label for="cr-market">Market</label><select id="cr-market">${markets.map((m) => `<option>${esc(m)}</option>`).join('')}</select></div><div class="fld"><label for="cr-budget">Daily budget (USD)</label><input type="text" id="cr-budget" value="50.00"></div><div class="err" id="cr-err" hidden></div><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>Save as draft</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => {
+      const name = norm(d.querySelector('#cr-name').value); const budget = d.querySelector('#cr-budget').value.replace(/[$,\s]/g, '');
+      if (!name || !/^\d+(\.\d{1,2})?$/.test(budget)) { const e = d.querySelector('#cr-err'); e.textContent = 'Enter a name and a daily budget.'; e.hidden = false; return; }
+      await sleep(600);
+      const id = 'CMP-' + nextId++;
+      const c = { id, account: st.account, name, status: 'draft', market: d.querySelector('#cr-market').value, objective: d.querySelector('#cr-obj').value, owner: 'Freja Holmqvist', budget: (+budget).toFixed(2), cpm: 7, ctr: 0.01, cvr: 0.02, spend: { jul: '0.00', aug: '0.00', sep: '0.00', last7: '0.00', last30: '0.00', lifetime: '0.00' }, created: '2026-09-24' };
+      await post({ event: 'campaign_create', campaign_id: id, name, objective: c.objective, market: c.market, budget: c.budget, account: st.account });
+      campaigns.push(c); closeModal(); rerender(); toast('Draft campaign created.');
+    };
+  }
+
+  // ------------------------------------------------------------ other pages
+  function overviewPage() {
+    const list = acctCampaigns();
+    const tot = list.reduce((a, c) => { const m = metrics(c, 'last30'); a.s += m.spend; a.i += m.impr; a.c += m.clicks; a.v += m.conv; return a; }, { s: 0, i: 0, c: 0, v: 0 });
+    const byMarket = {}; list.forEach((c) => (byMarket[c.market] = (byMarket[c.market] || 0) + metrics(c, 'last30').spend));
+    const mx = Math.max(1, ...Object.values(byMarket));
+    const top = list.slice().sort((a, b) => metrics(b, 'last30').spend - metrics(a, 'last30').spend).slice(0, 5);
+    const recs = [['Raise the daily budget of FI | Gift Guide | Catalogue from $120.00 to $150.00', 'It hit its budget on 6 of the last 7 days.'], ['Turn on Advantage placements for SE | Wool Throws | Broad', 'Similar advertisers saw 11% lower cost per result.']];
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)}</div><h1>Overview</h1></div></div>
+      <p class="sub">Last 30 days · 25 Aug – 23 Sep 2026 · all campaigns in this account</p>
+      <div class="tiles"><div class="tile"><div class="l">Amount spent</div><div class="v">${money(tot.s)}</div></div><div class="tile"><div class="l">Impressions</div><div class="v">${group(tot.i)}</div></div><div class="tile"><div class="l">Clicks</div><div class="v">${group(tot.c)}</div></div><div class="tile"><div class="l">Conversions</div><div class="v">${group(tot.v)}</div></div></div>
+      <div class="two"><div class="card"><h2>Top campaigns by spend</h2><table class="grid"><thead><tr><th>Campaign</th><th>Status</th><th class="num">Amount spent</th></tr></thead><tbody>${top.map((c) => `<tr><td><a class="cname" href="#/campaigns/${c.id}">${esc(c.name)}</a></td><td><span class="pill ${c.status}">${STATUS_LABEL[c.status]}</span></td><td class="num">${money(metrics(c, 'last30').spend)}</td></tr>`).join('')}</tbody></table></div>
+        <div class="card"><h2>Spend by market</h2>${Object.entries(byMarket).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="hbar"><span>${esc(k)}</span><span class="track"><i style="width:${((v / mx) * 100).toFixed(1)}%"></i></span><span style="text-align:right">${money(v)}</span></div>`).join('')}</div></div>
+      ${st.account === 'nordics' ? `<div class="card"><h2>Recommendations</h2>${recs.map(([t, d], i) => (st.recs[i] ? `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><div style="flex:1"><b>${esc(t)}</b><div class="sub">${esc(d)}</div></div><button type="button" class="btn" data-rec="${i}" data-act="dismiss">Dismiss</button><button type="button" class="btn pri" data-rec="${i}" data-act="apply">Apply</button></div>` : '')).join('') || '<p class="sub">No recommendations right now.</p>'}</div>` : ''}`;
+  }
+  function childPage(kind) {
+    const rows = [];
+    acctCampaigns().slice().sort((a, b) => a.name.localeCompare(b.name)).forEach((c) => adsetsFor(c).forEach((a, i) => {
+      if (kind === 'adsets') rows.push(a);
+      else ['Carousel', 'Single image'].slice(0, i === 0 ? 2 : 1).forEach((fmt, j) => rows.push({ name: `${fmt} · ${c.name.split(' | ')[1] || c.name} · v${j + 1}`, status: c.status, share: a.share / (i === 0 ? 2 : 1), campaign: c, adset: a.name }));
+    }));
+    const per = 25, pages = Math.ceil(rows.length / per); if (st.adsPage > pages) st.adsPage = 1;
+    const slice = rows.slice((st.adsPage - 1) * per, st.adsPage * per);
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)} › ${kind === 'adsets' ? 'Ad sets' : 'Ads'}</div><h1>${kind === 'adsets' ? 'Ad sets' : 'Ads'}</h1></div></div>
+      <div class="leveltabs" role="tablist"><a role="tab" aria-selected="false" href="#/campaigns">Campaigns</a><a role="tab" aria-selected="${kind === 'adsets'}" href="#/adsets">Ad sets</a><a role="tab" aria-selected="${kind === 'ads'}" href="#/ads">Ads</a></div>
+      <p class="sub">Last 30 days · 25 Aug – 23 Sep 2026. To pause or resume delivery, use the Campaigns page.</p>
+      <div class="tablewrap" style="border-top:1px solid var(--line);border-radius:10px 10px 0 0"><table class="grid"><thead><tr><th>${kind === 'adsets' ? 'Ad set' : 'Ad'}</th><th>Campaign</th><th>Status</th><th class="num">Amount spent</th></tr></thead><tbody>${slice.map((a) => `<tr><td>${esc(a.name)}${a.adset ? `<div class="sub">${esc(a.adset)}</div>` : ''}</td><td><a href="#/campaigns/${a.campaign.id}">${esc(a.campaign.name)}</a></td><td><span class="pill ${a.status}">${STATUS_LABEL[a.status]}</span></td><td class="num">${money(Math.round((metrics(a.campaign, 'last30').spend * a.share) / 100))}</td></tr>`).join('')}</tbody></table></div>
+      <div class="pager"><span>${(st.adsPage - 1) * per + 1}–${Math.min(rows.length, st.adsPage * per)} of ${rows.length}</span><div class="pages"><button type="button" data-child-page="${st.adsPage - 1}" ${st.adsPage <= 1 ? 'disabled' : ''}>‹ Prev</button><button type="button" data-child-page="${st.adsPage + 1}" ${st.adsPage >= pages ? 'disabled' : ''}>Next ›</button></div></div>`;
+  }
+  const AUD = [['Website visitors 30d', 'Custom · pixel', '184,200'], ['Purchasers 180d', 'Custom · customer list', '41,380'], ['Lookalike 2% (DK) of purchasers', 'Lookalike', '1,120,000'], ['Lookalike 2% (NO) of purchasers', 'Lookalike', '980,000'], ['Newsletter subscribers', 'Custom · customer list', '63,950'], ['Catalogue viewers 14d', 'Custom · catalogue', '72,410'], ['Interest: Interior design 25–54', 'Saved', '3,400,000'], ['App users 90d', 'Custom · app', '28,760']];
+  function audiencesPage() {
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)}</div><h1>Audiences</h1></div><div class="spacer"></div><button type="button" class="btn pri" id="aud-create">＋ Create audience</button></div><div class="tablewrap" style="border-top:1px solid var(--line);border-radius:10px"><table class="grid"><thead><tr><th>Name</th><th>Type</th><th class="num">Estimated size</th><th>Last used</th></tr></thead><tbody>${AUD.map(([n, t, s], i) => `<tr><td><b>${esc(n)}</b></td><td>${esc(t)}</td><td class="num">${s}</td><td>${['22 Sep 2026', '19 Sep 2026', '23 Sep 2026', '23 Sep 2026', '2 Sep 2026', '23 Sep 2026', '11 Aug 2026', '30 Jul 2026'][i]}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function openAudience() {
+    const d = modal(`<h3>Create audience</h3><div class="fld"><label for="au-name">Audience name</label><input type="text" id="au-name"></div><div class="fld"><label for="au-src">Source</label><select id="au-src"><option>Website visitors</option><option>Customer list</option><option>App users</option><option>Lookalike</option></select></div><div class="fld"><label for="au-days">Retention (days)</label><input type="text" id="au-days" value="30"></div><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>Create audience</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { const n = norm(d.querySelector('#au-name').value); if (!n) return; await sleep(500); await post({ event: 'audience_create', name: n, source: d.querySelector('#au-src').value }); AUD.unshift([n, 'Custom', 'Calculating…']); closeModal(); render(); toast('Audience created.'); };
+  }
+  function creativePage() {
+    const cols = [['#f97316', '#fde68a'], ['#4338ca', '#c7d2fe'], ['#0f766e', '#99f6e4'], ['#be185d', '#fbcfe8'], ['#854d0e', '#fef08a'], ['#1d4ed8', '#bfdbfe']];
+    const names = ['autumn_lighting_carousel_v2', 'wool_throws_video_15s', 'oak_dining_hero_1080', 'candle_season_story', 'gift_guide_catalogue', 'linen_bedding_lifestyle', 'rug_collection_square', 'ceramics_drop_reel', 'black_friday_teaser', 'kids_room_refresh_v3', 'workspace_lamps_ugc', 'click_collect_static'];
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)}</div><h1>Creative library</h1></div><div class="spacer"></div><button type="button" class="btn" data-noop="Uploads are handled in the Pellucid Studio app.">⤒ Upload</button></div><div class="creative">${names.map((n, i) => `<div class="c"><div class="th" style="background:linear-gradient(135deg, ${cols[i % 6][0]}, ${cols[i % 6][1]})"></div><div class="m"><b>${n}</b><div class="sub">${i % 3 ? 'Image' : 'Video'} · used in ${1 + (i % 4)} ads</div></div></div>`).join('')}</div>`;
+  }
+  function reportsPage() {
+    const reps = [['Weekly performance by market', 'Every Monday 07:00', 'Freja Holmqvist'], ['Monthly spend by campaign', '1st of the month', 'Jonas Aakre'], ['Creative fatigue check', 'On demand', 'Mette Kjærgaard'], ['Conversions by placement', 'Every Friday 16:00', 'Linnea Bergqvist']];
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)}</div><h1>Reports</h1></div></div><div class="tablewrap" style="border-top:1px solid var(--line);border-radius:10px"><table class="grid"><thead><tr><th>Report</th><th>Schedule</th><th>Created by</th><th></th></tr></thead><tbody>${reps.map(([n, s, o]) => `<tr><td><b>${esc(n)}</b></td><td>${esc(s)}</td><td>${esc(o)}</td><td><button type="button" class="btn" data-noop="Report “${esc(n)}” is being prepared. It will open in a new tab when ready.">Run</button></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function billingPage() {
+    const sum = (k) => acctCampaigns().reduce((a, c) => a + toCents(c.spend[k]), 0);
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)}</div><h1>Billing</h1></div></div>
+      <div class="two"><div class="card"><h2>Invoices</h2><table class="grid"><thead><tr><th>Invoice</th><th>Period</th><th class="num">Amount (incl. VAT 25%)</th><th></th></tr></thead><tbody>
+        <tr><td>INV-2026-08-${st.account.toUpperCase().slice(0, 3)}</td><td>August 2026</td><td class="num">${money(Math.round(sum('aug') * 1.25))}</td><td><button type="button" class="btn" data-noop="Downloading PDF…">PDF</button></td></tr>
+        <tr><td>INV-2026-07-${st.account.toUpperCase().slice(0, 3)}</td><td>July 2026</td><td class="num">${money(Math.round(sum('jul') * 1.25))}</td><td><button type="button" class="btn" data-noop="Downloading PDF…">PDF</button></td></tr></tbody></table><p class="sub">Invoices include all campaigns in the account, including archived ones, plus VAT.</p></div>
+        <div class="card"><h2>Payment method</h2><p>Visa ending 5521 · expires 11/27</p><p class="sub">Billing threshold: $5,000.00 · next charge when reached</p><button type="button" class="btn" data-noop="Payment methods are managed by your organisation’s billing admin.">Update payment method</button></div></div>`;
+  }
+  const SETTINGS = {};
+  function settingsPage() {
+    const s = SETTINGS[st.account] || { tz: 'Europe/Oslo', attr: '7-day click, 1-day view', wk: true };
+    return `<div class="pagehead"><div><div class="crumb">${esc(acct().name)}</div><h1>Settings</h1></div></div><div class="card" style="max-width:560px">
+      <div class="fld"><label for="st-name">Account name</label><input type="text" id="st-name" value="${esc(acct().name)}" disabled></div>
+      <div class="fld"><label for="st-cur">Currency</label><input type="text" id="st-cur" value="USD — US dollar" disabled></div>
+      <div class="fld"><label for="st-tz">Time zone</label><select id="st-tz">${['Europe/Oslo', 'Europe/Stockholm', 'Europe/Copenhagen', 'Europe/Helsinki', 'Atlantic/Reykjavik'].map((z) => `<option ${z === s.tz ? 'selected' : ''}>${z}</option>`).join('')}</select></div>
+      <div class="fld"><label for="st-attr">Attribution setting</label><select id="st-attr">${['7-day click, 1-day view', '7-day click', '1-day click', '28-day click, 1-day view'].map((z) => `<option ${z === s.attr ? 'selected' : ''}>${z}</option>`).join('')}</select></div>
+      <label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="st-weekly" ${s.wk ? 'checked' : ''}> Email me a weekly performance summary</label>
+      <div style="display:flex;justify-content:flex-end"><button type="button" class="btn pri" id="st-save">Save changes</button></div></div>`;
+  }
+
+  function modal(html) { q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; return q('#modal-root .dialog'); }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmBox(msg, ok, fn) {
+    const d = modal(`<h3>Are you sure?</h3><p>${esc(msg)}</p><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn pri" data-ok>${esc(ok)}</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { d.querySelector('[data-ok]').disabled = true; await sleep(500); closeModal(); await fn(); };
+  }
+
+  if (!location.hash) history.replaceState(null, '', '#/campaigns');
+  renderAcct();
+  render();
+})();
+</script>
+</body>
+</html>

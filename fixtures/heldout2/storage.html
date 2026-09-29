@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hearthstone Self Storage · Portland</title>
+<script src="../common.js"></script>
+<style>
+  :root { --brick: #a33a2b; --brick-d: #7c2a1f; --char: #2d2f33; --char2: #44474d; --sand: #f4efe8; --line: #e1dad0; --muted: #6d6a66; --ok: #2f7a45; --warn: #b3541e; --bg: #fbf9f6; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Helvetica Neue", Arial, system-ui, sans-serif; color: var(--char); background: var(--bg); }
+  a { color: var(--brick); }
+  .util { background: var(--char); color: #d8d4ce; font-size: 13px; display: flex; gap: 20px; padding: 6px 28px; }
+  .util a { color: #f0c9a8; text-decoration: none; }
+  .util span:first-child { margin-right: auto; }
+  header.main { background: #fff; border-bottom: 3px solid var(--brick); display: flex; align-items: center; gap: 30px; padding: 14px 28px; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--char); }
+  .logo .mark { width: 38px; height: 38px; background: var(--brick); color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; }
+  .logo b { font-size: 19px; letter-spacing: .3px; }
+  .logo small { display: block; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  header.main nav a { color: var(--char); text-decoration: none; font-weight: 600; margin-right: 20px; }
+  header.main nav a.on { color: var(--brick); border-bottom: 2px solid var(--brick); }
+  header.main .call { margin-left: auto; font-weight: 700; color: var(--brick); }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 24px 40px; }
+  h1 { font-size: 30px; margin: 0 0 10px; }
+  h2 { font-size: 21px; margin: 0 0 12px; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .btn { font: inherit; font-weight: 700; padding: 9px 18px; border-radius: 4px; border: 2px solid var(--brick); background: #fff; color: var(--brick); cursor: pointer; text-decoration: none; display: inline-block; }
+  .btn.primary { background: var(--brick); color: #fff; }
+  .btn.primary:hover { background: var(--brick-d); }
+  .btn:disabled { background: #e7e3de; border-color: #d4cec7; color: #99938c; cursor: not-allowed; }
+  .btn.sm { padding: 5px 12px; font-size: 13.5px; }
+  input[type=text], input[type=email], input[type=tel], input[type=date], input[type=search], select { font: inherit; padding: 9px 11px; border: 1.5px solid #cfc7bc; border-radius: 4px; background: #fff; width: 300px; }
+  input:focus, select:focus { outline: 3px solid #f2c7b5; border-color: var(--brick); }
+  .hero { background: linear-gradient(120deg, rgba(45,47,51,.92), rgba(124,42,31,.85)), repeating-linear-gradient(90deg, #555 0 40px, #4a4a4a 40px 80px); color: #fff; border-radius: 8px; padding: 42px 40px; margin-bottom: 26px; }
+  .hero h1 { font-size: 36px; }
+  .zipbar { display: flex; gap: 10px; align-items: flex-end; margin-top: 18px; }
+  .zipbar label { display: block; font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; margin-bottom: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .loc { display: grid; grid-template-columns: 1fr 230px; gap: 16px; }
+  .loc h3 { margin: 0 0 4px; font-size: 18px; }
+  .loc .right { text-align: right; }
+  .from { font-size: 14px; color: var(--muted); }
+  .from b { color: var(--char); font-size: 22px; }
+  .dist { display: inline-block; background: var(--sand); border-radius: 12px; padding: 1px 10px; font-size: 13px; font-weight: 700; margin-right: 8px; }
+  .stars { color: #c58b16; font-weight: 700; }
+  .chip { display: inline-block; border: 1px solid var(--line); border-radius: 12px; padding: 1px 9px; font-size: 12px; margin: 4px 4px 0 0; color: var(--char2); }
+  .toolbar { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; background: var(--sand); padding: 14px 16px; border-radius: 8px; margin-bottom: 16px; }
+  .toolbar label.lbl { display: block; font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .notice { background: #fff4e5; border: 1px solid #f0c98f; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; }
+  .err { color: #b3261e; font-weight: 600; margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 11px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  td.price b { font-size: 18px; }
+  td.price s { color: var(--muted); font-size: 12.5px; display: block; }
+  .avail { font-size: 13px; font-weight: 700; color: var(--ok); }
+  .avail.low { color: var(--warn); }
+  .avail.out { color: #999; }
+  .seg { display: inline-flex; border: 1.5px solid #cfc7bc; border-radius: 4px; overflow: hidden; }
+  .seg button { font: inherit; border: 0; background: #fff; padding: 7px 12px; cursor: pointer; border-right: 1px solid #e3ddd4; }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed=true] { background: var(--char); color: #fff; }
+  .skel { height: 18px; background: linear-gradient(90deg, #eee, #f7f7f7, #eee); background-size: 200% 100%; animation: sh 1.2s infinite; border-radius: 4px; margin: 10px 0; }
+  @keyframes sh { to { background-position: -200% 0; } }
+  .map { height: 170px; border-radius: 8px; background: linear-gradient(135deg, #e9e2d6 25%, #efe9df 25%, #efe9df 50%, #e9e2d6 50%, #e9e2d6 75%, #efe9df 75%); background-size: 40px 40px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-weight: 700; }
+  .two { display: grid; grid-template-columns: 1fr 320px; gap: 22px; }
+  .steps { display: flex; gap: 0; margin: 10px 0 20px; }
+  .steps li { list-style: none; flex: 1; padding: 9px 12px; background: #ece6dd; color: #857d72; font-weight: 700; font-size: 13px; clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%, 6% 50%); }
+  .steps li.on { background: var(--brick); color: #fff; }
+  .steps li.done { background: #d9c7b6; color: var(--char); }
+  .pcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pcard { border: 2px solid var(--line); border-radius: 8px; padding: 12px; cursor: pointer; display: block; background: #fff; }
+  .pcard:has(input:checked) { border-color: var(--brick); background: #fdf3ef; }
+  .pcard b { display: block; }
+  label.f { display: block; font-weight: 700; margin: 14px 0 4px; }
+  label.chk { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 6px; margin: 8px 0; cursor: pointer; background: #fff; }
+  .badge { background: #2f7a45; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+  .switch { display: flex; gap: 12px; align-items: center; cursor: pointer; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 6px; background: #fff; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .tr { width: 42px; height: 22px; border-radius: 11px; background: #cfc7bc; position: relative; flex: none; }
+  .switch .tr::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch input:checked + .tr { background: var(--brick); }
+  .switch input:checked + .tr::after { left: 23px; }
+  .summary { position: sticky; top: 16px; }
+  .summary dl { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; margin: 0; }
+  .summary dt { color: var(--muted); }
+  .summary dd { margin: 0; font-weight: 700; text-align: right; }
+  .actions { display: flex; justify-content: space-between; margin-top: 22px; }
+  .toast { position: fixed; right: 20px; bottom: 20px; background: var(--char); color: #fff; padding: 11px 16px; border-radius: 6px; z-index: 40; }
+  footer.foot { background: var(--char); color: #cfcac3; padding: 28px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 18px; font-size: 13px; }
+  footer.foot a { color: #f0c9a8; display: block; margin: 3px 0; text-decoration: none; }
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="util"><span>Reserve online free — no credit card needed</span><a href="#/pay">Pay my bill</a><a href="#/faq">Help</a><a href="#/business">Business storage</a></div>
+<header class="main">
+  <a class="logo" href="#/"><span class="mark">H</span><span><b>Hearthstone</b><small>Self Storage</small></span></a>
+  <nav aria-label="Main"><a href="#/locations" data-nav="locations">Find storage</a><a href="#/size-guide" data-nav="size-guide">Unit size guide</a><a href="#/supplies" data-nav="supplies">Moving supplies</a><a href="#/faq" data-nav="faq">FAQ</a></nav>
+  <span class="call">☎ (503) 555-0140</span>
+</header>
+<main id="main"></main>
+<footer class="foot">
+  <div><b style="color:#fff">Hearthstone Self Storage</b><br>Family-owned in Portland since 1987. Ten locations across the metro area.<br>Customer care: (503) 555-0140 · Mon–Sat 8am–7pm</div>
+  <div><a href="#/locations">All locations</a><a href="#/size-guide">Size guide</a><a href="#/supplies">Moving supplies</a></div>
+  <div><a href="#/business">Business storage</a><a href="#/pay">Pay my bill</a><a href="#/faq">FAQ</a></div>
+  <div><a href="#/legal/terms">Rental terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/accessibility">Accessibility</a></div>
+</footer>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3500); };
+  const usd = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
+
+  const TODAY = '2026-09-24';
+  // Recommended order is the order of this list.
+  const LOCS = [
+    { id: 'gateway', name: 'Hearthstone Gateway', addr: '10120 NE Halsey St, Portland, OR 97220', d: { '97214': 4.7, '97204': 8.2 }, rating: 4.3, reviews: 212, cc10: 149, hours: 'Office Mon–Sat 9am–6pm, Sun 10am–4pm', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', 'Truck rental', '24/7 video'] },
+    { id: 'hawthorne', name: 'Hearthstone Hawthorne', addr: '3620 SE Hawthorne Blvd, Portland, OR 97214', d: { '97214': 0.8, '97204': 2.1 }, rating: 4.7, reviews: 318, cc10: 189, hours: 'Office Mon–Sat 9am–6pm, Sun closed', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', 'Elevator', '24/7 video'] },
+    { id: 'sellwood', name: 'Hearthstone Sellwood', addr: '8230 SE 13th Ave, Portland, OR 97202', d: { '97214': 3.1, '97204': 4.4 }, rating: 4.8, reviews: 176, cc10: 159, hours: 'Office Mon–Fri 9am–6pm, Sat 9am–5pm', gate: 'Gate access 6am–9pm daily', feats: ['Climate-controlled', 'Drive-up', '24/7 video'] },
+    { id: 'lloyd', name: 'Hearthstone Lloyd District', addr: '1510 NE Multnomah St, Portland, OR 97232', d: { '97214': 3.4, '97204': 1.3 }, rating: 4.2, reviews: 241, cc10: 171, hours: 'Office Mon–Sat 8:30am–6pm', gate: 'Gate access 24 hours', feats: ['Climate-controlled', 'Elevator', 'Business center', '24/7 video'] },
+    { id: 'division', name: 'Hearthstone Division Street', addr: '2915 SE Division St, Portland, OR 97202', d: { '97214': 1.6, '97204': 2.6 }, rating: 4.5, reviews: 289, cc10: 176, hours: 'Office Mon–Sat 9am–6pm, Sun 10am–4pm', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', '24/7 video'] },
+    { id: 'beaverton', name: 'Hearthstone Beaverton', addr: '12500 SW Canyon Rd, Beaverton, OR 97005', d: { '97214': 9.8, '97204': 7.4 }, rating: 4.6, reviews: 198, cc10: 168, hours: 'Office Mon–Sat 9am–6pm', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', 'RV & boat parking', 'Truck rental'] },
+    { id: 'foster-powell', name: 'Hearthstone Foster-Powell', addr: '6120 SE Foster Rd, Portland, OR 97206', d: { '97214': 2.4, '97204': 4.9 }, rating: 4.4, reviews: 154, cc10: 182, hours: 'Office Mon–Sat 9am–6pm', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', '24/7 video'] },
+    { id: 'st-johns', name: 'Hearthstone St. Johns', addr: '8801 N Lombard St, Portland, OR 97203', d: { '97214': 7.2, '97204': 7.9 }, rating: 4.1, reviews: 133, cc10: 154, hours: 'Office Tue–Sat 9am–5pm', gate: 'Gate access 6am–9pm daily', feats: ['Climate-controlled', 'Drive-up'] },
+    { id: 'milwaukie', name: 'Hearthstone Milwaukie', addr: '10850 SE Main St, Milwaukie, OR 97222', d: { '97214': 6.1, '97204': 7.0 }, rating: 4.6, reviews: 167, cc10: 162, hours: 'Office Mon–Sat 9am–6pm', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', 'Truck rental'] },
+    { id: 'tigard', name: 'Hearthstone Tigard', addr: '9950 SW Pacific Hwy, Tigard, OR 97223', d: { '97214': 11.3, '97204': 8.9 }, rating: 4.4, reviews: 121, cc10: 158, hours: 'Office Mon–Sat 9am–6pm', gate: 'Gate access 6am–10pm daily', feats: ['Climate-controlled', 'Drive-up', 'RV & boat parking'] },
+  ];
+  // Unit template (Hawthorne prices); other locations scale from their 10x10 climate-controlled price.
+  const TEMPLATE = [
+    ['5x5', 'std', 39, 52, 5], ['5x5', 'cc', 49, 65, 4], ['5x10', 'std', 112, 139, 3], ['5x10', 'cc', 146, 179, 1], ['10x10', 'std', 158, 199, 6],
+    ['10x10', 'cc', 189, 229, 2], ['10x15', 'du', 205, 249, 4], ['10x20', 'du', 262, 319, 0], ['10x30', 'du', 349, 419, 2],
+  ];
+  const TYPE = { std: ['standard', 'Standard indoor', 'Indoor · ground floor · hallway access'], cc: ['climate', 'Climate-controlled', 'Indoor · kept between 55°F and 80°F'], du: ['driveup', 'Drive-up', 'Drive-up · roll-up door · park at your unit'] };
+  const LIKE = { '5x5': 'About the size of a closet', '5x10': 'A walk-in closet — a studio’s worth of boxes', '10x10': 'Half a one-car garage — a one-bedroom home', '10x15': 'A one-bedroom apartment plus extras', '10x20': 'A one-car garage — a two-bedroom home', '10x30': 'A three- or four-bedroom house' };
+  const AVAIL_SHIFT = { gateway: [0, 1, 2, -1, 3, 1, 0, 2, 1], sellwood: [1, 0, -2, 2, 0, 3, 1, 1, 0], lloyd: [2, 1, 0, 0, 1, 2, -4, 1, 1], division: [0, 2, 1, 3, -2, 2, 1, 2, 0], beaverton: [3, 0, 2, 1, 0, 1, 1, 3, 1], 'foster-powell': [-5, 1, 1, 0, 2, 1, 2, 1, 0], 'st-johns': [1, 1, 0, 2, 1, 0, 1, 2, -2], milwaukie: [0, 2, 1, 1, 2, 1, 0, 1, 1], tigard: [2, 1, 3, 0, 1, 2, 2, 0, 1] };
+  // Smallest-unit (5x5 standard) web price differs by building mix, independent of the other sizes.
+  const SMALLEST = { gateway: 29, hawthorne: 39, sellwood: 34, lloyd: 41, division: 44, beaverton: 33, 'foster-powell': 35, 'st-johns': 31, milwaukie: 36, tigard: 32 };
+  function unitsFor(loc) {
+    const ratio = loc.cc10 / 189;
+    const sh = AVAIL_SHIFT[loc.id] || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    return TEMPLATE.map(([size, t, web, store, avail], i) => {
+      const fixed = size === '10x10' && t === 'cc' ? loc.cc10 : size === '5x5' && t === 'std' ? SMALLEST[loc.id] : null;
+      const w = fixed != null ? fixed : Math.round(web * ratio);
+      const s = fixed != null ? Math.round(fixed * store / web) : Math.round(store * ratio);
+      const left = loc.id === 'hawthorne' ? avail : Math.max(0, avail + sh[i]);
+      return { id: `${size}-${t}`, size, type: t, web: w, store: s, left };
+    });
+  }
+
+  // ------------------------------------------------------------ state
+  const S = { zip: '', origin: '', sort: 'recommended', fClimate: false, fDrive: false, searching: false, sizeTab: 'all', ccOnly: false, units: {}, R: null, done: null };
+  const km = (id) => LOCS.find((l) => l.id === id);
+  function route() { const h = location.hash.replace(/^#\/?/, ''); const [p, qs] = h.split('?'); return { parts: p.split('/').filter(Boolean), qs: new URLSearchParams(qs || '') }; }
+  const dim = (s) => s.replace('x', '×');
+  const dist = (l) => (S.origin ? l.d[S.origin] : null);
+  const fromPrice = (l) => Math.min(...unitsFor(l).map((u) => u.web));
+
+  // ------------------------------------------------------------ pages
+  function home() {
+    return `<section class="hero"><h1>Storage near you, without the hassle.</h1><p style="max-width:560px">Clean, well-lit units from closet-sized lockers to drive-up garages at ten Portland-area locations. Reserve online in minutes — nothing to pay until move-in.</p>
+      <div class="zipbar"><div><label for="home-zip">ZIP code</label><input type="text" id="home-zip" inputmode="numeric" maxlength="5" placeholder="e.g. 97214" style="width:200px"></div><button type="button" class="btn primary" id="home-go">Find storage</button></div><div class="err" id="home-err" role="alert" hidden></div></section>
+      <div class="grid3"><div class="card"><h2>🔒 Secure</h2><p class="muted">Keypad-gated access, 24/7 video recording and on-site managers at every location.</p></div><div class="card"><h2>🌡 Climate-controlled</h2><p class="muted">Protect furniture, documents and electronics from Portland’s damp winters.</p></div><div class="card"><h2>🚚 Free truck on move-in</h2><p class="muted">Most locations include a free moving truck on move-in day with any new rental.</p></div></div>
+      <div class="card"><h2>Not sure what size you need?</h2><p>A 5×10 fits the contents of a studio apartment; a 10×10 holds a one-bedroom home. <a href="#/size-guide">See the full size guide</a>.</p></div>
+      <div class="card"><h2>What customers say</h2><p>“Spotless building and the Hawthorne staff helped us pick a smaller unit than we thought we needed.” — <b>Marisol P.</b></p><p>“Reserved online on Sunday, moved in Monday. Easy.” — <b>Derek W.</b></p></div>`;
+  }
+  function locationsPage(qs) {
+    const zipParam = qs.get('zip') || '';
+    if (zipParam !== S.zip) startSearch(zipParam);
+    let list = LOCS.slice();
+    if (S.fClimate) list = list.filter((l) => l.feats.includes('Climate-controlled'));
+    if (S.fDrive) list = list.filter((l) => l.feats.includes('Drive-up'));
+    if (S.sort === 'distance' && S.origin) list.sort((a, b) => dist(a) - dist(b));
+    else if (S.sort === 'price') list.sort((a, b) => fromPrice(a) - fromPrice(b));
+    else if (S.sort === 'rating') list.sort((a, b) => b.rating - a.rating);
+    const note = !S.zip ? '<div class="notice">Enter a ZIP code to see distances.</div>' : S.searching ? '' : S.origin === '97204' ? `<div class="notice">We couldn't locate that ZIP — showing distances from downtown Portland (97204).</div>` : `<p class="muted">Showing ${list.length} locations near <b>${esc(S.zip)}</b>.</p>`;
+    return `<h1>Find a storage location</h1>
+      <div class="toolbar" role="search"><div><label class="lbl" for="loc-zip">ZIP code</label><input type="text" id="loc-zip" inputmode="numeric" maxlength="5" value="${esc(S.zip)}" style="width:160px"></div><button type="button" class="btn primary" id="loc-go">Search</button>
+        <div><label class="lbl" for="loc-sort">Sort by</label><select id="loc-sort" style="width:190px"><option value="recommended" ${S.sort === 'recommended' ? 'selected' : ''}>Recommended</option><option value="distance" ${S.sort === 'distance' ? 'selected' : ''} ${S.origin ? '' : 'disabled'}>Distance</option><option value="price" ${S.sort === 'price' ? 'selected' : ''}>Lowest price</option><option value="rating" ${S.sort === 'rating' ? 'selected' : ''}>Rating</option></select></div>
+        <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="f-climate" ${S.fClimate ? 'checked' : ''}> Climate-controlled units</label>
+        <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="f-drive" ${S.fDrive ? 'checked' : ''}> Drive-up units</label></div>
+      <div class="err" id="loc-err" role="alert" hidden></div>
+      ${note}
+      <div id="loc-results">${S.searching ? '<div class="card"><span class="spin"></span> Finding locations near ' + esc(S.zip) + '…</div>' : list.map((l) => `<div class="card loc"><div><h3><a href="#/location/${l.id}">${esc(l.name)}</a></h3><div class="muted">${esc(l.addr)}</div>
+        <div style="margin-top:6px">${dist(l) != null ? `<span class="dist">${dist(l).toFixed(1)} mi</span>` : ''}<span class="stars">★ ${l.rating.toFixed(1)}</span> <span class="muted">(${l.reviews} reviews)</span></div>
+        <div class="muted" style="margin-top:4px">${esc(l.hours)} · ${esc(l.gate)}</div><div>${l.feats.map((f) => `<span class="chip">${esc(f)}</span>`).join('')}</div></div>
+        <div class="right"><div class="from">Units from <b>${usd(fromPrice(l))}</b>/mo</div><p><a class="btn primary" href="#/location/${l.id}">View units</a></p></div></div>`).join('')}</div>`;
+  }
+  let searchSeq = 0;
+  async function startSearch(zip) {
+    S.zip = zip; S.origin = '';
+    if (!zip) { S.searching = false; if (S.sort === 'distance') S.sort = 'recommended'; return; }
+    S.searching = true;
+    const my = ++searchSeq;
+    await sleep(650);
+    if (my !== searchSeq) return;
+    S.searching = false;
+    S.origin = zip === '97214' ? '97214' : '97204';
+    if (route().parts[0] === 'locations') render();
+  }
+  function locationPage(id) {
+    const l = km(id);
+    if (!l) return '<h1>Location not found</h1><p><a href="#/locations">See all locations</a></p>';
+    const d = dist(l);
+    loadUnits(l);
+    const near = LOCS.filter((x) => x !== l).sort((a, b) => Math.abs(a.d['97214'] - l.d['97214']) - Math.abs(b.d['97214'] - l.d['97214'])).slice(0, 3);
+    return `<p class="muted"><a href="#/locations${S.zip ? '?zip=' + esc(S.zip) : ''}">← All locations</a></p>
+      <div class="two"><div><h1>${esc(l.name)}</h1><div>${esc(l.addr)}${d != null ? ` · <span class="dist">${d.toFixed(1)} mi from ${esc(S.zip)}</span>` : ''}</div>
+        <div style="margin:6px 0"><span class="stars">★ ${l.rating.toFixed(1)}</span> <span class="muted">(${l.reviews} reviews)</span></div><div class="muted">${esc(l.hours)} · ${esc(l.gate)}</div><div>${l.feats.map((f) => `<span class="chip">${esc(f)}</span>`).join('')}</div></div>
+        <div><div class="map">📍 Map of ${esc(l.name.replace('Hearthstone ', ''))}</div><p style="text-align:right"><button type="button" class="btn sm" id="directions">Get directions</button></p></div></div>
+      <div class="card" style="margin-top:16px"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><h2 style="margin:0;flex:1">Available units</h2>
+        <div class="seg" role="group" aria-label="Unit size">${[['all', 'All sizes'], ['small', 'Small'], ['medium', 'Medium'], ['large', 'Large']].map(([v, t]) => `<button type="button" data-size="${v}" aria-pressed="${S.sizeTab === v}">${t}</button>`).join('')}</div>
+        <label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" id="cc-only" ${S.ccOnly ? 'checked' : ''}> Climate-controlled only</label></div>
+        <div id="units">${S.units[l.id] ? unitsTable(l) : '<div class="skel"></div><div class="skel"></div><div class="skel"></div><p class="muted">Loading available units…</p>'}</div>
+        <p class="muted">Online prices are for the first 3 months; in-store rates apply after that. Prices do not include the one-time $29 admin fee.</p></div>
+      <div class="card"><h2>Reviews</h2><p><span class="stars">★★★★★</span> “Friendly staff and the building is always clean.” — Priya S.</p><p><span class="stars">★★★★☆</span> “Elevator was busy on a Saturday morning but otherwise great.” — Tom H.</p></div>
+      <div class="card"><h2>Other locations nearby</h2>${near.map((x) => `<p><a href="#/location/${x.id}">${esc(x.name)}</a> <span class="muted">— ${esc(x.addr)}</span></p>`).join('')}</div>`;
+  }
+  let unitLoads = {};
+  function loadUnits(l) {
+    if (S.units[l.id] || unitLoads[l.id]) return;
+    unitLoads[l.id] = true;
+    const payload = { location: l.id, updated: '2026-09-24T08:00:00-07:00', units: unitsFor(l) };
+    setTimeout(async () => {
+      try {
+        const res = await fetch('data:application/json,' + encodeURIComponent(JSON.stringify(payload)));
+        const data = await res.json();
+        S.units[l.id] = data.units;
+      } catch { S.units[l.id] = payload.units; }
+      unitLoads[l.id] = false;
+      const r = route();
+      if (r.parts[0] === 'location' && r.parts[1] === l.id) { const box = q('#units'); if (box) box.innerHTML = unitsTable(l); }
+    }, 500 + (l.id.length * 37) % 400);
+  }
+  function unitsTable(l) {
+    const SZ = { small: ['5x5', '5x10'], medium: ['10x10', '10x15'], large: ['10x20', '10x30'] };
+    const list = S.units[l.id].filter((u) => (S.sizeTab === 'all' || SZ[S.sizeTab].includes(u.size)) && (!S.ccOnly || u.type === 'cc'));
+    if (!list.length) return '<p class="muted">No units match these filters.</p>';
+    return `<table><thead><tr><th>Size</th><th>Type</th><th>Features</th><th>Monthly price</th><th>Availability</th><th></th></tr></thead><tbody>${list.map((u) => {
+      const [, tl, feat] = TYPE[u.type];
+      const av = u.left === 0 ? '<span class="avail out">Sold out</span>' : u.left === 1 ? '<span class="avail low">Only 1 left</span>' : u.left <= 3 ? `<span class="avail low">${u.left} left</span>` : '<span class="avail">Available</span>';
+      return `<tr><td><b style="font-size:17px">${dim(u.size)}</b><div class="muted">${LIKE[u.size]}</div></td><td>${tl}</td><td class="muted">${feat}</td><td class="price"><b>${usd(u.web)}</b>/mo<s>${usd(u.store)} in store</s></td><td>${av}</td>
+        <td>${u.left ? `<a class="btn primary sm" href="#/reserve/${l.id}/${u.id}" aria-label="Reserve ${dim(u.size)} ${tl}">Reserve</a>` : `<button type="button" class="btn sm" disabled aria-label="${dim(u.size)} ${tl} sold out">Sold out</button>`}</td></tr>`;
+    }).join('')}</tbody></table>`;
+  }
+
+  // ------------------------------------------------------------ reservation wizard
+  const PROT = [['basic', 'Basic — $12/mo', 'Covers up to $2,000 of stored goods', 12], ['premium', 'Premium — $19/mo', 'Covers up to $5,000 of stored goods', 19], ['own', 'I have my own insurance', 'Homeowner’s or renter’s policy that covers items in storage', 0]];
+  function newR(locId, unitId) { return { loc: locId, unit: unitId, step: 0, moveIn: '', prot: 'basic', insurer: '', insConfirm: false, lock: true, kit: false, truck: false, name: '', email: '', phone: '', busy: false }; }
+  function reservePage(locId, unitId) {
+    const l = km(locId);
+    const u = l && unitsFor(l).find((x) => x.id === unitId);
+    if (!l || !u) return '<h1>Unit not found</h1><p><a href="#/locations">Find storage</a></p>';
+    if (u.left === 0) return `<h1>This unit is sold out</h1><p><a href="#/location/${l.id}">See other units at ${esc(l.name)}</a></p>`;
+    if (!S.R || S.R.loc !== locId || S.R.unit !== unitId) S.R = newR(locId, unitId);
+    const R = S.R;
+    const STEPS = ['Move-in & protection', 'Add-ons', 'Your details', 'Review'];
+    let body = '';
+    if (R.step === 0) {
+      body = `<h2>When are you moving in?</h2><label class="f" for="r-date">Move-in date</label><input type="date" id="r-date" min="2026-09-25" max="2026-10-24" value="${esc(R.moveIn)}" style="width:220px"><div class="muted">Today is 24 September 2026. You can reserve up to 30 days ahead; we’ll hold the unit until your move-in date.</div>
+        <h2 style="margin-top:22px">Protect your belongings</h2><p class="muted">Every rental needs protection: choose a Hearthstone protection plan or tell us about your own insurance.</p>
+        <div class="pcards" role="radiogroup" aria-label="Protection">${PROT.map(([v, t, d]) => `<label class="pcard"><input type="radio" name="prot" value="${v}" ${R.prot === v ? 'checked' : ''}> <b>${t}</b><span class="muted">${d}</span></label>`).join('')}</div>
+        ${R.prot === 'own' ? `<div id="own-box"><label class="f" for="r-insurer">Insurance provider</label><input type="text" id="r-insurer" value="${esc(R.insurer)}"><label class="chk" style="margin-top:12px"><input type="checkbox" id="r-insconfirm" ${R.insConfirm ? 'checked' : ''}> I confirm my policy covers stored goods</label></div>` : ''}`;
+    } else if (R.step === 1) {
+      body = `<h2>Add-ons</h2><label class="chk"><input type="checkbox" id="r-lock" ${R.lock ? 'checked' : ''}> <span><b>Disc lock — $14.99</b> <span class="badge">Recommended</span><br><span class="muted">Hardened steel, fits every Hearthstone door. Picked up at the office on move-in day.</span></span></label>
+        <label class="chk"><input type="checkbox" id="r-kit" ${R.kit ? 'checked' : ''}> <span><b>Moving kit (boxes &amp; tape) — $39</b><br><span class="muted">10 medium boxes, 5 large boxes, 2 rolls of tape and a marker.</span></span></label>
+        <label class="switch"><input type="checkbox" role="switch" id="r-truck" ${R.truck ? 'checked' : ''}><span class="tr"></span><span><b>Free truck rental on move-in day</b><br><span class="muted">15-ft truck for up to 4 hours; we’ll call to confirm a pickup time.</span></span></label>`;
+    } else if (R.step === 2) {
+      body = `<h2>Your details</h2><label class="f" for="r-name">Full name</label><input type="text" id="r-name" value="${esc(R.name)}" autocomplete="name"><label class="f" for="r-email">Email</label><input type="email" id="r-email" value="${esc(R.email)}" autocomplete="email"><label class="f" for="r-phone">Phone</label><input type="tel" id="r-phone" value="${esc(R.phone)}" autocomplete="tel"><p class="muted">We’ll text a reminder the day before your move-in date.</p>`;
+    } else {
+      const pr = PROT.find((p) => p[0] === R.prot);
+      body = `<h2>Review your reservation</h2><table><tbody>
+        <tr><td>Location</td><td><b>${esc(l.name)}</b><div class="muted">${esc(l.addr)}</div></td></tr>
+        <tr><td>Unit</td><td><b>${dim(u.size)} ${TYPE[u.type][1]}</b> — ${usd(u.web)}/mo</td></tr>
+        <tr><td>Move-in date</td><td>${new Date(R.moveIn + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</td></tr>
+        <tr><td>Protection</td><td>${esc(pr[1])}${R.prot === 'own' ? ` — ${esc(norm(R.insurer))}` : ''}</td></tr>
+        <tr><td>Add-ons</td><td>${[R.lock && 'Disc lock ($14.99)', R.kit && 'Moving kit ($39)', R.truck && 'Free truck rental'].filter(Boolean).join(', ') || 'None'}</td></tr>
+        <tr><td>Contact</td><td>${esc(norm(R.name))}<br>${esc(R.email.trim())} · ${esc(R.phone.trim())}</td></tr></tbody></table>
+        <p style="font-size:18px"><b>Due today: $0.00</b></p><p class="muted">You’ll pay the first month, protection and any add-ons when you move in. Cancel any time before your move-in date.</p>`;
+    }
+    const pr = PROT.find((p) => p[0] === R.prot);
+    const moveInTotal = u.web + pr[3] + (R.lock ? 14.99 : 0) + (R.kit ? 39 : 0) + 29;
+    return `<p class="muted"><a href="#/location/${l.id}">← Back to ${esc(l.name)}</a></p><h1>Reserve your unit</h1>
+      <ol class="steps">${STEPS.map((s, i) => `<li class="${i === R.step ? 'on' : i < R.step ? 'done' : ''}">${i + 1}. ${s}</li>`).join('')}</ol>
+      <div class="two"><div class="card">${body}<div class="err" id="r-err" role="alert" hidden></div>
+        <div class="actions">${R.step ? '<button type="button" class="btn" id="r-back">Back</button>' : '<span></span>'}<button type="button" class="btn primary" id="r-next">${R.step === 3 ? 'Reserve unit' : 'Continue'}</button></div></div>
+        <aside class="card summary"><h2>${dim(u.size)} ${TYPE[u.type][1]}</h2><div class="muted">${esc(l.name)}</div><div class="muted">${LIKE[u.size]}</div><hr style="border:0;border-top:1px solid var(--line)">
+          <dl><dt>Monthly rent</dt><dd>${usd(u.web)}</dd><dt>In-store rate</dt><dd><s>${usd(u.store)}</s></dd><dt>Protection</dt><dd>${pr[3] ? usd(pr[3]) + '/mo' : 'Own policy'}</dd><dt>Admin fee</dt><dd>$29</dd>${R.lock ? '<dt>Disc lock</dt><dd>$14.99</dd>' : ''}${R.kit ? '<dt>Moving kit</dt><dd>$39</dd>' : ''}<dt>Due at move-in</dt><dd>${usd(Math.round(moveInTotal * 100) / 100)}</dd><dt>Due today</dt><dd>$0.00</dd></dl></aside></div>`;
+  }
+  function rValidate() {
+    const R = S.R;
+    if (R.step === 0) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(R.moveIn)) return 'Choose a move-in date.';
+      if (R.moveIn < '2026-09-25' || R.moveIn > '2026-10-24') return 'Choose a move-in date between 25 September and 24 October 2026.';
+      if (R.prot === 'own' && !norm(R.insurer)) return 'Enter your insurance provider.';
+      if (R.prot === 'own' && !R.insConfirm) return 'Confirm that your policy covers goods in storage.';
+    }
+    if (R.step === 2) {
+      if (norm(R.name).split(' ').length < 2) return 'Enter your full name.';
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(R.email.trim())) return 'Enter a valid email address.';
+      let d = R.phone.replace(/\D/g, ''); if (d.length === 11 && d[0] === '1') d = d.slice(1);
+      if (d.length !== 10) return 'Enter a 10-digit phone number.';
+    }
+    return '';
+  }
+  async function reserve() {
+    const R = S.R; if (R.busy) return;
+    const l = km(R.loc), u = unitsFor(l).find((x) => x.id === R.unit);
+    R.busy = true;
+    const b = q('#r-next'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Reserving…';
+    await sleep(800);
+    let phone = R.phone.replace(/\D/g, ''); if (phone.length === 11 && phone[0] === '1') phone = phone.slice(1);
+    await post({ event: 'unit_reserve', location: l.id, unit: u.size, unit_type: TYPE[u.type][0], monthly_rate: u.web.toFixed(2), move_in: R.moveIn, protection: R.prot, insurer: R.prot === 'own' ? norm(R.insurer) : '', lock: R.lock ? 'yes' : 'no', moving_kit: R.kit ? 'yes' : 'no', truck: R.truck ? 'yes' : 'no', name: norm(R.name), email: R.email.trim().toLowerCase(), phone });
+    const ref = 'HS-' + (608214 + Math.floor(u.web));
+    S.done = { ref, loc: l.name, unit: `${dim(u.size)} ${TYPE[u.type][1]}`, moveIn: R.moveIn, email: R.email.trim().toLowerCase() };
+    S.R = null;
+    location.hash = '#/confirm/' + ref;
+  }
+
+  // ------------------------------------------------------------ info pages
+  const INFO = {
+    'size-guide': ['Unit size guide', `<table><thead><tr><th>Size</th><th>Fits</th></tr></thead><tbody>${Object.entries(LIKE).map(([k, v]) => `<tr><td><b>${dim(k)}</b></td><td>${v}</td></tr>`).join('')}</tbody></table>`],
+    supplies: ['Moving supplies', '<p>Boxes, tape, mattress covers and locks are available at every location office. Buy online as part of your reservation with the moving kit add-on.</p>'],
+    faq: ['Frequently asked questions', '<p><b>Do I need to pay to reserve?</b> No — reservations are free and there is nothing due until move-in.</p><p><b>What is climate control?</b> Climate-controlled units are kept between 55°F and 80°F year-round.</p><p><b>Do I need insurance?</b> Yes. Choose a Hearthstone protection plan or show proof of your own homeowner’s or renter’s insurance.</p>'],
+    business: ['Business storage', '<p>Inventory storage, document archiving and deliveries accepted at our Lloyd District business center.</p>'],
+    pay: ['Pay my bill', '<p>Sign in to the tenant portal with your account number and the ZIP code on your lease to pay online. You can also pay by phone at (503) 555-0140.</p>'],
+  };
+
+  function render() {
+    const { parts, qs } = route();
+    qa('header.main nav a').forEach((a) => a.classList.toggle('on', a.dataset.nav === parts[0]));
+    let h;
+    if (!parts.length) h = home();
+    else if (parts[0] === 'locations') h = locationsPage(qs);
+    else if (parts[0] === 'location') h = locationPage(parts[1]);
+    else if (parts[0] === 'reserve') h = reservePage(parts[1], parts[2]);
+    else if (parts[0] === 'confirm') h = S.done && S.done.ref === parts[1] ? `<h1>You’re all set!</h1><div class="card"><p>Reservation <b>${S.done.ref}</b>: ${esc(S.done.unit)} at ${esc(S.done.loc)}, moving in ${new Date(S.done.moveIn + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.</p><p class="muted">We’ve emailed the details to ${esc(S.done.email)}. Bring a photo ID and proof of insurance to the office on move-in day.</p><p><a class="btn" href="#/">Back to home</a></p></div>` : '<h1>Reservation not found</h1>';
+    else if (INFO[parts[0]]) h = `<h1>${INFO[parts[0]][0]}</h1><div class="card">${INFO[parts[0]][1]}</div>`;
+    else if (parts[0] === 'legal') h = `<h1>${esc((parts[1] || '').replace(/^./, (c) => c.toUpperCase()))}</h1><div class="card"><p>Hearthstone Self Storage policies are available at any location office.</p></div>`;
+    else h = '<h1>Page not found</h1><p><a href="#/">Home</a></p>';
+    q('#main').innerHTML = h;
+  }
+  window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+
+  function goZip(inputSel, errSel) {
+    const z = q(inputSel).value.trim();
+    const e = q(errSel);
+    if (!/^\d{5}$/.test(z)) { e.textContent = 'Enter a 5-digit ZIP code.'; e.hidden = false; return; }
+    e.hidden = true;
+    if (location.hash === '#/locations?zip=' + z) { startSearch(z); render(); return; }
+    location.hash = '#/locations?zip=' + z;
+  }
+  const main = q('#main');
+  main.addEventListener('click', (e) => {
+    const t = e.target;
+    if (t.closest('#home-go')) { goZip('#home-zip', '#home-err'); return; }
+    if (t.closest('#loc-go')) { goZip('#loc-zip', '#loc-err'); return; }
+    const sz = t.closest('[data-size]'); if (sz) { S.sizeTab = sz.dataset.size; qa('[data-size]').forEach((b) => b.setAttribute('aria-pressed', String(b === sz))); const l = km(route().parts[1]); if (l && S.units[l.id]) q('#units').innerHTML = unitsTable(l); return; }
+    if (t.closest('#directions')) { toast('Opening directions in your maps app…'); return; }
+    if (t.closest('#r-back')) { S.R.step--; render(); return; }
+    if (t.closest('#r-next')) {
+      if (S.R.step === 3) { reserve(); return; }
+      const m = rValidate(); const el = q('#r-err');
+      if (m) { el.textContent = m; el.hidden = false; return; }
+      S.R.step++; render(); window.scrollTo(0, 0); return;
+    }
+  });
+  main.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (e.target.id === 'home-zip') goZip('#home-zip', '#home-err');
+    if (e.target.id === 'loc-zip') goZip('#loc-zip', '#loc-err');
+  });
+  main.addEventListener('change', (e) => {
+    const t = e.target, R = S.R;
+    if (t.id === 'loc-sort') { S.sort = t.value; render(); return; }
+    if (t.id === 'f-climate') { S.fClimate = t.checked; render(); return; }
+    if (t.id === 'f-drive') { S.fDrive = t.checked; render(); return; }
+    if (t.id === 'cc-only') { S.ccOnly = t.checked; const l = km(route().parts[1]); if (l && S.units[l.id]) q('#units').innerHTML = unitsTable(l); return; }
+    if (!R) return;
+    if (t.id === 'r-date') R.moveIn = t.value;
+    if (t.name === 'prot') { R.prot = t.value; if (t.value !== 'own') R.insConfirm = false; render(); return; }
+    if (t.id === 'r-insconfirm') R.insConfirm = t.checked;
+    if (t.id === 'r-lock') { R.lock = t.checked; render(); return; }
+    if (t.id === 'r-kit') { R.kit = t.checked; render(); return; }
+    if (t.id === 'r-truck') R.truck = t.checked;
+  });
+  main.addEventListener('input', (e) => {
+    const t = e.target, R = S.R; if (!R) return;
+    if (t.id === 'r-date') R.moveIn = t.value;
+    if (t.id === 'r-insurer') R.insurer = t.value;
+    if (t.id === 'r-name') R.name = t.value;
+    if (t.id === 'r-email') R.email = t.value;
+    if (t.id === 'r-phone') R.phone = t.value;
+  });
+  render();
+})();
+</script>
+</body>
+</html>

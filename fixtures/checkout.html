@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Checkout · Threads</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body>
+<header><strong>Threads</strong><a href="#">Cart (2)</a></header>
+<main>
+  <h1>Checkout</h1>
+  <div class="row" style="align-items:flex-start;gap:40px">
+  <form id="f" novalidate>
+    <section aria-label="Contact"><h2>Contact</h2>
+      <label for="email">Email address</label><input id="email" type="email">
+      <div class="row"><input type="checkbox" id="news"><label for="news" style="display:inline;font-weight:400">Email me news and offers</label></div>
+    </section>
+    <section aria-label="Shipping address"><h2>Shipping address</h2>
+      <label for="name">Full name</label><input id="name" type="text">
+      <label for="addr">Street address</label><input id="addr" type="text">
+      <label for="city">City</label><input id="city" type="text">
+      <label for="zip">Postal code</label><input id="zip" type="text">
+      <label for="country">Country</label><select id="country"><option value="">Choose…</option><option>Argentina</option><option>Australia</option><option>Austria</option><option>Belgium</option><option>Brazil</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option><option>Czechia</option><option>Denmark</option><option>Egypt</option><option>Finland</option><option>France</option><option>Germany</option><option>Greece</option><option>Hungary</option><option>Iceland</option><option>India</option><option>Indonesia</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Japan</option><option>Kenya</option><option>Mexico</option><option>Netherlands</option><option>New Zealand</option><option>Nigeria</option><option>Norway</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Romania</option><option>Saudi Arabia</option><option>Singapore</option><option>South Africa</option><option>South Korea</option><option>Spain</option><option>Sweden</option><option>Switzerland</option><option>Thailand</option><option>Turkey</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option><option>Vietnam</option></select>
+    </section>
+    <fieldset style="border:0;padding:0"><legend><h2 style="margin:16px 0 4px">Shipping method</h2></legend>
+      <div><input type="radio" name="ship" id="s1" value="standard" checked><label for="s1" style="display:inline;font-weight:400">Standard (5–7 days) — Free</label></div>
+      <div><input type="radio" name="ship" id="s2" value="express"><label for="s2" style="display:inline;font-weight:400">Express (2 days) — $9.99</label></div>
+      <div><input type="radio" name="ship" id="s3" value="overnight"><label for="s3" style="display:inline;font-weight:400">Overnight — $24.99</label></div>
+    </fieldset>
+    <div class="row" style="margin-top:12px"><input type="checkbox" id="gift"><label for="gift" style="display:inline;font-weight:400">Add gift wrapping ($4)</label></div>
+    <div class="row"><input type="checkbox" id="terms"><label for="terms" style="display:inline;font-weight:400">I agree to the Terms of Service</label></div>
+    <div class="row" style="margin-top:14px"><button type="button" id="back">Return to cart</button><button class="primary" type="submit">Place order</button></div>
+    <p id="err" role="alert" style="color:#b91c1c"></p>
+  </form>
+  <aside class="card" style="width:220px"><h3>Order summary</h3><p>Oxford Shirt × 2 — $118.00</p><label for="promo">Promo code</label><input id="promo" type="text" style="width:120px"><button type="button">Apply</button></aside>
+  </div>
+</main>
+<script>
+q('#back').onclick = () => rec({ event: 'back' });
+q('#f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const v = (id) => q('#' + id).value.trim();
+  const missing = ['email','name','addr','city','zip','country'].filter((id) => !v(id));
+  if (missing.length) { q('#err').textContent = 'Please fill in: ' + missing.join(', '); return; }
+  if (!q('#terms').checked) { q('#err').textContent = 'You must agree to the Terms of Service.'; return; }
+  await rec({ event: 'order', email: v('email'), name: v('name'), addr: v('addr'), city: v('city'), zip: v('zip'), country: v('country'),
+    ship: q('input[name=ship]:checked').value, gift: q('#gift').checked, news: q('#news').checked });
+  if (q('#news').checked) await rec({ event: 'subscribe', email: v('email'), via: 'checkout' });
+  document.querySelector('main').innerHTML = '<h1>Thank you! Your order #A1234 is confirmed.</h1>';
+});
+</script></body></html>

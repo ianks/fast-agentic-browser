@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pigeonhole DNS</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fbfbfd; }
+  header { background: #1e1b4b; }
+  main { max-width: 1060px; }
+  .domains { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .dom { border: 1px solid #e0e7ff; background: #fff; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .dom .n { font-weight: 700; font-size: 16px; }
+  .plan { font-size: 12px; background: #eef2ff; color: #3730a3; border-radius: 8px; padding: 1px 7px; }
+  table { background: #fff; font-size: 14px; }
+  td.mono, .mono { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .type { font-weight: 700; font-size: 12px; background: #f1f5f9; border-radius: 4px; padding: 1px 6px; }
+  tr.editing td { background: #f5f7ff; }
+  tr.editing input[type=text] { width: 100%; box-sizing: border-box; }
+  tr.editing select { width: 110px; }
+  .toolbar { display: flex; gap: 8px; align-items: center; margin: 12px 0; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<header><strong>🕊 Pigeonhole DNS</strong><a href="#/domains">Domains</a><a href="#" data-dead>Billing</a><span style="margin-left:auto">Account: Larder Food Co-operative</span></header>
+<main id="view"></main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0"></h3><p id="dlg-b"></p>
+    <div class="row" style="justify-content:flex-end"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes">Delete record</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const R = (type, name, content, ttl) => ({ type, name, content, ttl });
+  const DOMAINS = {
+    'larder.coop': { plan: 'Pro', records: [R('A', '@', '203.0.113.10', 0), R('AAAA', '@', '2001:db8::10', 0), R('CNAME', 'www', 'larder.coop', 0), R('MX', '@', '10 mx1.fastpost.email', 3600),
+      R('TXT', '@', 'v=spf1 include:fastpost.email ~all', 3600), R('TXT', 'status', 'uptimeflare-verify=7c1e0a', 3600), R('CNAME', 'status', 'larder-coop.uptimeflare.net', 3600),
+      R('CNAME', 'status-eu', 'larder-coop-eu.uptimeflare.net', 3600), R('CNAME', 'shop', 'shops.mooringmarket.co', 1800)] },
+    'larder.co': { plan: 'Free', records: [R('A', '@', '203.0.113.44', 0), R('CNAME', 'status', 'larder-co.uptimeflare.net', 3600), R('CNAME', 'www', 'larder.co', 0)] },
+    'larder-coop.org': { plan: 'Free', records: [R('A', '@', '203.0.113.10', 0), R('CNAME', 'status', 'larder-coop.uptimeflare.net', 86400)] },
+    'fernmoss.studio': { plan: 'Pro', records: [R('A', '@', '198.51.100.7', 0), R('CNAME', 'www', 'fernmoss.studio', 0)] },
+  };
+  const TTLS = [[0, 'Auto'], [60, '1 min'], [120, '2 min'], [300, '5 min'], [600, '10 min'], [1800, '30 min'], [3600, '1 hr'], [43200, '12 hr'], [86400, '1 day']];
+  const ttlLabel = (s) => (TTLS.find((t) => t[0] === s) || [s, s + ' s'])[1];
+  const st = { editing: -1, filter: '' };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const view = q('#view');
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  function route() {
+    const p = (location.hash || '#/domains').slice(2).split('/');
+    st.editing = -1;
+    if (p[0] === 'domains' && p[1] && DOMAINS[p[1]]) return renderDomain(p[1]);
+    view.innerHTML = `<h1>Domains</h1><div class="domains">${Object.entries(DOMAINS).map(([d, x]) => `<div class="dom"><div><div class="n">${d}</div><div class="muted">${x.records.length} records · <span class="plan">${x.plan}</span></div></div><a class="btn" href="#/domains/${d}" aria-label="Manage DNS for ${d}">Manage DNS</a></div>`).join('')}</div>`;
+  }
+  function renderDomain(d) {
+    const D = DOMAINS[d]; const f = st.filter.trim().toLowerCase();
+    const rows = D.records.map((r, i) => [r, i]).filter(([r]) => !f || r.name.includes(f) || r.type.toLowerCase() === f || r.content.toLowerCase().includes(f));
+    view.innerHTML = `<p><a href="#/domains">← Domains</a></p><h1>${d}</h1><p class="muted">DNS records · changes usually propagate within the record's TTL.</p>
+      <div class="toolbar"><input type="search" id="rsearch" aria-label="Search records" placeholder="Search by name, type or content" value="${esc(st.filter)}" style="width:300px"><button type="button" id="add">Add record</button></div>
+      <table><thead><tr><th>Type</th><th>Name</th><th>Content</th><th>TTL</th><th style="width:170px">Actions</th></tr></thead><tbody>${rows.map(([r, i]) => st.editing === i ? `<tr class="editing" data-i="${i}"><td><span class="type">${r.type}</span></td>
+        <td><input type="text" id="ed-name" aria-label="Name" value="${esc(r.name)}"></td><td><input type="text" id="ed-content" aria-label="Content" value="${esc(r.content)}"></td>
+        <td><select id="ed-ttl" aria-label="TTL">${TTLS.map(([s, l]) => `<option value="${s}" ${r.ttl === s ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
+        <td><button type="button" id="ed-cancel">Cancel</button> <button type="button" class="primary" id="ed-save">Save</button><div class="err" id="ed-err" role="alert" hidden></div></td></tr>`
+        : `<tr data-i="${i}"><td><span class="type">${r.type}</span></td><td class="mono">${esc(r.name)}</td><td class="mono">${esc(r.content)}</td><td>${ttlLabel(r.ttl)}</td>
+        <td><button type="button" data-edit="${i}" aria-label="Edit ${r.type} record ${esc(r.name)}">Edit</button> <button type="button" data-del="${i}" aria-label="Delete ${r.type} record ${esc(r.name)}">Delete</button></td></tr>`).join('') || '<tr><td colspan="5" class="muted">No records match.</td></tr>'}</tbody></table>`;
+    q('#rsearch').oninput = (e) => { st.filter = e.target.value; st.editing = -1; renderDomain(d); const i = q('#rsearch'); i.focus(); };
+    q('#add').onclick = () => toast('Adding records requires the Pro API on this plan.');
+    view.onclick = async (e) => {
+      const ed = e.target.closest('[data-edit]'); const del = e.target.closest('[data-del]');
+      if (ed) { st.editing = +ed.dataset.edit; renderDomain(d); q('#ed-content').focus(); return; }
+      if (del) { const r = D.records[+del.dataset.del]; q('#dlg-h').textContent = `Delete ${r.type} record “${r.name}”?`; q('#dlg-b').textContent = `${r.content} will stop resolving.`; q('#dlg').hidden = false;
+        q('#dlg-yes').onclick = async () => { q('#dlg').hidden = true; await later(250); await rec({ event: 'dns_delete', domain: d, type: r.type, name: r.name }); D.records.splice(D.records.indexOf(r), 1); renderDomain(d); toast('Record deleted.'); }; return; }
+      if (e.target.id === 'ed-cancel') { st.editing = -1; renderDomain(d); return; }
+      if (e.target.id === 'ed-save') save(d);
+    };
+    view.onkeydown = (e) => { if (st.editing < 0) return; if (e.key === 'Enter' && e.target.closest('tr.editing')) { e.preventDefault(); save(d); } if (e.key === 'Escape') { st.editing = -1; renderDomain(d); } };
+  }
+  async function save(d) {
+    const D = DOMAINS[d]; const r = D.records[st.editing];
+    const name = q('#ed-name').value.trim().toLowerCase(); const content = q('#ed-content').value.trim(); const ttl = +q('#ed-ttl').value;
+    const err = (m) => { q('#ed-err').textContent = m; q('#ed-err').hidden = !m; };
+    if (!/^(@|[a-z0-9-]+(\.[a-z0-9-]+)*)$/.test(name)) return err('Enter a valid name.');
+    if (!content) return err('Content is required.');
+    q('#ed-save').disabled = true; await later(350);
+    await rec({ event: 'dns_update', domain: d, type: r.type, name, content, ttl: String(ttl), previous_name: r.name, previous_ttl: String(r.ttl) });
+    Object.assign(r, { name, content, ttl }); st.editing = -1; renderDomain(d); toast('Record updated.');
+  }
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; };
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

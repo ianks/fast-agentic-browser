@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hourwise · Brekke &amp; Lund Arkitekter</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 Inter, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1f2430; background: #f6f7f9; display: grid; grid-template-columns: 224px 1fr; min-height: 100vh; }
+  aside.nav { background: #13212e; color: #c5d0db; padding: 14px 0; }
+  aside.nav .logo { color: #fff; font-weight: 700; font-size: 18px; padding: 4px 18px 16px; display: flex; gap: 8px; align-items: center; }
+  aside.nav .logo i { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #ffb347, #ff7a59); display: inline-block; }
+  aside.nav h6 { margin: 14px 18px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6f8396; }
+  aside.nav a { display: flex; justify-content: space-between; padding: 7px 18px; color: #c5d0db; text-decoration: none; }
+  aside.nav a.on { background: #1f3346; color: #fff; box-shadow: inset 3px 0 0 #ff7a59; }
+  aside.nav a .b { background: #ff7a59; color: #fff; border-radius: 9px; font-size: 11px; padding: 0 6px; }
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .top { display: flex; align-items: center; gap: 14px; background: #fff; border-bottom: 1px solid #e3e6ea; padding: 10px 22px; }
+  .top input[type=search] { width: 280px; padding: 7px 10px; border: 1px solid #d6dae0; border-radius: 6px; }
+  .top .sp { flex: 1; }
+  .timer { display: flex; align-items: center; gap: 8px; border: 1px solid #d6dae0; border-radius: 6px; padding: 4px 6px 4px 10px; color: #56606e; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #ffe2d6; color: #b4461f; display: grid; place-items: center; font-weight: 600; font-size: 12px; }
+  .content { padding: 20px 26px 40px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #6b7483; margin: 0 0 16px; }
+  .btn { border: 1px solid #cfd4db; background: #fff; border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; color: #1f2430; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #ff7a59; border-color: #ff7a59; color: #fff; }
+  .btn.sm { padding: 3px 8px; font-size: 12px; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .card { background: #fff; border: 1px solid #e3e6ea; border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+  .filters { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
+  .filters label { display: flex; flex-direction: column; font-size: 12px; color: #56606e; gap: 3px; }
+  .filters select, .filters input { padding: 6px 8px; border: 1px solid #cfd4db; border-radius: 6px; font: inherit; min-width: 170px; background: #fff; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid #eceef1; text-align: left; font-size: 13px; }
+  th { color: #6b7483; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; background: #fafbfc; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bill { color: #1a7f4b; font-weight: 600; }
+  .nob { color: #9aa2ad; }
+  .pager { display: flex; align-items: center; gap: 6px; margin-top: 12px; }
+  .pager button { min-width: 32px; }
+  .pager button[aria-current=page] { background: #1f2430; color: #fff; border-color: #1f2430; }
+  .pager .info { margin-left: auto; color: #6b7483; font-size: 13px; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #e3e6ea; margin: 14px 0 18px; }
+  .tabs a { padding: 9px 14px; color: #6b7483; text-decoration: none; border-bottom: 2px solid transparent; }
+  .tabs a.on { color: #1f2430; border-bottom-color: #ff7a59; font-weight: 600; }
+  .settings { display: grid; grid-template-columns: 190px 1fr; gap: 22px; }
+  .vnav a { display: block; padding: 7px 10px; border-radius: 6px; color: #3b4452; text-decoration: none; }
+  .vnav a.on { background: #fff1ec; color: #b4461f; font-weight: 600; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eceef1; gap: 20px; }
+  .row small { display: block; color: #6b7483; }
+  .switch { width: 42px; height: 24px; border-radius: 999px; background: #cfd4db; border: 0; position: relative; cursor: pointer; flex: none; }
+  .switch::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .12s; }
+  .switch[aria-checked=true] { background: #1a7f4b; }
+  .switch[aria-checked=true]::after { left: 21px; }
+  .switch[disabled] { opacity: .5; }
+  .grid-ts td input { width: 56px; text-align: right; padding: 4px; border: 1px solid #d6dae0; border-radius: 4px; }
+  .pill { display: inline-block; font-size: 11px; border-radius: 9px; padding: 1px 8px; background: #eef1f4; color: #3b4452; }
+  .pill.ok { background: #e3f4ea; color: #1a7f4b; }
+  .pill.warn { background: #fff4db; color: #8a5a00; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi { background: #fff; border: 1px solid #e3e6ea; border-radius: 8px; padding: 14px; }
+  .kpi b { display: block; font-size: 20px; }
+  .crumb { color: #6b7483; font-size: 13px; margin-bottom: 6px; }
+  .crumb a { color: #6b7483; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #1f2430; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 50; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  footer { color: #9aa2ad; font-size: 12px; padding: 16px 26px; border-top: 1px solid #e3e6ea; margin-top: auto; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(19, 33, 46, .4); display: flex; align-items: center; justify-content: center; z-index: 40; }
+  .modal { background: #fff; border-radius: 8px; padding: 18px 22px; width: 420px; }
+</style>
+</head>
+<body>
+<aside class="nav" aria-label="Primary">
+  <div class="logo"><i></i>Hourwise</div>
+  <h6>Track</h6>
+  <a href="#/timesheet" data-nav="timesheet">My timesheet</a>
+  <a href="#/entries" data-nav="entries">Time entries</a>
+  <a href="#/approvals" data-nav="approvals">Approvals <span class="b">3</span></a>
+  <h6>Manage</h6>
+  <a href="#/projects" data-nav="projects">Projects</a>
+  <a href="#/clients" data-nav="clients">Clients</a>
+  <a href="#/people" data-nav="people">People</a>
+  <h6>Analyze</h6>
+  <a href="#/reports" data-nav="reports">Reports</a>
+  <a href="#/utilization" data-nav="utilization">Utilization</a>
+  <h6>Workspace</h6>
+  <a href="#/settings" data-nav="settings">Workspace settings</a>
+  <a href="#/integrations" data-nav="integrations">Integrations</a>
+</aside>
+<div class="main">
+  <div class="top">
+    <input type="search" placeholder="Jump to project, client or person…" aria-label="Quick jump" id="jump">
+    <span class="sp"></span>
+    <div class="timer"><span id="timer-label">No timer running</span><button class="btn sm" type="button" id="timer-btn">Start timer</button></div>
+    <button class="btn sm" type="button" id="notif" aria-label="Notifications (2 unread)">🔔 2</button><button class="btn sm" type="button" id="helpbtn">Help</button>
+    <span class="muted" style="color:#6b7483;font-size:13px">Brekke &amp; Lund Arkitekter</span>
+    <span class="avatar" title="Siri Lund (admin)">SL</span>
+  </div>
+  <div class="content" id="view"></div>
+  <footer>Hourwise · Workspace timezone Europe/Oslo · Today is Thursday 1 October 2026 · <a href="#/help">Help center</a> · <a href="#/status">Status</a></footer>
+</div>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const PEOPLE = ['Ana Beltran', 'Ana Beltrão', 'Farid Nazari', 'Jonas Brekke', 'Mikkel Aas', 'Siri Lund', 'Tuva Haugen'];
+  const PROJECTS = [
+    { id: 'P-2041', name: 'Harbor Retrofit', client: 'Oslo Havn KF', color: '#2f80ed', budget: 1200, status: 'Active' },
+    { id: 'P-2058', name: 'Harbor Retrofit – Phase 2', client: 'Oslo Havn KF', color: '#56ccf2', budget: 900, status: 'Active' },
+    { id: 'P-2033', name: 'Harborview Housing', client: 'Bjørvika Boligbyggelag', color: '#27ae60', budget: 1600, status: 'Active' },
+    { id: 'P-2019', name: 'Fjordline Terminal', client: 'Fjordline AS', color: '#9b51e0', budget: 2400, status: 'Active' },
+    { id: 'P-2064', name: 'Grünerløkka School Extension', client: 'Oslo kommune', color: '#f2994a', budget: 800, status: 'Tendering' },
+    { id: 'P-9001', name: 'Internal – Training', client: 'Brekke & Lund', color: '#828282', budget: 0, status: 'Internal' },
+    { id: 'P-9002', name: 'Internal – Admin', client: 'Brekke & Lund', color: '#bdbdbd', budget: 0, status: 'Internal' },
+  ];
+  const P = Object.fromEntries(PROJECTS.map((p) => [p.name, p]));
+  const TASKS = { 'Harbor Retrofit': ['Detailed design', 'Structural coordination', 'Client meeting', 'BIM modelling', 'Tender documents'], 'Harbor Retrofit – Phase 2': ['Concept design', 'Site analysis', 'Client meeting'], 'Harborview Housing': ['Planning application', 'Facade study', 'BIM modelling'], 'Fjordline Terminal': ['Design review', 'Wayfinding', 'Client meeting'], 'Grünerløkka School Extension': ['Competition entry', 'Model making'], 'Internal – Training': ['Revit course', 'Mentoring'], 'Internal – Admin': ['Timesheets & admin', 'Team meeting'] };
+  // Hand-kept entries for Ana Beltrão and Ana Beltran; everybody else is generated deterministically below.
+  const FIXED = [
+    // [date, person, project, task, hours, billable, note]
+    ['2026-08-24', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 4.5, 1, 'Stair core details'],
+    ['2026-08-26', 'Ana Beltrão', 'Harbor Retrofit', 'BIM modelling', 3.0, 1, ''],
+    ['2026-08-28', 'Ana Beltrão', 'Harbor Retrofit', 'Client meeting', 2.0, 1, 'Weekly with Oslo Havn'],
+    ['2026-08-31', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 2.5, 1, ''],
+    ['2026-09-01', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 3.5, 1, 'Facade anchors'],
+    ['2026-09-01', 'Ana Beltrão', 'Internal – Admin', 'Timesheets & admin', 1.0, 0, ''],
+    ['2026-09-02', 'Ana Beltrão', 'Harborview Housing', 'Planning application', 2.0, 1, ''],
+    ['2026-09-03', 'Ana Beltrão', 'Harbor Retrofit', 'BIM modelling', 4.0, 1, ''],
+    ['2026-09-03', 'Ana Beltrão', 'Harbor Retrofit – Phase 2', 'Concept design', 3.0, 1, 'Massing options'],
+    ['2026-09-04', 'Ana Beltrão', 'Harbor Retrofit', 'Structural coordination', 2.5, 1, 'With Multiconsult'],
+    ['2026-09-07', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 6.0, 1, ''],
+    ['2026-09-08', 'Ana Beltrão', 'Harbor Retrofit', 'Client meeting', 1.5, 0, 'Internal design review'],
+    ['2026-09-08', 'Ana Beltrão', 'Internal – Training', 'Revit course', 2.0, 0, ''],
+    ['2026-09-09', 'Ana Beltrão', 'Harbor Retrofit', 'Tender documents', 3.0, 1, ''],
+    ['2026-09-10', 'Ana Beltrão', 'Harborview Housing', 'Facade study', 3.5, 1, ''],
+    ['2026-09-11', 'Ana Beltrão', 'Harbor Retrofit – Phase 2', 'Site analysis', 2.5, 1, ''],
+    ['2026-09-11', 'Ana Beltrão', 'Internal – Admin', 'Team meeting', 1.0, 0, ''],
+    ['2026-09-14', 'Ana Beltrão', 'Harbor Retrofit', 'BIM modelling', 1.5, 1, ''],
+    ['2026-09-15', 'Ana Beltrão', 'Fjordline Terminal', 'Design review', 2.0, 1, ''],
+    ['2026-09-16', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 4.5, 1, 'Roof terrace'],
+    ['2026-09-17', 'Ana Beltrão', 'Harbor Retrofit', 'Structural coordination', 2.5, 0, 'Site visit – travel time'],
+    ['2026-09-17', 'Ana Beltrão', 'Harborview Housing', 'BIM modelling', 4.0, 1, ''],
+    ['2026-09-18', 'Ana Beltrão', 'Harbor Retrofit – Phase 2', 'Client meeting', 4.0, 1, 'Kick-off'],
+    ['2026-09-21', 'Ana Beltrão', 'Harbor Retrofit', 'Tender documents', 5.0, 1, ''],
+    ['2026-09-22', 'Ana Beltrão', 'Internal – Admin', 'Timesheets & admin', 0.5, 0, ''],
+    ['2026-09-22', 'Ana Beltrão', 'Harborview Housing', 'Planning application', 2.5, 1, ''],
+    ['2026-09-23', 'Ana Beltrão', 'Harbor Retrofit', 'Client meeting', 2.0, 1, 'Weekly with Oslo Havn'],
+    ['2026-09-24', 'Ana Beltrão', 'Internal – Training', 'Mentoring', 1.5, 0, ''],
+    ['2026-09-25', 'Ana Beltrão', 'Fjordline Terminal', 'Wayfinding', 3.0, 1, ''],
+    ['2026-09-28', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 3.5, 1, ''],
+    ['2026-09-29', 'Ana Beltrão', 'Harbor Retrofit – Phase 2', 'Concept design', 1.5, 1, ''],
+    ['2026-09-29', 'Ana Beltrão', 'Harborview Housing', 'Facade study', 3.0, 1, ''],
+    ['2026-09-30', 'Ana Beltrão', 'Harbor Retrofit', 'BIM modelling', 3.0, 1, ''],
+    ['2026-09-30', 'Ana Beltrão', 'Internal – Admin', 'Team meeting', 1.0, 0, ''],
+    ['2026-10-01', 'Ana Beltrão', 'Harbor Retrofit', 'Detailed design', 2.0, 1, ''],
+    ['2026-09-02', 'Ana Beltran', 'Harbor Retrofit', 'BIM modelling', 4.0, 1, 'Contractor'],
+    ['2026-09-09', 'Ana Beltran', 'Harbor Retrofit', 'BIM modelling', 4.0, 1, 'Contractor'],
+    ['2026-09-16', 'Ana Beltran', 'Harbor Retrofit', 'BIM modelling', 4.0, 1, 'Contractor'],
+    ['2026-09-23', 'Ana Beltran', 'Harbor Retrofit', 'BIM modelling', 4.0, 1, 'Contractor'],
+    ['2026-09-24', 'Ana Beltran', 'Harborview Housing', 'BIM modelling', 3.0, 1, 'Contractor'],
+  ];
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const rnd = mulberry32(20260901);
+  const DAYS = []; for (let d = new Date(Date.UTC(2026, 7, 3)); d <= new Date(Date.UTC(2026, 9, 1)); d = new Date(d.getTime() + 864e5)) { const w = d.getUTCDay(); if (w > 0 && w < 6) DAYS.push(d.toISOString().slice(0, 10)); }
+  const OTHERS = { 'Farid Nazari': ['Fjordline Terminal', 'Harborview Housing', 'Internal – Admin'], 'Jonas Brekke': ['Harbor Retrofit', 'Harbor Retrofit – Phase 2', 'Fjordline Terminal', 'Internal – Admin'], 'Mikkel Aas': ['Harborview Housing', 'Grünerløkka School Extension', 'Internal – Training'], 'Siri Lund': ['Internal – Admin', 'Harbor Retrofit', 'Fjordline Terminal'], 'Tuva Haugen': ['Harbor Retrofit', 'Harborview Housing', 'Grünerløkka School Extension', 'Internal – Training'] };
+  const ENTRIES = FIXED.map(([date, person, project, task, hours, billable, note]) => ({ date, person, project, task, hours, billable: !!billable, note }));
+  for (const day of DAYS) for (const [person, projs] of Object.entries(OTHERS)) {
+    const n = 1 + Math.floor(rnd() * 2);
+    for (let i = 0; i < n; i++) {
+      const project = projs[Math.floor(rnd() * projs.length)]; const tasks = TASKS[project];
+      const task = tasks[Math.floor(rnd() * tasks.length)]; const hours = (1 + Math.floor(rnd() * 12)) / 2;
+      ENTRIES.push({ date: day, person, project, task, hours, billable: !project.startsWith('Internal'), note: '' });
+    }
+  }
+  ENTRIES.forEach((e, i) => (e.id = 'TE-' + (40000 + i)));
+  ENTRIES.sort((a, b) => (a.date === b.date ? a.person.localeCompare(b.person) || a.id.localeCompare(b.id) : b.date.localeCompare(a.date)));
+  const MONTHS = [['2026-08', 'August 2026'], ['2026-09', 'September 2026'], ['2026-10', 'October 2026']];
+  const fmtDate = (s) => { const d = new Date(s + 'T12:00:00Z'); return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }); };
+  const h2 = (n) => n.toFixed(2);
+
+  const PSET = {}; // project settings
+  for (const p of PROJECTS) PSET[p.id] = { require_notes: false, require_approval: true, lock_30: false, round_15: true, notify_budget_80: true, notify_weekly_digest: false };
+  PSET['P-2058'].require_notes = false; PSET['P-2019'].require_notes = true;
+  const WSET = { require_notes: false, require_approval: true, lock_30: true, round_15: false, allow_future: false };
+  const st = { month: '2026-10', person: '', q: '', page: 1, per: 10, sort: 'date', dir: -1, sel: new Set() };
+
+  function filtered() {
+    const q = st.q.trim().toLowerCase();
+    const list = ENTRIES.filter((e) => e.date.startsWith(st.month) && (!st.person || e.person === st.person) && (!q || (e.project + ' ' + e.task + ' ' + e.note + ' ' + e.person).toLowerCase().includes(q)));
+    const key = { date: (e) => e.date, person: (e) => e.person, project: (e) => e.project, hours: (e) => e.hours }[st.sort];
+    return list.map((e, i) => [e, i]).sort(([a, i], [b, j]) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : i - j) * (x === y ? 1 : st.dir); }).map(([e]) => e);
+  }
+  function entriesPage() {
+    const list = filtered(); const pages = Math.max(1, Math.ceil(list.length / st.per)); if (st.page > pages) st.page = pages;
+    const slice = list.slice((st.page - 1) * st.per, st.page * st.per);
+    const total = list.reduce((a, e) => a + e.hours, 0);
+    const pbtn = []; for (let i = 1; i <= pages; i++) if (i === 1 || i === pages || Math.abs(i - st.page) <= 2) pbtn.push(i); else if (pbtn[pbtn.length - 1] !== '…') pbtn.push('…');
+    const sortBtn = (k, l) => `<button type="button" class="btn sm" data-sort="${k}" aria-label="Sort by ${l}" style="border:0;background:none;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit">${l}${st.sort === k ? (st.dir < 0 ? ' ↓' : ' ↑') : ''}</button>`;
+    const allOnPage = slice.length && slice.every((e) => st.sel.has(e.id));
+    return `<h1>Time entries</h1><p class="sub">Every entry logged in the workspace. Admins can edit or delete entries that aren't locked.</p>
+      <div class="card"><strong>Log time</strong><div class="filters" style="margin-top:8px">
+        <label>Project<select id="ql-project">${PROJECTS.map((p) => `<option>${esc(p.name)}</option>`).join('')}</select></label>
+        <label>Task<select id="ql-task">${TASKS[PROJECTS[0].name].map((t) => `<option>${esc(t)}</option>`).join('')}</select></label>
+        <label>Date<input type="date" id="ql-date" value="2026-10-01"></label><label>Hours<input type="text" id="ql-hours" placeholder="0.00" style="min-width:80px;width:80px"></label>
+        <label>Note<input type="text" id="ql-note" placeholder="What did you work on?"></label><label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="ql-bill" checked style="min-width:0"> Billable</label>
+        <button class="btn primary" type="button" id="ql-add">Log time</button></div></div>
+      <div class="card"><div class="filters">
+        <label>Month<select id="f-month">${MONTHS.map(([v, l]) => `<option value="${v}" ${st.month === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label>Person<select id="f-person"><option value="">All people</option>${PEOPLE.map((p) => `<option ${st.person === p ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select></label>
+        <label>Search<input type="search" id="f-q" value="${esc(st.q)}" placeholder="Project, task or note"></label>
+        <button class="btn" type="button" id="f-clear">Clear filters</button><button class="btn" type="button" id="export">Export CSV</button></div>
+      <div class="filters" style="margin:0 0 8px;align-items:center"><span style="font-size:13px;color:#6b7483">${st.sel.size} selected</span><button class="btn sm" type="button" data-bulk="billable" ${st.sel.size ? '' : 'disabled'}>Mark billable</button><button class="btn sm" type="button" data-bulk="nonbillable" ${st.sel.size ? '' : 'disabled'}>Mark non-billable</button><button class="btn sm" type="button" data-bulk="move" ${st.sel.size ? '' : 'disabled'}>Move to project…</button><button class="btn sm" type="button" data-bulk="delete" ${st.sel.size ? '' : 'disabled'}>Delete selected</button>${st.sel.size ? '<button class="btn sm" type="button" id="sel-clear">Clear selection</button>' : ''}</div>
+      <table><thead><tr><th><input type="checkbox" id="sel-all" aria-label="Select all entries on this page" ${allOnPage ? 'checked' : ''}></th><th>${sortBtn('date', 'Date')}</th><th>${sortBtn('person', 'Person')}</th><th>${sortBtn('project', 'Project')}</th><th>Task</th><th>Note</th><th class="num">${sortBtn('hours', 'Hours')}</th><th>Billable</th><th></th></tr></thead><tbody>
+      ${slice.map((e) => `<tr data-id="${e.id}"><td><input type="checkbox" data-sel="${e.id}" aria-label="Select entry ${e.id}" ${st.sel.has(e.id) ? 'checked' : ''}></td><td>${fmtDate(e.date)}</td><td>${esc(e.person)}</td><td><span class="dot" style="background:${P[e.project].color}"></span>${esc(e.project)}</td><td>${esc(e.task)}</td><td>${esc(e.note)}</td><td class="num">${h2(e.hours)}</td><td>${e.billable ? '<span class="bill">Billable</span>' : '<span class="nob">Non-billable</span>'}</td><td><button class="btn sm" type="button" data-edit="${e.id}">Edit</button> <button class="btn sm" type="button" data-dup="${e.id}">Duplicate</button> <button class="btn sm" type="button" data-del="${e.id}">Delete</button></td></tr>`).join('') || '<tr><td colspan="9" style="color:#6b7483">No entries match these filters.</td></tr>'}
+      </tbody><tfoot><tr><td></td><td colspan="5" style="font-weight:600">Total for all ${list.length} matching entries</td><td class="num" style="font-weight:600">${h2(total)}</td><td colspan="2"></td></tr></tfoot></table>
+      <div class="pager" role="navigation" aria-label="Pagination"><button class="btn" type="button" data-page="${st.page - 1}" ${st.page <= 1 ? 'disabled' : ''}>Previous</button>${pbtn.map((i) => (i === '…' ? '<span>…</span>' : `<button class="btn" type="button" data-page="${i}" ${i === st.page ? 'aria-current="page"' : ''}>${i}</button>`)).join('')}<button class="btn" type="button" data-page="${st.page + 1}" ${st.page >= pages ? 'disabled' : ''}>Next</button>
+        <span class="info">Showing ${list.length ? (st.page - 1) * st.per + 1 : 0}–${Math.min(st.page * st.per, list.length)} of ${list.length}</span></div></div>`;
+  }
+  function timesheetPage() {
+    const days = ['Mon 28', 'Tue 29', 'Wed 30', 'Thu 1', 'Fri 2'];
+    const rows = [['Internal – Admin', 'Timesheets & admin', [1, 0.5, 1, 0, 0]], ['Fjordline Terminal', 'Design review', [2, 3, 1.5, 0, 0]], ['Harbor Retrofit', 'Client meeting', [0, 1, 0, 0, 0]]];
+    return `<h1>My timesheet</h1><p class="sub">Week 40 · 28 September – 4 October 2026 · Siri Lund</p><div class="card"><table class="grid-ts"><thead><tr><th>Project / task</th>${days.map((d) => `<th class="num">${d}</th>`).join('')}<th class="num">Total</th></tr></thead><tbody>${rows.map(([p, t, hs], r) => `<tr><td><span class="dot" style="background:${P[p].color}"></span>${esc(p)} · <span style="color:#6b7483">${esc(t)}</span></td>${hs.map((h, i) => `<td class="num"><input type="text" value="${h ? h2(h) : ''}" aria-label="${esc(p)} ${days[i]}" data-ts="${r}-${i}"></td>`).join('')}<td class="num">${h2(hs.reduce((a, b) => a + b, 0))}</td></tr>`).join('')}</tbody></table>
+      <p style="display:flex;gap:8px;margin-top:12px"><button class="btn" type="button" id="ts-row">+ Add row</button><span style="flex:1"></span><button class="btn" type="button" id="ts-save">Save</button><button class="btn primary" type="button" id="ts-submit">Submit week for approval</button></p></div>`;
+  }
+  function approvalsPage() {
+    const A = [['Tuva Haugen', 'Week 39', '37.50'], ['Mikkel Aas', 'Week 39', '40.00'], ['Jonas Brekke', 'Week 39', '38.50']];
+    return `<h1>Approvals</h1><p class="sub">Timesheets waiting for your approval.</p><div class="card"><table><thead><tr><th>Person</th><th>Period</th><th class="num">Hours</th><th></th></tr></thead><tbody>${A.map(([n, w, h]) => `<tr><td>${esc(n)}</td><td>${w}</td><td class="num">${h}</td><td><button class="btn sm" type="button" data-appr="${esc(n)}" data-ans="approve">Approve</button> <button class="btn sm" type="button" data-appr="${esc(n)}" data-ans="reject">Reject</button></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function projectsPage() {
+    const used = (p) => ENTRIES.filter((e) => e.project === p.name).reduce((a, e) => a + e.hours, 0);
+    return `<h1>Projects</h1><p class="sub">${PROJECTS.length} projects · <a href="#/projects">Active</a> · <a href="#/projects">Archived (14)</a></p><div class="card"><table><thead><tr><th>Project</th><th>Code</th><th>Client</th><th class="num">Hours logged</th><th class="num">Budget (h)</th><th>Status</th></tr></thead><tbody>${PROJECTS.map((p) => `<tr><td><span class="dot" style="background:${p.color}"></span><a href="#/projects/${p.id}">${esc(p.name)}</a></td><td>${p.id}</td><td>${esc(p.client)}</td><td class="num">${h2(used(p))}</td><td class="num">${p.budget || '—'}</td><td><span class="pill ${p.status === 'Active' ? 'ok' : ''}">${p.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  const TT = [['require_notes', 'Require a note on every time entry', 'Entries without a note can\'t be saved.'], ['require_approval', 'Require approval for time entries', 'A project manager must approve weekly timesheets.'], ['lock_30', 'Lock entries older than 30 days', 'Only admins can change locked entries.'], ['round_15', 'Round timer entries to 15 minutes', 'Rounded up when the timer stops.']];
+  const NT = [['notify_budget_80', 'Email me at 80% of budget', 'Sent to the project manager.'], ['notify_weekly_digest', 'Weekly digest', 'Monday summary of hours by person.']];
+  function projectPage(id, tab, sub) {
+    const p = PROJECTS.find((x) => x.id === id); if (!p) return '<h1>Not found</h1>';
+    const tabs = [['overview', 'Overview'], ['team', 'Team'], ['budget', 'Budget'], ['settings', 'Settings']];
+    let inner = '';
+    const logged = ENTRIES.filter((e) => e.project === p.name);
+    if (tab === 'overview') inner = `<div class="kpis"><div class="kpi">Hours logged<b>${h2(logged.reduce((a, e) => a + e.hours, 0))}</b></div><div class="kpi">Billable<b>${h2(logged.filter((e) => e.billable).reduce((a, e) => a + e.hours, 0))}</b></div><div class="kpi">People<b>${new Set(logged.map((e) => e.person)).size}</b></div><div class="kpi">Budget<b>${p.budget ? p.budget + ' h' : '—'}</b></div></div><div class="card" style="margin-top:14px"><h3 style="margin-top:0">About</h3><p>${esc(p.client)} · project code ${p.id}. Project manager: Siri Lund.</p></div>`;
+    else if (tab === 'team') inner = `<div class="card"><table><thead><tr><th>Person</th><th>Role</th><th class="num">Hours</th></tr></thead><tbody>${[...new Set(logged.map((e) => e.person))].sort().map((n) => `<tr><td>${esc(n)}</td><td>${n === 'Siri Lund' ? 'Project manager' : 'Member'}</td><td class="num">${h2(logged.filter((e) => e.person === n).reduce((a, e) => a + e.hours, 0))}</td></tr>`).join('') || '<tr><td colspan="3">No time logged yet.</td></tr>'}</tbody></table></div>`;
+    else if (tab === 'budget') inner = `<div class="card"><p>Budget: ${p.budget ? p.budget + ' hours' : 'not set'} · Rate NOK 1,450 / h</p><button class="btn" type="button" id="budget-edit">Edit budget</button></div>`;
+    else {
+      const subs = [['general', 'General'], ['time', 'Time tracking'], ['invoicing', 'Invoicing'], ['notifications', 'Notifications']];
+      let panel = '';
+      if (sub === 'general') panel = `<h2 style="margin-top:0">General</h2><label style="display:block;margin:10px 0">Project name<br><input type="text" id="pg-name" value="${esc(p.name)}" style="width:360px;padding:6px"></label><label style="display:block;margin:10px 0">Client<br><input type="text" id="pg-client" value="${esc(p.client)}" style="width:360px;padding:6px"></label><button class="btn primary" type="button" id="pg-save">Save changes</button> <button class="btn" type="button" id="pg-archive">Archive project</button>`;
+      else if (sub === 'time') panel = `<h2 style="margin-top:0">Time tracking</h2><p class="sub">These rules apply to <strong>${esc(p.name)}</strong> only. Changes save automatically.</p>${TT.map(([k, l, d]) => `<div class="row"><div><strong>${esc(l)}</strong><small>${esc(d)}</small></div><button type="button" class="switch" role="switch" aria-checked="${PSET[p.id][k]}" aria-label="${esc(l)}" data-pset="${k}" data-pid="${p.id}"></button></div>`).join('')}`;
+      else if (sub === 'invoicing') panel = `<h2 style="margin-top:0">Invoicing</h2><label>Invoice by <select id="inv-by"><option>Task</option><option>Person</option><option>Project</option></select></label><p><button class="btn primary" type="button" id="inv-save">Save</button></p>`;
+      else panel = `<h2 style="margin-top:0">Notifications</h2>${NT.map(([k, l, d]) => `<div class="row"><div><strong>${esc(l)}</strong><small>${esc(d)}</small></div><button type="button" class="switch" role="switch" aria-checked="${PSET[p.id][k]}" aria-label="${esc(l)}" data-pset="${k}" data-pid="${p.id}"></button></div>`).join('')}`;
+      inner = `<div class="settings"><nav class="vnav" aria-label="Project settings">${subs.map(([k, l]) => `<a href="#/projects/${p.id}/settings/${k}" class="${k === sub ? 'on' : ''}">${l}</a>`).join('')}</nav><div class="card">${panel}</div></div>`;
+    }
+    return `<div class="crumb"><a href="#/projects">Projects</a> › ${esc(p.name)}</div><h1><span class="dot" style="background:${p.color}"></span>${esc(p.name)}</h1><p class="sub">${esc(p.client)} · ${p.id}</p><nav class="tabs" aria-label="Project sections">${tabs.map(([k, l]) => `<a href="#/projects/${p.id}/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>${inner}`;
+  }
+  function settingsPage(sub) {
+    const subs = [['general', 'General'], ['time', 'Time tracking'], ['billing', 'Billing'], ['security', 'Security']];
+    const WT = [['require_notes', 'Require a note on every time entry (all projects)', 'Overrides project settings.'], ['require_approval', 'Require approval for all timesheets', ''], ['lock_30', 'Lock entries older than 30 days', ''], ['round_15', 'Round all timers to 15 minutes', ''], ['allow_future', 'Allow time entries in the future', '']];
+    let panel = '';
+    if (sub === 'time') panel = `<h2 style="margin-top:0">Time tracking defaults</h2><p class="sub">Workspace-wide rules for every project and person.</p>${WT.map(([k, l, d]) => `<div class="row"><div><strong>${esc(l)}</strong><small>${esc(d)}</small></div><button type="button" class="switch" role="switch" aria-checked="${WSET[k]}" aria-label="${esc(l)}" data-wset="${k}"></button></div>`).join('')}`;
+    else if (sub === 'billing') panel = `<h2 style="margin-top:0">Billing</h2><p>Plan: Studio · 7 seats · renews 1 January 2027</p><button class="btn" type="button" id="plan-change">Change plan</button>`;
+    else if (sub === 'security') panel = `<h2 style="margin-top:0">Security</h2><p>Single sign-on: Google Workspace</p><button class="btn" type="button" id="sso">Configure SSO</button>`;
+    else panel = `<h2 style="margin-top:0">General</h2><p>Workspace name: Brekke &amp; Lund Arkitekter</p><p>Week starts on: Monday · Timezone: Europe/Oslo · Currency: NOK</p>`;
+    return `<h1>Workspace settings</h1><p class="sub">Settings for everyone in Brekke &amp; Lund Arkitekter.</p><div class="settings"><nav class="vnav" aria-label="Workspace settings">${subs.map(([k, l]) => `<a href="#/settings/${k}" class="${k === sub ? 'on' : ''}">${l}</a>`).join('')}</nav><div class="card">${panel}</div></div>`;
+  }
+  function simple(title, text) { return `<h1>${title}</h1><div class="card"><p>${text}</p></div>`; }
+  function peoplePage() { return `<h1>People</h1><div class="card"><table><thead><tr><th>Name</th><th>Role</th><th>Type</th></tr></thead><tbody>${PEOPLE.map((n) => `<tr><td>${esc(n)}</td><td>${n === 'Siri Lund' ? 'Admin' : 'Member'}</td><td>${n === 'Ana Beltran' ? 'Contractor (Beltran Visualisering)' : 'Employee'}</td></tr>`).join('')}</tbody></table></div>`; }
+  function reportsPage() { return `<h1>Reports</h1><div class="kpis"><div class="kpi">Hours this month<b>${h2(ENTRIES.filter((e) => e.date.startsWith('2026-10')).reduce((a, e) => a + e.hours, 0))}</b></div><div class="kpi">Billable ratio<b>81%</b></div><div class="kpi">Utilization<b>74%</b></div><div class="kpi">Unbilled (NOK)<b>412 350</b></div></div><div class="card" style="margin-top:14px"><p>Detailed reports (by client, by task, by person) are available on the Studio plan.</p><button class="btn" type="button" id="rep-save">Save report</button></div>`; }
+
+  function route() {
+    const parts = (location.hash || '#/entries').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === parts[0]));
+    const v = $('#view');
+    if (parts[0] === 'timesheet') v.innerHTML = timesheetPage();
+    else if (parts[0] === 'approvals') v.innerHTML = approvalsPage();
+    else if (parts[0] === 'projects' && parts[1]) v.innerHTML = projectPage(parts[1], parts[2] || 'overview', parts[3] || 'general');
+    else if (parts[0] === 'projects') v.innerHTML = projectsPage();
+    else if (parts[0] === 'settings') v.innerHTML = settingsPage(parts[1] || 'general');
+    else if (parts[0] === 'people') v.innerHTML = peoplePage();
+    else if (parts[0] === 'clients') v.innerHTML = simple('Clients', 'Oslo Havn KF · Bjørvika Boligbyggelag · Fjordline AS · Oslo kommune');
+    else if (parts[0] === 'reports') v.innerHTML = reportsPage();
+    else if (parts[0] === 'utilization' || parts[0] === 'integrations' || parts[0] === 'help' || parts[0] === 'status') v.innerHTML = simple(parts[0][0].toUpperCase() + parts[0].slice(1), 'Nothing to show here yet.');
+    else { document.querySelector('[data-nav=entries]').classList.add('on'); v.innerHTML = entriesPage(); }
+  }
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const view = $('#view');
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'f-month') { st.month = t.value; st.page = 1; route(); }
+    if (t.id === 'f-person') { st.person = t.value; st.page = 1; route(); }
+    if (t.id === 'ql-project') { $('#ql-task').innerHTML = TASKS[t.value].map((x) => `<option>${esc(x)}</option>`).join(''); }
+    if (t.dataset.sel) { t.checked ? st.sel.add(t.dataset.sel) : st.sel.delete(t.dataset.sel); route(); }
+    if (t.id === 'sel-all') { const rows = [...document.querySelectorAll('[data-sel]')].map((x) => x.dataset.sel); rows.forEach((id) => (t.checked ? st.sel.add(id) : st.sel.delete(id))); route(); }
+  });
+  let qTimer;
+  view.addEventListener('input', (e) => {
+    if (e.target.id === 'f-q') { clearTimeout(qTimer); const v = e.target.value; qTimer = setTimeout(() => { st.q = v; st.page = 1; route(); const i = $('#f-q'); i.focus(); i.setSelectionRange(v.length, v.length); }, 250); }
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { st.page = +pg.dataset.page; route(); return; }
+    if (t.closest('#f-clear')) { st.person = ''; st.q = ''; st.page = 1; route(); return; }
+    const so = t.closest('[data-sort]'); if (so) { if (st.sort === so.dataset.sort) st.dir = -st.dir; else { st.sort = so.dataset.sort; st.dir = so.dataset.sort === 'date' || so.dataset.sort === 'hours' ? -1 : 1; } st.page = 1; route(); return; }
+    if (t.closest('#sel-clear')) { st.sel.clear(); route(); return; }
+    const bk = t.closest('[data-bulk]'); if (bk && !bk.disabled) { if (bk.dataset.bulk === 'move') { toast('Pick a destination project from the Projects page.'); return; } await later(400); await rec({ event: 'entries_bulk', action: bk.dataset.bulk, count: String(st.sel.size) }); st.sel.clear(); route(); toast('Entries updated'); return; }
+    const du = t.closest('[data-dup]'); if (du) { await later(300); await rec({ event: 'entry_duplicate', entry: du.dataset.dup }); toast('Entry duplicated to today'); return; }
+    if (t.closest('#ql-add')) { const h = parseFloat(($('#ql-hours').value || '').replace(',', '.')); if (!(h > 0)) { toast('Enter the hours to log.'); return; } await later(400); await rec({ event: 'entry_add', project: $('#ql-project').value, task: $('#ql-task').value, date: $('#ql-date').value, hours: h.toFixed(2), billable: $('#ql-bill').checked ? 'yes' : 'no' }); $('#ql-hours').value = ''; $('#ql-note').value = ''; toast('Time logged'); return; }
+    if (t.closest('#export')) { toast('Your CSV export will be emailed to siri@brekkelund.no'); return; }
+    const sw = t.closest('.switch');
+    if (sw && !sw.disabled) {
+      const val = sw.getAttribute('aria-checked') !== 'true';
+      sw.disabled = true; sw.setAttribute('aria-checked', String(val));
+      await later(400);
+      if (sw.dataset.pset) { const p = PROJECTS.find((x) => x.id === sw.dataset.pid); PSET[p.id][sw.dataset.pset] = val; await rec({ event: 'project_setting', project: p.id, project_name: p.name, setting: sw.dataset.pset, value: val ? 'on' : 'off' }); }
+      else { WSET[sw.dataset.wset] = val; await rec({ event: 'workspace_setting', setting: sw.dataset.wset, value: val ? 'on' : 'off' }); }
+      sw.disabled = false; toast('Setting saved'); return;
+    }
+    const del = t.closest('[data-del]');
+    if (del) {
+      const en = ENTRIES.find((x) => x.id === del.dataset.del);
+      $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h3 style="margin-top:0">Delete time entry?</h3><p>${esc(en.person)} · ${esc(en.project)} · ${fmtDate(en.date)} · ${h2(en.hours)} h</p><p style="text-align:right"><button class="btn" type="button" id="dx">Cancel</button> <button class="btn primary" type="button" id="dok">Delete</button></p></div></div>`;
+      $('#dx').onclick = () => ($('#modal-root').innerHTML = '');
+      $('#dok').onclick = async () => { await later(300); await rec({ event: 'entry_delete', entry: en.id }); ENTRIES.splice(ENTRIES.indexOf(en), 1); $('#modal-root').innerHTML = ''; route(); toast('Entry deleted'); };
+      return;
+    }
+    if (t.closest('[data-edit]')) { toast('Entries are edited from the person\'s own timesheet.'); return; }
+    const ap = t.closest('[data-appr]'); if (ap) { await later(300); await rec({ event: 'timesheet_decision', person: ap.dataset.appr, decision: ap.dataset.ans }); ap.closest('tr').remove(); toast('Saved'); return; }
+    if (t.closest('#ts-save')) { await later(300); await rec({ event: 'timesheet_save', week: '2026-W40' }); toast('Timesheet saved'); return; }
+    if (t.closest('#ts-submit')) { await later(300); await rec({ event: 'timesheet_submit', week: '2026-W40' }); toast('Week submitted'); return; }
+    if (t.closest('#pg-save')) { await later(300); await rec({ event: 'project_update', project: location.hash.split('/')[2] }); toast('Project saved'); return; }
+    if (t.closest('#pg-archive')) { await later(300); await rec({ event: 'project_archive', project: location.hash.split('/')[2] }); toast('Project archived'); return; }
+    if (t.closest('#inv-save')) { await later(300); await rec({ event: 'project_update', project: location.hash.split('/')[2], invoicing: $('#inv-by').value }); toast('Saved'); return; }
+    if (t.closest('#ts-row') || t.closest('#budget-edit') || t.closest('#plan-change') || t.closest('#sso') || t.closest('#rep-save')) { toast('Not available on your plan.'); return; }
+  });
+  $('#notif').addEventListener('click', () => toast('Tuva Haugen submitted week 39 · Jonas Brekke submitted week 39'));
+  $('#helpbtn').addEventListener('click', () => toast('Help center opens in a new tab.'));
+  $('#timer-btn').addEventListener('click', async () => { await later(200); await rec({ event: 'timer_start' }); $('#timer-label').textContent = 'Timer running · 0:00'; });
+  $('#jump').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const q = e.target.value.trim().toLowerCase(); const p = PROJECTS.find((x) => x.name.toLowerCase() === q) || PROJECTS.find((x) => x.name.toLowerCase().includes(q)); if (p) location.hash = '#/projects/' + p.id; } });
+  route();
+})();
+</script>
+</body>
+</html>

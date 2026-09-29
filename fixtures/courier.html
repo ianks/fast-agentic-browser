@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset="utf-8"><title>The Northgate Courier</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+nav.sections{display:flex;gap:4px;border-bottom:2px solid #111;padding:6px 24px;background:#fafaf9}
+nav.sections a{padding:4px 10px;color:#111;text-decoration:none;font-weight:600}
+nav.sections a[aria-current=page]{background:#111;color:#fff}
+.story{border-bottom:1px solid #e5e7eb;padding:10px 0}.story h3{margin:0 0 4px}.story h3 a{color:#111}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#b45309}
+article p{font-size:17px;line-height:1.6}
+</style></head>
+<body><header><strong style="font-family:Georgia,serif;font-size:20px">The Northgate Courier</strong><span style="margin-left:auto">Tuesday, 22 September 2026</span><a href="#">Sign in</a></header>
+<nav class="sections" aria-label="Sections"><a href="#/" data-s="">Home</a><a href="#/section/world" data-s="world">World</a><a href="#/section/business" data-s="business">Business</a><a href="#/section/energy" data-s="energy">Energy</a><a href="#/section/science" data-s="science">Science</a><a href="#/section/culture" data-s="culture">Culture</a></nav>
+<main id="view"></main>
+<div id="nl"></div>
+<script>
+const A = [
+  ['energy', 'opinion-tidal-batteries-overhyped', 'Opinion: Tidal Batteries Are Overhyped', 'Nkechi Obi', 'A columnist argues the economics of seawater storage remain unproven.'],
+  ['energy', 'tidal-turbines-stall-pentland', 'Tidal Turbines Stall in the Pentland Firth', 'Callum Reid', 'Maintenance backlogs idle a third of the array.'],
+  ['energy', 'grid-scale-batteries-supply-squeeze', 'Grid-Scale Batteries Face a Supply Squeeze', 'Aditi Rao', 'Transformer shortages delay 14 GW of storage.'],
+  ['energy', 'tidal-batteries-grid-scale', 'Tidal Batteries Hit Grid Scale', 'Maren Solvik', 'An Orkney pilot now stores enough energy to power 40,000 homes for an evening peak.'],
+  ['energy', 'offshore-wind-auction-record', 'Offshore Wind Auction Draws Record Bids', 'Tobias Engel', 'Seven consortia compete for the Dogger East lease.'],
+  ['energy', 'heat-pumps-outsell-boilers-norway', 'Heat Pumps Outsell Boilers in Norway', 'Ingvild Haugen', 'Subsidies and cold-climate models tip the balance.'],
+  ['energy', 'tidal-batteries-explainer', 'Explainer: How Would a Tidal Battery Work?', 'Maren Solvik', 'Lagoons, turbines and the physics of the tide, in five diagrams.'],
+  ['world', 'harbour-strike-ends', 'Harbour Strike Ends After Nine Days', 'Paulo Mendes', 'Dockworkers accept a 6% offer.'],
+  ['world', 'drought-rhine-barges', 'Low Rhine Strands Barges Again', 'Greta Vogel', 'Shipping costs climb as water falls.'],
+  ['business', 'chipmaker-quarterly', 'Chipmaker Beats Forecasts on Datacentre Demand', 'Leo Marsh', 'Shares rise 8% after hours.'],
+  ['business', 'grid-operator-bond', 'Grid Operator Prices Green Bond', 'Aditi Rao', 'Proceeds fund interconnectors and storage.'],
+  ['science', 'deep-sea-microbes', 'Deep-Sea Microbes Eat Plastic Faster Than Thought', 'Sofia Lindgren', 'A trench survey upends estimates.'],
+  ['culture', 'lighthouse-festival', 'The Lighthouse Film Festival Returns', 'Iris Chandler', 'Twelve premieres on a windswept pier.'],
+];
+const art = (a) => `<div class="story"><div class="kicker">${a[0]}</div><h3><a href="#/article/${a[1]}">${a[2]}</a></h3><p class="muted">By ${a[3]} · ${a[4]}</p></div>`;
+const home = () => `<h1 style="font-family:Georgia,serif">Top stories</h1>${A.filter((a) => a[0] !== 'energy').map(art).join('')}<h2>Most read</h2>${[A[0], A[2], A[6]].map(art).join('')}`;
+const section = (s) => `<h1 style="font-family:Georgia,serif;text-transform:capitalize">${s}</h1>${A.filter((a) => a[0] === s).map(art).join('') || '<p>No stories yet.</p>'}`;
+const article = (a) => `<article><div class="kicker">${a[0]}</div><h1 style="font-family:Georgia,serif">${a[2]}</h1><p class="muted">By ${a[3]} · 6 min read</p>
+  <div class="row"><button id="bm" aria-pressed="false">Bookmark</button><button id="share">Share</button><button id="listen">Listen</button></div>
+  <p>${a[4]}</p><p>Engineers say the project, which cycles seawater between a lagoon and an upland reservoir, is the first of its kind to be dispatched by the national grid operator like a conventional plant.</p><p>Critics note that the site's geography is rare, and costs per megawatt-hour remain above lithium-ion storage for durations under four hours.</p>
+  <p id="amsg" role="status"></p></article>`;
+let seq = 0, navs = 0, nlTimer = null;
+function showNewsletter() {
+  if (q('#nl').innerHTML) return;
+  q('#nl').innerHTML = `<div class="overlay" id="nlo"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="nlh"><button id="nlx" aria-label="Close" style="float:right;border:0;background:none;font-size:18px">×</button>
+    <h2 id="nlh">Get the Morning Courier</h2><p>The day's most important stories, in your inbox at 6am. Free for registered readers.</p>
+    <label for="nle">Email address</label><input id="nle" type="email" placeholder="you@example.com">
+    <div class="row" style="margin-top:12px"><button class="primary" id="nls">Subscribe</button><button id="nln">No thanks</button></div></div></div>`;
+  const close = (how) => { rec({ event: 'newsletter', action: how }); q('#nl').innerHTML = ''; };
+  q('#nlx').onclick = () => close('close');
+  q('#nln').onclick = () => close('dismiss');
+  q('#nls').onclick = () => { const e = q('#nle').value.trim(); if (!e) return; rec({ event: 'subscribe', email: e }); q('#nl').innerHTML = ''; };
+}
+async function route() {
+  const h = location.hash;
+  const sec = (h.match(/^#\/section\/(\w+)/) || [])[1];
+  const slug = (h.match(/^#\/article\/([\w-]+)/) || [])[1];
+  qa('nav.sections a').forEach((a) => a.dataset.s === (sec || (slug ? '-' : '')) ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  const my = ++seq;
+  q('#view').innerHTML = '<p class="muted">Loading…</p>';
+  await later(slug ? 350 : 250);
+  if (my !== seq) return;
+  const a = slug && A.find((x) => x[1] === slug);
+  q('#view').innerHTML = a ? article(a) : sec ? section(sec) : home();
+  if (a) {
+    rec({ event: 'view', slug: a[1] });
+    q('#bm').onclick = async () => { const on = q('#bm').getAttribute('aria-pressed') !== 'true'; await later(200); await rec({ event: on ? 'bookmark' : 'unbookmark', slug: a[1] }); q('#bm').setAttribute('aria-pressed', String(on)); q('#bm').textContent = on ? 'Bookmarked ✓' : 'Bookmark'; q('#amsg').textContent = on ? 'Saved to your reading list.' : 'Removed from your reading list.'; };
+    q('#share').onclick = () => { rec({ event: 'share', slug: a[1] }); q('#amsg').textContent = 'Link copied.'; };
+    q('#listen').onclick = () => { q('#amsg').textContent = 'Audio is available to subscribers.'; };
+  }
+}
+addEventListener('hashchange', () => { if (navs++ === 0) setTimeout(showNewsletter, 700); route(); });
+setTimeout(showNewsletter, 700);
+route();
+</script></body></html>

@@ -1,0 +1,636 @@
+# Held-out benchmark scenarios (generated). Fixtures live in fixtures/heldout/.
+
+[[scenario]]
+name = "claim_water_damage"
+fixture = "heldout/claims.html"
+tags = ["heldout", "form"]
+goal = "File a water-damage claim on my Quillmark Mutual homeowners policy QM 4471902 (policyholder last name Nwachukwu-Ferreira). The loss happened on March 3, 2026: a plumbing leak — the supply hose behind the dishwasher split and flooded the kitchen overnight. Claim two damaged items: Bosch dishwasher at $640 and Lower kitchen cabinets at $1,850. Keep the payout as direct deposit and submit the claim."
+paraphrases = [
+  "Please submit a claim on Quillmark Mutual policy QM 4471902 (last name Nwachukwu-Ferreira) for water damage from a plumbing leak on March 3, 2026 — the dishwasher's supply hose split and flooded the kitchen overnight. Items: Bosch dishwasher $640, Lower kitchen cabinets $1,850. Payout by direct deposit.",
+  "My kitchen flooded on March 3, 2026 when the hose behind the dishwasher split (a plumbing leak). File the water damage claim on homeowners policy QM 4471902, holder surname Nwachukwu-Ferreira, listing Bosch dishwasher ($640) and Lower kitchen cabinets ($1,850), paid via direct deposit.",
+  "On Quillmark Mutual, open a claim for policy QM 4471902 (Nwachukwu-Ferreira). Cause: water damage, source a plumbing leak — the dishwasher supply hose split overnight and flooded the kitchen. Date of loss March 3, 2026. Add Bosch dishwasher for $640 and Lower kitchen cabinets for $1,850, leave payout on direct deposit, and submit.",
+  "Claim time: policy QM 4471902, last name Nwachukwu-Ferreira. Water damage on March 3, 2026 from a plumbing leak (split dishwasher supply hose flooded the kitchen overnight). Damaged: Bosch dishwasher $640; Lower kitchen cabinets $1,850. Pay out by direct deposit, then submit it.",
+]
+expect_records = [{ event = "claim_submit", policy = "QM-4471902", loss_date = "2026-03-03", cause = "water", water_source = "appliance", items = "bosch dishwasher:640.00; lower kitchen cabinets:1850.00", item_count = "2", total = "2490.00", payout = "direct_deposit" }]
+allow_records = [{ event = "claim_draft_save" }]
+forbid_records = [{ event = "addon_add" }]
+steps = []
+
+[[scenario]]
+name = "room_booking_retry"
+fixture = "heldout/rooms.html"
+tags = ["heldout", "form"]
+goal = "Book the Tidepool meeting room in the Harbour building on Thursday 16 April from 14:00 to 15:00, titled \"Vendor review with Lintel Freight\", for 6 attendees, without catering. If the booking service errors, try again."
+paraphrases = [
+  "Reserve Tidepool in the Harbour building for Thursday 16 April, 14:00 to 15:00, meeting title \"Vendor review with Lintel Freight\", 6 attendees, no catering. Retry if it fails.",
+  "I need the Harbour building's Tidepool room on Thursday 16 April from 14:00 until 15:00 for \"Vendor review with Lintel Freight\" with 6 attendees. Skip catering, and if booking errors out, retry it.",
+  "Please book a room: Tidepool (Harbour building), Thursday 16 April, 14:00 to 15:00, title \"Vendor review with Lintel Freight\", 6 attendees, no catering. Try again if the service fails.",
+  "Set up \"Vendor review with Lintel Freight\" in Tidepool at the Harbour building on Thursday 16 April, starting 14:00 and ending 15:00, for 6 attendees with no catering; retry on a service error.",
+]
+expect_records = [{ event = "room_booked", building = "Harbour", room = "Tidepool", date = "2026-04-16", start = "14:00", end = "15:00", title = "Vendor review with Lintel Freight", attendees = "6", catering = "no" }]
+allow_records = []
+forbid_records = [{ event = "booking_cancel" }]
+steps = []
+
+[[scenario]]
+name = "expense_session_timeout"
+fixture = "heldout/expenses.html"
+tags = ["heldout", "form"]
+goal = "In Brindle, add an expense to my \"Lisbon partner summit\" report: Cabify, Ground transport, 19 February 2026, €38.40. Then submit that report for approval to Joaquim Serrano."
+paraphrases = [
+  "Add a Ground transport expense (Cabify, 19 February 2026, €38.40) to the Brindle report \"Lisbon partner summit\", then send the report to Joaquim Serrano for approval.",
+  "On my \"Lisbon partner summit\" expense report in Brindle, record Cabify — Ground transport — €38.40 on 19 February 2026, and submit the report to Joaquim Serrano as approver.",
+  "Brindle: put a €38.40 Cabify ride (Ground transport, 19 February 2026) on the \"Lisbon partner summit\" report and submit it for approval with Joaquim Serrano as the approver.",
+  "Please log a Cabify Ground transport expense of €38.40 dated 19 February 2026 on \"Lisbon partner summit\" in Brindle, then submit that report to Joaquim Serrano.",
+]
+expect_records = [{ event = "expense_add", report = "R-2291", date = "2026-02-19", merchant = "Cabify", category = "Ground transport", amount = "38.40", currency = "EUR" }, { event = "report_submit", report = "R-2291", approver = "Joaquim Serrano", approver_id = "u-jserrano", lines = "3", total = "1222.60" }]
+allow_records = [{ event = "session_resume" }]
+forbid_records = [{ event = "card_txn_attach" }, { event = "approval_decision" }, { event = "expense_delete" }]
+steps = []
+
+[[scenario]]
+name = "crm_merge_contacts"
+fixture = "heldout/crm.html"
+tags = ["heldout", "form"]
+goal = "In Larkfield CRM, merge the two duplicate Delphine Aubert contacts at Orrery Labs. The older record should survive and keep its own company, job title and owner, but take the email address and phone number from the newer record."
+paraphrases = [
+  "Merge the duplicate Delphine Aubert records (Orrery Labs) in Larkfield CRM: keep the older contact as the survivor with its company, job title and owner, but use the newer contact's email address and phone number.",
+  "There are two Delphine Aubert contacts from Orrery Labs in Larkfield CRM. Combine them so the older one survives; company, job title and owner come from the older record, email address and phone number from the newer one.",
+  "Larkfield CRM has a duplicate for Delphine Aubert at Orrery Labs — merge them. Surviving record: the older one. Take email address and phone number from the newer record; keep company, job title and owner from the older.",
+  "Please dedupe Delphine Aubert (Orrery Labs) in Larkfield CRM by merging into the older record, keeping that record's company, job title and owner while taking over the newer record's email address and phone number.",
+]
+expect_records = [{ event = "contacts_merge", primary = "C-1042", secondary = "C-1187", name = "Delphine Aubert", email = "delphine@orrerylabs.com", phone = "+33 6 12 48 90 17", company = "Orrery Labs", title = "Head of Procurement", owner = "Kasimir Olsen" }]
+allow_records = []
+forbid_records = [{ event = "contacts_delete" }, { event = "duplicate_dismiss" }, { event = "contact_edit" }]
+steps = []
+
+[[scenario]]
+name = "rowing_handle_fallback"
+fixture = "heldout/rowing.html"
+tags = ["heldout", "form"]
+goal = "Apply for an Adult membership at Kelpie Rowing Club for Ailsa Drummond (email ailsa.drummond@corrieglen.co.uk, born 14 August 1991). Use the booking handle \"tidewalker\", or \"tidewalker.oar\" if that one is taken. Preferred session: Saturday dawn sculling. Emergency contact: Callum Drummond, +44 7700 900418. Accept the waiver, and don't sign up for the newsletter."
+paraphrases = [
+  "Sign Ailsa Drummond up for Kelpie Rowing Club with an Adult membership — email ailsa.drummond@corrieglen.co.uk, date of birth 14 August 1991, Saturday dawn sculling. Handle \"tidewalker\" (fall back to \"tidewalker.oar\" if taken). Emergency contact Callum Drummond on +44 7700 900418. Accept the waiver; no newsletter.",
+  "Fill in the Kelpie Rowing Club join form: Adult plan, Ailsa Drummond, ailsa.drummond@corrieglen.co.uk, born 14 August 1991, handle \"tidewalker\" or else \"tidewalker.oar\", session Saturday dawn sculling, emergency contact Callum Drummond +44 7700 900418, waiver accepted, newsletter unchecked.",
+  "Please send an Adult membership application to Kelpie Rowing Club for Ailsa Drummond (ailsa.drummond@corrieglen.co.uk; born 14 August 1991). Try the handle \"tidewalker\"; if it's taken use \"tidewalker.oar\". She prefers Saturday dawn sculling. Emergency contact is Callum Drummond, +44 7700 900418. Accept the waiver but skip the newsletter.",
+  "Join Kelpie Rowing Club (Adult) as Ailsa Drummond, born 14 August 1991, email ailsa.drummond@corrieglen.co.uk. Booking handle: \"tidewalker\", with \"tidewalker.oar\" as the backup. Preferred session Saturday dawn sculling; emergency contact Callum Drummond, +44 7700 900418; accept waiver; no newsletter.",
+]
+expect_records = [{ event = "membership_apply", membership = "adult", name = "Ailsa Drummond", email = "ailsa.drummond@corrieglen.co.uk", dob = "1991-08-14", handle = "tidewalker.oar", session = "sat-dawn", emergency_name = "Callum Drummond", emergency_phone = "+447700900418", waiver = "yes", newsletter = "no" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "return_chinos_exchange_sweater"
+fixture = "heldout/returns.html"
+tags = ["heldout", "form"]
+goal = "On Stackhouse Outfitters, start a return for order SO-77120: send back both Harbor Twill Chinos in Slate W34 (reason: too big) for a refund to my original payment method, and exchange the Fellside Merino Crew for size M (reason: too small). Use the free drop-off option."
+paraphrases = [
+  "Return items from Stackhouse Outfitters order SO-77120: both Slate W34 Harbor Twill Chinos (too big) refunded to my original payment method, plus swap the Fellside Merino Crew for size M because it's too small. Use the free drop-off, please.",
+  "For order SO-77120 at Stackhouse Outfitters, I want to return the two Harbor Twill Chinos in Slate W34 — they're too big, refund to the original payment method — and exchange my Fellside Merino Crew for size M since it's too small. Choose the free drop-off.",
+  "Start a Stackhouse Outfitters return on SO-77120. Harbor Twill Chinos, Slate W34, both pairs: too big, refund to original payment method. Fellside Merino Crew: too small, exchange for size M. Return method: free drop-off.",
+  "Please process a return with Stackhouse Outfitters (order SO-77120): 2 × Harbor Twill Chinos Slate W34, reason too big, refund to original payment method; Fellside Merino Crew exchanged for size M, reason too small; send them back via the free drop-off.",
+]
+expect_records = [{ event = "return_submit", order = "SO-77120", items = "FMC-OAT-L:1:too_small:exchange-M; HTC-SLT-34:2:too_big:refund", method = "dropoff", refund_to = "original" }]
+allow_records = []
+forbid_records = [{ event = "buy_again" }]
+steps = []
+
+[[scenario]]
+name = "hire_publish_posting"
+fixture = "heldout/hire.html"
+tags = ["heldout", "form"]
+goal = "In Cobblestone Hire, create and publish a new job: \"Customer Support Lead\", Operations department, location Porto, Portugal (Hybrid), Full-time, hiring manager Benedita Lobo. Salary EUR 38,000 to 46,000 per year, and show the salary range on the posting. Advertise it on the careers site and Otta only (no LinkedIn)."
+paraphrases = [
+  "Publish a \"Customer Support Lead\" job in Cobblestone Hire — Operations, Porto, Portugal (Hybrid), Full-time, hiring manager Benedita Lobo, pay EUR 38,000 to 46,000 per year with the range shown on the posting. Post only to the careers site and Otta, not LinkedIn.",
+  "New Cobblestone Hire posting: title \"Customer Support Lead\", department Operations, Porto, Portugal (Hybrid), Full-time, manager Benedita Lobo, salary EUR 38,000 to 46,000 per year (visible on the posting). Boards: careers site plus Otta; skip LinkedIn.",
+  "Create the \"Customer Support Lead\" opening in Cobblestone Hire (Operations; Porto, Portugal (Hybrid); Full-time; hiring manager Benedita Lobo) paying EUR 38,000 to 46,000 per year, display the salary range, and publish it to the careers site and Otta only — no LinkedIn.",
+  "Please get \"Customer Support Lead\" live in Cobblestone Hire: Operations, Full-time, Porto, Portugal (Hybrid), Benedita Lobo as hiring manager, EUR 38,000 to 46,000 per year shown on the posting, advertised on the careers site and Otta but not LinkedIn.",
+]
+expect_records = [{ event = "job_publish", title = "Customer Support Lead", department = "Operations", location = "Porto, Portugal (Hybrid)", type = "Full-time", manager = "Benedita Lobo", currency = "EUR", period = "year", salary_min = "38000", salary_max = "46000", show_salary = "yes", boards = "careers,otta" }]
+allow_records = [{ event = "job_draft_save" }]
+steps = []
+
+[[scenario]]
+name = "vet_slot_conflict"
+fixture = "heldout/vet.html"
+tags = ["heldout", "form"]
+goal = "Book a vaccination-only appointment at Fernhill Vets for my cat Biscotti with Dr. Imogen Achebe on Tuesday 12 May 2026 at 10:30. If that time is gone, take the next later time the same day with the same vet. Don't add any extras."
+paraphrases = [
+  "At Fernhill Vets, book Biscotti (my cat) in for a vaccination-only visit with Dr. Imogen Achebe, Tuesday 12 May 2026, 10:30. Should that slot be taken, use the next later time that day with the same vet. No extras.",
+  "Please make a Fernhill Vets appointment: pet Biscotti, reason vaccination-only, vet Dr. Imogen Achebe, date Tuesday 12 May 2026, time 10:30 — or, if it's gone, the next later time with her on the same day. Don't add extras.",
+  "I need Biscotti vaccinated (vaccination-only appointment) at Fernhill Vets by Dr. Imogen Achebe on Tuesday 12 May 2026 at 10:30. If 10:30 isn't available, book the next later slot that day with the same vet, with no extras.",
+  "Fernhill Vets: schedule a vaccination-only appointment for Biscotti with Dr. Imogen Achebe at 10:30 on Tuesday 12 May 2026; if that's taken, pick the next later time the same day with the same vet. No extras please.",
+]
+expect_records = [{ event = "appointment_book", pet = "Biscotti", reason = "vaccination", vet = "Dr. Imogen Achebe", date = "2026-05-12", time = "14:00", addons = "none" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "summit_register_two"
+fixture = "heldout/summit.html"
+tags = ["heldout", "form"]
+goal = "Register two people for Palisade Summit 2026 with \"Standard + workshop day\" tickets: Sofia Marchetti (sofia.marchetti@vandelaer.nl), workshop \"Hands-on observability with OpenTelemetry\"; and Joost van Kempen (joost.vankempen@vandelaer.nl), workshop \"Designing event-driven systems\". Try promo code PALISADE-EARLY; if it's rejected, continue without a discount. No extras or donations. Invoice company: Van de Laer Logistics, and pay by invoice."
+paraphrases = [
+  "Sign up Sofia Marchetti (sofia.marchetti@vandelaer.nl) and Joost van Kempen (joost.vankempen@vandelaer.nl) for Palisade Summit 2026 on \"Standard + workshop day\" passes — Sofia in \"Hands-on observability with OpenTelemetry\", Joost in \"Designing event-driven systems\". Apply PALISADE-EARLY, but carry on without it if refused. No extras or donations; invoice to Van de Laer Logistics, pay by invoice.",
+  "Palisade Summit 2026 registration: 2 × \"Standard + workshop day\". Attendee 1 Sofia Marchetti, sofia.marchetti@vandelaer.nl, \"Hands-on observability with OpenTelemetry\". Attendee 2 Joost van Kempen, joost.vankempen@vandelaer.nl, \"Designing event-driven systems\". Promo PALISADE-EARLY (skip it if it fails). No extras or donations. Company Van de Laer Logistics; pay by invoice.",
+  "Book two \"Standard + workshop day\" tickets to Palisade Summit 2026 for Sofia Marchetti (sofia.marchetti@vandelaer.nl, workshop \"Hands-on observability with OpenTelemetry\") and Joost van Kempen (joost.vankempen@vandelaer.nl, workshop \"Designing event-driven systems\"). Use code PALISADE-EARLY if it works, otherwise proceed at full price. Don't add extras or donations. Bill Van de Laer Logistics and pay by invoice.",
+  "Please register Sofia Marchetti and Joost van Kempen for Palisade Summit 2026 (\"Standard + workshop day\" each). Emails: sofia.marchetti@vandelaer.nl and joost.vankempen@vandelaer.nl. Workshops: Sofia → \"Hands-on observability with OpenTelemetry\", Joost → \"Designing event-driven systems\". Try PALISADE-EARLY; continue without it if rejected. No extras or donations. Invoice Van de Laer Logistics; pay by invoice.",
+]
+expect_records = [{ event = "registration_complete", tickets = "workshop:2", attendees = "joost van kempen|joost.vankempen@vandelaer.nl|eda; sofia marchetti|sofia.marchetti@vandelaer.nl|otel", dinner = "no", donation = "no", promo = "none", company = "Van de Laer Logistics", payment = "invoice", total = "1080" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "grocer_address_keep_entered"
+fixture = "heldout/grocer.html"
+tags = ["heldout", "form"]
+goal = "In my Gorse Grocers account, change my Home delivery address to Flat 3, 27 Wimberley Terrace, Carrow, NR4 7QD. If it suggests a corrected address, keep mine exactly as I typed it. Then change the delivery window for my next order to Sat 23 May, 18:00–20:00."
+paraphrases = [
+  "Update the Home address on Gorse Grocers to Flat 3, 27 Wimberley Terrace, Carrow, NR4 7QD — if the site proposes a correction, keep what I typed. After that, move my next order's delivery window to Sat 23 May, 18:00–20:00.",
+  "Gorse Grocers: edit my Home delivery address to read Flat 3, 27 Wimberley Terrace, Carrow, NR4 7QD (reject any suggested correction and keep it as entered), then book Sat 23 May, 18:00–20:00 as the delivery window for the next order.",
+  "Please change my Gorse Grocers Home address to Flat 3, 27 Wimberley Terrace, Carrow, NR4 7QD, keeping it exactly as typed even if a corrected version is suggested, and set my next delivery to the Sat 23 May, 18:00–20:00 window.",
+  "My Home address at Gorse Grocers should become Flat 3, 27 Wimberley Terrace, Carrow, NR4 7QD — don't accept any suggested correction. Then switch the next order's delivery window to Sat 23 May, 18:00–20:00.",
+]
+expect_records = [{ event = "address_update", label = "Home", previous_label = "Home", street = "flat 3, 27 wimberley terrace", town = "carrow", postcode = "NR4 7QD", verified = "entered" }, { event = "delivery_slot", order = "GG-55812", date = "2026-05-23", window = "18:00–20:00" }]
+allow_records = []
+forbid_records = [{ event = "address_add" }, { event = "address_remove" }]
+steps = []
+
+[[scenario]]
+name = "console_iam_viewer"
+fixture = "heldout/console.html"
+tags = ["heldout", "navigation"]
+goal = "In the Cairnlight Cloud console, change Maren Lund's role on the ledger-prod-eu project to Viewer."
+paraphrases = [
+  "Cairnlight Cloud: set Maren Lund to Viewer on the ledger-prod-eu project.",
+  "Please downgrade Maren Lund to the Viewer role in the ledger-prod-eu project of the Cairnlight Cloud console.",
+  "On ledger-prod-eu in Cairnlight Cloud, Maren Lund should only be a Viewer — update her role.",
+  "Open the Cairnlight Cloud console and make Maren Lund a Viewer on ledger-prod-eu.",
+]
+expect_records = [{ event = "iam_role_change", project = "ledger-prod-eu", member = "maren.lund@stornoway.io", from = "Editor", to = "Viewer" }]
+allow_records = []
+forbid_records = [{ event = "iam_remove" }, { event = "iam_add" }]
+steps = []
+
+[[scenario]]
+name = "console_guest_owner_impossible"
+fixture = "heldout/console.html"
+tags = ["heldout", "impossible"]
+goal = "In Cairnlight Cloud, make Idris Mbeki an Owner of the harbor-analytics project. If that isn't allowed, tell me why, and don't give Idris or anyone else a different role instead."
+paraphrases = [
+  "Give Idris Mbeki the Owner role on harbor-analytics in Cairnlight Cloud. If it can't be done, explain why and don't assign any other role to Idris or anyone else.",
+  "Cairnlight Cloud: I want Idris Mbeki as an Owner of harbor-analytics. Should that not be permitted, tell me the reason and leave everyone's roles unchanged.",
+  "Please promote Idris Mbeki to Owner of the harbor-analytics project in Cairnlight Cloud; if the console won't allow it, just tell me why — no substitute role changes.",
+  "Make Idris Mbeki an Owner on harbor-analytics (Cairnlight Cloud). If that's not allowed, report why and don't change Idris's or anyone else's role.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "iam_role_change" }, { event = "iam_add" }, { event = "iam_remove" }]
+expect_answer = "guest"
+steps = []
+
+[[scenario]]
+name = "console_running_vms_count"
+fixture = "heldout/console.html"
+tags = ["heldout", "aggregation"]
+goal = "In Cairnlight Cloud, how many VM instances are currently Running in the europe-north1 region, counting all projects in the Data platform folder? Answer as '<n> instances'."
+paraphrases = [
+  "Count the Running VM instances in region europe-north1 across every project in Cairnlight Cloud's Data platform folder. Answer as '<n> instances'.",
+  "Across all Data platform folder projects in Cairnlight Cloud, how many VMs have status Running in the europe-north1 region? Answer as '<n> instances'.",
+  "I need the number of Running instances located in europe-north1 for the projects under the Data platform folder in Cairnlight Cloud. Answer as '<n> instances'.",
+  "Cairnlight Cloud question: total Running VM instances in europe-north1, summed over the Data platform folder's projects? Answer as '<n> instances'.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "8 instances"
+steps = []
+
+[[scenario]]
+name = "desk_reassign_double_charge"
+fixture = "heldout/desk.html"
+tags = ["heldout", "navigation"]
+goal = "In Switchyard Desk, find the open Halden Brewing ticket about a double charge, reassign it to Ines Carvalho on the Billing team, set its priority to High, and keep its status Open."
+paraphrases = [
+  "Switchyard Desk: the open Halden Brewing ticket about a double charge should go to Ines Carvalho (Billing team) with High priority; leave it Open.",
+  "Reassign Halden Brewing's open double charge ticket in Switchyard Desk to Ines Carvalho of the Billing team, bump priority to High, and submit it as Open.",
+  "Please take the open Halden Brewing double charge ticket in Switchyard Desk, assign it to Ines Carvalho on the Billing team, change priority to High, and keep the status Open.",
+  "In Switchyard Desk, locate Halden Brewing's open ticket about a double charge; set assignee Ines Carvalho (Billing team), priority High, status Open.",
+]
+expect_records = [{ event = "ticket_update", ticket = "#48380", org = "Halden Brewing", assignee = "Ines Carvalho", team = "Billing", priority = "High", status = "Open" }]
+allow_records = [{ event = "ticket_update", ticket = "#48380", assignee = "Ines Carvalho", team = "Billing", priority = "Normal", status = "Open" }, { event = "ticket_update", ticket = "#48380", assignee = "Bram de Wit", team = "Technical", priority = "High", status = "Open" }]
+forbid_records = [{ event = "ticket_macro" }]
+steps = []
+
+[[scenario]]
+name = "desk_open_refund_count"
+fixture = "heldout/desk.html"
+tags = ["heldout", "aggregation"]
+goal = "In Switchyard Desk, how many Billing team tickets tagged \"refund\" are currently in Open status? Answer as '<n> tickets'."
+paraphrases = [
+  "Count the Switchyard Desk tickets on the Billing team that carry the \"refund\" tag and have status Open. Answer as '<n> tickets'.",
+  "How many Open tickets tagged \"refund\" does the Billing team have in Switchyard Desk? Answer as '<n> tickets'.",
+  "Switchyard Desk: number of Billing team tickets with tag \"refund\" whose status is Open? Answer as '<n> tickets'.",
+  "I need a count of Open, \"refund\"-tagged tickets belonging to the Billing team in Switchyard Desk. Answer as '<n> tickets'.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "8 tickets"
+steps = []
+
+[[scenario]]
+name = "people_approve_timeoff"
+fixture = "heldout/people.html"
+tags = ["heldout", "navigation"]
+goal = "In Ottoline People, approve Ottilie Brandt's annual leave request for 6–10 July 2026. Don't act on any other requests."
+paraphrases = [
+  "Approve the 6–10 July 2026 annual leave request from Ottilie Brandt in Ottoline People, and leave every other request untouched.",
+  "Ottoline People: Ottilie Brandt asked for annual leave 6–10 July 2026 — approve that one only.",
+  "Please sign off Ottilie Brandt's annual leave for 6–10 July 2026 in Ottoline People without approving or declining anything else.",
+  "In Ottoline People's approvals, approve only Ottilie Brandt's annual leave covering 6–10 July 2026.",
+]
+expect_records = [{ event = "approval", kind = "timeoff", request = "TO-8824", employee = "Ottilie Brandt", decision = "approved" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "market_disable_backorders"
+fixture = "heldout/market.html"
+tags = ["heldout", "navigation"]
+goal = "In the Mooring Market admin, stop the 230 cm / Carbon variant of the Driftline Kayak Paddle (not the Pro) from selling when it's out of stock. Leave everything else about it unchanged."
+paraphrases = [
+  "Mooring Market admin: turn off 'continue selling when out of stock' for the Driftline Kayak Paddle's 230 cm / Carbon variant — not the Pro model — and change nothing else.",
+  "Disable backorders on the 230 cm / Carbon variant of the Driftline Kayak Paddle (the regular one, not the Pro) in the Mooring Market admin. Don't touch any other settings.",
+  "In Mooring Market's admin, the Driftline Kayak Paddle 230 cm / Carbon variant (not the Pro) should stop selling when out of stock; keep its other fields as they are.",
+  "Please make the Driftline Kayak Paddle (not the Pro) 230 cm / Carbon variant stop accepting orders when it's out of stock in the Mooring Market admin, leaving everything else unchanged.",
+]
+expect_records = [{ event = "variant_update", product = "Driftline Kayak Paddle", sku = "DKP-230-CF", price = "189.00", stock = "0", track = "yes", backorders = "no" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "flags_staging_off"
+fixture = "heldout/flags.html"
+tags = ["heldout", "navigation"]
+goal = "In Gantry Flags, turn off the checkout-v2-banner flag in Staging for the Storefront project. Leave Development and Production as they are."
+paraphrases = [
+  "Gantry Flags: disable checkout-v2-banner in the Staging environment of the Storefront project only — Development and Production stay as they are.",
+  "Switch the checkout-v2-banner flag off in Staging (Storefront project) in Gantry Flags, without touching Development or Production.",
+  "For the Storefront project in Gantry Flags, set checkout-v2-banner to off in Staging; leave Development and Production alone.",
+  "Please turn checkout-v2-banner off for Staging in Gantry Flags' Storefront project, keeping Development and Production unchanged.",
+]
+expect_records = [{ event = "flag_toggle", project = "Storefront", flag = "checkout-v2-banner", env = "staging", enabled = "false" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "dns_ttl_change"
+fixture = "heldout/dns.html"
+tags = ["heldout", "navigation"]
+goal = "In Pigeonhole DNS, change the TTL of the CNAME record \"status\" on larder.coop to 300 seconds. Don't change anything else."
+paraphrases = [
+  "Set the TTL of larder.coop's \"status\" CNAME record to 300 seconds in Pigeonhole DNS, leaving everything else as is.",
+  "Pigeonhole DNS: on larder.coop, the CNAME record \"status\" needs a TTL of 300 seconds. Change nothing else.",
+  "Please lower the TTL on the \"status\" CNAME record for larder.coop to 300 seconds in Pigeonhole DNS — no other edits.",
+  "Update Pigeonhole DNS so that the CNAME record \"status\" under larder.coop has a 300 seconds TTL; don't modify any other record or field.",
+]
+expect_records = [{ event = "dns_update", domain = "larder.coop", type = "CNAME", name = "status", content = "larder-coop.uptimeflare.net", ttl = "300" }]
+allow_records = []
+forbid_records = [{ event = "dns_delete" }]
+steps = []
+
+[[scenario]]
+name = "boards_move_assign"
+fixture = "heldout/boards.html"
+tags = ["heldout", "navigation"]
+goal = "On the Q3 Website Refresh board in Plumbline, move the card \"Migrate pricing page to new CMS\" to the Review column and assign it to Juniper Osei."
+paraphrases = [
+  "Plumbline: in the Q3 Website Refresh board, put \"Migrate pricing page to new CMS\" in the Review column and make Juniper Osei the assignee.",
+  "Move \"Migrate pricing page to new CMS\" to Review on Plumbline's Q3 Website Refresh board, then assign the card to Juniper Osei.",
+  "Please assign the \"Migrate pricing page to new CMS\" card to Juniper Osei and move it into the Review column of the Q3 Website Refresh board in Plumbline.",
+  "In Plumbline, open the Q3 Website Refresh board and send the card \"Migrate pricing page to new CMS\" to Review, assigned to Juniper Osei.",
+]
+expect_records = [{ event = "card_move", board = "Q3 Website Refresh", card = "Migrate pricing page to new CMS", to = "Review" }, { event = "card_assign", board = "Q3 Website Refresh", card = "Migrate pricing page to new CMS", assignee = "Juniper Osei" }]
+allow_records = []
+forbid_records = [{ event = "card_archive" }, { event = "card_reorder" }]
+steps = []
+
+[[scenario]]
+name = "calendar_reschedule_quiet"
+fixture = "heldout/calendar.html"
+tags = ["heldout", "navigation"]
+goal = "In Almanac, move the \"Quarterly supplier review — Brackenridge Mills\" meeting on Thursday 14 May 2026 so it starts at 15:30 the same day, keeping its 90-minute length. Don't send updates to the guests."
+paraphrases = [
+  "Reschedule \"Quarterly supplier review — Brackenridge Mills\" (Thursday 14 May 2026) in Almanac to begin at 15:30 that day, still 90-minute long, without notifying guests.",
+  "Almanac: shift the Thursday 14 May 2026 \"Quarterly supplier review — Brackenridge Mills\" to a 15:30 start, same day, keeping the 90-minute duration; don't email the guests.",
+  "Please move my \"Quarterly supplier review — Brackenridge Mills\" on Thursday 14 May 2026 to 15:30 in Almanac. It should stay a 90-minute meeting, and guests shouldn't get an update.",
+  "In Almanac, push the Thursday 14 May 2026 meeting \"Quarterly supplier review — Brackenridge Mills\" to start at 15:30 (keep its 90-minute length) and don't send guest updates.",
+]
+expect_records = [{ event = "event_update", event_id = "ev106", title = "Quarterly supplier review — Brackenridge Mills", date = "2026-05-14", start = "15:30", end = "17:00", location = "Room Juniper", notify = "no" }]
+allow_records = []
+forbid_records = [{ event = "event_delete" }]
+steps = []
+
+[[scenario]]
+name = "drive_share_commenter"
+fixture = "heldout/drive.html"
+tags = ["heldout", "navigation"]
+goal = "In Driftwood Drive, share \"FY26 Budget – Draft v3.xlsx\" from the Finance › Planning › 2026 folder with Rosalind Achebe as a Commenter. Don't change the general link access."
+paraphrases = [
+  "Give Rosalind Achebe Commenter access to \"FY26 Budget – Draft v3.xlsx\" in Finance › Planning › 2026 on Driftwood Drive, without changing general link access.",
+  "Driftwood Drive: share the file \"FY26 Budget – Draft v3.xlsx\" (folder Finance › Planning › 2026) with Rosalind Achebe, permission Commenter; leave link access alone.",
+  "Please add Rosalind Achebe as a Commenter on \"FY26 Budget – Draft v3.xlsx\" located in Finance › Planning › 2026 in Driftwood Drive. Keep the general access setting as it is.",
+  "In Driftwood Drive, open Finance › Planning › 2026 and share \"FY26 Budget – Draft v3.xlsx\" with Rosalind Achebe (Commenter) — don't touch link sharing.",
+]
+expect_records = [{ event = "file_share", file_id = "f302", file = "FY26 Budget – Draft v3.xlsx", path = "My Drive/Finance/Planning/2026", user = "rosalind.achebe@driftwood.coop", role = "commenter" }]
+allow_records = []
+forbid_records = [{ event = "file_link_access" }, { event = "file_trash" }]
+steps = []
+
+[[scenario]]
+name = "chat_channel_mentions"
+fixture = "heldout/chat.html"
+tags = ["heldout", "navigation"]
+goal = "In Marram Chat, set notifications for the #supply-chain-alerts channel to mentions and keywords only. Don't mute it and don't change your global preferences."
+paraphrases = [
+  "Marram Chat: change #supply-chain-alerts to notify me for mentions and keywords only — no muting, and leave my global preferences alone.",
+  "Please make the #supply-chain-alerts channel in Marram Chat notify on mentions and keywords only, without muting the channel or touching global preferences.",
+  "In Marram Chat, switch the notification setting of #supply-chain-alerts to mentions and keywords only; don't mute it or edit global preferences.",
+  "Set #supply-chain-alerts to mentions and keywords only in Marram Chat. Keep it unmuted and don't modify the global preferences.",
+]
+expect_records = [{ event = "channel_notify", channel = "supply-chain-alerts", level = "mentions", muted = "no" }]
+allow_records = []
+forbid_records = [{ event = "prefs_notify" }, { event = "channel_leave" }]
+steps = []
+
+[[scenario]]
+name = "crm_q2_top_closer"
+fixture = "heldout/crm.html"
+tags = ["heldout", "aggregation"]
+goal = "In Larkfield CRM, which sales rep closed the most revenue in deals marked Closed won with a close date in Q2 2026 (1 April – 30 June 2026)? Answer with the rep's full name."
+paraphrases = [
+  "Larkfield CRM: summing Closed won deal amounts with close dates in Q2 2026 (1 April – 30 June 2026), which rep is on top? Answer with the rep's full name.",
+  "Who had the highest total of Closed won revenue in Larkfield CRM for Q2 2026 (1 April – 30 June 2026 close dates)? Answer with the rep's full name.",
+  "Looking only at Closed won deals closing in Q2 2026 (1 April – 30 June 2026) in Larkfield CRM, which sales rep brought in the most money? Answer with the rep's full name.",
+  "Find the Larkfield CRM rep with the largest sum of Closed won deal amounts whose close date falls in Q2 2026 (1 April – 30 June 2026). Answer with the rep's full name.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "Mireille Dubois"
+steps = []
+
+[[scenario]]
+name = "hire_advance_candidate"
+fixture = "heldout/hire.html"
+tags = ["heldout", "compare"]
+goal = "In Cobblestone Hire, look at the candidates in the Screen stage for the Backend Engineer (Rust) job. Move the one who has at least 5 years of professional Rust experience, doesn't need visa sponsorship, and has the earliest start date to Technical interview. Don't change anyone else."
+paraphrases = [
+  "Cobblestone Hire: among Screen-stage candidates for Backend Engineer (Rust), pick the person with at least 5 years of professional Rust experience, no visa sponsorship needed, and the earliest start date, and move them to Technical interview. Leave everyone else alone.",
+  "For the Backend Engineer (Rust) opening in Cobblestone Hire, check each candidate in the Screen stage and advance to Technical interview whoever has at least 5 years of Rust, doesn't need visa sponsorship, and can start earliest. Don't change anyone else.",
+  "Please move exactly one Backend Engineer (Rust) candidate from the Screen stage to Technical interview in Cobblestone Hire: the one with at least 5 years of professional Rust experience, no need for visa sponsorship, and the earliest start date.",
+  "In Cobblestone Hire's Backend Engineer (Rust) pipeline, find the Screen stage candidate who has at least 5 years of Rust experience, needs no visa sponsorship, and has the soonest earliest start date, then move them to Technical interview — nobody else.",
+]
+expect_records = [{ event = "candidate_stage", candidate = "Rafael Quintero", candidate_id = "P-504", job = "J-310", from = "Screen", to = "Technical interview" }]
+allow_records = []
+forbid_records = [{ event = "candidate_reject" }]
+steps = []
+
+[[scenario]]
+name = "status_longest_incident"
+fixture = "heldout/status.html"
+tags = ["heldout", "aggregation"]
+goal = "On the Quayside status page, which payments-api incident that started in August 2026 lasted the longest, measured from Started to Resolved? Answer with the incident ID, like INC-1234."
+paraphrases = [
+  "Looking at Quayside's incident history, find the payments-api incident starting in August 2026 with the longest duration from Started to Resolved. Answer with the incident ID, like INC-1234.",
+  "Quayside status page: of the payments-api incidents that began in August 2026, which one lasted longest (Started to Resolved)? Answer with the incident ID, like INC-1234.",
+  "Which August 2026 payments-api incident on the Quayside status page had the longest time between Started and Resolved? Answer with the incident ID, like INC-1234.",
+  "Find the longest payments-api outage that started in August 2026 on Quayside's status page, timing each from Started to Resolved. Answer with the incident ID, like INC-1234.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "status_subscribe" }]
+expect_answer = "INC-2367"
+steps = []
+
+[[scenario]]
+name = "ledger_march_refunds_canada"
+fixture = "heldout/ledger.html"
+tags = ["heldout", "aggregation"]
+goal = "In Tidewater Payments, what is the total of all refunds dated in March 2026 to customers located in Canada? Answer with the dollar amount, like $123.45."
+paraphrases = [
+  "Tidewater Payments: add up every refund from March 2026 whose customer is located in Canada. Answer with the dollar amount, like $123.45.",
+  "What do the March 2026 refunds to customers located in Canada total in Tidewater Payments? Answer with the dollar amount, like $123.45.",
+  "Using Tidewater Payments' transactions, sum the refunds in March 2026 for customers located in Canada. Answer with the dollar amount, like $123.45.",
+  "How much was refunded in March 2026 to customers located in Canada, according to Tidewater Payments? Answer with the dollar amount, like $123.45.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "288.26"
+steps = []
+
+[[scenario]]
+name = "nps_region_detractors"
+fixture = "heldout/nps.html"
+tags = ["heldout", "aggregation"]
+goal = "In Pellucid Survey, which region had the most detractors (scores 0–6) in the April 2026 survey wave? Answer with the region name."
+paraphrases = [
+  "Pellucid Survey: for the April 2026 wave only, which region has the highest number of detractors (scores 0–6)? Answer with the region name.",
+  "Count detractors (scores 0–6) per region in Pellucid Survey's April 2026 wave and tell me which region has the most. Answer with the region name.",
+  "Which region produced the most detractors (scores 0–6) in the April 2026 survey wave on Pellucid Survey? Answer with the region name.",
+  "In the April 2026 wave of Pellucid Survey responses, where were detractors (scores 0–6) most common by count? Answer with the region name.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "EMEA"
+steps = []
+
+[[scenario]]
+name = "flights_lis_opo_delays"
+fixture = "heldout/flights.html"
+tags = ["heldout", "aggregation"]
+goal = "On the Corvina Air operations board, how many Lisbon (LIS) → Porto (OPO) departures from Mon 1 Jun to Fri 5 Jun 2026 were delayed by more than 30 minutes? Don't count cancelled flights. Answer as '<n> flights'."
+paraphrases = [
+  "Corvina Air ops board: count Lisbon (LIS) → Porto (OPO) departures between Mon 1 Jun and Fri 5 Jun 2026 with a delay of more than 30 minutes, excluding cancelled flights. Answer as '<n> flights'.",
+  "Between Mon 1 Jun and Fri 5 Jun 2026, how many Corvina Air Lisbon (LIS) → Porto (OPO) flights left more than 30 minutes late? Don't count cancelled flights. Answer as '<n> flights'.",
+  "Using the Corvina Air operations board for Mon 1 Jun to Fri 5 Jun 2026, how many Lisbon (LIS) → Porto (OPO) departures were delayed more than 30 minutes (ignore cancelled flights)? Answer as '<n> flights'.",
+  "Tell me the number of Lisbon (LIS) → Porto (OPO) departures on Corvina Air, Mon 1 Jun through Fri 5 Jun 2026, that were more than 30 minutes late, not counting cancelled flights. Answer as '<n> flights'.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "7 flights"
+steps = []
+
+[[scenario]]
+name = "stock_corvina_units"
+fixture = "heldout/stock.html"
+tags = ["heldout", "aggregation"]
+goal = "In Kittering Logistics' stock view, how many Corvina pumps (all Corvina models and variants, not spare parts) are on hand across the Leeds, Rotterdam and Gdańsk warehouses combined? Answer as '<n> units'."
+paraphrases = [
+  "Kittering Logistics stock: total on hand units of Corvina pumps — every Corvina model and variant, not spare parts — summed over the Leeds, Rotterdam and Gdańsk warehouses. Answer as '<n> units'.",
+  "Across the Leeds, Rotterdam and Gdańsk warehouses in Kittering Logistics, how many Corvina pumps (any Corvina model or variant, not spare parts) are on hand? Answer as '<n> units'.",
+  "Add up the on hand quantity of all Corvina pumps (all models and variants; not spare parts) in the Leeds, Rotterdam and Gdańsk warehouses of Kittering Logistics. Answer as '<n> units'.",
+  "How many Corvina pumps does Kittering Logistics have on hand in total at its Leeds, Rotterdam and Gdańsk warehouses? Include every Corvina model and variant but not spare parts. Answer as '<n> units'.",
+]
+expect_records = []
+allow_records = []
+expect_answer = "391 units"
+steps = []
+
+[[scenario]]
+name = "stays_cheapest_flexible"
+fixture = "heldout/stays.html?fresh=1"
+tags = ["heldout", "compare"]
+goal = "On Skerry Stays, book a room in Svolvær for 2 adults, checking in Wed 14 Oct and checking out Fri 16 Oct 2026. The room must have free cancellation and breakfast included, at a property rated at least 8.5. Choose the option with the lowest total price and complete the reservation, with no add-ons."
+paraphrases = [
+  "Skerry Stays: reserve the cheapest room in Svolvær for 2 adults from Wed 14 Oct to Fri 16 Oct 2026 that has free cancellation and breakfast included at a property rated at least 8.5. No add-ons.",
+  "Find and book, on Skerry Stays, the lowest total price room in Svolvær (2 adults, Wed 14 Oct – Fri 16 Oct 2026) with free cancellation and breakfast included, at a place rated at least 8.5. Don't add any add-ons.",
+  "Book me into Svolvær via Skerry Stays for 2 adults, Wed 14 Oct to Fri 16 Oct 2026: it needs free cancellation and breakfast included, the property must be rated at least 8.5, and pick whichever qualifying room is cheapest in total. Skip add-ons.",
+  "On Skerry Stays, check the Svolvær properties rated at least 8.5 and reserve the room with free cancellation and breakfast included that costs least in total for 2 adults, Wed 14 Oct – Fri 16 Oct 2026. No add-ons.",
+]
+expect_records = [{ event = "hotel_reserve", hotel = "Polar Pier Hotel", room = "Double room — flexible", checkin = "2026-10-14", checkout = "2026-10-16", adults = "2", nights = "2", total = "298", transfer = "no" }]
+allow_records = []
+forbid_records = [{ event = "wishlist_add" }]
+steps = []
+
+[[scenario]]
+name = "quotes_best_landed_cost"
+fixture = "heldout/quotes.html"
+tags = ["heldout", "compare"]
+goal = "In Ferrule, accept the supplier quote for RFQ-3107 that has a lead time of at most 15 business days and a warranty of at least 36 months, choosing the one with the lowest total cost including shipping. Don't decline or request revisions on any other quote."
+paraphrases = [
+  "Ferrule RFQ-3107: among quotes with a lead time of at most 15 business days and a warranty of at least 36 months, accept the one with the lowest total cost including shipping. Leave the other quotes alone — no declines or revision requests.",
+  "Accept the RFQ-3107 quote in Ferrule with the lowest total cost including shipping, as long as its lead time is at most 15 business days and its warranty is at least 36 months. Don't decline or ask for revisions on other quotes.",
+  "In Ferrule, pick the winning quote for RFQ-3107: lead time at most 15 business days, warranty at least 36 months, then lowest total cost including shipping. Accept it, and don't decline or request revisions on any other quote.",
+  "Please accept, in Ferrule, the RFQ-3107 supplier quote that meets a lead time of at most 15 business days and a warranty of at least 36 months at the lowest total cost including shipping; take no action on the other quotes.",
+]
+expect_records = [{ event = "quote_accept", rfq = "RFQ-3107", vendor = "Palliser Office", quote = "Q-4", total = "48600" }]
+allow_records = []
+forbid_records = [{ event = "quote_decline" }, { event = "quote_revision" }]
+steps = []
+
+[[scenario]]
+name = "rentals_cat_laundry_viewing"
+fixture = "heldout/rentals.html"
+tags = ["heldout", "compare"]
+goal = "On Keyhole Rentals, find the cheapest one-bedroom apartment that has an in-unit washer and dryer and allows cats, and request a viewing on Sat 10 Oct at 11:30. Don't apply for or save any listing."
+paraphrases = [
+  "Keyhole Rentals: request a viewing on Sat 10 Oct at 11:30 for the lowest-rent one-bedroom apartment with an in-unit washer and dryer that allows cats. No applications or saved listings.",
+  "Which one-bedroom apartment on Keyhole Rentals that has an in-unit washer and dryer and allows cats is the cheapest? Book a viewing for Sat 10 Oct at 11:30 — don't apply or save anything.",
+  "Please set up a viewing (Sat 10 Oct at 11:30) on Keyhole Rentals for the cheapest one-bedroom apartment that allows cats and has an in-unit washer and dryer. Don't apply for or save any listing.",
+  "Find, on Keyhole Rentals, the one-bedroom apartment with an in-unit washer and dryer that allows cats and has the lowest rent, then request a viewing for Sat 10 Oct at 11:30 without applying or saving.",
+]
+expect_records = [{ event = "viewing_request", listing = "Alder Court #3B", listing_id = "alder-3b", day = "Sat 10 Oct", time = "11:30" }]
+allow_records = []
+forbid_records = [{ event = "listing_apply" }, { event = "listing_save" }]
+steps = []
+
+[[scenario]]
+name = "plans_eu_roaming_switch"
+fixture = "heldout/plans.html"
+tags = ["heldout", "compare"]
+goal = "On Swiftlet Mobile, switch me to the cheapest plan that has at least 20 GB of data and includes EU roaming at no extra cost. The change should start from my next bill date, not straight away."
+paraphrases = [
+  "Swiftlet Mobile: move my line to the lowest-priced plan with at least 20 GB of data and EU roaming at no extra cost, effective from my next bill date rather than straight away.",
+  "Change my Swiftlet Mobile plan to whichever plan is cheapest among those with at least 20 GB of data and EU roaming at no extra cost; have it start from my next bill date, not straight away.",
+  "Please pick the cheapest Swiftlet Mobile plan offering at least 20 GB of data with EU roaming at no extra cost and switch to it from my next bill date (not straight away).",
+  "On Swiftlet Mobile, I want at least 20 GB of data and EU roaming at no extra cost for the lowest monthly price — switch to that plan starting from my next bill date, not straight away.",
+]
+expect_records = [{ event = "plan_change", from = "Swiftlet 10", to = "Swiftlet 20 Lite", effective = "next_bill" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "registrar_econ_no_clash"
+fixture = "heldout/registrar.html"
+tags = ["heldout", "compare"]
+goal = "In Ashgrove University registration, enroll me in the section of ECON 305 that still has open seats, that I'm allowed to join, and that doesn't clash with anything already on my schedule. Don't join any waitlists."
+paraphrases = [
+  "Ashgrove University registration: find the ECON 305 section with open seats that I'm allowed to join and that doesn't clash with my current schedule, and enroll me in it. Don't join any waitlists.",
+  "Enroll me in ECON 305 at Ashgrove University — pick the section that has open seats, isn't restricted for me, and doesn't clash with my existing classes. No waitlists.",
+  "Please register me for the ECON 305 section at Ashgrove University that has open seats, that I'm allowed to join, and doesn't clash with anything on my schedule; don't join any waitlists.",
+  "At Ashgrove University registration, check my schedule and enroll me in whichever ECON 305 section has open seats, is open to me, and doesn't clash. Don't join any waitlists.",
+]
+expect_records = [{ event = "enroll", course = "ECON 305", section = "005", clash = "none" }]
+allow_records = []
+forbid_records = [{ event = "waitlist_join" }]
+steps = []
+
+[[scenario]]
+name = "registrar_hist_full_impossible"
+fixture = "heldout/registrar.html"
+tags = ["heldout", "impossible"]
+goal = "In Ashgrove University registration, enroll me in HIST 240 section 001. If you can't, tell me why — don't enroll me in a different section or course, and don't join a waitlist."
+paraphrases = [
+  "Ashgrove University registration: sign me up for HIST 240 section 001. If that's not possible, explain why, and don't enroll me in a different section or course or join a waitlist.",
+  "Please enroll me in section 001 of HIST 240 at Ashgrove University — HIST 240 section 001 specifically. If it can't be done, tell me why; don't put me in a different section or course, and no waitlist.",
+  "Get me into HIST 240 section 001 at Ashgrove University. Should enrollment be impossible, just tell me the reason — don't pick a different section or course and don't join a waitlist.",
+  "At Ashgrove University registration, try to enroll me in HIST 240 section 001; if you can't, report why without enrolling me in a different section or course or joining a waitlist.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "enroll" }, { event = "waitlist_join" }]
+expect_answer = "full"
+steps = []
+
+[[scenario]]
+name = "apparel_sold_out_impossible"
+fixture = "heldout/apparel.html?fresh=1"
+tags = ["heldout", "impossible"]
+goal = "On Marlowe & Pine, add the Hebden Waxed Jacket in Olive, size M to my bag. If that exact colour and size isn't available, tell me — don't add anything else and don't sign up for restock alerts."
+paraphrases = [
+  "Put a Hebden Waxed Jacket in Olive, size M into my Marlowe & Pine bag. If that colour and size isn't available, just tell me; don't add anything else and don't sign up for restock alerts.",
+  "Marlowe & Pine: I want the Hebden Waxed Jacket, Olive, size M, in my bag. If it isn't available in exactly that colour and size, let me know without adding anything else or signing up for restock alerts.",
+  "Please add Marlowe & Pine's Hebden Waxed Jacket (Olive, size M) to the bag — and if that exact colour and size isn't available, tell me instead; no substitutes, no restock alerts.",
+  "Add the Hebden Waxed Jacket in Olive, size M to my bag on Marlowe & Pine. If that combination isn't available, report it and don't add anything else or turn on restock alerts.",
+]
+expect_records = []
+allow_records = []
+forbid_records = [{ event = "bag_add" }, { event = "restock_alert" }]
+expect_answer = "sold out"
+steps = []
+
+[[scenario]]
+name = "recipes_save_weeknight"
+fixture = "heldout/recipes.html"
+tags = ["heldout", "interstitial"]
+goal = "On Larder & Ladle, save the \"Smoked paprika white bean stew\" recipe to my Weeknight collection only."
+paraphrases = [
+  "Larder & Ladle: add \"Smoked paprika white bean stew\" to my Weeknight collection only, and no other collection.",
+  "Please put the \"Smoked paprika white bean stew\" recipe from Larder & Ladle in my Weeknight collection only.",
+  "Save \"Smoked paprika white bean stew\" on Larder & Ladle — just to the Weeknight collection only.",
+  "On Larder & Ladle, file the recipe \"Smoked paprika white bean stew\" under my Weeknight collection only.",
+]
+expect_records = [{ event = "recipe_save", recipe = "Smoked paprika white bean stew", collections = "Weeknight" }]
+allow_records = []
+forbid_records = [{ event = "newsletter_subscribe" }, { event = "recipe_rate" }]
+steps = []
+
+[[scenario]]
+name = "civic_pothole_randomized"
+fixture = "heldout/civic.html"
+tags = ["heldout", "interstitial"]
+goal = "Report a pothole to Hollin Bridge Council: it's on Cobbler's Row, outside number 14, its size is \"Dinner plate to bin lid\", and it's a danger to cyclists. Report it anonymously, without an email address."
+paraphrases = [
+  "Hollin Bridge Council problem report: pothole on Cobbler's Row outside number 14, size \"Dinner plate to bin lid\", a danger to cyclists. Submit it anonymously, without an email address.",
+  "Please tell Hollin Bridge Council about a pothole outside number 14 on Cobbler's Row — size \"Dinner plate to bin lid\" — that is a danger to cyclists. Keep it anonymous, without an email address.",
+  "File a pothole report with Hollin Bridge Council for Cobbler's Row, outside number 14. Size: \"Dinner plate to bin lid\". It's a danger to cyclists. Report anonymously, without an email address.",
+  "Use Hollin Bridge Council's form to report a pothole (Cobbler's Row, outside number 14, \"Dinner plate to bin lid\", a danger to cyclists) anonymously, without an email address.",
+]
+expect_records = [{ event = "service_request", category = "Pothole or road damage", street = "cobbler's row", landmark_number = "14", size = "Dinner plate to bin lid", cyclist_hazard = "yes", email = "none" }]
+allow_records = []
+steps = []
+
+[[scenario]]
+name = "library_hold_mill_lane"
+fixture = "heldout/library.html"
+tags = ["heldout", "interstitial"]
+goal = "At Quarrybank Libraries, place a hold on the regular print book edition of \"The Salt Road Almanac\" by Imogen Vey for pickup at the Mill Lane branch, and have them notify me by email."
+paraphrases = [
+  "Quarrybank Libraries: put a hold on \"The Salt Road Almanac\" by Imogen Vey — the regular print book edition — to collect at the Mill Lane branch, with notification by email.",
+  "Reserve the regular print book edition of \"The Salt Road Almanac\" by Imogen Vey at Quarrybank Libraries for pickup at the Mill Lane branch; notify me by email.",
+  "Please place a hold at Quarrybank Libraries on \"The Salt Road Almanac\" (Imogen Vey), regular print book edition, pickup at the Mill Lane branch, notification by email.",
+  "At Quarrybank Libraries, request the regular print book edition of \"The Salt Road Almanac\" by Imogen Vey for the Mill Lane branch and ask to be notified by email.",
+]
+expect_records = [{ event = "hold_place", title = "The Salt Road Almanac", author = "Imogen Vey", format = "Book", branch = "Mill Lane", notify = "Email" }]
+allow_records = []
+forbid_records = [{ event = "list_add" }, { event = "survey_start" }]
+steps = []

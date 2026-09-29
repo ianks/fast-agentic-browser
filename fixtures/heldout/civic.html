@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Report a problem · Hollin Bridge Council</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f4f7f4; }
+  header { background: #1e3a2f; }
+  main { max-width: 720px; }
+  .form { background: #fff; border: 1px solid #d9e3dc; border-radius: 10px; padding: 18px 22px; }
+  .fld { margin-bottom: 14px; }
+  .fld label.cap, .fld .cap { display: block; font-weight: 700; margin: 0 0 4px; }
+  .hint { color: #52525b; font-size: 13px; margin-bottom: 4px; }
+  .opt { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+  .err { color: #b91c1c; font-size: 13px; }
+  .map { height: 120px; border-radius: 8px; background: repeating-linear-gradient(45deg, #dfe8e1, #dfe8e1 10px, #eef3ef 10px, #eef3ef 20px); display: flex; align-items: center; justify-content: center; color: #1e3a2f; font-weight: 700; }
+</style>
+</head>
+<body>
+<header><strong>Hollin Bridge Council</strong><span>Report a problem</span><a href="#" data-dead style="margin-left:auto">Sign in</a></header>
+<main>
+  <h1>Report a road or street problem</h1>
+  <p class="muted">We aim to inspect reported potholes within 5 working days.</p>
+  <form class="form" id="f" novalidate></form>
+  <div id="done" hidden></div>
+</main>
+<div class="overlay" id="confirm" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cf-h">
+    <h3 id="cf-h" style="margin-top:0">Is this the right place?</h3>
+    <div class="map" id="cf-map"></div>
+    <p id="cf-b"></p>
+    <div class="row" style="justify-content:flex-end" id="cf-actions"></div>
+  </div>
+</div>
+<script>
+(() => {
+  // Layout is deliberately randomised on every load: field order, option order and button wording.
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  const CATS = ['Pothole or road damage', 'Pavement or kerb damage', 'Streetlight not working', 'Blocked drain or gully', 'Fly-tipping', 'Graffiti'];
+  const SIZES = ['Smaller than a dinner plate', 'Dinner plate to bin lid', 'Larger than a bin lid'];
+  const FIELDS = {
+    category: `<div class="fld"><label class="cap" for="c-cat">What is the problem?</label><select id="c-cat" style="width:320px"><option value="">Choose a category…</option>${shuffle(CATS).map((c) => `<option>${c}</option>`).join('')}</select></div>`,
+    street: `<div class="fld"><label class="cap" for="c-street">Street name</label><input id="c-street" type="text" style="width:320px"></div>`,
+    landmark: `<div class="fld"><label class="cap" for="c-near">Nearest house number or landmark</label><input id="c-near" type="text" style="width:320px"></div>`,
+    size: `<div class="fld" role="radiogroup" aria-labelledby="c-size-l"><span class="cap" id="c-size-l">Roughly how big is it?</span>${shuffle(SIZES).map((s) => `<label class="opt"><input type="radio" name="size" value="${s}"> ${s}</label>`).join('')}</div>`,
+    hazard: `<div class="fld"><label class="opt"><input type="checkbox" id="c-hazard"> It is a danger to cyclists or wheelchair users</label></div>`,
+    desc: `<div class="fld"><label class="cap" for="c-desc">Anything else we should know? (optional)</label><textarea id="c-desc" style="width:520px;height:60px"></textarea></div>`,
+    email: `<div class="fld"><label class="cap" for="c-email">Email for progress updates (optional)</label><div class="hint">Leave blank to report anonymously.</div><input id="c-email" type="email" style="width:320px"></div>`,
+  };
+  const SUBMIT = pick(['Submit report', 'Send report', 'Report it']);
+  const CLEAR = pick(['Clear form', 'Start over', 'Reset form']);
+  const btns = shuffle([`<button type="submit" class="primary" id="c-submit">${SUBMIT}</button>`, `<button type="button" id="c-clear">${CLEAR}</button>`]);
+  q('#f').innerHTML = shuffle(Object.keys(FIELDS)).map((k) => FIELDS[k]).join('') + '<div class="err" id="c-err" role="alert" hidden></div><div class="row" style="margin-top:8px">' + btns.join('') + '</div>';
+  const err = (m) => { q('#c-err').textContent = m; q('#c-err').hidden = !m; };
+  q('#c-clear').onclick = () => { qa('#f input[type=text], #f input[type=email], #f textarea').forEach((i) => { i.value = ''; }); qa('#f input[type=radio], #f input[type=checkbox]').forEach((i) => { i.checked = false; }); q('#c-cat').value = ''; err(''); };
+  let data = null;
+  q('#f').addEventListener('submit', (e) => {
+    e.preventDefault();
+    data = { category: q('#c-cat').value, street: q('#c-street').value.trim().replace(/\s+/g, ' ').replace(/[\u2018\u2019]/g, "'"), landmark: q('#c-near').value.trim().replace(/\s+/g, ' '), size: (qa('input[name=size]').find((r) => r.checked) || {}).value || '', hazard: q('#c-hazard').checked, desc: q('#c-desc').value.trim(), email: q('#c-email').value.trim().toLowerCase() };
+    if (!data.category) return err('Choose what the problem is.');
+    if (!data.street) return err('Enter the street name.');
+    if (!data.landmark) return err('Enter the nearest house number or a landmark.');
+    if (data.category === 'Pothole or road damage' && !data.size) return err('Tell us roughly how big the pothole is.');
+    if (data.email && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(data.email)) return err('Enter a valid email address or leave it blank.');
+    err('');
+    q('#cf-map').textContent = `📍 ${data.street}, near ${data.landmark}`;
+    q('#cf-b').textContent = `${data.category}${data.size ? ' · ' + data.size : ''}${data.hazard ? ' · danger to cyclists' : ''}`;
+    q('#cf-actions').innerHTML = shuffle(['<button type="button" id="cf-no">No, let me edit</button>', '<button type="button" class="primary" id="cf-yes">Yes, send it</button>']).join('');
+    q('#confirm').hidden = false;
+  });
+  q('#cf-actions').addEventListener('click', async (e) => {
+    if (e.target.id === 'cf-no') { q('#confirm').hidden = true; return; }
+    if (e.target.id !== 'cf-yes') return;
+    e.target.disabled = true; await later(450);
+    await rec({ event: 'service_request', category: data.category, street: data.street.toLowerCase(), landmark: data.landmark.toLowerCase(), landmark_number: (data.landmark.match(/\d+/) || ['none'])[0], size: data.size, cyclist_hazard: data.hazard ? 'yes' : 'no', email: data.email || 'none' });
+    q('#confirm').hidden = true; q('#f').hidden = true; q('#done').hidden = false;
+    q('#done').innerHTML = `<div class="form"><h2 style="margin-top:0">Thanks — report HB-${7700 + data.street.length} received</h2><p>We'll inspect ${data.street} within 5 working days.</p></div>`;
+  });
+})();
+</script>
+</body>
+</html>

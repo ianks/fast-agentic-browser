@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Sign up · Streamly</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body><header><strong>Streamly</strong><a href="#">Help</a></header>
+<div class="card" style="margin:12px 24px;background:#fef3c7" aria-label="Promotion"><strong>Limited offer:</strong> Premium for $1 your first month! <button onclick="rec({event:'upgrade'})">Upgrade now</button> <button aria-label="Dismiss promotion">×</button></div>
+<main><p class="muted">Step 1 of 3</p><h1>Choose your plan</h1>
+<div role="radiogroup" aria-label="Plan">
+  <div class="card"><input type="radio" name="plan" id="p1" value="Basic"><label for="p1" style="display:inline">Basic — $6.99/mo, 720p, 1 screen</label></div>
+  <div class="card"><input type="radio" name="plan" id="p2" value="Plus" checked><label for="p2" style="display:inline">Plus — $11.99/mo, 1080p, 2 screens</label></div>
+  <div class="card"><input type="radio" name="plan" id="p3" value="Premium"><label for="p3" style="display:inline">Premium — $17.99/mo, 4K, 4 screens</label></div>
+</div>
+<div class="row" style="margin-top:16px"><button onclick="rec({event:'cancel'})">Cancel</button><button disabled>Back</button><button class="primary" id="cont">Continue</button></div></main>
+<script>q('#cont').onclick = async () => { await rec({ event: 'step', step: 2, plan: q('input[name=plan]:checked').value }); document.querySelector('main').innerHTML = '<p class="muted">Step 2 of 3</p><h1>Create your account</h1><label for="e">Email</label><input id="e" type="email"><div><button class="primary">Continue</button></div>'; };</script>
+</body></html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brightwater Food Bank · Donate</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 16px/1.55 "Source Serif Pro", Georgia, serif; color: #1f2a24; background: #fbfaf5; }
+  a { color: #1d6b4f; }
+  button, input, select, textarea { font: 15px -apple-system, "Segoe UI", sans-serif; }
+  header { background: #1d6b4f; color: #fff; }
+  header .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 14px 24px; }
+  .logo { font: 700 20px -apple-system, sans-serif; color: #fff; text-decoration: none; }
+  header nav a { color: #d7efe4; text-decoration: none; font: 14px -apple-system, sans-serif; margin-right: 14px; }
+  header .sp { flex: 1; }
+  header .btn { background: #f2b33d; border-color: #f2b33d; color: #1f2a24; }
+  main { max-width: 1120px; margin: 0 auto; padding: 26px 24px 60px; }
+  h1 { font-size: 34px; font-weight: 600; margin: 0 0 8px; }
+  h2 { font-size: 22px; margin: 22px 0 10px; }
+  .sub { color: #5d6a62; font: 15px -apple-system, sans-serif; margin: 0 0 14px; }
+  .btn { border: 1px solid #b9c8bf; background: #fff; border-radius: 8px; padding: 9px 18px; cursor: pointer; color: #1f2a24; text-decoration: none; display: inline-block; font: 15px -apple-system, sans-serif; }
+  .btn.primary { background: #1d6b4f; border-color: #1d6b4f; color: #fff; font-weight: 600; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .give { display: grid; grid-template-columns: 1fr 380px; gap: 30px; align-items: start; }
+  .story { background: #fff; border: 1px solid #e3e8dc; border-radius: 14px; padding: 22px; }
+  .story .ph { height: 200px; border-radius: 10px; background: linear-gradient(135deg, #f2b33d, #1d6b4f); margin-bottom: 14px; }
+  .form { background: #fff; border: 1px solid #e3e8dc; border-radius: 14px; padding: 20px; font-family: -apple-system, sans-serif; font-size: 15px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #b9c8bf; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .seg button { border: 0; background: #fff; padding: 10px; cursor: pointer; }
+  .seg button[aria-pressed=true] { background: #1d6b4f; color: #fff; font-weight: 600; }
+  .seg .badge { display: block; font-size: 11px; opacity: .85; }
+  .amts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .amts button { border: 1.5px solid #b9c8bf; background: #fff; border-radius: 10px; padding: 10px 0; cursor: pointer; font-weight: 600; }
+  .amts button[aria-pressed=true] { border-color: #1d6b4f; background: #eaf5ef; }
+  .other { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .other input { width: 120px; padding: 8px; border: 1px solid #b9c8bf; border-radius: 8px; }
+  .f { margin: 14px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .f select, .f input[type=text], .f input[type=email], .f textarea { width: 100%; padding: 8px 10px; border: 1px solid #b9c8bf; border-radius: 8px; background: #fff; }
+  .chk { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; font-size: 14px; }
+  .dedic { background: #f6f8f3; border-radius: 10px; padding: 10px 12px; }
+  .radios label { display: inline-flex; gap: 6px; margin-right: 14px; font-size: 14px; }
+  .err { color: #a3261d; font-size: 14px; }
+  .note { font-size: 12px; color: #5d6a62; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, sans-serif; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e8ece3; }
+  th { font-size: 12px; color: #5d6a62; text-transform: uppercase; letter-spacing: .05em; }
+  td.num, th.num { text-align: right; }
+  .tag { font-size: 12px; border-radius: 9px; padding: 1px 8px; background: #edf2ea; }
+  .tag.ref { background: #fde8e8; color: #9b1c1c; }
+  .acctnav { display: flex; gap: 16px; font-family: -apple-system, sans-serif; margin-bottom: 16px; }
+  .acctnav a { text-decoration: none; padding-bottom: 4px; }
+  .acctnav a.on { border-bottom: 2px solid #1d6b4f; font-weight: 600; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; font-family: -apple-system, sans-serif; }
+  .pager button[aria-current=page] { background: #1d6b4f; color: #fff; border-color: #1d6b4f; }
+  .card { background: #fff; border: 1px solid #e3e8dc; border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1f2a24; color: #fff; padding: 10px 18px; border-radius: 8px; font-family: -apple-system, sans-serif; z-index: 60; }
+  footer { background: #173d2f; color: #cfe3d8; font: 13px -apple-system, sans-serif; padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<header><div class="in"><a class="logo" href="#/donate">Brightwater Food Bank</a><nav aria-label="Main"><a href="#/about">About</a><a href="#/programs">Programs</a><a href="#/volunteer">Volunteer</a><a href="#/news">News</a></nav><span class="sp"></span><a href="#/account/giving" style="color:#fff;font:14px -apple-system,sans-serif">My giving</a><a class="btn" href="#/donate">Donate</a></div></header>
+<main id="view"></main>
+<footer>Brightwater Food Bank · Registered charity (ANBI) 8217.33.450 · Maashaven Oostzijde 12, Rotterdam · Gifts are tax-deductible where the law allows.</footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toFixed(2);
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const FUNDS = ['Where it’s needed most', 'Winter Meals', 'School Pantry', 'Fresh Produce Rescue'];
+  const HISTORY = [
+    ['2026-09-02', 'Donation', 'Fresh Produce Rescue', 50, 'Completed'], ['2026-06-14', 'Shop order', 'Brightwater apron', 24, 'Completed'], ['2026-03-10', 'Donation', 'School Pantry', 80, 'Completed'],
+    ['2026-01-18', 'Donation', 'Winter Meals', 60, 'Completed'], ['2025-12-20', 'Donation', 'Winter Meals · in memory of Hendrik Janssen', 200, 'Completed'], ['2025-11-30', 'Donation', 'Winter Meals', 75, 'Completed'],
+    ['2025-09-27', 'Event ticket', 'Harvest Gala 2025 — 2 tickets', 130, 'Completed'], ['2025-09-27', 'Donation', 'Harvest Gala 2025 — paddle raise', 150, 'Completed'], ['2025-07-01', 'Donation', 'Round-up donations, April–June 2025', 7.45, 'Completed'], ['2025-05-15', 'Recurring donation', 'Where it’s needed most', 20, 'Refunded (card error)'],
+    ['2025-05-02', 'Donation', 'School Pantry', 100, 'Completed'], ['2025-04-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'], ['2025-03-22', 'Shop order', 'Brightwater tote bag', 18, 'Completed'],
+    ['2025-03-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'], ['2025-02-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'], ['2025-01-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'],
+    ['2024-12-28', 'Donation', 'Winter Meals', 150, 'Completed'], ['2024-12-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'], ['2024-11-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'],
+    ['2024-10-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'], ['2024-09-28', 'Event ticket', 'Harvest Gala 2024 — 2 tickets', 120, 'Completed'], ['2024-09-15', 'Recurring donation', 'Where it’s needed most', 20, 'Completed'],
+    ['2024-06-01', 'Donation', 'Fresh Produce Rescue', 45, 'Completed'], ['2024-03-09', 'Shop order', 'Cookbook: Rotterdam Tables', 29.5, 'Completed'], ['2024-01-20', 'Donation', 'Winter Meals', 90, 'Completed'],
+  ].map(([date, type, desc, amount, status]) => ({ date, type, desc, amount, status }));
+  const st = { freq: 'monthly', amt: 50, other: '', fund: FUNDS[0], dedicate: false, kind: 'honour', honoree: '', ecard: false, ecardEmail: '', msg: '', fee: true, err: '', busy: false, done: null, page: 1 };
+  const amount = () => (st.amt === 'other' ? parseFloat(String(st.other).replace(/[^\d.,]/g, '').replace(',', '.')) || 0 : st.amt);
+  const feeAmt = () => (st.fee ? Math.round((amount() * 0.029 + 0.3) * 100) / 100 : 0);
+  const charged = () => Math.round((amount() + feeAmt()) * 100) / 100;
+
+  function donate() {
+    if (st.done) return `<div class="card" style="max-width:640px"><h1>Thank you, Pieter!</h1><p>${esc(st.done)}</p><p class="sub">A receipt is on its way to pieter.janssen@kpnmail.nl.</p><a class="btn" href="#/account/giving">See my giving history</a></div>`;
+    return `<div class="give"><div class="story"><div class="ph" role="img" aria-label="Volunteers packing food parcels"></div><h1>Every €10 puts three hot meals on a table this winter.</h1><p>Last year Brightwater served 212,000 meals across Rotterdam-Zuid. Our Winter Meals kitchen opens on 1 November and runs until the end of February.</p><h2>Where your gift goes</h2><ul class="sub"><li><strong>Winter Meals</strong> — hot meals from our Maashaven kitchen</li><li><strong>School Pantry</strong> — breakfast bags for 38 primary schools</li><li><strong>Fresh Produce Rescue</strong> — collecting surplus from the Food Market</li></ul></div>
+      <div class="form" role="form" aria-label="Donation form"><div class="seg" role="group" aria-label="How often"><button type="button" data-freq="monthly" aria-pressed="${st.freq === 'monthly'}">Give monthly<span class="badge">Most impact</span></button><button type="button" data-freq="one_time" aria-pressed="${st.freq === 'one_time'}">Give once<span class="badge">&nbsp;</span></button></div>
+        <div class="lab" style="font-weight:600;font-size:14px;margin-bottom:6px">Amount</div><div class="amts" role="group" aria-label="Amount">${[25, 50, 100, 250].map((v) => `<button type="button" data-amt="${v}" aria-pressed="${st.amt === v}">€${v}</button>`).join('')}<button type="button" data-amt="other" aria-pressed="${st.amt === 'other'}">Other</button></div>
+        ${st.amt === 'other' ? `<div class="other">€ <input type="text" id="other" inputmode="decimal" value="${esc(st.other)}" aria-label="Other amount"></div>` : ''}
+        <div class="f"><label for="fund">Fund</label><select id="fund">${FUNDS.map((f) => `<option ${st.fund === f ? 'selected' : ''}>${esc(f)}</option>`).join('')}</select></div>
+        <label class="chk"><input type="checkbox" id="dedicate" ${st.dedicate ? 'checked' : ''}><span>Dedicate this gift to someone</span></label>
+        ${st.dedicate ? `<div class="dedic"><div class="radios" role="radiogroup" aria-label="Dedication type"><label><input type="radio" name="kind" value="honour" ${st.kind === 'honour' ? 'checked' : ''}> In honour of</label><label><input type="radio" name="kind" value="memory" ${st.kind === 'memory' ? 'checked' : ''}> In memory of</label></div><div class="f"><label for="honoree">Their name</label><input type="text" id="honoree" value="${esc(st.honoree)}"></div><label class="chk"><input type="checkbox" id="ecard" ${st.ecard ? 'checked' : ''}><span>Send them an e-card about my gift</span></label>${st.ecard ? `<div class="f"><label for="ecard-email">Recipient's email</label><input type="email" id="ecard-email" value="${esc(st.ecardEmail)}"></div><div class="f"><label for="ecard-msg">Message (optional)</label><textarea id="ecard-msg" rows="2">${esc(st.msg)}</textarea></div>` : ''}</div>` : ''}
+        <label class="chk"><input type="checkbox" id="fee" ${st.fee ? 'checked' : ''}><span>Cover the transaction fee (2.9% + €0.30${amount() ? ' = ' + eur(Math.round((amount() * 0.029 + 0.3) * 100) / 100) : ''}) so 100% of my gift goes to Brightwater</span></label>
+        <p class="note">Signed in as Pieter Janssen · Paying with Mastercard •••• 6620</p>
+        <p class="err" role="alert">${esc(st.err)}</p>
+        <button class="btn primary" type="button" id="give" style="width:100%" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Processing…' : `Donate ${eur(charged())}${st.freq === 'monthly' ? ' monthly' : ''}`}</button></div></div>`;
+  }
+  function giving() {
+    const per = 8, pages = Math.ceil(HISTORY.length / per);
+    return `<h1>My giving</h1><nav class="acctnav" aria-label="Account"><a href="#/account/giving" class="on">Giving history</a><a href="#/account/recurring">Monthly giving</a><a href="#/account/receipts">Tax receipts</a><a href="#/account/profile">Profile</a></nav>
+      <p class="sub">Only donations are tax-deductible. Event tickets, shop orders and refunded payments are not.</p><div class="card"><table><thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Status</th><th class="num">Amount</th></tr></thead><tbody>${HISTORY.slice((st.page - 1) * per, st.page * per).map((h) => `<tr><td>${new Date(h.date + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}</td><td>${esc(h.type)}</td><td>${esc(h.desc)}</td><td><span class="tag ${h.status.startsWith('Refunded') ? 'ref' : ''}">${esc(h.status)}</span></td><td class="num">${eur(h.amount)}</td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-page="${st.page - 1}" ${st.page === 1 ? 'disabled' : ''}>Previous</button>${Array.from({ length: pages }, (_, i) => `<button class="btn" type="button" data-page="${i + 1}" ${st.page === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button class="btn" type="button" data-page="${st.page + 1}" ${st.page === pages ? 'disabled' : ''}>Next</button></div></div>`;
+  }
+  function route() {
+    const p = (location.hash || '#/donate').slice(2).split('/');
+    const v = $('#view');
+    if (p[0] === 'account' && (p[1] === 'giving' || !p[1])) v.innerHTML = giving();
+    else if (p[0] === 'account' && p[1] === 'recurring') v.innerHTML = `<h1>Monthly giving</h1><div class="card"><p>You don't have an active monthly gift. Your previous monthly gift ended in May 2025.</p><a class="btn" href="#/donate">Start monthly giving</a></div>`;
+    else if (p[0] === 'account' && p[1] === 'receipts') v.innerHTML = `<h1>Tax receipts</h1><div class="card"><p>Annual statements are issued in February. The 2025 statement is being prepared and will be emailed by 28 February 2027.</p></div>`;
+    else if (p[0] === 'account') v.innerHTML = `<h1>Profile</h1><div class="card">Pieter Janssen · pieter.janssen@kpnmail.nl · Rotterdam</div>`;
+    else if (['about', 'programs', 'volunteer', 'news'].includes(p[0])) v.innerHTML = `<h1>${p[0][0].toUpperCase() + p[0].slice(1)}</h1><div class="card"><p class="sub">Brightwater has fought hunger in Rotterdam since 1994.</p></div>`;
+    else v.innerHTML = donate();
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const fq = t.closest('[data-freq]'); if (fq) { st.freq = fq.dataset.freq; rerender(); return; }
+    const am = t.closest('[data-amt]'); if (am) { st.amt = am.dataset.amt === 'other' ? 'other' : +am.dataset.amt; rerender(); if (st.amt === 'other') $('#other').focus(); return; }
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { st.page = +pg.dataset.page; rerender(); return; }
+    if (t.closest('#give')) {
+      st.err = '';
+      const a = amount();
+      if (!(a >= 5)) st.err = 'The minimum gift is €5.';
+      else if (st.dedicate && st.honoree.trim().split(/\s+/).length < 2) st.err = 'Enter the full name of the person you are honouring.';
+      else if (st.dedicate && st.ecard && !/^\S+@\S+\.\S+$/.test(st.ecardEmail.trim())) st.err = "Enter the e-card recipient's email address.";
+      if (st.err) { rerender(); return; }
+      st.busy = true; rerender(); await later(1000);
+      await rec({ event: 'donation', frequency: st.freq, amount: a.toFixed(2), fund: st.fund, cover_fee: st.fee ? 'yes' : 'no', charged: charged().toFixed(2), dedication: st.dedicate ? st.kind : 'none', honoree: st.dedicate ? st.honoree.trim().replace(/\s+/g, ' ') : '', ecard: st.dedicate && st.ecard ? 'yes' : 'no', ecard_email: st.dedicate && st.ecard ? st.ecardEmail.trim().toLowerCase() : '' });
+      st.busy = false; st.done = `Your ${st.freq === 'monthly' ? 'monthly ' : ''}gift of ${eur(charged())} to ${st.fund} is confirmed.${st.dedicate ? ` Dedicated ${st.kind === 'honour' ? 'in honour' : 'in memory'} of ${st.honoree.trim()}.` : ''}`; rerender(); toast('Donation received');
+    }
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'fund') st.fund = t.value;
+    if (t.id === 'dedicate') { st.dedicate = t.checked; rerender(); }
+    if (t.name === 'kind') st.kind = t.value;
+    if (t.id === 'ecard') { st.ecard = t.checked; rerender(); }
+    if (t.id === 'fee') { st.fee = t.checked; rerender(); }
+  });
+  view.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'other') { st.other = t.value; const b = $('#give'); if (b) b.textContent = `Donate ${eur(charged())}${st.freq === 'monthly' ? ' monthly' : ''}`; }
+    if (t.id === 'honoree') st.honoree = t.value; if (t.id === 'ecard-email') st.ecardEmail = t.value; if (t.id === 'ecard-msg') st.msg = t.value;
+  });
+  route();
+})();
+</script>
+</body>
+</html>

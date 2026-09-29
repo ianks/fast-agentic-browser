@@ -1,0 +1,72 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Settings · Kettleworks Status</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+.shell{display:flex;max-width:960px;margin:24px auto;gap:28px;padding:0 24px}
+.shell nav{width:180px}.shell nav button{display:block;width:100%;text-align:left;margin-bottom:4px;border:0;background:none}
+.shell nav button[aria-selected=true]{background:#e0e7ff;font-weight:600}
+.shell section{flex:1}
+.banner{background:#fef3c7;border:1px solid #fcd34d;padding:8px 12px;border-radius:6px}
+.login{max-width:360px;margin:60px auto}
+</style></head>
+<body><header><strong>Kettleworks Status</strong><a href="#">Incidents</a><a href="#">Components</a><a href="#">Subscribers</a><a href="#" style="color:#fff">Settings</a><span id="who" style="margin-left:auto">Dana Okafor</span></header>
+<div id="app"></div>
+<script>
+const USER = 'dana.okafor@kettleworks.dev', PASS = 'Copper-Kettle-58';
+const saved = { name: 'Dana Okafor', email: USER, tzone: 'Europe/London', notify: 'alerts@kettleworks.dev', digest: 'Daily', sms: false, onIncident: true, apiLabel: 'status-bot' };
+let expired = false, sessionUsed = false, tab = 'profile', banner = '';
+const TABS = { profile: 'Profile', notifications: 'Notifications', security: 'Security', api: 'API tokens' };
+const panes = {
+  profile: () => `<h1>Profile</h1>
+    <label for="pname">Full name</label><input id="pname" type="text" value="${saved.name}">
+    <label for="pemail">Account email (used to sign in)</label><input id="pemail" type="email" value="${saved.email}">
+    <label for="ptz">Time zone</label><select id="ptz"><option>Europe/London</option><option>Europe/Lisbon</option><option>America/New_York</option></select>
+    <div style="margin-top:14px"><button class="primary" id="psave">Save profile</button></div>`,
+  notifications: () => `<h1>Notifications</h1><p class="muted">Where we send incident alerts and the subscriber digest for your status page.</p>
+    <label for="nemail">Notification email</label><input id="nemail" type="email" value="${saved.notify}">
+    <label for="digest">Digest frequency</label><select id="digest">${['Real-time', 'Hourly', 'Daily', 'Weekly', 'Never'].map((o) => `<option ${o === saved.digest ? 'selected' : ''}>${o}</option>`).join('')}</select>
+    <div class="row" style="margin-top:10px"><input type="checkbox" id="oninc" ${saved.onIncident ? 'checked' : ''}><label for="oninc" style="display:inline;font-weight:400;margin:0">Email me when an incident is opened</label></div>
+    <div class="row"><input type="checkbox" id="sms" ${saved.sms ? 'checked' : ''}><label for="sms" style="display:inline;font-weight:400;margin:0">Also send SMS alerts</label></div>
+    <div class="row" style="margin-top:14px"><button id="ntest">Send test email</button><button class="primary" id="nsave">Save changes</button></div>`,
+  security: () => `<h1>Security</h1><p>Two-factor authentication: <strong>Enabled</strong> (authenticator app)</p><button>Regenerate recovery codes</button>`,
+  api: () => `<h1>API tokens</h1><table><tr><th>Label</th><th>Created</th></tr><tr><td>${saved.apiLabel}</td><td>2026-03-14</td></tr></table>`,
+};
+function settings() {
+  q('#app').innerHTML = `<div class="shell"><nav aria-label="Settings sections" role="tablist">${Object.entries(TABS).map(([k, t]) => `<button role="tab" data-t="${k}" aria-selected="${k === tab}">${t}</button>`).join('')}</nav>
+    <section role="tabpanel">${banner ? `<p class="banner" role="status">${banner}</p>` : ''}${panes[tab]()}<p id="msg" role="status"></p></section></div>`;
+  qa('[data-t]').forEach((b) => b.onclick = () => { tab = b.dataset.t; banner = ''; settings(); });
+  if (tab === 'profile') {
+    q('#ptz').value = saved.tzone;
+    q('#psave').onclick = async () => { await later(300); const r = { event: 'profile_save', name: q('#pname').value.trim(), email: q('#pemail').value.trim(), tzone: q('#ptz').value }; await rec(r); Object.assign(saved, { name: r.name, email: r.email, tzone: r.tzone }); q('#msg').textContent = 'Profile saved.'; };
+  }
+  if (tab === 'notifications') {
+    q('#ntest').onclick = async () => { await later(300); rec({ event: 'test_email', to: q('#nemail').value.trim() }); q('#msg').textContent = 'Test email queued.'; };
+    q('#nsave').onclick = async () => {
+      const draft = { notify_email: q('#nemail').value.trim(), digest: q('#digest').value, on_incident: q('#oninc').checked, sms: q('#sms').checked };
+      q('#nsave').disabled = true; q('#msg').textContent = 'Saving…';
+      await later(500);
+      if (!sessionUsed) { sessionUsed = true; await rec({ event: 'save', ok: false, error: 'session_expired', ...draft }); return login(); }
+      await rec({ event: 'save', ok: true, ...draft });
+      Object.assign(saved, { notify: draft.notify_email, digest: draft.digest, onIncident: draft.on_incident, sms: draft.sms });
+      q('#nsave').disabled = false; q('#msg').textContent = 'Notification settings saved.';
+    };
+  }
+  if (tab === 'security') q('[role=tabpanel] button').onclick = () => rec({ event: 'regenerate_recovery_codes', user: saved.email });
+}
+function login() {
+  expired = true; q('#who').textContent = '';
+  q('#app').innerHTML = `<form class="login card" id="lf" novalidate><h1>Your session expired</h1><p class="muted">For your security you were signed out after a period of inactivity. Sign in to continue.</p>
+    <label for="lu">Email</label><input id="lu" type="email" autocomplete="username"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password">
+    <p id="lerr" role="alert" style="color:#b91c1c"></p><button class="primary">Sign in</button> <a href="#" class="muted" style="margin-left:8px">Forgot password?</a></form>`;
+  q('#lf').onsubmit = async (e) => {
+    e.preventDefault();
+    const user = q('#lu').value.trim(), pass = q('#lp').value;
+    await later(400);
+    const ok = user.toLowerCase() === USER && pass === PASS;
+    await rec({ event: 'login', user, ok });
+    if (!ok) { q('#lerr').textContent = 'Incorrect email or password.'; q('#lp').value = ''; return; }
+    expired = false; q('#who').textContent = saved.name; tab = 'profile';
+    banner = 'Welcome back, Dana. Unsaved changes from your previous session were discarded.';
+    settings();
+  };
+}
+settings();
+</script></body></html>

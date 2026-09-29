@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tulle &amp; Twine · Guest list</title>
+<script src="../common.js"></script>
+<script src="guests_data.js"></script>
+<style>
+  :root { --ivory: #fbf8f3; --paper: #fff; --rose: #c2878a; --rose-d: #9b5f63; --rose-l: #f6e7e6; --plum: #3f2b33; --muted: #7b6a6f; --line: #eadfd9; --sage: #7d9a82; --gold: #b8955a; --err: #a4302b; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14.5px/1.5 "Avenir Next", "Segoe UI", system-ui, sans-serif; color: var(--plum); background: var(--ivory); }
+  h1, h2, h3, .serif { font-family: "Cormorant Garamond", "Iowan Old Style", Palatino, Georgia, serif; font-weight: 600; }
+  h1 { font-size: 32px; margin: 0; }
+  h2 { font-size: 23px; margin: 0 0 10px; }
+  a { color: var(--rose-d); }
+  .top { display: flex; align-items: center; gap: 24px; padding: 14px 28px; background: var(--paper); border-bottom: 1px solid var(--line); }
+  .brand { font-family: "Snell Roundhand", "Apple Chancery", "Cormorant Garamond", Georgia, serif; font-size: 26px; color: var(--rose-d); text-decoration: none; }
+  .couple { border-left: 1px solid var(--line); padding-left: 20px; }
+  .couple b { font-family: Georgia, serif; font-size: 17px; }
+  .couple div { color: var(--muted); font-size: 13px; }
+  .top .right { margin-left: auto; display: flex; gap: 14px; align-items: center; }
+  .count { background: var(--rose-l); color: var(--rose-d); border-radius: 16px; padding: 4px 12px; font-weight: 600; font-size: 13px; }
+  .shell { display: grid; grid-template-columns: 210px 1fr; min-height: calc(100vh - 70px); }
+  nav.side { padding: 18px 12px; border-right: 1px solid var(--line); background: #fdfbf8; }
+  nav.side a { display: flex; gap: 10px; align-items: center; padding: 9px 14px; border-radius: 10px; color: var(--plum); text-decoration: none; margin-bottom: 2px; }
+  nav.side a.on { background: var(--rose-l); color: var(--rose-d); font-weight: 700; }
+  nav.side a:hover { background: #f8eeec; }
+  nav.side .tip { margin-top: 26px; padding: 12px; border-radius: 12px; background: #f1f4ef; color: #4f6b55; font-size: 12.5px; }
+  main { padding: 24px 30px 50px; min-width: 0; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .btn { font: inherit; padding: 8px 16px; border-radius: 20px; border: 1px solid #d9c3c0; background: var(--paper); color: var(--plum); cursor: pointer; font-weight: 600; }
+  .btn:hover { background: #fbf1f0; }
+  .btn.primary { background: var(--rose-d); border-color: var(--rose-d); color: #fff; }
+  .btn.primary:hover { background: #87505a; }
+  .btn.danger { color: var(--err); border-color: #e3b7b3; }
+  .btn.sm { padding: 3px 11px; font-size: 12.5px; }
+  .btn.link { border: 0; background: none; padding: 0; color: var(--plum); font-weight: 600; text-align: left; }
+  .btn.link:hover { color: var(--rose-d); text-decoration: underline; background: none; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  input[type=text], input[type=search], input[type=date], input[type=number], select, textarea { font: inherit; padding: 7px 10px; border: 1px solid #dccbc6; border-radius: 8px; background: #fff; color: var(--plum); }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #ecc9c6; border-color: var(--rose); }
+  select:disabled { background: #f4f0ee; color: #a79ba0; }
+  .pagehead { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 16px; }
+  .pagehead .acts { margin-left: auto; display: flex; gap: 10px; }
+  .chips { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .stat { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px; min-width: 130px; }
+  .stat b { display: block; font-size: 22px; font-family: Georgia, serif; }
+  .stat span { color: var(--muted); font-size: 12.5px; }
+  .toolbar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+  .toolbar label { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+  .tablewrap { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #f1e8e4; font-size: 13.5px; vertical-align: middle; }
+  th { background: #fcf6f4; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  .pill { display: inline-block; padding: 1px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+  .pill.attending { background: #e5efe6; color: #3e6b47; }
+  .pill.declined { background: #f3e1df; color: #93403a; }
+  .pill.awaiting { background: #f6efdf; color: #8a6a2a; }
+  .pager { display: flex; gap: 6px; align-items: center; justify-content: space-between; padding: 12px 4px; }
+  .pager .pages { display: flex; gap: 4px; }
+  .pager button { min-width: 34px; }
+  .pager button[aria-current=page] { background: var(--rose-d); color: #fff; border-color: var(--rose-d); }
+  .bulk { display: flex; gap: 10px; align-items: center; background: var(--rose-l); border-radius: 12px; padding: 8px 14px; margin-bottom: 10px; }
+  .overlay { position: fixed; inset: 0; background: rgba(63, 43, 51, .42); display: flex; align-items: flex-start; justify-content: center; padding-top: 50px; z-index: 30; overflow: auto; }
+  .modal { background: var(--paper); border-radius: 18px; width: 720px; max-width: calc(100vw - 30px); box-shadow: 0 20px 60px rgba(63,43,51,.3); margin-bottom: 40px; }
+  .modal header { padding: 18px 22px 8px; display: flex; align-items: center; }
+  .modal header h2 { margin: 0; }
+  .modal header button { margin-left: auto; border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+  .modal .body { padding: 8px 22px 16px; }
+  .modal footer { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+  .fld { margin: 10px 0; }
+  .fld > label, .lbl { display: block; font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .radios { display: flex; gap: 10px; }
+  .radios label { display: flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-weight: 600; }
+  .radios label:has(input:checked) { border-color: var(--rose-d); background: var(--rose-l); }
+  fieldset.guest { border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px 12px; margin: 12px 0; }
+  fieldset.guest legend { font-weight: 700; padding: 0 6px; font-family: Georgia, serif; }
+  .grow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .grow .fld { margin: 4px 0; }
+  .grow input, .grow select { width: 100%; }
+  .switch { display: flex; gap: 12px; align-items: center; cursor: pointer; margin-top: 12px; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .tr { width: 42px; height: 24px; border-radius: 12px; background: #dccbc6; position: relative; flex: none; }
+  .switch .tr::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked + .tr { background: var(--rose-d); }
+  .switch input:checked + .tr::after { left: 21px; }
+  .switch input:focus-visible + .tr { outline: 2px solid #ecc9c6; }
+  .err { color: var(--err); font-weight: 600; margin-top: 10px; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 360px; background: var(--paper); border-left: 1px solid var(--line); box-shadow: -10px 0 30px rgba(63,43,51,.12); padding: 22px; z-index: 25; overflow: auto; }
+  .drawer dl { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+  .drawer dt { color: var(--muted); }
+  .drawer dd { margin: 0; font-weight: 600; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  .card h3 { margin: 0 0 4px; font-size: 20px; }
+  .bar { height: 8px; background: #f1e8e4; border-radius: 4px; overflow: hidden; margin: 6px 0; }
+  .bar i { display: block; height: 100%; background: var(--rose); }
+  .tablecard ul { list-style: none; padding: 0; margin: 8px 0 0; font-size: 13px; }
+  .tablecard li { padding: 2px 0; border-bottom: 1px dotted #eee2dd; }
+  .todo { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3ebe7; }
+  .todo span { flex: 1; }
+  .todo.done span { text-decoration: line-through; color: var(--muted); }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--plum); color: #fff; padding: 11px 20px; border-radius: 22px; z-index: 50; }
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  footer.foot { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 0 8px; }
+  footer.foot a { margin: 0 8px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/guests">Tulle &amp; Twine</a>
+  <div class="couple"><b>Amara Okoye &amp; Jonas Lindgren</b><div>Saturday 12 June 2027 · Hartwell Barn, Cotswolds</div></div>
+  <div class="right"><span class="count">261 days to go</span><button type="button" class="btn sm" id="share-btn">Share planner</button><span class="count" title="Signed in as Amara Okoye" aria-label="Signed in as Amara Okoye">AO</span></div>
+</header>
+<div class="shell">
+  <nav class="side" aria-label="Planner">
+    <a href="#/dashboard" data-nav="dashboard">🏡 Dashboard</a>
+    <a href="#/guests" data-nav="guests">💌 Guests</a>
+    <a href="#/seating" data-nav="seating">🪑 Seating</a>
+    <a href="#/budget" data-nav="budget">💷 Budget</a>
+    <a href="#/vendors" data-nav="vendors">💐 Vendors</a>
+    <a href="#/website" data-nav="website">🌐 Website</a>
+    <a href="#/rsvp-settings" data-nav="rsvp-settings">✉️ RSVP settings</a>
+    <div class="tip"><b>Tip:</b> add guests by household so invitations and RSVPs go to one address.</div>
+  </nav>
+  <main id="main"></main>
+</div>
+<div id="modal-root"></div>
+<div id="drawer-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3500); };
+
+  const TABLES = (window.TT_TABLES || []).map((t) => ({ ...t }));
+  const GUESTS = (window.TT_GUESTS || []).map((g) => ({ ...g }));
+  let nextId = 2001;
+  const SIDES = [['amara', "Amara's side"], ['jonas', "Jonas's side"], ['both', 'Both']];
+  const sideLabel = (s) => (SIDES.find((x) => x[0] === s) || [, '—'])[1];
+  const MEALS = [['beef', 'Beef'], ['fish', 'Fish'], ['vegetarian', 'Vegetarian'], ['vegan', 'Vegan'], ['child', "Child's meal"]];
+  const mealLabel = (m) => (MEALS.find((x) => x[0] === m) || [, '—'])[1];
+  const RSVP = [['awaiting', 'Awaiting reply'], ['attending', 'Attending'], ['declined', 'Declined']];
+  const rsvpLabel = (r) => (RSVP.find((x) => x[0] === r) || [, r])[1];
+  const PAGE = 20;
+  const cmp = (a, b) => a.last.localeCompare(b.last, 'en', { sensitivity: 'base' }) || a.first.localeCompare(b.first, 'en', { sensitivity: 'base' });
+  const used = (name) => GUESTS.filter((g) => g.table === name).length;
+  const fold = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  const F = { q: '', side: '', rsvp: '', meal: '', page: 1 };
+  const selected = new Set();
+
+  // ------------------------------------------------------------ guests
+  function filtered() {
+    const qq = fold(F.q.trim());
+    return GUESTS.filter((g) => (!qq || fold(`${g.first} ${g.last} ${g.household}`).includes(qq)) && (!F.side || g.side === F.side) && (!F.rsvp || g.rsvp === F.rsvp) && (!F.meal || (F.meal === 'none' ? !g.meal : g.meal === F.meal))).sort(cmp);
+  }
+  function guestsPage() {
+    const all = GUESTS.length, att = GUESTS.filter((g) => g.rsvp === 'attending').length, dec = GUESTS.filter((g) => g.rsvp === 'declined').length, aw = all - att - dec;
+    const list = filtered();
+    const pages = Math.max(1, Math.ceil(list.length / PAGE));
+    F.page = Math.min(F.page, pages);
+    const slice = list.slice((F.page - 1) * PAGE, F.page * PAGE);
+    const sel = (id, lbl, opts, v) => `<div><label for="${id}">${lbl}</label><select id="${id}">${opts.map(([k, l]) => `<option value="${k}" ${v === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+    return `<div class="pagehead"><div><h1>Guest list</h1><div class="muted">Invitations go out on 1 March 2027 · RSVP deadline 30 April 2027</div></div>
+      <div class="acts"><button type="button" class="btn" id="export">Export CSV</button><button type="button" class="btn primary" id="add-hh">+ Add household</button></div></div>
+      <div class="chips"><div class="stat"><b>${all}</b><span>guests invited</span></div><div class="stat"><b>${att}</b><span>attending</span></div><div class="stat"><b>${dec}</b><span>declined</span></div><div class="stat"><b>${aw}</b><span>awaiting reply</span></div></div>
+      <div class="toolbar" role="search"><div><label for="g-q">Search guests</label><input type="search" id="g-q" placeholder="Name or household" value="${esc(F.q)}" style="width:240px"></div>
+        ${sel('g-side', 'Side', [['', 'All sides'], ...SIDES], F.side)}${sel('g-rsvp', 'RSVP', [['', 'All replies'], ...RSVP], F.rsvp)}${sel('g-meal', 'Main course', [['', 'All main courses'], ...MEALS, ['none', 'Not chosen']], F.meal)}
+        <button type="button" class="btn sm" id="clear-f">Clear filters</button></div>
+      ${selected.size ? `<div class="bulk"><b>${selected.size} selected</b><button type="button" class="btn sm" id="bulk-remind">Send RSVP reminder</button><button type="button" class="btn sm" id="bulk-clear">Clear selection</button></div>` : ''}
+      <div class="tablewrap"><table><thead><tr><th style="width:34px"><span class="muted" aria-hidden="true">✓</span></th><th>Name</th><th>Household</th><th>Side</th><th>RSVP</th><th>Main course</th><th>Table</th><th>Dietary notes</th><th></th></tr></thead><tbody>
+      ${slice.length ? slice.map((g) => `<tr><td><input type="checkbox" class="rowsel" value="${g.id}" ${selected.has(g.id) ? 'checked' : ''} aria-label="Select ${esc(g.first + ' ' + g.last)}"></td>
+        <td><button type="button" class="btn link" data-open="${g.id}">${esc(g.first)} ${esc(g.last)}</button></td><td>${esc(g.household)}</td><td>${sideLabel(g.side)}</td><td><span class="pill ${g.rsvp}">${rsvpLabel(g.rsvp)}</span></td>
+        <td>${g.rsvp === 'attending' ? mealLabel(g.meal) : '—'}</td><td>${g.table ? esc(g.table) : '<span class="muted">Unassigned</span>'}</td><td>${esc(g.notes) || '<span class="muted">—</span>'}</td>
+        <td style="white-space:nowrap"><button type="button" class="btn sm" data-edit="${g.id}" aria-label="Edit ${esc(g.first + ' ' + g.last)}">Edit</button> <button type="button" class="btn sm danger" data-del="${g.id}" aria-label="Delete ${esc(g.first + ' ' + g.last)}">Delete</button></td></tr>`).join('') : '<tr><td colspan="9" class="muted" style="padding:20px">No guests match these filters.</td></tr>'}
+      </tbody></table></div>
+      <div class="pager"><span class="muted">Showing ${list.length ? (F.page - 1) * PAGE + 1 : 0}–${Math.min(F.page * PAGE, list.length)} of ${list.length}</span>
+        <div class="pages" role="navigation" aria-label="Pagination"><button type="button" class="btn sm" data-page="${F.page - 1}" ${F.page === 1 ? 'disabled' : ''} aria-label="Previous page">‹ Prev</button>${Array.from({ length: pages }, (_, i) => `<button type="button" class="btn sm" data-page="${i + 1}" ${F.page === i + 1 ? 'aria-current="page"' : ''} aria-label="Page ${i + 1}">${i + 1}</button>`).join('')}<button type="button" class="btn sm" data-page="${F.page + 1}" ${F.page === pages ? 'disabled' : ''} aria-label="Next page">Next ›</button></div></div>`;
+  }
+
+  // ------------------------------------------------------------ other pages
+  function dashboard() {
+    const att = GUESTS.filter((g) => g.rsvp === 'attending');
+    const meals = MEALS.map(([k, l]) => [l, att.filter((g) => g.meal === k).length]);
+    return `<h1>Good morning, Amara</h1><p class="muted">Thursday 24 September 2026 · 261 days until the wedding</p>
+      <div class="cards" style="margin-top:14px">
+        <div class="card"><h3>RSVPs</h3><div class="bar"><i style="width:${Math.round((GUESTS.length - GUESTS.filter((g) => g.rsvp === 'awaiting').length) / GUESTS.length * 100)}%"></i></div><p class="muted">${GUESTS.filter((g) => g.rsvp !== 'awaiting').length} of ${GUESTS.length} guests have replied.</p><a href="#/guests">Open the guest list</a></div>
+        <div class="card"><h3>Main courses</h3>${meals.map(([l, n]) => `<div style="display:flex;justify-content:space-between"><span>${l}</span><b>${n}</b></div>`).join('')}</div>
+        <div class="card"><h3>Seating</h3><p class="muted">${att.filter((g) => !g.table).length} attending guests don’t have a table yet.</p><a href="#/seating">Plan seating</a></div>
+        <div class="card"><h3>Budget</h3><p class="muted">£18,940 of £24,500 committed.</p><a href="#/budget">Review budget</a></div></div>
+      <div class="card" style="margin-top:16px"><h2>To do this month</h2>${TODOS.map((t, i) => `<div class="todo ${t[1] ? 'done' : ''}"><span>${esc(t[0])}</span>${t[1] ? '<span class="muted" style="flex:none">Done</span>' : `<button type="button" class="btn sm" data-todo="${i}">Mark done</button>`}</div>`).join('')}</div>`;
+  }
+  const TODOS = [['Book the hair and make-up trial', false], ['Send save-the-dates to overseas guests', true], ['Confirm the menu tasting date with Juniper & Sage', false], ['Choose readings for the ceremony', false], ['Order the guest book', false]];
+  function seating() {
+    const unseated = GUESTS.filter((g) => g.rsvp === 'attending' && !g.table).sort(cmp);
+    return `<div class="pagehead"><div><h1>Seating plan</h1><div class="muted">${TABLES.length} tables · ${TABLES.reduce((a, t) => a + t.capacity, 0)} seats</div></div><div class="acts"><button type="button" class="btn" id="auto-arrange">Auto-arrange</button></div></div>
+      <div class="cards">${TABLES.map((t) => { const gs = GUESTS.filter((g) => g.table === t.name).sort(cmp); return `<div class="card tablecard"><h3>${esc(t.name)}</h3><div class="muted">${gs.length} of ${t.capacity} seats</div><div class="bar"><i style="width:${gs.length / t.capacity * 100}%"></i></div><ul>${gs.map((g) => `<li>${esc(g.first)} ${esc(g.last)}</li>`).join('') || '<li class="muted">Empty</li>'}</ul></div>`; }).join('')}</div>
+      <div class="card" style="margin-top:16px"><h2>Not seated yet</h2><p class="muted">${unseated.map((g) => esc(g.first + ' ' + g.last)).join(', ') || 'Everyone attending has a seat.'}</p></div>`;
+  }
+  const BUDGET = [['Venue — Hartwell Barn', 8500, 8500, 4250], ['Catering — Juniper & Sage', 7200, 6980, 1500], ['Photography — Lumen Studio', 2200, 2150, 500], ['Flowers — Petal & Stem', 1800, 1640, 400], ['Music — The Night Owls', 1400, 0, 0], ['Cake — Crumb & Co', 450, 0, 0], ['Stationery', 600, 420, 420], ['Attire', 2350, 0, 0]];
+  function budget() {
+    return `<div class="pagehead"><div><h1>Budget</h1><div class="muted">Total budget £24,500</div></div><div class="acts"><button type="button" class="btn primary" id="add-expense">Add expense</button></div></div>
+      <div class="tablewrap"><table><thead><tr><th>Category</th><th>Estimate</th><th>Committed</th><th>Paid</th></tr></thead><tbody>${BUDGET.map(([c, e, a, p]) => `<tr><td>${esc(c)}</td><td>£${e.toLocaleString('en-GB')}</td><td>£${a.toLocaleString('en-GB')}</td><td>£${p.toLocaleString('en-GB')}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  const VENDORS = [['Hartwell Barn', 'Venue', 'Booked', 'Clara Hartwell'], ['Juniper & Sage Catering', 'Caterer', 'Booked', 'Tomasz Nowicki'], ['Lumen Studio', 'Photographer', 'Booked', 'Ife Adebayo'], ['Petal & Stem', 'Florist', 'Deposit paid', 'Rosie Kaye'], ['The Night Owls', 'Band', 'Contract sent', 'Mo Chaudhry'], ['Crumb & Co', 'Cake', 'Tasting booked', 'Hannah Frost']];
+  function vendors() {
+    return `<h1>Vendors</h1><div class="cards" style="margin-top:14px">${VENDORS.map(([n, k, s, c], i) => `<div class="card"><h3>${esc(n)}</h3><div class="muted">${k} · contact ${esc(c)}</div><p><span class="pill ${s === 'Booked' ? 'attending' : 'awaiting'}">${s}</span></p><button type="button" class="btn sm" data-vendor="${i}">Mark as paid</button></div>`).join('')}</div>`;
+  }
+  const SITE = { rsvp: true, registry: true, password: false, story: true };
+  function website() {
+    const tg = (k, l, d) => `<label class="switch"><input type="checkbox" role="switch" data-site="${k}" ${SITE[k] ? 'checked' : ''}><span class="tr"></span><span><b>${l}</b><br><span class="muted">${d}</span></span></label>`;
+    return `<h1>Wedding website</h1><p class="muted">amara-and-jonas.tulleandtwine.co.uk</p><div class="card" style="max-width:640px">${tg('rsvp', 'Show the RSVP form', 'Guests can reply online with their invitation code.')}${tg('registry', 'Show the gift registry', 'Links to your registry at Hartley & Finch.')}${tg('story', 'Show “Our story”', 'Your story and photos on the home page.')}${tg('password', 'Password-protect the website', 'Guests need the password printed on the invitation.')}<p style="margin-top:16px"><button type="button" class="btn primary" id="site-save">Save changes</button></p></div>`;
+  }
+  const RS = { deadline: '2027-04-30', dietary: true, plusDefault: true };
+  function rsvpSettings() {
+    return `<h1>RSVP settings</h1><div class="card" style="max-width:640px;margin-top:14px"><div class="fld"><label for="rs-deadline">RSVP deadline</label><input type="date" id="rs-deadline" value="${RS.deadline}"></div>
+      <div class="fld"><span class="lbl">Main course options on the RSVP form</span>${MEALS.map(([k, l]) => `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" checked data-mealopt="${k}"> ${l}</label>`).join('')}</div>
+      <label class="switch"><input type="checkbox" role="switch" id="rs-diet" ${RS.dietary ? 'checked' : ''}><span class="tr"></span><span>Ask guests about dietary requirements</span></label>
+      <label class="switch"><input type="checkbox" role="switch" id="rs-plus" ${RS.plusDefault ? 'checked' : ''}><span class="tr"></span><span>Allow plus-ones for new households by default</span></label>
+      <p style="margin-top:16px"><button type="button" class="btn primary" id="rs-save">Save settings</button></p></div>`;
+  }
+
+  // ------------------------------------------------------------ modal helpers
+  function modal(title, body, foot) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button type="button" data-x aria-label="Close">✕</button></header><div class="body">${body}</div><footer>${foot}</footer></div></div>`;
+    const m = q('#modal-root .modal');
+    m.querySelector('[data-x]').addEventListener('click', closeModal);
+    return m;
+  }
+  function closeModal(m) { const cur = q('#modal-root .modal'); if (!m || !(m instanceof Element) || cur === m) q('#modal-root').innerHTML = ''; }
+  function tableOptions(current, need) {
+    return `<option value="">Unassigned</option>` + TABLES.map((t) => {
+      const free = t.capacity - used(t.name) + (current === t.name ? need : 0);
+      return `<option value="${esc(t.name)}" ${current === t.name ? 'selected' : ''} ${free <= 0 ? 'disabled' : ''}>${esc(t.name)} — ${free <= 0 ? 'full' : `${free} of ${t.capacity} seats free`}</option>`;
+    }).join('');
+  }
+
+  // ------------------------------------------------------------ add household
+  let HH = null;
+  const cur = { get HH() { return HH; } };
+  const setHH = (v) => { HH = v; };
+  const blankGuest = () => ({ first: '', last: '', rsvp: 'awaiting', meal: '', notes: '' });
+  function openAddHousehold() {
+    HH = { name: '', nameTouched: false, side: '', rows: [blankGuest()], table: '', plusOne: RS.plusDefault, busy: false };
+    const m = modal('Add a household', '<div id="hh-body"></div>', `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="hh-save">Save household</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    drawHH();
+  }
+  function drawHH() {
+    const b = q('#hh-body'); if (!b) return;
+    b.innerHTML = `<div class="fld"><label for="hh-name">Household name</label><input type="text" id="hh-name" value="${esc(HH.name)}" style="width:100%" placeholder="e.g. Okoye household"></div>
+      <div class="fld"><span class="lbl" id="hh-side-lbl">Side</span><div class="radios" role="radiogroup" aria-labelledby="hh-side-lbl">${SIDES.map(([k, l]) => `<label><input type="radio" name="hh-side" value="${k}" ${HH.side === k ? 'checked' : ''}> ${l}</label>`).join('')}</div></div>
+      ${HH.rows.map((r, i) => `<fieldset class="guest" data-row="${i}"><legend>Guest ${i + 1}</legend><div class="grow">
+        <div class="fld"><label for="hg-first-${i}">First name</label><input type="text" id="hg-first-${i}" data-f="first" value="${esc(r.first)}" autocomplete="off"></div>
+        <div class="fld"><label for="hg-last-${i}">Last name</label><input type="text" id="hg-last-${i}" data-f="last" value="${esc(r.last)}" autocomplete="off"></div>
+        <div class="fld"><label for="hg-rsvp-${i}">RSVP</label><select id="hg-rsvp-${i}" data-f="rsvp">${RSVP.map(([k, l]) => `<option value="${k}" ${r.rsvp === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="fld"><label for="hg-meal-${i}">Main course</label><select id="hg-meal-${i}" data-f="meal" ${r.rsvp === 'attending' ? '' : 'disabled'}><option value="">Choose…</option>${MEALS.map(([k, l]) => `<option value="${k}" ${r.meal === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="fld" style="grid-column:1/-1"><label for="hg-notes-${i}">Dietary notes</label><input type="text" id="hg-notes-${i}" data-f="notes" value="${esc(r.notes)}" placeholder="Allergies or requirements (optional)"></div></div>
+        ${HH.rows.length > 1 ? `<button type="button" class="btn sm danger" data-rmrow="${i}">Remove guest ${i + 1}</button>` : ''}</fieldset>`).join('')}
+      <button type="button" class="btn sm" id="hh-addrow">+ Add another guest</button>
+      <div class="fld" style="margin-top:14px"><label for="hh-table">Table</label><select id="hh-table" style="width:320px">${tableOptions(HH.table, 0)}</select><div class="muted">Guests who decline are removed from their table automatically.</div></div>
+      <label class="switch"><input type="checkbox" role="switch" id="hh-plus" ${HH.plusOne ? 'checked' : ''}><span class="tr"></span><span><b>Allow a plus-one</b><br><span class="muted">The household can bring one additional guest; their plus-one gets an RSVP link.</span></span></label>
+      <div class="err" id="hh-err" role="alert" hidden></div>`;
+  }
+  async function saveHH() {
+    const HH = cur.HH;
+    if (!HH || HH.busy) return;
+    const err = (m) => { const e = q('#hh-err'); e.textContent = m; e.hidden = !m; };
+    if (!HH.side) return err("Choose whose side this household is on.");
+    for (const [i, r] of HH.rows.entries()) {
+      if (!norm(r.first) || !norm(r.last)) return err(`Enter a first and last name for guest ${i + 1}.`);
+      if (r.rsvp === 'attending' && !r.meal) return err(`Choose a main course for ${norm(r.first)}.`);
+    }
+    const seated = HH.rows.filter((r) => r.rsvp !== 'declined').length;
+    if (HH.table) {
+      const t = TABLES.find((x) => x.name === HH.table), free = t.capacity - used(t.name);
+      if (seated > free) return err(`${t.name} has ${free} free seat${free === 1 ? '' : 's'}, but this household needs ${seated}.`);
+    }
+    err('');
+    HH.busy = true;
+    const dlg = q('#modal-root .modal');
+    const b = q('#hh-save'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Saving…';
+    await sleep(700);
+    const household = norm(HH.name) || `${norm(HH.rows[0].last)} household`;
+    for (const r of HH.rows) {
+      const g = { id: 'G-' + nextId++, first: norm(r.first), last: norm(r.last), household, side: HH.side, rsvp: r.rsvp, meal: r.rsvp === 'attending' ? r.meal : '', table: r.rsvp !== 'declined' ? HH.table : '', notes: norm(r.notes) };
+      await post({ event: 'guest_add', household, first_name: g.first, last_name: g.last, side: g.side, rsvp: g.rsvp, meal: g.meal, notes: g.notes, table: g.table, plus_one: HH.plusOne ? 'yes' : 'no' });
+      GUESTS.push(g);
+    }
+    const n = HH.rows.length;
+    if (cur.HH === HH) setHH(null);
+    closeModal(dlg); render();
+    toast(`${household} added (${n} guest${n === 1 ? '' : 's'}).`);
+  }
+
+  // ------------------------------------------------------------ edit / delete / detail
+  function openEdit(id) {
+    const g = GUESTS.find((x) => x.id === id);
+    const m = modal(`Edit ${g.first} ${g.last}`, `<div class="grow"><div class="fld"><label for="e-first">First name</label><input type="text" id="e-first" value="${esc(g.first)}"></div><div class="fld"><label for="e-last">Last name</label><input type="text" id="e-last" value="${esc(g.last)}"></div>
+      <div class="fld"><label for="e-rsvp">RSVP</label><select id="e-rsvp">${RSVP.map(([k, l]) => `<option value="${k}" ${g.rsvp === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div><div class="fld"><label for="e-meal">Main course</label><select id="e-meal"><option value="">Choose…</option>${MEALS.map(([k, l]) => `<option value="${k}" ${g.meal === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="fld"><label for="e-table">Table</label><select id="e-table">${tableOptions(g.table, 1)}</select></div><div class="fld"><label for="e-notes">Dietary notes</label><input type="text" id="e-notes" value="${esc(g.notes)}"></div></div><div class="err" id="e-err" hidden></div>`,
+      `<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="e-save">Save changes</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    m.querySelector('#e-save').addEventListener('click', async () => {
+      const v = { first: norm(m.querySelector('#e-first').value), last: norm(m.querySelector('#e-last').value), rsvp: m.querySelector('#e-rsvp').value, meal: m.querySelector('#e-meal').value, table: m.querySelector('#e-table').value, notes: norm(m.querySelector('#e-notes').value) };
+      if (!v.first || !v.last) { const e = m.querySelector('#e-err'); e.textContent = 'Enter a first and last name.'; e.hidden = false; return; }
+      m.querySelector('#e-save').disabled = true; await sleep(500);
+      await post({ event: 'guest_update', guest_id: g.id, first_name: v.first, last_name: v.last, rsvp: v.rsvp, meal: v.rsvp === 'attending' ? v.meal : '', table: v.rsvp === 'declined' ? '' : v.table, notes: v.notes });
+      Object.assign(g, v, { meal: v.rsvp === 'attending' ? v.meal : '', table: v.rsvp === 'declined' ? '' : v.table });
+      closeModal(m); render(); if (q('#drawer-root .drawer')) openDrawer(g.id); toast('Guest updated.');
+    });
+  }
+  function openDelete(id) {
+    const g = GUESTS.find((x) => x.id === id);
+    const m = modal('Remove guest?', `<p>Remove <b>${esc(g.first)} ${esc(g.last)}</b> from the guest list? Their RSVP and seat will be removed too.</p>`, `<button type="button" class="btn" data-c>Keep guest</button><button type="button" class="btn danger" id="d-ok">Remove guest</button>`);
+    m.querySelector('[data-c]').addEventListener('click', closeModal);
+    m.querySelector('#d-ok').addEventListener('click', async () => { m.querySelector('#d-ok').disabled = true; await sleep(400); await post({ event: 'guest_delete', guest_id: g.id, name: `${g.first} ${g.last}` }); GUESTS.splice(GUESTS.indexOf(g), 1); selected.delete(g.id); closeModal(m); closeDrawer(); render(); toast('Guest removed.'); });
+  }
+  function openDrawer(id) {
+    const g = GUESTS.find((x) => x.id === id);
+    q('#drawer-root').innerHTML = `<aside class="drawer" role="dialog" aria-label="Guest details"><div style="display:flex;align-items:center"><h2 style="margin:0;flex:1">${esc(g.first)} ${esc(g.last)}</h2><button type="button" class="btn sm" id="drawer-close" aria-label="Close details">✕</button></div>
+      <p class="muted">${esc(g.household)}</p><dl><dt>Side</dt><dd>${sideLabel(g.side)}</dd><dt>RSVP</dt><dd>${rsvpLabel(g.rsvp)}</dd><dt>Main course</dt><dd>${g.rsvp === 'attending' ? mealLabel(g.meal) : '—'}</dd><dt>Table</dt><dd>${esc(g.table) || 'Unassigned'}</dd><dt>Dietary notes</dt><dd>${esc(g.notes) || '—'}</dd><dt>Invitation</dt><dd>Not sent yet</dd></dl>
+      <p style="margin-top:18px"><button type="button" class="btn sm" data-edit="${g.id}">Edit guest</button> <button type="button" class="btn sm danger" data-del="${g.id}">Delete guest</button></p></aside>`;
+  }
+  function closeDrawer() { q('#drawer-root').innerHTML = ''; }
+
+  // ------------------------------------------------------------ router
+  function route() { return location.hash.replace(/^#\/?/, '').split('/')[0] || 'guests'; }
+  function render() {
+    const r = route();
+    qa('nav.side a').forEach((a) => a.classList.toggle('on', a.dataset.nav === r));
+    const P = { guests: guestsPage, dashboard, seating, budget, vendors, website, 'rsvp-settings': rsvpSettings };
+    q('#main').innerHTML = (P[r] ? P[r]() : '<h1>Page not found</h1><p><a href="#/guests">Back to the guest list</a></p>') + `<footer class="foot">Tulle &amp; Twine wedding planner · <a href="#/website">Your website</a><a href="#/rsvp-settings">RSVP settings</a></footer>`;
+  }
+  window.addEventListener('hashchange', () => { closeDrawer(); render(); window.scrollTo(0, 0); });
+
+  document.addEventListener('click', async (e) => {
+    const t = e.target;
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { F.page = +pg.dataset.page; render(); return; }
+    if (t.closest('#add-hh')) { openAddHousehold(); return; }
+    if (t.closest('#hh-addrow')) { HH.rows.push(blankGuest()); drawHH(); const n = q(`#hg-first-${HH.rows.length - 1}`); if (n) n.focus(); return; }
+    const rr = t.closest('[data-rmrow]'); if (rr) { HH.rows.splice(+rr.dataset.rmrow, 1); drawHH(); return; }
+    if (t.closest('#hh-save')) { saveHH(); return; }
+    const op = t.closest('[data-open]'); if (op) { openDrawer(op.dataset.open); return; }
+    if (t.closest('#drawer-close')) { closeDrawer(); return; }
+    const ed = t.closest('[data-edit]'); if (ed) { openEdit(ed.dataset.edit); return; }
+    const dl = t.closest('[data-del]'); if (dl) { openDelete(dl.dataset.del); return; }
+    if (t.closest('#clear-f')) { Object.assign(F, { q: '', side: '', rsvp: '', meal: '', page: 1 }); render(); return; }
+    if (t.closest('#export')) { toast('Your CSV export is being prepared.'); return; }
+    if (t.closest('#bulk-clear')) { selected.clear(); render(); return; }
+    if (t.closest('#bulk-remind')) { const ids = [...selected].sort(); await post({ event: 'rsvp_reminder_send', guests: ids.join(',') }); selected.clear(); render(); toast(`Reminder sent to ${ids.length} guest${ids.length === 1 ? '' : 's'}.`); return; }
+    const td = t.closest('[data-todo]'); if (td) { const i = +td.dataset.todo; TODOS[i][1] = true; await post({ event: 'task_complete', task: TODOS[i][0] }); render(); return; }
+    if (t.closest('#auto-arrange')) {
+      const m = modal('Auto-arrange seating?', '<p>We’ll seat every attending guest without a table, keeping households together. You can move people afterwards.</p>', '<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="aa-ok">Arrange seating</button>');
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#aa-ok').addEventListener('click', async () => { closeModal(); await post({ event: 'seating_auto_arrange' }); toast('Seating arranged.'); });
+      return;
+    }
+    if (t.closest('#add-expense')) {
+      const m = modal('Add expense', '<div class="fld"><label for="x-cat">Category</label><input type="text" id="x-cat" style="width:100%"></div><div class="fld"><label for="x-amt">Amount (£)</label><input type="number" id="x-amt" min="0" step="0.01"></div>', '<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="x-ok">Add expense</button>');
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#x-ok').addEventListener('click', async () => { const c = norm(m.querySelector('#x-cat').value), a = +m.querySelector('#x-amt').value; if (!c || !(a > 0)) return; closeModal(); await post({ event: 'budget_item_add', category: c, amount: a.toFixed(2) }); BUDGET.push([c, a, a, 0]); render(); });
+      return;
+    }
+    const vd = t.closest('[data-vendor]'); if (vd) { const v = VENDORS[+vd.dataset.vendor]; await post({ event: 'vendor_payment_mark', vendor: v[0] }); toast(`${v[0]} marked as paid.`); return; }
+    if (t.closest('#site-save')) { await sleep(400); await post({ event: 'website_update', rsvp: SITE.rsvp ? 'on' : 'off', registry: SITE.registry ? 'on' : 'off', story: SITE.story ? 'on' : 'off', password: SITE.password ? 'on' : 'off' }); toast('Website updated.'); return; }
+    if (t.closest('#rs-save')) { RS.deadline = q('#rs-deadline').value; RS.dietary = q('#rs-diet').checked; RS.plusDefault = q('#rs-plus').checked; await sleep(400); await post({ event: 'rsvp_settings_update', deadline: RS.deadline, dietary: RS.dietary ? 'on' : 'off', plus_ones_default: RS.plusDefault ? 'on' : 'off' }); toast('RSVP settings saved.'); return; }
+    if (t.closest('#share-btn')) {
+      const m = modal('Share your planner', '<div class="fld"><label for="sh-email">Email address</label><input type="text" id="sh-email" style="width:100%" placeholder="name@example.com"></div><div class="fld"><label for="sh-role">Access</label><select id="sh-role"><option>Can view</option><option>Can edit</option></select></div>', '<button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn primary" id="sh-ok">Send invite</button>');
+      m.querySelector('[data-c]').addEventListener('click', closeModal);
+      m.querySelector('#sh-ok').addEventListener('click', async () => { const em = m.querySelector('#sh-email').value.trim().toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return; closeModal(); await post({ event: 'planner_share', email: em, role: m.querySelector('#sh-role').value }); toast('Invite sent.'); });
+      return;
+    }
+  });
+  document.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'g-side' || t.id === 'g-rsvp' || t.id === 'g-meal') { F[t.id.slice(2)] = t.value; F.page = 1; render(); return; }
+    if (t.classList.contains('rowsel')) { t.checked ? selected.add(t.value) : selected.delete(t.value); render(); return; }
+    if (t.dataset.site) { SITE[t.dataset.site] = t.checked; return; }
+    if (!HH) return;
+    if (t.name === 'hh-side') { HH.side = t.value; return; }
+    if (t.id === 'hh-table') { HH.table = t.value; return; }
+    if (t.id === 'hh-plus') { HH.plusOne = t.checked; return; }
+    const fs = t.closest('fieldset.guest');
+    if (fs && t.dataset.f) {
+      const r = HH.rows[+fs.dataset.row];
+      r[t.dataset.f] = t.value;
+      if (t.dataset.f === 'rsvp') { const ms = fs.querySelector('[data-f=meal]'); ms.disabled = t.value !== 'attending'; if (t.value !== 'attending') { r.meal = ''; ms.value = ''; } }
+    }
+  });
+  document.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'g-q') { F.q = t.value; F.page = 1; const pos = t.selectionStart; render(); const n = q('#g-q'); n.focus(); try { n.setSelectionRange(pos, pos); } catch {} return; }
+    if (!HH) return;
+    if (t.id === 'hh-name') { HH.name = t.value; HH.nameTouched = !!t.value.trim(); return; }
+    const fs = t.closest('fieldset.guest');
+    if (fs && t.dataset.f) {
+      const i = +fs.dataset.row;
+      HH.rows[i][t.dataset.f] = t.value;
+      if (t.dataset.f === 'last' && i === 0 && !HH.nameTouched) { HH.name = norm(t.value) ? `${norm(t.value)} household` : ''; const n = q('#hh-name'); if (n) n.value = HH.name; }
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

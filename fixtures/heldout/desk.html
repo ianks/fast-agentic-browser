@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Switchyard Desk</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f5f5f4; }
+  .top { display: flex; gap: 14px; align-items: center; background: #292524; color: #fafaf9; padding: 8px 16px; }
+  .top b { color: #fb923c; }
+  .top input { width: 320px; background: #44403c; color: #fff; border-color: #57534e; }
+  .wrap { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 46px); }
+  .wrap.split { grid-template-columns: 200px 1fr 520px; }
+  .views { background: #fff; border-right: 1px solid #e7e5e4; padding: 12px 8px; }
+  .views button { display: flex; justify-content: space-between; width: 100%; text-align: left; border: 0; background: none; border-radius: 6px; padding: 7px 10px; }
+  .views button[aria-current=true] { background: #ffedd5; font-weight: 700; }
+  .list { padding: 14px 18px; overflow: auto; }
+  table { background: #fff; font-size: 14px; }
+  tr.sel td { background: #fff7ed; }
+  .tag { display: inline-block; font-size: 11px; background: #f5f5f4; border: 1px solid #e7e5e4; border-radius: 4px; padding: 0 5px; margin: 1px; }
+  .pri-Urgent { color: #b91c1c; font-weight: 700; } .pri-High { color: #c2410c; font-weight: 600; }
+  .pager { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  .pane { border-left: 1px solid #e7e5e4; background: #fff; display: flex; flex-direction: column; }
+  .pane .bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #e7e5e4; }
+  .pane iframe { border: 0; flex: 1; width: 100%; min-height: 640px; }
+  a.subj { color: #1d4ed8; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="top"><b>Switchyard Desk</b><input type="search" id="search" placeholder="Search subject, organization or ticket #" aria-label="Search tickets"><span style="margin-left:auto">Agent: Ruairí Doyle (Team lead)</span></div>
+<div class="wrap" id="wrap">
+  <nav class="views" aria-label="Views" id="views"></nav>
+  <section class="list" id="list"></section>
+  <aside class="pane" id="pane" hidden aria-label="Ticket details">
+    <div class="bar"><strong id="pane-title">Ticket</strong><button type="button" id="pane-close" aria-label="Close ticket">✕</button></div>
+    <iframe id="ticket-frame" title="Ticket details"></iframe>
+  </aside>
+</div>
+<script>
+(() => {
+  const TICKETS = /*DATA*/[
+    {"id": "#48211", "subject": "Refund after downgrade", "org": "Carrick Joinery", "requester": "Niall Carrick", "tags": ["refund", "trial"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Urgent", "status": "Pending", "updated": "2026-04-30 15:32"},
+    {"id": "#48215", "subject": "VAT number missing on invoice", "org": "Sandhaven Surf School", "requester": "Kai Mahoe", "tags": ["vat"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "Urgent", "status": "Open", "updated": "2026-04-30 13:48"},
+    {"id": "#48216", "subject": "Charged twice for February", "org": "Halden Brewery", "requester": "Tadhg Brennan", "tags": ["double-charge", "refund"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "High", "status": "Pending", "updated": "2026-04-29 16:17"},
+    {"id": "#48221", "subject": "Barcode scanner drops input", "org": "Tollgate Dental", "requester": "Dr. Priya Sethi", "tags": ["hardware", "smb"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "Low", "status": "Pending", "updated": "2026-04-29 14:17"},
+    {"id": "#48224", "subject": "Refund for unused seats", "org": "Brightwater Pools", "requester": "Marcus Ode", "tags": ["refund", "priority-customer"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "Low", "status": "Solved", "updated": "2026-04-28 09:48"},
+    {"id": "#48225", "subject": "Faulty card reader — refund or replacement?", "org": "Merrow Kayaks", "requester": "Ewan Merrow", "tags": ["hardware", "refund"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "High", "status": "Open", "updated": "2026-04-28 08:48"},
+    {"id": "#48229", "subject": "Sync stuck at 90%", "org": "Merrow Kayaks", "requester": "Ewan Merrow", "tags": ["sync", "smb"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "Low", "status": "Solved", "updated": "2026-04-27 17:32"},
+    {"id": "#48233", "subject": "Label printer not detected", "org": "Quayle Opticians", "requester": "Ruth Quayle", "tags": ["hardware"], "team": "Technical", "assignee": "Ines Carvalhal", "priority": "Urgent", "status": "Open", "updated": "2026-04-27 15:05"},
+    {"id": "#48235", "subject": "VAT number missing on invoice", "org": "Merrow Kayaks", "requester": "Ewan Merrow", "tags": ["vat"], "team": "Billing", "assignee": "—", "priority": "Urgent", "status": "Solved", "updated": "2026-04-26 14:17"},
+    {"id": "#48238", "subject": "Set up second location", "org": "Wexcombe Vets", "requester": "Hugh Wexcombe", "tags": ["setup"], "team": "Onboarding", "assignee": "Maja Novak", "priority": "Low", "status": "Solved", "updated": "2026-04-26 17:32"},
+    {"id": "#48242", "subject": "Refund for duplicate annual plan", "org": "Loftus Mechanics", "requester": "Dev Loftus", "tags": ["refund"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Normal", "status": "Solved", "updated": "2026-04-25 12:32"},
+    {"id": "#48243", "subject": "Sync stuck at 90%", "org": "Wexcombe Vets", "requester": "Hugh Wexcombe", "tags": ["sync"], "team": "Technical", "assignee": "Bram de Wit", "priority": "High", "status": "Pending", "updated": "2026-04-25 13:48"},
+    {"id": "#48247", "subject": "Double charge on January invoice", "org": "Halden Brewing", "requester": "Siobhán Kerrigan", "tags": ["double-charge", "refund"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "Normal", "status": "Solved", "updated": "2026-04-24 08:32"},
+    {"id": "#48249", "subject": "Invoice address change", "org": "Halden Brewing", "requester": "Siobhán Kerrigan", "tags": ["invoice"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Low", "status": "Open", "updated": "2026-04-24 11:32"},
+    {"id": "#48253", "subject": "Set up second location", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["setup", "enterprise"], "team": "Onboarding", "assignee": "Maja Novak", "priority": "Normal", "status": "Open", "updated": "2026-04-23 10:05"},
+    {"id": "#48257", "subject": "Set up second location", "org": "Carrick Joinery", "requester": "Niall Carrick", "tags": ["setup"], "team": "Onboarding", "assignee": "Maja Novak", "priority": "Normal", "status": "Pending", "updated": "2026-04-23 11:48"},
+    {"id": "#48258", "subject": "Set up second location", "org": "Tollgate Dental", "requester": "Dr. Priya Sethi", "tags": ["setup", "enterprise"], "team": "Onboarding", "assignee": "—", "priority": "Normal", "status": "Open", "updated": "2026-04-22 09:48"},
+    {"id": "#48262", "subject": "Training session for new staff", "org": "Tollgate Dental", "requester": "Dr. Priya Sethi", "tags": ["training", "enterprise"], "team": "Onboarding", "assignee": "Theo Lindgren", "priority": "Urgent", "status": "Pending", "updated": "2026-04-22 16:17"},
+    {"id": "#48266", "subject": "Refund for unused seats", "org": "Sandhaven Surf School", "requester": "Kai Mahoe", "tags": ["refund", "enterprise"], "team": "Billing", "assignee": "—", "priority": "Urgent", "status": "Pending", "updated": "2026-04-21 10:05"},
+    {"id": "#48267", "subject": "Receipt needed for Q1", "org": "Carrick Joinery", "requester": "Niall Carrick", "tags": ["invoice", "enterprise"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "High", "status": "Open", "updated": "2026-04-21 08:32"},
+    {"id": "#48272", "subject": "Charged after cancelling — want refund", "org": "Kinsale Print Co.", "requester": "Aoife Byrne", "tags": ["refund", "enterprise"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "Low", "status": "Open", "updated": "2026-04-20 12:17"},
+    {"id": "#48273", "subject": "Set up second location", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["setup", "smb"], "team": "Onboarding", "assignee": "Theo Lindgren", "priority": "Normal", "status": "Open", "updated": "2026-04-20 11:05"},
+    {"id": "#48277", "subject": "Webhook retries failing", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["api"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "High", "status": "Solved", "updated": "2026-04-19 13:05"},
+    {"id": "#48280", "subject": "Set up second location", "org": "Loftus Mechanics", "requester": "Dev Loftus", "tags": ["setup", "enterprise"], "team": "Onboarding", "assignee": "Theo Lindgren", "priority": "Normal", "status": "Open", "updated": "2026-04-19 09:32"},
+    {"id": "#48284", "subject": "Refund for duplicate annual plan", "org": "Wexcombe Vets", "requester": "Hugh Wexcombe", "tags": ["refund", "priority-customer"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Normal", "status": "Solved", "updated": "2026-04-18 18:17"},
+    {"id": "#48285", "subject": "SSO login loop", "org": "Tollgate Dental", "requester": "Dr. Priya Sethi", "tags": ["sso", "smb"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "Urgent", "status": "Open", "updated": "2026-04-18 16:32"},
+    {"id": "#48288", "subject": "Refund after downgrade", "org": "Pellow Bakeries", "requester": "Rosa Pellow", "tags": ["refund", "enterprise"], "team": "Billing", "assignee": "—", "priority": "High", "status": "Pending", "updated": "2026-04-17 17:48"},
+    {"id": "#48292", "subject": "Invoice address change", "org": "Ardmore Florists", "requester": "Gráinne Ardmore", "tags": ["invoice"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "Urgent", "status": "Pending", "updated": "2026-04-17 12:05"},
+    {"id": "#48296", "subject": "Webhook retries failing", "org": "Carrick Joinery", "requester": "Niall Carrick", "tags": ["api"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "Normal", "status": "Open", "updated": "2026-04-16 17:05"},
+    {"id": "#48298", "subject": "Training session for new staff", "org": "Ardmore Florists", "requester": "Gráinne Ardmore", "tags": ["training"], "team": "Onboarding", "assignee": "Maja Novak", "priority": "Urgent", "status": "Solved", "updated": "2026-04-16 14:05"},
+    {"id": "#48302", "subject": "Receipt needed for Q1", "org": "Ardmore Florists", "requester": "Gráinne Ardmore", "tags": ["invoice", "trial", "refund-review"], "team": "Billing", "assignee": "—", "priority": "Low", "status": "Solved", "updated": "2026-04-15 15:32"},
+    {"id": "#48305", "subject": "Charged after cancelling — want refund", "org": "Brightwater Pools", "requester": "Marcus Ode", "tags": ["refund", "priority-customer"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Normal", "status": "Pending", "updated": "2026-04-15 18:17"},
+    {"id": "#48308", "subject": "Refund for duplicate annual plan", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["refund", "priority-customer"], "team": "Billing", "assignee": "—", "priority": "Normal", "status": "Solved", "updated": "2026-04-14 17:32"},
+    {"id": "#48309", "subject": "Sync stuck at 90%", "org": "Ardmore Florists", "requester": "Gráinne Ardmore", "tags": ["sync", "smb"], "team": "Technical", "assignee": "Bram de Wit", "priority": "Normal", "status": "Pending", "updated": "2026-04-14 13:05"},
+    {"id": "#48314", "subject": "Refund for unused seats", "org": "Carrick Joinery", "requester": "Niall Carrick", "tags": ["refund", "smb"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "Normal", "status": "Open", "updated": "2026-04-13 15:17"},
+    {"id": "#48315", "subject": "Refund for duplicate annual plan", "org": "Sandhaven Surf School", "requester": "Kai Mahoe", "tags": ["refund", "trial"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "Normal", "status": "Open", "updated": "2026-04-13 13:17"},
+    {"id": "#48319", "subject": "Charged after cancelling — want refund", "org": "Quayle Opticians", "requester": "Ruth Quayle", "tags": ["refund", "priority-customer"], "team": "Billing", "assignee": "—", "priority": "Urgent", "status": "Open", "updated": "2026-04-12 08:17"},
+    {"id": "#48321", "subject": "Refund for duplicate annual plan", "org": "Pellow Bakeries", "requester": "Rosa Pellow", "tags": ["refund", "priority-customer"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "Normal", "status": "Solved", "updated": "2026-04-12 08:32"},
+    {"id": "#48326", "subject": "Refund for unused seats", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["refund"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "Normal", "status": "Open", "updated": "2026-04-11 14:05"},
+    {"id": "#48327", "subject": "Update card on file", "org": "Loftus Mechanics", "requester": "Dev Loftus", "tags": ["payment"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "High", "status": "Solved", "updated": "2026-04-11 18:05"},
+    {"id": "#48330", "subject": "SSO login loop", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["sso", "enterprise"], "team": "Technical", "assignee": "—", "priority": "Urgent", "status": "Pending", "updated": "2026-04-10 10:05"},
+    {"id": "#48335", "subject": "Receipt needed for Q1", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["invoice", "priority-customer"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "High", "status": "Pending", "updated": "2026-04-10 09:32"},
+    {"id": "#48338", "subject": "Refund for duplicate annual plan", "org": "Sandhaven Surf School", "requester": "Kai Mahoe", "tags": ["refund"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "Normal", "status": "Solved", "updated": "2026-04-09 11:17"},
+    {"id": "#48339", "subject": "Refund for duplicate annual plan", "org": "Tollgate Dental", "requester": "Dr. Priya Sethi", "tags": ["refund", "smb"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "High", "status": "Open", "updated": "2026-04-09 12:17"},
+    {"id": "#48344", "subject": "Set up second location", "org": "Merrow Kayaks", "requester": "Ewan Merrow", "tags": ["setup"], "team": "Onboarding", "assignee": "Maja Novak", "priority": "High", "status": "Pending", "updated": "2026-04-08 16:17"},
+    {"id": "#48345", "subject": "Sync stuck at 90%", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["sync", "trial"], "team": "Technical", "assignee": "Bram de Wit", "priority": "Normal", "status": "Solved", "updated": "2026-04-08 18:17"},
+    {"id": "#48349", "subject": "Label printer not detected", "org": "Wexcombe Vets", "requester": "Hugh Wexcombe", "tags": ["hardware", "smb"], "team": "Technical", "assignee": "Yusuf Kaya", "priority": "Low", "status": "Pending", "updated": "2026-04-07 10:48"},
+    {"id": "#48351", "subject": "VAT number missing on invoice", "org": "Quayle Opticians", "requester": "Ruth Quayle", "tags": ["vat"], "team": "Billing", "assignee": "Kofi Mensah-Boateng", "priority": "Urgent", "status": "Pending", "updated": "2026-04-07 12:48"},
+    {"id": "#48354", "subject": "Refund for unused seats", "org": "Wexcombe Vets", "requester": "Hugh Wexcombe", "tags": ["refund"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Normal", "status": "Open", "updated": "2026-04-06 11:05"},
+    {"id": "#48359", "subject": "Refund for scanner that never worked", "org": "Loftus Mechanics", "requester": "Dev Loftus", "tags": ["hardware", "refund"], "team": "Technical", "assignee": "Ines Carvalhal", "priority": "Normal", "status": "Open", "updated": "2026-04-06 17:32"},
+    {"id": "#48361", "subject": "Refund for unused seats", "org": "Tollgate Dental", "requester": "Dr. Priya Sethi", "tags": ["refund", "enterprise"], "team": "Billing", "assignee": "Ines Carvalho", "priority": "Urgent", "status": "Solved", "updated": "2026-04-05 16:48"},
+    {"id": "#48363", "subject": "Refund after downgrade", "org": "Kinsale Print Co.", "requester": "Aoife Byrne", "tags": ["refund", "trial"], "team": "Billing", "assignee": "Lotte Vermeer", "priority": "Low", "status": "Open", "updated": "2026-04-05 09:05"},
+    {"id": "#48366", "subject": "Label printer not detected", "org": "Loftus Mechanics", "requester": "Dev Loftus", "tags": ["hardware"], "team": "Technical", "assignee": "Bram de Wit", "priority": "Normal", "status": "Pending", "updated": "2026-04-04 18:48"},
+    {"id": "#48369", "subject": "Webhook retries failing", "org": "Merrow Kayaks", "requester": "Ewan Merrow", "tags": ["api", "smb"], "team": "Technical", "assignee": "Ines Carvalhal", "priority": "Normal", "status": "Pending", "updated": "2026-04-04 17:48"},
+    {"id": "#48373", "subject": "Label printer not detected", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["hardware"], "team": "Technical", "assignee": "Bram de Wit", "priority": "High", "status": "Open", "updated": "2026-04-03 14:48"},
+    {"id": "#48375", "subject": "Set up second location", "org": "Brightwater Pools", "requester": "Marcus Ode", "tags": ["setup", "smb"], "team": "Onboarding", "assignee": "Theo Lindgren", "priority": "Urgent", "status": "Solved", "updated": "2026-04-03 12:05"},
+    {"id": "#48380", "subject": "Double charge on March invoice", "org": "Halden Brewing", "requester": "Siobhán Kerrigan", "tags": ["double-charge", "invoice"], "team": "Technical", "assignee": "Bram de Wit", "priority": "Normal", "status": "Open", "updated": "2026-04-02 08:32"},
+    {"id": "#48382", "subject": "SSO login loop", "org": "Vellum & Vine", "requester": "Clara Voss", "tags": ["sso"], "team": "Technical", "assignee": "—", "priority": "Normal", "status": "Open", "updated": "2026-04-02 12:05"}
+  ]/*END*/;
+  const AGENTS = { Billing: ['Ines Carvalho', 'Kofi Mensah-Boateng', 'Lotte Vermeer'], Technical: ['Ines Carvalhal', 'Bram de Wit', 'Yusuf Kaya'], Onboarding: ['Maja Novak', 'Theo Lindgren'] };
+  const ME = 'Ruairí Doyle';
+  const VIEWS = [
+    ['open', 'All open', (t) => t.status === 'Open'],
+    ['unassigned', 'Unassigned', (t) => t.assignee === '—' && t.status !== 'Solved'],
+    ['billing', 'Billing team', (t) => t.team === 'Billing'],
+    ['technical', 'Technical team', (t) => t.team === 'Technical'],
+    ['onboarding', 'Onboarding team', (t) => t.team === 'Onboarding'],
+    ['pending', 'Pending', (t) => t.status === 'Pending'],
+    ['solved', 'Solved', (t) => t.status === 'Solved'],
+    ['all', 'All tickets', () => true],
+  ];
+  const PER = 10;
+  const st = { view: 'open', page: 1, search: '', sel: null };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Shared with the ticket iframe (same origin).
+  window.DESK = {
+    agents: AGENTS,
+    get: (id) => TICKETS.find((t) => t.id === id),
+    async update(id, patch) {
+      const t = TICKETS.find((x) => x.id === id);
+      await rec({ event: 'ticket_update', ticket: t.id, org: t.org, assignee: patch.assignee, team: patch.team, priority: patch.priority, status: patch.status });
+      Object.assign(t, patch, { updated: '2026-04-30 17:02' }); render();
+    },
+    async macro(id, name) { const t = TICKETS.find((x) => x.id === id); await rec({ event: 'ticket_macro', ticket: t.id, macro: name }); },
+    async reply(id, text, internal) { const t = TICKETS.find((x) => x.id === id); await rec({ event: internal ? 'ticket_note' : 'ticket_reply', ticket: t.id, text }); },
+  };
+  function rows() {
+    const f = VIEWS.find((v) => v[0] === st.view)[2]; const s = st.search.trim().toLowerCase();
+    return TICKETS.filter((t) => f(t) && (!s || t.subject.toLowerCase().includes(s) || t.org.toLowerCase().includes(s) || t.id.includes(s.replace(/^#?/, '#'))));
+  }
+  function render() {
+    q('#views').innerHTML = VIEWS.map(([k, l, f]) => `<button type="button" data-view="${k}" aria-current="${st.view === k}"><span>${l}</span><span class="muted">${TICKETS.filter(f).length}</span></button>`).join('');
+    const r = rows(); const pages = Math.max(1, Math.ceil(r.length / PER)); if (st.page > pages) st.page = pages;
+    const slice = r.slice((st.page - 1) * PER, st.page * PER);
+    q('#list').innerHTML = `<h2 style="margin-top:0">${VIEWS.find((v) => v[0] === st.view)[1]}${st.search ? ` · matching “${esc(st.search)}”` : ''}</h2>
+      <table><thead><tr><th>Ticket</th><th>Subject</th><th>Organization</th><th>Tags</th><th>Priority</th><th>Team</th><th>Assignee</th><th>Status</th><th>Updated</th></tr></thead>
+      <tbody>${slice.map((t) => `<tr class="${st.sel === t.id ? 'sel' : ''}"><td>${t.id}</td><td><a class="subj" href="#" data-open="${t.id}">${esc(t.subject)}</a></td><td>${esc(t.org)}</td><td>${t.tags.map((g) => `<span class="tag">${g}</span>`).join('')}</td><td class="pri-${t.priority}">${t.priority}</td><td>${t.team}</td><td>${esc(t.assignee)}</td><td>${t.status}</td><td class="muted">${t.updated}</td></tr>`).join('') || '<tr><td colspan="9" class="muted">No tickets in this view.</td></tr>'}</tbody></table>
+      <div class="pager"><button type="button" id="prev" ${st.page === 1 ? 'disabled' : ''}>‹ Newer</button><span>Page ${st.page} of ${pages} · ${r.length} tickets</span><button type="button" id="next" ${st.page === pages ? 'disabled' : ''}>Older ›</button></div>`;
+  }
+  q('#views').addEventListener('click', (e) => { const b = e.target.closest('[data-view]'); if (!b) return; st.view = b.dataset.view; st.page = 1; render(); });
+  q('#list').addEventListener('click', (e) => {
+    if (e.target.id === 'prev') { st.page--; render(); return; }
+    if (e.target.id === 'next') { st.page++; render(); return; }
+    const a = e.target.closest('[data-open]'); if (!a) return; e.preventDefault();
+    st.sel = a.dataset.open; render();
+    q('#pane').hidden = false; q('#wrap').classList.add('split'); q('#pane-title').textContent = 'Ticket ' + st.sel;
+    q('#ticket-frame').setAttribute('src', 'desk_ticket.html?id=' + encodeURIComponent(st.sel));
+  });
+  q('#pane-close').addEventListener('click', () => { q('#pane').hidden = true; q('#wrap').classList.remove('split'); st.sel = null; q('#ticket-frame').removeAttribute('src'); render(); });
+  let t0; q('#search').addEventListener('input', (e) => { const v = e.target.value; clearTimeout(t0); t0 = setTimeout(() => { st.search = v; st.page = 1; render(); }, 200); });
+  render();
+})();
+</script>
+</body>
+</html>

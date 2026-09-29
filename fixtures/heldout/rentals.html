@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keyhole Rentals</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fbfaf7; }
+  header { background: #7c3aed; }
+  main { max-width: 1040px; }
+  .filters { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 12px; }
+  .filters label { margin: 0 0 3px; font-size: 13px; }
+  .filters select { width: 160px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .lc { background: #fff; border: 1px solid #e7e5e4; border-radius: 12px; overflow: hidden; }
+  .lc .img { height: 110px; background: linear-gradient(120deg, #c4b5fd, #f5d0fe); }
+  .lc .b { padding: 10px 12px; }
+  .lc .rent { font-size: 19px; font-weight: 800; }
+  .facts { display: grid; grid-template-columns: 200px 1fr; gap: 6px; background: #fff; border: 1px solid #e7e5e4; border-radius: 10px; padding: 12px 16px; }
+  .facts dt { color: #78716c; } .facts dd { margin: 0; }
+  .amen { columns: 2; }
+  .viewing { background: #fff; border: 2px solid #7c3aed; border-radius: 12px; padding: 14px 16px; margin-top: 14px; }
+  .err { color: #b91c1c; font-size: 13px; }
+</style>
+</head>
+<body>
+<header><strong>Keyhole Rentals</strong><span>Portland, OR</span><span style="margin-left:auto">Signed in as Delphine Okwuosa</span></header>
+<main id="view"></main>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const L = [
+    { id: 'alder-3b', name: 'Alder Court #3B', hood: 'Sellwood', beds: 1, baths: 1, sqft: 640, rent: 1640, laundry: 'In-unit washer & dryer', pets: 'Cats allowed (one-time $250 pet deposit). No dogs.', parking: 'Street', avail: '1 Nov 2026' },
+    { id: 'bramble-12', name: 'Bramblewood Apartments #12', hood: 'Richmond', beds: 1, baths: 1, sqft: 610, rent: 1595, laundry: 'Shared laundry room on ground floor', pets: 'Cats and small dogs allowed', parking: 'Assigned spot (+$60)', avail: '15 Oct 2026' },
+    { id: 'cinder-407', name: 'Cinder Mill Lofts #407', hood: 'Pearl District', beds: 1, baths: 1, sqft: 700, rent: 1610, laundry: 'In-unit washer & dryer', pets: 'No pets', parking: 'Garage (+$150)', avail: '1 Nov 2026' },
+    { id: 'dunmore-2', name: 'Dunmore House #2', hood: 'Kerns', beds: 1, baths: 1, sqft: 590, rent: 1625, laundry: 'In-unit washer & dryer', pets: 'Dogs under 30 lb allowed. No cats (owner allergy).', parking: 'Street', avail: '20 Oct 2026' },
+    { id: 'esker-5a', name: 'Eskerfield Flats #5A', hood: 'Alberta Arts', beds: 1, baths: 1, sqft: 655, rent: 1680, laundry: 'In-unit washer & dryer', pets: 'Cats and dogs welcome', parking: 'Street', avail: '1 Nov 2026' },
+    { id: 'foxglove-1', name: 'Foxglove Terrace #1', hood: 'Sellwood', beds: 1, baths: 1, sqft: 620, rent: 1630, laundry: 'Washer/dryer hookups only (bring your own)', pets: 'Cats allowed', parking: 'Driveway', avail: '1 Nov 2026' },
+    { id: 'gannet-9', name: 'Gannet Wharf #9', hood: 'South Waterfront', beds: 2, baths: 1, sqft: 820, rent: 1590, laundry: 'In-unit washer & dryer', pets: 'Cats allowed', parking: 'Garage (+$120)', avail: '1 Dec 2026' },
+    { id: 'alder-3c', name: 'Alder Court #3C', hood: 'Sellwood', beds: 1, baths: 1, sqft: 640, rent: 1665, laundry: 'In-unit washer & dryer', pets: 'Cats allowed (one-time $250 pet deposit). No dogs.', parking: 'Street', avail: '15 Nov 2026' },
+    { id: 'heron-studio', name: 'Heron Point Studio', hood: 'Buckman', beds: 0, baths: 1, sqft: 430, rent: 1290, laundry: 'In-unit washer & dryer', pets: 'Cats allowed', parking: 'Street', avail: 'Now' },
+  ];
+  const SLOTS = { 'Sat 10 Oct': ['10:00', '11:30', '14:00'], 'Sun 11 Oct': ['12:00', '15:30'], 'Tue 13 Oct': ['17:30', '18:15'] };
+  const st = { beds: '', max: '' };
+  const usd = (n) => '$' + n.toLocaleString('en-US');
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const view = q('#view');
+  function route() {
+    const id = (location.hash || '').replace(/^#\/?/, '');
+    const x = L.find((y) => y.id === id);
+    if (x) return renderDetail(x);
+    const rows = L.filter((y) => (st.beds === '' || y.beds === +st.beds) && (!st.max || y.rent <= +st.max));
+    view.innerHTML = `<h1>Apartments for rent</h1><div class="filters"><div><label for="f-beds">Bedrooms</label><select id="f-beds"><option value="">Any</option><option value="0">Studio</option><option value="1">1 bedroom</option><option value="2">2 bedrooms</option></select></div>
+      <div><label for="f-max">Max rent</label><select id="f-max"><option value="">No max</option><option>1500</option><option>1650</option><option>1800</option></select></div><span class="muted">${rows.length} listings</span></div>
+      <div class="cards">${rows.map((y) => `<article class="lc" aria-label="${esc(y.name)}"><div class="img" role="img" aria-label="Photo of ${esc(y.name)}"></div><div class="b"><div class="rent">${usd(y.rent)}<span class="muted" style="font-size:13px;font-weight:400">/month</span></div><a href="#/${y.id}"><strong>${esc(y.name)}</strong></a><div class="muted">${y.beds ? y.beds + ' bd' : 'Studio'} · ${y.baths} ba · ${y.sqft} sq ft · ${y.hood}</div></div></article>`).join('')}</div>`;
+    q('#f-beds').value = st.beds; q('#f-max').value = st.max;
+    q('#f-beds').onchange = (e) => { st.beds = e.target.value; route(); };
+    q('#f-max').onchange = (e) => { st.max = e.target.value; route(); };
+  }
+  function renderDetail(x) {
+    view.innerHTML = `<p><a href="#/">← All listings</a></p><h1 style="margin-bottom:2px">${esc(x.name)}</h1><div class="muted" style="margin-bottom:12px">${x.hood}, Portland · available ${x.avail}</div>
+      <dl class="facts"><dt>Monthly rent</dt><dd><strong>${usd(x.rent)}</strong></dd><dt>Bedrooms / bathrooms</dt><dd>${x.beds ? x.beds : 'Studio'} / ${x.baths}</dd><dt>Size</dt><dd>${x.sqft} sq ft</dd><dt>Laundry</dt><dd>${esc(x.laundry)}</dd><dt>Pet policy</dt><dd>${esc(x.pets)}</dd><dt>Parking</dt><dd>${esc(x.parking)}</dd></dl>
+      <div class="row" style="margin-top:12px"><button type="button" id="save">♡ Save listing</button><button type="button" id="apply">Apply now</button></div>
+      <section class="viewing" aria-labelledby="v-h"><h2 id="v-h" style="margin-top:0">Request a viewing</h2>
+        <div class="row"><div><label for="v-day">Day</label><select id="v-day" style="width:150px"><option value="">Choose a day…</option>${Object.keys(SLOTS).map((d) => `<option>${d}</option>`).join('')}</select></div><div><label for="v-time">Time</label><select id="v-time" style="width:120px" disabled><option value="">—</option></select></div></div>
+        <label for="v-msg">Message to the landlord (optional)</label><textarea id="v-msg" style="width:420px;height:50px"></textarea>
+        <div class="err" id="v-err" role="alert" hidden></div>
+        <div style="margin-top:10px"><button type="button" class="primary" id="v-go">Request viewing</button></div></section>`;
+    q('#v-day').onchange = (e) => { const t = q('#v-time'); const s = SLOTS[e.target.value] || []; t.innerHTML = '<option value="">Choose…</option>' + s.map((x2) => `<option>${x2}</option>`).join(''); t.disabled = !s.length; };
+    q('#save').onclick = async () => { await rec({ event: 'listing_save', listing: x.name }); toast('Saved.'); };
+    q('#apply').onclick = async () => { await rec({ event: 'listing_apply', listing: x.name }); toast('Application started — check your email.'); };
+    q('#v-go').onclick = async () => {
+      const day = q('#v-day').value, time = q('#v-time').value; const err = (m) => { q('#v-err').textContent = m; q('#v-err').hidden = !m; };
+      if (!day || !time) return err('Choose a day and a time.');
+      err(''); q('#v-go').disabled = true; await later(400);
+      await rec({ event: 'viewing_request', listing: x.name, listing_id: x.id, day, time });
+      q('#v-go').disabled = false; toast(`Viewing requested for ${day} at ${time}.`);
+    };
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Book an appointment · Fernhill Veterinary Practice</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f7fbf6; }
+  header { background: #29523b; }
+  main { max-width: 980px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+  .sec { background: #fff; border: 1px solid #d9e7dc; border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; }
+  .sec h2 { font-size: 17px; margin: 0 0 10px; color: #29523b; }
+  .pets { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pet { border: 1px solid #cfe0d3; border-radius: 10px; padding: 10px 14px; font-weight: 400; margin: 0; display: flex; gap: 8px; align-items: center; }
+  .cal { display: grid; grid-template-columns: repeat(7, 44px); gap: 4px; }
+  .cal .dow { font-size: 12px; color: #6b7280; text-align: center; }
+  .cal button { padding: 8px 0; width: 44px; }
+  .cal button[aria-pressed=true] { background: #29523b; color: #fff; }
+  .cal button:disabled { color: #c0c7c2; background: #f8faf8; border-color: #eef2ef; cursor: not-allowed; }
+  .slots { display: flex; flex-wrap: wrap; gap: 6px; }
+  .slots button { width: 76px; }
+  .slots button[aria-pressed=true] { background: #29523b; color: #fff; }
+  .slots button:disabled { text-decoration: line-through; color: #9ca3af; cursor: not-allowed; }
+  .summary { position: sticky; top: 16px; background: #fff; border: 1px solid #d9e7dc; border-radius: 12px; padding: 16px; }
+  .summary dl { display: grid; grid-template-columns: 70px 1fr; gap: 6px; font-size: 14px; }
+  .summary dt { color: #6b7280; } .summary dd { margin: 0; }
+  .alert { background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; padding: 10px 12px; border-radius: 8px; margin: 10px 0; }
+  .err { color: #b91c1c; font-size: 13px; }
+  .monthbar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<header><strong>Fernhill Veterinary Practice</strong><span>Online booking</span><span style="margin-left:auto">Logged in as Maeve Halloran</span></header>
+<main>
+  <h1>Book an appointment</h1>
+  <div class="grid2">
+    <div>
+      <section class="sec" aria-labelledby="h-pet"><h2 id="h-pet">1. Which pet?</h2>
+        <div class="pets" role="radiogroup" aria-labelledby="h-pet">
+          <label class="pet"><input type="radio" name="pet" value="Biscuit"> <span><strong>Biscuit</strong><br><span class="muted">Beagle · 6 yrs</span></span></label>
+          <label class="pet"><input type="radio" name="pet" value="Biscotti"> <span><strong>Biscotti</strong><br><span class="muted">Siamese cat · 3 yrs</span></span></label>
+          <label class="pet"><input type="radio" name="pet" value="Bramble"> <span><strong>Bramble</strong><br><span class="muted">Lop rabbit · 2 yrs</span></span></label>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="h-reason"><h2 id="h-reason">2. Reason for visit</h2>
+        <label for="reason">Reason</label>
+        <select id="reason" style="width:340px">
+          <option value="">Choose a reason…</option>
+          <option value="checkup">Annual check-up &amp; vaccinations (30 min)</option>
+          <option value="vaccination">Vaccination only (15 min)</option>
+          <option value="illness">Illness or injury (30 min)</option>
+          <option value="dental">Dental check (20 min)</option>
+          <option value="nails">Nail clip (10 min)</option>
+        </select>
+      </section>
+      <section class="sec" aria-labelledby="h-vet"><h2 id="h-vet">3. Vet</h2>
+        <label for="vet">Vet</label>
+        <select id="vet" style="width:340px">
+          <option value="">Choose a vet…</option>
+          <option value="any">First available vet</option>
+          <option value="achebe">Dr. Imogen Achebe</option>
+          <option value="ashby">Dr. Imogen Ashby</option>
+          <option value="varga">Dr. Tomas Varga</option>
+        </select>
+      </section>
+      <section class="sec" aria-labelledby="h-date"><h2 id="h-date">4. Date &amp; time</h2>
+        <div class="monthbar"><button type="button" id="mprev" aria-label="Previous month">‹</button><strong id="mlabel"></strong><button type="button" id="mnext" aria-label="Next month">›</button></div>
+        <div class="cal" id="cal" role="group" aria-label="Choose a date"></div>
+        <p class="muted" style="font-size:13px">We're closed on Sundays.</p>
+        <div id="slot-area"><p class="muted">Choose a vet and a date to see available times.</p></div>
+      </section>
+      <section class="sec" aria-labelledby="h-extra"><h2 id="h-extra">5. Extras &amp; notes</h2>
+        <label style="font-weight:400;display:flex;gap:8px;align-items:center"><input type="checkbox" id="x-nails"> Add a nail clip during the visit (+£12)</label>
+        <label style="font-weight:400;display:flex;gap:8px;align-items:center"><input type="checkbox" id="x-flea"> Add a flea &amp; worm treatment (+£19)</label>
+        <label for="notes">Notes for the vet (optional)</label><textarea id="notes" style="width:420px;height:60px"></textarea>
+      </section>
+    </div>
+    <aside class="summary" aria-label="Your appointment">
+      <h2 style="margin-top:0;font-size:17px">Your appointment</h2>
+      <dl id="sum"></dl>
+      <div class="alert" id="conflict" role="alert" hidden></div>
+      <div class="err" id="err" role="alert" hidden></div>
+      <button type="button" class="primary" id="book" style="width:100%;margin-top:10px">Book appointment</button>
+      <p class="muted" style="font-size:12px">You can cancel free of charge up to 24 hours before.</p>
+    </aside>
+  </div>
+  <section id="done" class="sec" hidden></section>
+</main>
+<script>
+(() => {
+  const VETS = { achebe: 'Dr. Imogen Achebe', ashby: 'Dr. Imogen Ashby', varga: 'Dr. Tomas Varga' };
+  const TIMES = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00'];
+  // deterministic "taken" pattern per vet+date
+  const TAKEN = {
+    'achebe/2026-05-12': ['09:00', '10:00', '11:00', '11:30', '15:00'],
+    'ashby/2026-05-12': ['09:00', '09:30', '14:00'],
+    'varga/2026-05-12': ['10:00', '10:30', '11:00', '14:00', '14:30'],
+    'achebe/2026-05-13': ['09:00', '09:30', '10:00'],
+    'achebe/2026-05-11': ['14:00', '14:30', '15:00', '15:30', '16:00'],
+  };
+  const hashN = (s) => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 9973; return h; };
+  const takenFor = (vet, date) => TAKEN[vet + '/' + date] || TIMES.filter((t, i) => (hashN(vet + date) + i * 7) % 5 === 0);
+  const extraTaken = new Set();
+  const st = { month: 4, date: '', time: '', busy: false, booked: false };
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const fdLong = (s) => { const [y, m, d] = s.split('-').map(Number); const dt = new Date(Date.UTC(y, m - 1, d)); return `${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dt.getUTCDay()]} ${d} ${MONTHS[m - 1]} ${y}`; };
+  const pet = () => (qa('input[name=pet]').find((r) => r.checked) || {}).value || '';
+  const vet = () => q('#vet').value;
+
+  function drawCal() {
+    const y = 2026, m = st.month; q('#mlabel').textContent = `${MONTHS[m]} ${y}`;
+    q('#mprev').disabled = m <= 4; q('#mnext').disabled = m >= 5;
+    const first = new Date(Date.UTC(y, m, 1)).getUTCDay(); const days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    let h = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => `<div class="dow">${d}</div>`).join('');
+    const lead = (first + 6) % 7; for (let i = 0; i < lead; i++) h += '<div></div>';
+    for (let d = 1; d <= days; d++) {
+      const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; const dow = new Date(Date.UTC(y, m, d)).getUTCDay();
+      const past = iso < '2026-05-06';
+      h += `<button type="button" data-date="${iso}" aria-label="${fdLong(iso)}" aria-pressed="${st.date === iso}" ${dow === 0 || past ? 'disabled' : ''}>${d}</button>`;
+    }
+    q('#cal').innerHTML = h;
+  }
+  async function loadSlots() {
+    const area = q('#slot-area'); st.time = ''; drawSum();
+    if (!st.date || !vet()) { area.innerHTML = '<p class="muted">Choose a vet and a date to see available times.</p>'; return; }
+    const req = st.date + vet(); loadSlots.req = req;
+    area.innerHTML = '<p class="muted" role="status">Loading available times…</p>';
+    await later(400);
+    if (loadSlots.req !== req) return;
+    const vets = vet() === 'any' ? Object.keys(VETS) : [vet()];
+    area.innerHTML = vets.map((v) => { const taken = takenFor(v, st.date); return `<div style="margin-top:10px"><div style="font-weight:600;margin-bottom:6px">${VETS[v]} — ${fdLong(st.date)}</div><div class="slots" role="group" aria-label="Times with ${VETS[v]}">${TIMES.map((t) => { const off = taken.includes(t) || extraTaken.has(v + st.date + t); return `<button type="button" data-time="${t}" data-v="${v}" aria-pressed="false" aria-label="${t} with ${VETS[v]}${off ? ' (unavailable)' : ''}" ${off ? 'disabled' : ''}>${t}</button>`; }).join('')}</div></div>`; }).join('');
+  }
+  function drawSum() {
+    const v = st.slotVet || (vet() && vet() !== 'any' ? vet() : '');
+    const rows = [['Pet', pet() || '—'], ['Reason', q('#reason').value ? q('#reason').selectedOptions[0].textContent : '—'], ['Vet', v ? VETS[v] : (vet() === 'any' ? 'First available' : '—')], ['Date', st.date ? fdLong(st.date) : '—'], ['Time', st.time || '—']];
+    q('#sum').innerHTML = rows.map(([k, val]) => `<dt>${k}</dt><dd>${val}</dd>`).join('');
+  }
+  q('#cal').addEventListener('click', (e) => { const b = e.target.closest('[data-date]'); if (!b || b.disabled) return; st.date = b.dataset.date; st.slotVet = ''; drawCal(); loadSlots(); });
+  q('#mprev').addEventListener('click', () => { st.month--; drawCal(); });
+  q('#mnext').addEventListener('click', () => { st.month++; drawCal(); });
+  q('#vet').addEventListener('change', () => { st.slotVet = ''; loadSlots(); });
+  q('#reason').addEventListener('change', drawSum);
+  qa('input[name=pet]').forEach((r) => r.addEventListener('change', drawSum));
+  q('#slot-area').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-time]'); if (!b || b.disabled) return;
+    qa('#slot-area [data-time]').forEach((x) => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true');
+    st.time = b.dataset.time; st.slotVet = b.dataset.v; q('#conflict').hidden = true; drawSum();
+  });
+  q('#book').addEventListener('click', async () => {
+    if (st.busy || st.booked) return;
+    const err = (m) => { q('#err').textContent = m; q('#err').hidden = !m; };
+    if (!pet()) return err('Choose which pet the appointment is for.');
+    if (!q('#reason').value) return err('Choose a reason for the visit.');
+    if (!vet()) return err('Choose a vet.');
+    if (!st.date || !st.time) return err('Choose a date and time.');
+    err(''); st.busy = true; q('#book').disabled = true; q('#book').textContent = 'Booking…';
+    await later(500);
+    st.busy = false; q('#book').disabled = false; q('#book').textContent = 'Book appointment';
+    const v = st.slotVet;
+    // 10:30 with Dr. Achebe on 12 May is snapped up by another client while this page was open
+    if (v === 'achebe' && st.date === '2026-05-12' && st.time === '10:30' && !extraTaken.has(v + st.date + st.time)) {
+      extraTaken.add(v + st.date + st.time);
+      const c = q('#conflict'); c.textContent = `Sorry — ${st.time} with ${VETS[v]} on ${fdLong(st.date)} was just booked by someone else. Please choose another time.`; c.hidden = false;
+      await loadSlots(); return;
+    }
+    st.booked = true;
+    const addons = [q('#x-nails').checked ? 'nail_clip' : '', q('#x-flea').checked ? 'flea_worm' : ''].filter(Boolean).join(',') || 'none';
+    await rec({ event: 'appointment_book', pet: pet(), reason: q('#reason').value, vet: VETS[v], date: st.date, time: st.time, addons });
+    const d = q('#done'); d.hidden = false; d.innerHTML = `<h2>You're booked in</h2><p>${pet()} is seeing ${VETS[v]} on ${fdLong(st.date)} at ${st.time}. We've sent a confirmation to your email.</p>`;
+    q('.grid2').hidden = true;
+  });
+  drawCal(); drawSum();
+})();
+</script>
+</body>
+</html>

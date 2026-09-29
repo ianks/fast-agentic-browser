@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bookwell · Choose a time</title>
+<style>
+  :root { --b: #2f6fed; --b2: #e8f0fe; --line: #e3e7ef; --ink: #1c2433; --muted: #6a7486; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 "Inter", -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #fff; }
+  .wrap { padding: 14px 16px 10px; }
+  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .head h1 { font-size: 16px; margin: 0; }
+  .head .who { color: var(--muted); font-size: 12.5px; }
+  .nav { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+  .nav b { font-size: 15px; min-width: 190px; text-align: center; }
+  .nav button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; color: var(--ink); }
+  .nav button:disabled { color: #aab1be; cursor: default; }
+  .note { font-size: 12.5px; color: var(--muted); }
+  .job { margin-left: auto; font-size: 12.5px; background: #f4f6fa; border-radius: 12px; padding: 3px 10px; color: #3d4659; }
+  .cols { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .day { border: 1px solid var(--line); border-radius: 10px; padding: 8px 6px; }
+  .day h2 { font-size: 13px; margin: 0 0 6px; text-align: center; font-weight: 600; }
+  .day h2 span { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+  .slot { display: block; width: 100%; margin: 5px 0; font: inherit; font-size: 13px; padding: 6px 0; border-radius: 7px; border: 1px solid #bcd0fb; background: var(--b2); color: #1a4fc4; cursor: pointer; }
+  .slot:hover { background: #d6e4fd; }
+  .slot[aria-pressed=true] { background: var(--b); border-color: var(--b); color: #fff; font-weight: 600; }
+  .slot:disabled { background: #f3f4f6; border-color: #eceef2; color: #b3b8c2; text-decoration: line-through; cursor: not-allowed; }
+  .sel { margin-top: 12px; padding: 9px 12px; border-radius: 8px; background: #f4f6fa; font-size: 13.5px; }
+  .sel b { color: var(--b); }
+  .foot { display: flex; justify-content: space-between; margin-top: 10px; font-size: 11.5px; color: #9aa1ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><h1>Choose a drop-off time</h1><span class="who">Quayside Motors · Unit 7, Quayside Trading Estate</span><span class="job" id="job"></span></div>
+  <div class="nav">
+    <button type="button" id="prev" aria-label="Previous week">‹ Previous week</button>
+    <b id="range" aria-live="polite"></b>
+    <button type="button" id="next" aria-label="Next week">Next week ›</button>
+    <span class="note" id="wknote"></span>
+  </div>
+  <div class="cols" id="cols" role="group" aria-label="Available drop-off times"></div>
+  <div class="sel" id="sel" aria-live="polite">No time selected yet.</div>
+  <div class="foot"><span>Times are UK time. Drop-off at reception; collection by 17:30 (Saturdays 12:30).</span><span>Powered by <b>Bookwell</b></span></div>
+</div>
+<script>
+(() => {
+  const P = new URLSearchParams(location.search);
+  const mins = Math.max(0, Number(P.get('mins')) || 0);
+  let sel = P.get('sel') || '';
+  const WEEKS = [
+    { label: '5 – 10 October 2026', days: ['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10'] },
+    { label: '12 – 17 October 2026', days: ['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17'] },
+  ];
+  const DOW = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const BOOKED = {
+    '2026-10-05': ['08:00', '08:30', '09:00'], '2026-10-06': ['08:00', '10:00'], '2026-10-07': ['10:00', '10:30'], '2026-10-08': ['08:00', '08:30'],
+    '2026-10-09': ['09:30', '11:00'], '2026-10-10': ['08:00', '08:30', '10:00', '11:30'],
+    '2026-10-12': ['08:00'], '2026-10-13': ['08:30', '09:00'], '2026-10-14': ['09:30'], '2026-10-16': ['08:00', '08:30', '09:00'], '2026-10-17': ['08:00', '08:30', '09:00', '09:30', '10:00'],
+  };
+  let week = sel && WEEKS[1].days.includes(sel.slice(0, 10)) ? 1 : 0;
+  const slotsFor = (i) => { const out = []; const end = i === 5 ? 11 * 60 + 30 : 11 * 60; for (let m = 8 * 60; m <= end; m += 30) out.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0')); return out; };
+  const nice = (iso, i) => `${DOW[i]} ${Number(iso.slice(8))} October`;
+  if (mins) document.getElementById('job').textContent = `Job time about ${mins >= 60 ? (mins / 60) + (mins === 60 ? ' hour' : ' hours') : mins + ' minutes'}`;
+  function render() {
+    const w = WEEKS[week];
+    document.getElementById('range').textContent = w.label;
+    document.getElementById('prev').disabled = week === 0;
+    document.getElementById('next').disabled = week === WEEKS.length - 1;
+    document.getElementById('wknote').textContent = week === 0 ? 'Fully booked until Monday 5 October' : '';
+    document.getElementById('cols').innerHTML = w.days.map((iso, i) => `<div class="day"><h2>${SHORT[i]}<span>${Number(iso.slice(8))} Oct</span></h2>${slotsFor(i).map((t) => {
+      const taken = (BOOKED[iso] || []).includes(t);
+      const late = mins > 180 && t >= '11:00';
+      const dis = taken || late;
+      const on = sel === iso + 'T' + t;
+      return `<button type="button" class="slot" data-slot="${iso}T${t}" aria-pressed="${on}" ${dis ? 'disabled' : ''} aria-label="${nice(iso, i)}, ${t}, ${dis ? (late && !taken ? 'unavailable for a job this long' : 'unavailable') : 'available'}">${t}</button>`;
+    }).join('')}</div>`).join('');
+    const box = document.getElementById('sel');
+    if (sel) { const iso = sel.slice(0, 10); const i = WEEKS.flatMap((x) => x.days).indexOf(iso) % 6; box.innerHTML = `Selected: <b>${SHORT[i]} ${Number(iso.slice(8))} Oct, ${sel.slice(11)}</b>`; }
+    else box.textContent = 'No time selected yet.';
+  }
+  document.getElementById('prev').addEventListener('click', () => { if (week > 0) { week--; render(); } });
+  document.getElementById('next').addEventListener('click', () => { if (week < WEEKS.length - 1) { week++; render(); } });
+  document.getElementById('cols').addEventListener('click', (e) => {
+    const b = e.target.closest('button.slot'); if (!b || b.disabled) return;
+    sel = b.dataset.slot;
+    render();
+    parent.postMessage({ type: 'bookwell:slot', date: sel.slice(0, 10), time: sel.slice(11) }, '*');
+  });
+  render();
+})();
+</script>
+</body>
+</html>

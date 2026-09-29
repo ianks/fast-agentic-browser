@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Baseline Tennis Club · Members</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Hoefler Text", Baskerville, Georgia, serif; color: #18241d; background: #f3f6f1; }
+  a { color: #1f6b4a; }
+  button, input, select { font: 14px -apple-system, "Segoe UI", sans-serif; }
+  header { background: #123d2c; color: #e8f2ea; }
+  header .in { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 24px; padding: 14px 24px; }
+  .logo { font-size: 24px; letter-spacing: .06em; }
+  header nav a { color: #cfe3d6; text-decoration: none; font: 14px -apple-system, sans-serif; margin-right: 14px; padding-bottom: 4px; }
+  header nav a.on { color: #fff; border-bottom: 2px solid #c6d82e; }
+  header .sp { flex: 1; }
+  header .who { font: 13px -apple-system, sans-serif; color: #cfe3d6; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 24px 60px; }
+  h1 { font-weight: 400; font-size: 32px; margin: 0 0 6px; }
+  .sub { color: #7a6a66; font-family: -apple-system, sans-serif; font-size: 14px; margin: 0 0 18px; }
+  .card { background: #fff; border: 1px solid #eadfd6; border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; }
+  .btn { border: 1px solid #cdb9ad; background: #fff; border-radius: 999px; padding: 7px 16px; cursor: pointer; color: #18241d; }
+  .btn.primary { background: #1f6b4a; border-color: #1f6b4a; color: #fff; }
+  .btn.ghost { border-color: transparent; color: #1f6b4a; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .slot { display: grid; grid-template-columns: 34px 46px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0e7e0; position: relative; }
+  .slot:last-child { border-bottom: 0; }
+  .slot .n { font: 600 13px -apple-system, sans-serif; color: #a08f89; }
+  .bottle { width: 22px; height: 22px; border-radius: 50%; display: inline-block; box-shadow: inset -3px -3px 0 rgba(0,0,0,.12); }
+  .slot .meta { font: 13px -apple-system, sans-serif; color: #7a6a66; }
+  .slot .changed { font: 600 11px -apple-system, sans-serif; color: #9a6b00; background: #fff4d6; border-radius: 9px; padding: 1px 8px; margin-left: 6px; }
+  .listbox { position: absolute; right: 0; top: 100%; z-index: 20; width: 460px; background: #fff; border: 1px solid #d9c7bb; border-radius: 10px; box-shadow: 0 16px 40px rgba(18,61,44,.18); padding: 6px; }
+  .listbox .opt { padding: 9px 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; font-family: -apple-system, sans-serif; font-size: 14px; }
+  .listbox .opt:hover, .listbox .opt[aria-selected=true] { background: #f7ece6; }
+  .listbox .opt small { color: #7a6a66; display: block; }
+  .listbox .hd { font: 600 12px -apple-system, sans-serif; color: #7a6a66; padding: 6px 10px; }
+  .dates { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dates label { border: 1px solid #d9c7bb; border-radius: 10px; padding: 8px 12px; cursor: pointer; font: 14px -apple-system, sans-serif; background: #fff; }
+  .dates label.sel { border-color: #1f6b4a; background: #eef6ef; box-shadow: inset 0 0 0 1px #1f6b4a; }
+  .dates input { margin-right: 6px; }
+  .savebar { position: sticky; bottom: 0; background: #123d2c; color: #fff; padding: 12px 20px; border-radius: 12px; display: flex; align-items: center; gap: 12px; font-family: -apple-system, sans-serif; margin-top: 14px; }
+  .savebar .sp { flex: 1; }
+  .savebar .btn { border-color: #c6d82e; }
+  .upsell { display: flex; gap: 14px; align-items: center; background: #f7faea; border: 1px dashed #c6d82e; border-radius: 12px; padding: 12px 16px; font-family: -apple-system, sans-serif; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, sans-serif; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #f0e7e0; }
+  th { font-size: 12px; color: #7a6a66; text-transform: uppercase; letter-spacing: .05em; }
+  td.num, th.num { text-align: right; }
+  .fav { border: 0; background: none; font-size: 18px; cursor: pointer; color: #b8a39a; }
+  .fav[aria-pressed=true] { color: #1f6b4a; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; font-family: -apple-system, sans-serif; }
+  .pager button[aria-current=page] { background: #123d2c; color: #fff; border-color: #123d2c; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #123d2c; color: #fff; padding: 10px 18px; border-radius: 999px; font-family: -apple-system, sans-serif; z-index: 60; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(10, 30, 20, .45); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .modal { background: #fff; border-radius: 12px; padding: 20px 22px; width: 440px; font-family: -apple-system, sans-serif; }
+  footer { text-align: center; color: #9a8a84; font: 12px -apple-system, sans-serif; padding: 24px; }
+</style>
+</head>
+<body>
+<header><div class="in"><span class="logo">Baseline Tennis Club</span><nav aria-label="Members"><a href="#/block" data-nav="block">Next block</a><a href="#/gear" data-nav="gear">My gear</a><a href="#/orders" data-nav="orders">Bookings</a><a href="#/membership" data-nav="membership">Membership</a><a href="#/shop" data-nav="shop">Pro shop</a></nav><span class="sp"></span><span class="who">Henrik Lindahl · Club member</span></div></header>
+<main id="view"></main>
+<footer>Baseline Tennis Club AB · Courts open 07:00–22:00 · Non-marking shoes only</footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toFixed(2);
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const W = (id, vintage, name, producer, region, price, color) => ({ id, vintage, name, producer, region, price, color });
+  const label = (w) => `${w.vintage} ${w.name} (${w.producer})`;
+  const SLOTS = [
+    { cur: W('BT-1101', 'Intermediate', 'Topspin Forehand Clinic', 'Coach Marta Ruiz', 'Court 3 · Clay', 14.0, '#c8552a'), alts: [W('BT-1204', 'Intermediate', 'Serve & Volley Clinic', 'Coach Lena Berg', 'Court 2 · Clay', 15.5, '#c8552a'), W('BT-1207', 'Intermediate', 'Serve & Volley Clinic', 'Coach Jonas Ek', 'Court 5 · Hard', 19.0, '#2f6db5'), W('BT-1211', 'Intermediate', 'Two-Handed Backhand Clinic', 'Coach Marta Ruiz', 'Court 3 · Clay', 15.0, '#c8552a'), W('BT-1215', 'Intermediate', 'Footwork & Movement', 'Coach Lena Berg', 'Court 1 · Hard', 14.5, '#2f6db5'), W('BT-1218', 'Intermediate', 'Doubles Positioning', 'Coach Ali Karim', 'Court 4 · Clay', 12.5, '#c8552a')] },
+    { cur: W('BT-2102', 'Advanced', 'Baseline Rally Drill', 'Coach Tomás Silva', 'Court 1 · Hard', 16.5, '#2f6db5'), alts: [W('BT-2208', 'Advanced', 'Kick Serve Workshop', 'Coach Nadia Holm', 'Court 6 · Grass', 19.0, '#4c8c3a'), W('BT-2209', 'Advanced', 'Kick Serve Workshop Plus', 'Coach Jonas Ek', 'Court 5 · Hard', 26.0, '#2f6db5'), W('BT-2212', 'Advanced', 'Return of Serve Lab', 'Coach Tomás Silva', 'Court 1 · Hard', 18.5, '#2f6db5'), W('BT-2216', 'Advanced', 'Kick Serve Workshop', 'Coach Ali Karim', 'Court 4 · Clay', 17.5, '#c8552a'), W('BT-2220', 'Advanced', 'Point Construction', 'Coach Nadia Holm', 'Court 6 · Grass', 21.0, '#4c8c3a')] },
+    { cur: W('BT-3103', 'Intermediate', 'Match Play Sets', 'Coach Ali Karim', 'Court 4 · Clay', 18.0, '#c8552a'), alts: [W('BT-3301', 'Intermediate', 'Tiebreak Tactics', 'Coach Jonas Ek', 'Court 5 · Hard', 19.5, '#2f6db5'), W('BT-3305', 'Intermediate', 'Singles Strategy', 'Coach Lena Berg', 'Court 2 · Clay', 17.0, '#c8552a')] },
+    { cur: W('BT-4104', 'All levels', 'Cardio Tennis', 'Coach Nadia Holm', 'Court 6 · Grass', 17.0, '#4c8c3a'), alts: [W('BT-4402', 'All levels', 'Agility Ladder Circuit', 'Coach Jonas Ek', 'Court 5 · Hard', 23.0, '#2f6db5'), W('BT-4406', 'All levels', 'Stretch & Recovery', 'Coach Marta Ruiz', 'Studio', 15.0, '#8d6e63')] },
+    { cur: W('BT-5105', 'Advanced', 'Net Game Masterclass', 'Coach Lena Berg', 'Court 2 · Clay', 24.0, '#c8552a'), alts: [W('BT-5501', 'Advanced', 'Overhead Smash Lab', 'Coach Tomás Silva', 'Court 1 · Hard', 32.0, '#2f6db5'), W('BT-5503', 'Advanced', 'Drop Shot Finesse', 'Coach Ali Karim', 'Court 4 · Clay', 21.0, '#c8552a')] },
+    { cur: W('BT-6106', 'Intermediate', 'Doubles Round Robin', 'Coach Jonas Ek', 'Court 5 · Hard', 22.0, '#2f6db5'), alts: [W('BT-6601', 'Intermediate', 'Mixed Doubles Social', 'Coach Marta Ruiz', 'Court 3 · Clay', 21.5, '#c8552a'), W('BT-6604', 'Intermediate', 'King of the Court', 'Coach Nadia Holm', 'Court 6 · Grass', 23.0, '#4c8c3a')] },
+  ];
+  const DATES = [['2026-10-13', 'Tue 13 Oct', 0], ['2026-10-14', 'Wed 14 Oct', 0], ['2026-10-15', 'Thu 15 Oct', 0], ['2026-10-16', 'Fri 16 Oct', 0], ['2026-10-17', 'Sat 17 Oct', 5]];
+  const CELLAR = [
+    ['G-01', 'Wilson Pro Staff 97 v14', 'Racket', 2, 94, 93, false], ['G-02', 'Babolat Pure Aero 98', 'Racket', 1, 88, 91, false], ['G-03', 'Head Speed MP', 'Racket', 1, 92, 95, true], ['G-04', 'Luxilon ALU Power 125', 'Strings', 3, 90, 92, true], ['G-05', 'Solinco Hyper-G 1.20', 'Strings', 2, 93, 97, false], ['G-06', 'Babolat RPM Blast 17', 'Strings', 4, 89, 91, false], ['G-07', 'Asics Gel-Resolution 9 (clay)', 'Shoes', 1, 90, 95, false], ['G-08', 'Adidas Barricade 13', 'Shoes', 1, 87, 90, false], ['G-09', 'Nike Vapor Pro 2', 'Shoes', 1, 86, 90, false], ['G-10', 'Tourna Grip Original', 'Grips', 12, 91, 95, false], ['G-11', 'Wilson Pro Overgrip', 'Grips', 30, 93, 98, false], ['G-12', 'Yonex Super Grap', 'Grips', 10, 95, 96, false], ['G-13', 'Dunlop ATP Championship balls', 'Balls', 8, 92, 94, false], ['G-14', 'Wilson US Open balls', 'Balls', 6, 88, 92, false], ['G-15', 'Tecnifibre X-One balls', 'Balls', 4, 91, 94, false], ['G-16', 'Head Tour Team bag', 'Bags', 1, 89, 93, false], ['G-17', 'Babolat Pure Line backpack', 'Bags', 1, 85, 89, false], ['G-18', 'Wilson Super Tour 15-pack', 'Bags', 1, 92, 96, false], ['G-19', 'Head Pro Damp dampener', 'Accessories', 2, 91, 97, false], ['G-20', 'Babolat Custom Damp', 'Accessories', 3, 87, 92, false], ['G-21', 'Tennis ball hopper 72', 'Accessories', 1, 97, 94, false], ['G-22', 'Wristbands (pair)', 'Apparel', 3, 88, 90, false], ['G-23', 'Club cap', 'Apparel', 2, 84, 88, false], ['G-24', 'Dri-fit polo', 'Apparel', 2, 90, 94, false], ['G-25', 'Stringing voucher', 'Services', 4, 83, 87, false], ['G-26', 'Hawk-Eye session', 'Services', 1, 92, 95, false]
+  ].map(([id, name, region, bottles, mine, critic, fav], i) => ({ id, name, region, bottles, mine, critic, fav, added: 26 - i }));
+  const st = { pending: SLOTS.map((s) => s.cur), date: '2026-10-13', saved: { bottles: SLOTS.map((s) => s.cur), date: '2026-10-13' }, extra: false, open: -1, busy: false, skipped: false, sort: 'recent', page: 1 };
+  const dirty = () => st.pending.some((w, i) => w !== st.saved.bottles[i]) || st.date !== st.saved.date || st.extra;
+  const surcharge = () => st.pending.reduce((a, w, i) => a + Math.max(0, w.price - SLOTS[i].cur.price), 0); // pricier swaps pay the difference
+
+  function shipmentPage() {
+    if (st.skipped) return `<h1>October block skipped</h1><p class="sub">Your next block starts in November.</p>`;
+    const d = DATES.find((x) => x[0] === st.date);
+    return `<h1>Your October training block</h1><p class="sub">Club · 6 sessions · at Baseline Tennis Club, Södermalm. Changes close Sunday 11 October at 23:59.</p>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-family:-apple-system,sans-serif">Sessions</strong><span class="sub" style="margin:0">Swap any session for another at the same level</span></div>
+      ${st.pending.map((w, i) => `<div class="slot"><span class="n">${i + 1}</span><span class="bottle" style="background:${w.color}"></span><div><div>${esc(w.vintage + ' ' + w.name)}${w !== SLOTS[i].cur ? '<span class="changed">Swapped</span>' : ''}</div><div class="meta">${esc(w.producer)} · ${esc(w.region)} · ${eur(w.price)}</div></div>
+        <div><button class="btn" type="button" data-swap="${i}" aria-haspopup="listbox" aria-expanded="${st.open === i}" aria-label="Swap ${esc(w.vintage + ' ' + w.name)}">Swap</button>${w !== SLOTS[i].cur ? ` <button class="btn ghost" type="button" data-undo="${i}">Undo</button>` : ''}</div>
+        ${st.open === i ? `<div class="listbox" role="listbox" aria-label="Swap options for session ${i + 1}"><div class="hd">Swap ${esc(w.vintage + ' ' + w.name)} for…</div>${[SLOTS[i].cur, ...SLOTS[i].alts].filter((x) => x !== w).map((x) => `<div class="opt" role="option" tabindex="0" data-pick="${x.id}" aria-selected="false"><span>${esc(x.vintage + ' ' + x.name)}<small>${esc(x.producer)} · ${esc(x.region)}</small></span><span>${eur(x.price)}</span></div>`).join('')}</div>` : ''}</div>`).join('')}</div>
+      <div class="upsell"><span class="bottle" style="background:#c6d82e"></span><div style="flex:1"><strong>Complete your block: private lesson with Coach Lena Berg</strong><div class="sub" style="margin:0">Member price €38.00 · on your court day</div></div><button class="btn" type="button" id="extra">${st.extra ? 'Remove' : 'Add lesson'}</button></div>
+      <div class="card" style="margin-top:18px"><strong style="font-family:-apple-system,sans-serif">Court day</strong><p class="sub" style="margin:4px 0 10px">Your sessions run 17:00–21:00 at Baseline Tennis Club, Ringvägen 12, 118 60 Stockholm.</p><div class="dates" role="radiogroup" aria-label="Court day">${DATES.map(([v, l, fee]) => `<label class="${st.date === v ? 'sel' : ''}"><input type="radio" name="ddate" value="${v}" ${st.date === v ? 'checked' : ''}>${l}${fee ? ` (+€${fee})` : ''}</label>`).join('')}</div></div>
+      <p style="font-family:-apple-system,sans-serif"><button class="btn" type="button" id="skip">Skip October block</button> <a href="#/membership">Pause membership</a></p>
+      ${dirty() ? `<div class="savebar"><span>You have unsaved changes${surcharge() ? ` · swap supplement ${eur(surcharge())}` : ''}${st.extra ? ' · private lesson €38.00' : ''}${d[2] ? ` · Saturday court fee €${d[2]}` : ''}</span><span class="sp"></span><button class="btn" type="button" id="discard" style="color:#fff;background:transparent">Discard</button><button class="btn primary" type="button" id="save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Save changes'}</button></div>` : ''}`;
+  }
+  function cellarPage() {
+    const list = CELLAR.slice().sort((a, b) => (st.sort === 'name' ? a.name.localeCompare(b.name) : st.sort === 'region' ? a.region.localeCompare(b.region) || a.name.localeCompare(b.name) : b.added - a.added));
+    const per = 10; const pages = Math.ceil(list.length / per);
+    return `<h1>My gear</h1><p class="sub">${CELLAR.reduce((a, w) => a + w.bottles, 0)} items across ${CELLAR.length} kinds of gear. Rate your gear to improve coach recommendations.</p>
+      <div class="card"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;font-family:-apple-system,sans-serif"><label for="sort">Sort by</label><select id="sort"><option value="recent" ${st.sort === 'recent' ? 'selected' : ''}>Recently added</option><option value="name" ${st.sort === 'name' ? 'selected' : ''}>Name (A–Z)</option><option value="region" ${st.sort === 'region' ? 'selected' : ''}>Region</option></select><span class="sub" style="margin:0 0 0 auto">♥ = favourite</span><button class="btn" type="button" id="cellar-export">Export CSV</button><button class="btn" type="button" id="cellar-add">Add gear</button></div>
+      <table><thead><tr><th>Item</th><th>Type</th><th class="num">Qty</th><th class="num">My rating</th><th class="num">Review score</th><th>Favourite</th><th></th></tr></thead><tbody>${list.slice((st.page - 1) * per, st.page * per).map((w) => `<tr><td>${esc(w.name)}</td><td>${esc(w.region)}</td><td class="num">${w.bottles}</td><td class="num">${w.mine}</td><td class="num">${w.critic}</td><td><button class="fav" type="button" data-fav="${w.id}" aria-pressed="${w.fav}" aria-label="${w.fav ? 'Remove from favourites' : 'Add to favourites'}: ${esc(w.name)}">${w.fav ? '♥' : '♡'}</button></td><td><button class="btn" type="button" data-notes="${w.id}" style="padding:3px 10px;font-size:12px" aria-label="Notes: ${esc(w.name)}">Notes</button> <button class="btn" type="button" data-reorder="${w.id}" style="padding:3px 10px;font-size:12px" aria-label="Restock ${esc(w.name)}">Restock</button></td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-page="${st.page - 1}" ${st.page === 1 ? 'disabled' : ''}>Previous</button>${Array.from({ length: pages }, (_, i) => `<button class="btn" type="button" data-page="${i + 1}" ${st.page === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button class="btn" type="button" data-page="${st.page + 1}" ${st.page === pages ? 'disabled' : ''}>Next</button><span class="sub" style="margin:0 0 0 auto">Page ${st.page} of ${pages}</span></div></div>`;
+  }
+  function ordersPage() { return `<h1>Orders</h1><div class="card"><table><thead><tr><th>Order</th><th>Date</th><th>Items</th><th class="num">Total</th></tr></thead><tbody><tr><td>CC-88213</td><td>15 Sep 2026</td><td>September training block</td><td class="num">€111.00</td></tr><tr><td>CC-87940</td><td>14 Aug 2026</td><td>August training block</td><td class="num">€111.00</td></tr><tr><td>CC-87702</td><td>2 Aug 2026</td><td>Pro shop: 2 × Dunlop ATP balls</td><td class="num">€96.00</td></tr></tbody></table></div>`; }
+  function membershipPage() { return `<h1>Membership</h1><div class="card" style="font-family:-apple-system,sans-serif"><p><strong>Club</strong> · 6 sessions every month · €111.00 per block</p><p><button class="btn" type="button" id="upgrade">Upgrade to Academy (12 sessions)</button> <button class="btn" type="button" id="pause">Pause for a month</button> <button class="btn" type="button" id="cancel-mem">Cancel membership</button></p></div>`; }
+
+  function route() {
+    const p = (location.hash || '#/block').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] === 'gear') v.innerHTML = cellarPage();
+    else if (p[0] === 'orders') v.innerHTML = ordersPage();
+    else if (p[0] === 'membership') v.innerHTML = membershipPage();
+    else if (p[0] === 'shop') v.innerHTML = `<h1>Shop</h1><p class="sub">Member-only releases arrive on the first Monday of each month.</p>`;
+    else { document.querySelector('[data-nav=block]').classList.add('on'); v.innerHTML = shipmentPage(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { st.open = -1; route(); scrollTo(0, 0); });
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const sw = t.closest('[data-swap]'); if (sw) { const i = +sw.dataset.swap; st.open = st.open === i ? -1 : i; rerender(); return; }
+    const pk = t.closest('[data-pick]'); if (pk) { const i = st.open; st.pending[i] = [SLOTS[i].cur, ...SLOTS[i].alts].find((x) => x.id === pk.dataset.pick); st.open = -1; rerender(); return; }
+    const un = t.closest('[data-undo]'); if (un) { st.pending[+un.dataset.undo] = SLOTS[+un.dataset.undo].cur; rerender(); return; }
+    if (t.closest('#extra')) { st.extra = !st.extra; rerender(); return; }
+    if (t.closest('#discard')) { st.pending = st.saved.bottles.slice(); st.date = st.saved.date; st.extra = false; rerender(); return; }
+    if (t.closest('#save')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(800);
+      const fee = DATES.find((x) => x[0] === st.date)[2];
+      await rec({ event: 'block_update', block: 'OCT-2026', sessions: st.pending.map(label).join('; '), swaps: String(st.pending.filter((w, i) => w !== SLOTS[i].cur).length), court_day: st.date, extra_lesson: st.extra ? 'yes' : 'no', supplement: (surcharge() + fee + (st.extra ? 38 : 0)).toFixed(2) });
+      st.saved = { bottles: st.pending.slice(), date: st.date }; st.busy = false; rerender(); toast('Training block updated'); return;
+    }
+    if (t.closest('#skip')) {
+      $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h3 style="margin-top:0">Skip your October block?</h3><p>You won't be charged this month.</p><p style="text-align:right"><button class="btn" type="button" id="sk-no">Keep it</button> <button class="btn primary" type="button" id="sk-yes">Skip block</button></p></div></div>`;
+      $('#sk-no').onclick = () => ($('#modal-root').innerHTML = '');
+      $('#sk-yes').onclick = async () => { await later(400); await rec({ event: 'block_skip', block: 'OCT-2026' }); st.skipped = true; $('#modal-root').innerHTML = ''; rerender(); };
+      return;
+    }
+    const fv = t.closest('[data-fav]');
+    if (fv) { const w = CELLAR.find((x) => x.id === fv.dataset.fav); fv.disabled = true; await later(350); await rec({ event: w.fav ? 'favorite_remove' : 'favorite_add', item_id: w.id, item: w.name }); w.fav = !w.fav; rerender(); toast(w.fav ? 'Added to favourites' : 'Removed from favourites'); return; }
+    const pg = t.closest('[data-page]'); if (pg && !pg.disabled) { st.page = +pg.dataset.page; rerender(); return; }
+    const nt = t.closest('[data-notes]'); if (nt) { const w = CELLAR.find((x) => x.id === nt.dataset.notes); toast(`${w.name}: ${w.mine >= 93 ? 'outstanding, would buy again' : w.mine >= 89 ? 'lovely with food' : 'fine for weeknights'}`); return; }
+    const ro = t.closest('[data-reorder]'); if (ro) { const w = CELLAR.find((x) => x.id === ro.dataset.reorder); await later(400); await rec({ event: 'gear_restock', item_id: w.id }); toast('Added to your next block'); return; }
+    if (t.closest('#cellar-export') || t.closest('#cellar-add')) { toast(t.closest('#cellar-export') ? 'CSV downloaded' : 'Scan the item in the Baseline app.'); return; }
+    if (t.closest('#upgrade') || t.closest('#pause') || t.closest('#cancel-mem')) { const id = t.closest('button').id; await later(300); await rec({ event: 'membership_change', action: id }); toast('Request received'); return; }
+  });
+  view.addEventListener('change', (e) => { const t = e.target; if (t.name === 'ddate') { st.date = t.value; rerender(); } if (t.id === 'sort') { st.sort = t.value; st.page = 1; rerender(); } });
+  view.addEventListener('keydown', (e) => { const o = e.target.closest && e.target.closest('[data-pick]'); if (o && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); o.click(); } if (e.key === 'Escape' && st.open >= 0) { st.open = -1; rerender(); } });
+  document.addEventListener('click', (e) => { if (st.open >= 0 && !e.target.closest('.slot')) { st.open = -1; rerender(); } });
+  route();
+})();
+</script>
+</body>
+</html>

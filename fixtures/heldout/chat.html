@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Marram Chat</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fff; }
+  .app { display: grid; grid-template-columns: 250px 1fr; height: 100vh; }
+  .side { background: #3f0e40; color: #e9d5ff; padding: 10px 8px; overflow: auto; }
+  .ws { display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: #fff; padding: 4px 8px 12px; }
+  .ws button { background: none; border: 0; color: #fff; font-size: 13px; }
+  .sec { margin-top: 10px; }
+  .sec > button { background: none; border: 0; color: #d8b4fe; padding: 4px 8px; font-size: 13px; }
+  .ch { display: block; width: 100%; text-align: left; background: none; border: 0; color: #e9d5ff; padding: 4px 12px; border-radius: 6px; font-size: 14px; }
+  .ch[aria-current=true] { background: #1164a3; color: #fff; }
+  .ch.muted-ch { opacity: .55; }
+  .pane { display: flex; flex-direction: column; }
+  .chead { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; }
+  .chead .name { font-weight: 800; background: none; border: 0; font-size: 17px; padding: 2px 6px; }
+  .msgs { flex: 1; overflow: auto; padding: 12px 16px; }
+  .msg { margin-bottom: 12px; } .msg b { margin-right: 6px; }
+  .compose { border-top: 1px solid #e5e7eb; padding: 10px 16px; }
+  .compose input { width: 100%; box-sizing: border-box; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #e5e7eb; margin: 8px 0 12px; }
+  .tabs [role=tab] { border: 0; background: none; border-bottom: 2px solid transparent; border-radius: 0; }
+  .tabs [role=tab][aria-selected=true] { border-bottom-color: #1164a3; font-weight: 700; }
+  .opt { font-weight: 400; display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; }
+  .menu { position: absolute; top: 40px; left: 10px; background: #fff; color: #111; border: 1px solid #d4d4d8; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 20; width: 220px; padding: 4px 0; }
+  .menu [role=menuitem] { display: block; width: 100%; text-align: left; background: none; border: 0; border-radius: 0; padding: 7px 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="side" aria-label="Workspace" style="position:relative">
+    <div class="ws"><span>Saltings Freight ▾</span><button type="button" id="ws-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Your profile menu">☺ Marta Vlk</button></div>
+    <div class="menu" role="menu" id="ws-menu" aria-label="Profile" hidden><button type="button" role="menuitem" id="open-prefs">Preferences</button><button type="button" role="menuitem" id="set-away">Set yourself as away</button></div>
+    <div class="sec"><button type="button" id="browse">+ Browse channels</button></div>
+    <div class="sec" id="channels"></div>
+    <div class="sec"><div style="padding:4px 8px;font-size:13px;color:#d8b4fe">Direct messages</div><button class="ch" type="button">● Anneke Jansen</button><button class="ch" type="button">● Rahul Varghese</button></div>
+  </nav>
+  <section class="pane">
+    <div class="chead"><button type="button" class="name" id="ch-name" aria-haspopup="dialog"></button><span class="muted" id="ch-topic"></span><button type="button" id="ch-settings" aria-label="Channel settings" style="margin-left:auto">⚙ Channel settings</button></div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div class="compose"><input type="text" id="compose" aria-label="Message"></div>
+  </section>
+</div>
+<div class="overlay" id="cs" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cs-h" style="width:500px">
+    <div class="row" style="justify-content:space-between"><h3 id="cs-h" style="margin:0"></h3><button type="button" id="cs-x" aria-label="Close">✕</button></div>
+    <div class="tabs" role="tablist"><button role="tab" data-t="about" aria-selected="true">About</button><button role="tab" data-t="members" aria-selected="false">Members</button><button role="tab" data-t="notif" aria-selected="false">Notifications</button><button role="tab" data-t="integrations" aria-selected="false">Integrations</button></div>
+    <div id="cs-body" role="tabpanel"></div>
+  </div>
+</div>
+<div class="overlay" id="prefs" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pf-h" style="width:480px">
+    <h3 id="pf-h" style="margin-top:0">Preferences · Notifications</h3>
+    <p class="muted">These defaults apply to every channel that doesn't have its own setting.</p>
+    <div role="radiogroup" aria-label="Default notifications">
+      <label class="opt"><input type="radio" name="gl" value="all"> All new messages</label>
+      <label class="opt"><input type="radio" name="gl" value="mentions" checked> Direct messages, mentions and keywords</label>
+      <label class="opt"><input type="radio" name="gl" value="nothing"> Nothing</label>
+    </div>
+    <div class="row" style="justify-content:flex-end"><button type="button" id="pf-cancel">Cancel</button><button type="button" class="primary" id="pf-save">Save preferences</button></div>
+  </div>
+</div>
+<div class="overlay" id="browser" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="br-h" style="width:480px">
+    <h3 id="br-h" style="margin-top:0">Browse channels</h3>
+    <input type="search" id="br-q" aria-label="Search channels" placeholder="Search channels" style="width:420px">
+    <div id="br-list" style="margin-top:10px;max-height:300px;overflow:auto"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button type="button" id="br-close">Close</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const CH = [
+    { id: 'general', topic: 'Company-wide announcements', member: true, level: 'default', muted: false },
+    { id: 'random', topic: 'Anything goes', member: true, level: 'default', muted: true },
+    { id: 'shipping-ops', topic: 'Daily shipping operations', member: true, level: 'all', muted: false },
+    { id: 'supply-chain', topic: 'Supplier updates and planning', member: true, level: 'all', muted: false },
+    { id: 'supply-chain-alerts', topic: 'Automated alerts: late POs, stock-outs, customs holds', member: true, level: 'all', muted: false },
+    { id: 'supply-chain-alerts-eu', topic: 'EU-only automated alerts', member: true, level: 'all', muted: false },
+    { id: 'supply-chain-alerts-archive', topic: 'Old alert history (read-only)', member: false, level: 'default', muted: false },
+    { id: 'customs', topic: 'Customs brokers & paperwork', member: false, level: 'default', muted: false },
+  ];
+  const MSGS = {
+    'supply-chain-alerts': [['alertbot', 'PO-88213 from Vistula Freight is 2 days late.'], ['alertbot', 'Stock-out risk: SKU KR-2210 (pallet wrap) below 3 days of cover.'], ['Anneke Jansen', 'These are getting noisy — I\'ve set mine to mentions only.']],
+    'supply-chain': [['Rahul Varghese', 'Q3 supplier scorecards are in the shared drive.']],
+  };
+  const LEVELS = [['default', 'Use my default (Direct messages, mentions and keywords)'], ['all', 'All new messages'], ['mentions', 'Mentions and keywords only'], ['nothing', 'Nothing']];
+  const st = { cur: 'general', tab: 'about' };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const cur = () => CH.find((c) => c.id === st.cur);
+  function renderSide() {
+    q('#channels').innerHTML = `<div style="padding:4px 8px;font-size:13px;color:#d8b4fe">Channels</div>` + CH.filter((c) => c.member).map((c) => `<button type="button" class="ch ${c.muted ? 'muted-ch' : ''}" data-ch="${c.id}" aria-current="${st.cur === c.id}"># ${c.id}${c.muted ? ' 🔕' : ''}</button>`).join('');
+  }
+  function renderPane() {
+    const c = cur();
+    q('#ch-name').textContent = '# ' + c.id + ' ▾'; q('#ch-topic').textContent = c.topic;
+    q('#msgs').innerHTML = (MSGS[c.id] || [['Marram', `This is the very beginning of #${c.id}.`]]).map(([w, t]) => `<div class="msg"><b>${esc(w)}</b>${esc(t)}</div>`).join('');
+    q('#compose').placeholder = 'Message #' + c.id;
+  }
+  q('#channels').addEventListener('click', (e) => { const b = e.target.closest('[data-ch]'); if (b) { st.cur = b.dataset.ch; renderSide(); renderPane(); } });
+  q('#compose').addEventListener('keydown', async (e) => { if (e.key === 'Enter' && e.target.value.trim()) { const text = e.target.value.trim(); e.target.value = ''; await rec({ event: 'message_send', channel: st.cur, text }); (MSGS[st.cur] = MSGS[st.cur] || []).push(['Marta Vlk', text]); renderPane(); } });
+  const openSettings = () => { st.tab = 'about'; q('#cs').hidden = false; renderSettings(); };
+  q('#ch-name').onclick = openSettings; q('#ch-settings').onclick = openSettings;
+  q('#cs-x').onclick = () => { q('#cs').hidden = true; };
+  qa('#cs [role=tab]').forEach((t) => (t.onclick = () => { st.tab = t.dataset.t; renderSettings(); }));
+  function renderSettings() {
+    const c = cur();
+    q('#cs-h').textContent = '# ' + c.id;
+    qa('#cs [role=tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.t === st.tab)));
+    const body = q('#cs-body');
+    if (st.tab === 'about') body.innerHTML = `<p><strong>Topic</strong><br>${esc(c.topic)}</p><p class="muted">Created by Anneke Jansen on 3 March 2025</p><button type="button" id="leave">Leave channel</button>`;
+    if (st.tab === 'members') body.innerHTML = '<p>14 members</p><p class="muted">Anneke Jansen, Rahul Varghese, Marta Vlk and 11 others</p>';
+    if (st.tab === 'integrations') body.innerHTML = '<p>alertbot · posts automated alerts</p><button type="button" id="rm-bot">Remove alertbot</button>';
+    if (st.tab === 'notif') body.innerHTML = `<p class="muted" style="margin-top:0">Notify me about…</p><div role="radiogroup" aria-label="Notifications for #${c.id}">${LEVELS.map(([v, l]) => `<label class="opt"><input type="radio" name="lvl" value="${v}" ${c.level === v ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+      <label class="opt"><input type="checkbox" id="mute" ${c.muted ? 'checked' : ''}> Mute channel (moves it to the bottom and hides unread badges)</label>
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button type="button" id="n-cancel">Cancel</button><button type="button" class="primary" id="n-save">Save changes</button></div>`;
+    const lv = q('#leave'); if (lv) lv.onclick = async () => { await rec({ event: 'channel_leave', channel: c.id }); c.member = false; st.cur = 'general'; q('#cs').hidden = true; renderSide(); renderPane(); toast(`You left #${c.id}.`); };
+    const rb = q('#rm-bot'); if (rb) rb.onclick = async () => { await rec({ event: 'integration_remove', channel: c.id, app: 'alertbot' }); toast('alertbot removed.'); };
+    const nc = q('#n-cancel'); if (nc) nc.onclick = () => { q('#cs').hidden = true; };
+    const ns = q('#n-save');
+    if (ns) ns.onclick = async () => {
+      const level = (qa('input[name=lvl]').find((r) => r.checked) || {}).value; const muted = q('#mute').checked;
+      ns.disabled = true; await later(300);
+      await rec({ event: 'channel_notify', channel: c.id, level, muted: muted ? 'yes' : 'no' });
+      c.level = level; c.muted = muted; q('#cs').hidden = true; renderSide(); toast(`Notification settings saved for #${c.id}.`);
+    };
+  }
+  q('#ws-menu-btn').onclick = () => { const m = q('#ws-menu'); m.hidden = !m.hidden; q('#ws-menu-btn').setAttribute('aria-expanded', String(!m.hidden)); };
+  q('#open-prefs').onclick = () => { q('#ws-menu').hidden = true; q('#prefs').hidden = false; };
+  q('#set-away').onclick = async () => { q('#ws-menu').hidden = true; await rec({ event: 'status_away' }); toast('You are now away.'); };
+  q('#pf-cancel').onclick = () => { q('#prefs').hidden = true; };
+  q('#pf-save').onclick = async () => { const v = (qa('input[name=gl]').find((r) => r.checked) || {}).value; await later(250); await rec({ event: 'prefs_notify', level: v }); q('#prefs').hidden = true; toast('Preferences saved.'); };
+  q('#browse').onclick = () => { q('#browser').hidden = false; drawBrowse(); };
+  q('#br-close').onclick = () => { q('#browser').hidden = true; };
+  q('#br-q').oninput = drawBrowse;
+  function drawBrowse() {
+    const t = q('#br-q').value.trim().toLowerCase();
+    q('#br-list').innerHTML = CH.filter((c) => !t || c.id.includes(t)).map((c) => `<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9"><div><strong># ${c.id}</strong><div class="muted">${esc(c.topic)}</div></div>${c.member ? `<button type="button" data-view="${c.id}">View</button>` : `<button type="button" data-join="${c.id}">Join</button>`}</div>`).join('');
+  }
+  q('#br-list').addEventListener('click', async (e) => {
+    const v = e.target.closest('[data-view]'); const j = e.target.closest('[data-join]');
+    if (v) { st.cur = v.dataset.view; q('#browser').hidden = true; renderSide(); renderPane(); }
+    if (j) { const c = CH.find((x) => x.id === j.dataset.join); await rec({ event: 'channel_join', channel: c.id }); c.member = true; st.cur = c.id; q('#browser').hidden = true; renderSide(); renderPane(); }
+  });
+  renderSide(); renderPane();
+})();
+</script>
+</body>
+</html>

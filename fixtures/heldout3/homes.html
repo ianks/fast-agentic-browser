@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hearthstone Realty · Homes for sale in Greater Sacramento</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Helvetica Neue", Arial, sans-serif; color: #1e2329; background: #fff; }
+  a { color: #b5451b; }
+  button, input, select { font: inherit; }
+  header { display: flex; align-items: center; gap: 24px; padding: 12px 30px; border-bottom: 1px solid #e7e3de; background: #fff; position: sticky; top: 0; z-index: 10; }
+  .logo { font-weight: 800; font-size: 21px; color: #b5451b; text-decoration: none; }
+  header nav a { color: #1e2329; text-decoration: none; margin-right: 16px; }
+  header nav a.on { font-weight: 700; }
+  header .sp { flex: 1; }
+  .searchbar { display: flex; gap: 8px; }
+  .searchbar input { width: 320px; padding: 8px 12px; border: 1px solid #cfc8c0; border-radius: 6px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 30px 60px; }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .filters select { padding: 7px 10px; border: 1px solid #cfc8c0; border-radius: 6px; background: #fff; }
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .lcard { border: 1px solid #e7e3de; border-radius: 10px; overflow: hidden; background: #fff; position: relative; }
+  .lcard .ph { height: 150px; }
+  .lcard .b { padding: 10px 12px; }
+  .lcard .price { font-size: 20px; font-weight: 700; }
+  .lcard a.addr { color: #1e2329; text-decoration: none; display: block; }
+  .lcard a.addr:hover { text-decoration: underline; }
+  .heart { position: absolute; top: 10px; right: 10px; border: 0; background: rgba(255,255,255,.92); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 16px; }
+  .heart[aria-pressed=true] { color: #d0342c; }
+  .pager { display: flex; gap: 6px; justify-content: center; margin-top: 20px; }
+  .pager button { border: 1px solid #cfc8c0; background: #fff; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  .pager button[aria-current=page] { background: #1e2329; color: #fff; }
+  .btn { display: inline-block; border: 1px solid #cfc8c0; background: #fff; border-radius: 6px; padding: 8px 16px; cursor: pointer; color: #1e2329; text-decoration: none; }
+  .btn.primary { background: #b5451b; border-color: #b5451b; color: #fff; font-weight: 600; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .muted { color: #6b6560; }
+  .detail { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; }
+  .gallery { height: 340px; border-radius: 12px; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+  .facts div { background: #faf8f6; border-radius: 8px; padding: 10px 12px; }
+  .facts b { display: block; }
+  .acc > button { width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid #e7e3de; padding: 14px 0; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; }
+  .acc table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  .acc td, .acc th { padding: 6px 4px; border-bottom: 1px solid #f0ece8; text-align: left; font-size: 14px; }
+  .aside { border: 1px solid #e7e3de; border-radius: 12px; padding: 18px; position: sticky; top: 80px; align-self: start; }
+  .loading { padding: 80px 0; text-align: center; color: #6b6560; }
+  .wiz h2 { margin-top: 0; }
+  .rtypes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .rtypes label { border: 1.5px solid #ddd6ce; border-radius: 10px; padding: 12px; cursor: pointer; }
+  .rtypes label.sel { border-color: #b5451b; background: #fff7f3; }
+  .days { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 12px; }
+  .days button { border: 1px solid #ddd6ce; background: #fff; border-radius: 8px; padding: 6px 10px; cursor: pointer; text-align: center; min-width: 64px; }
+  .days button[aria-pressed=true] { background: #1e2329; color: #fff; border-color: #1e2329; }
+  .f { margin: 12px 0; }
+  .f label, .f .lab { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .f input[type=text], .f input[type=email], .f input[type=tel], .f select { width: 100%; padding: 8px 10px; border: 1px solid #cfc8c0; border-radius: 6px; }
+  .chk { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0; font-size: 14px; }
+  .err { color: #b3261e; font-size: 14px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1e2329; color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 60; }
+  table.list { width: 100%; border-collapse: collapse; }
+  table.list td, table.list th { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: left; }
+  footer { background: #f6f3ef; padding: 26px 30px; font-size: 13px; color: #6b6560; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#/search">hearthstone</a>
+  <nav aria-label="Main"><a href="#/search" data-nav="search">Buy</a><a href="#/sell" data-nav="sell">Sell</a><a href="#/mortgage" data-nav="mortgage">Mortgage</a><a href="#/agents" data-nav="agents">Find an agent</a></nav>
+  <span class="sp"></span>
+  <a href="#/saved" data-nav="saved">Saved homes (<span id="saved-n">4</span>)</a>
+  <a href="#/tours" data-nav="tours">My tours</a>
+  <span class="muted" style="font-size:13px">Priya R.</span>
+</header>
+<main id="view"></main>
+<footer>Hearthstone Realty, Inc. · DRE #02214783 · Listing data refreshed every 15 minutes. Information deemed reliable but not guaranteed. · <a href="#/fair">Fair housing</a> · <a href="#/terms">Terms</a> · <a href="#/sell">Home value estimate</a> · <a href="#/mortgage">Mortgage calculator</a> · <a href="#/agents">Careers</a> · <a href="#/terms">Privacy</a> · <a href="#/terms">Do not sell my info</a></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const usd = (n) => '$' + n.toLocaleString('en-US');
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  // id, address, city, price, beds, baths, living sqft, lot sqft (0 = none), type, year, hoa, tax, dom, history [[date, event, price]]
+  const L = [
+    ['H-4410', '27 Wren Hollow Road', 'Fair Oaks', 712500, 4, 2.5, 2210, 9800, 'House', 1987, 0, 8120, 41, [['2026-08-21', 'Listed', 765000], ['2026-09-18', 'Price reduced', 712500]]],
+    ['H-4388', '418 Larkspur Lane', 'Carmichael', 629000, 3, 2, 1850, 12400, 'House', 1962, 0, 7010, 12, [['2026-09-19', 'Listed', 629000]]],
+    ['H-5521', '1140 Aldergrove Avenue, Unit 3B', 'Sacramento', 498000, 2, 2, 1380, 0, 'Condo', 2008, 412, 5480, 9, [['2026-09-22', 'Listed', 498000]]],
+    ['H-4602', '9 Tamarack Court', 'Rancho Cordova', 545000, 3, 2, 1520, 5000, 'House', 1999, 65, 6230, 23, [['2026-09-08', 'Listed', 545000]]],
+    ['H-5522', '1140 Aldergrove Avenue, Unit 3D', 'Sacramento', 515000, 2, 2, 1410, 0, 'Condo', 2008, 418, 5690, 16, [['2026-09-15', 'Listed', 515000]]],
+    ['H-4731', '3306 Quailridge Drive', 'Elk Grove', 589900, 4, 3, 2390, 6100, 'House', 2004, 48, 6880, 5, [['2026-09-26', 'Listed', 589900]]],
+    ['H-4455', '51 Juniper Bend', 'Folsom', 874000, 4, 3.5, 2960, 8700, 'House', 2015, 110, 10240, 30, [['2026-09-01', 'Listed', 899000], ['2026-09-24', 'Price reduced', 874000]]],
+    ['H-4870', '2210 Riverbank Way', 'West Sacramento', 459000, 3, 2, 1460, 4300, 'Townhouse', 2011, 185, 5120, 18, [['2026-09-13', 'Listed', 459000]]],
+    ['H-4921', '77 Old Mill Road', 'Orangevale', 668000, 3, 2, 1790, 21780, 'House', 1978, 0, 7400, 44, [['2026-08-18', 'Listed', 668000]]],
+    ['H-5012', '1406 Capitol Park Lofts, #512', 'Sacramento', 419000, 1, 1, 860, 0, 'Condo', 2006, 395, 4610, 61, [['2026-08-01', 'Listed', 435000], ['2026-09-05', 'Price reduced', 419000]]],
+    ['H-5104', '608 Sutter Ridge Court', 'Roseville', 739000, 4, 3, 2540, 7600, 'House', 2001, 72, 8350, 7, [['2026-09-24', 'Listed', 739000]]],
+    ['H-5188', '15 Willowbrook Circle', 'Citrus Heights', 485000, 3, 2, 1350, 6500, 'House', 1983, 0, 5360, 27, [['2026-09-04', 'Listed', 485000]]],
+    ['H-5230', '4020 Fair Oaks Boulevard, #6', 'Sacramento', 529000, 2, 2.5, 1520, 0, 'Townhouse', 1994, 305, 5830, 14, [['2026-09-17', 'Listed', 529000]]],
+    ['H-5271', '892 Coyote Trail', 'El Dorado Hills', 1049000, 5, 4, 3640, 14200, 'House', 2018, 150, 12900, 36, [['2026-08-26', 'Listed', 1049000]]],
+    ['H-5309', '31 Linden Row', 'Davis', 812000, 3, 2.5, 2080, 5900, 'House', 1996, 0, 8990, 3, [['2026-09-28', 'Listed', 812000]]],
+    ['H-5355', '1725 Poppy Field Lane', 'Elk Grove', 612000, 4, 2.5, 2280, 6000, 'House', 2007, 55, 6720, 20, [['2026-09-11', 'Listed', 612000]]],
+    ['H-5390', '7 Heron Point', 'Sacramento', 695000, 3, 2, 1880, 5200, 'House', 1951, 0, 7640, 11, [['2026-09-20', 'Listed', 695000]]],
+    ['H-5412', '2604 Mariposa Avenue', 'Carmichael', 574000, 3, 2, 1640, 8100, 'House', 1958, 0, 6310, 8, [['2026-09-23', 'Listed', 574000]]],
+    ['H-5436', '120 Stonecrest Way', 'Folsom', 699000, 3, 2.5, 2150, 5400, 'House', 2012, 95, 7690, 15, [['2026-09-16', 'Listed', 699000]]],
+    ['H-5460', '44 Aldergrove Court', 'Sacramento', 538000, 3, 2, 1590, 5600, 'House', 1973, 0, 5950, 25, [['2026-09-06', 'Listed', 538000]]],
+    ['H-5488', '3 Wren Hollow Place', 'Fair Oaks', 758000, 4, 3, 2400, 10100, 'House', 1991, 0, 8420, 2, [['2026-09-29', 'Listed', 758000]]],
+    ['H-5503', '905 Delta Breeze Drive', 'Natomas', 468000, 3, 2, 1510, 4500, 'House', 2003, 38, 5180, 33, [['2026-08-29', 'Listed', 479000], ['2026-09-21', 'Price reduced', 468000]]],
+    ['H-5540', '61 Lantern Hill', 'Granite Bay', 1290000, 5, 4.5, 4120, 21000, 'House', 2009, 210, 14800, 50, [['2026-08-12', 'Listed', 1290000]]],
+    ['H-5566', '2230 J Street, #304', 'Sacramento', 389000, 1, 1, 790, 0, 'Condo', 2016, 340, 4280, 19, [['2026-09-12', 'Listed', 389000]]],
+  ].map(([id, address, city, price, beds, baths, living, lot, type, year, hoa, tax, dom, history], i) => ({ id, address, city, price, beds, baths, living, lot, type, year, hoa, tax, dom, history, hue: (i * 37) % 360 }));
+  const byId = Object.fromEntries(L.map((x) => [x.id, x]));
+  const st = { compare: new Set(), q: '', beds: '0', maxp: '0', type: 'all', sort: 'new', page: 1, saved: new Set(['H-4410', 'H-4388', 'H-5521', 'H-4602']), tours: [{ id: 'T-3310', listing: 'H-5230', when: 'Sun 4 Oct, 1:00 PM', type: 'In person' }], tour: null, busy: false };
+  const TODAY = new Date(Date.UTC(2026, 9, 1));
+  const DAYS = Array.from({ length: 7 }, (_, i) => new Date(TODAY.getTime() + i * 864e5));
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const dlabel = (d) => d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const SLOTS = []; for (let m = 9 * 60; m <= 17 * 60 + 30; m += 30) SLOTS.push(m);
+  const slotLabel = (m) => { const h = Math.floor(m / 60), mm = m % 60; return `${((h + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };
+  const hm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const BOOKED = { 'H-5521|2026-10-03|in_person': [600, 690, 840], 'H-5521|2026-10-04|in_person': [660, 720] };
+
+  function card(x) {
+    return `<div class="lcard"><div class="ph" style="background:linear-gradient(135deg,hsl(${x.hue},35%,62%),hsl(${(x.hue + 40) % 360},30%,38%))"></div><button class="heart" type="button" data-save="${x.id}" aria-pressed="${st.saved.has(x.id)}" aria-label="${st.saved.has(x.id) ? 'Unsave' : 'Save'} ${esc(x.address)}">${st.saved.has(x.id) ? '♥' : '♡'}</button>
+      <div class="b"><div class="price">${usd(x.price)}</div><div>${x.beds} bd · ${x.baths} ba · ${x.type}</div><a class="addr" href="#/listing/${x.id}">${esc(x.address)}, ${esc(x.city)}, CA</a><div class="muted" style="font-size:13px">${x.dom} days on Hearthstone</div><div style="display:flex;gap:10px;align-items:center;margin-top:6px;font-size:13px"><label><input type="checkbox" data-compare="${x.id}" ${st.compare.has(x.id) ? 'checked' : ''}> Compare</label><a href="#/listing/${x.id}" aria-label="Tour options for ${esc(x.address)}">Tour options</a><button class="btn" type="button" data-share="${x.id}" style="padding:2px 8px;font-size:12px" aria-label="Share ${esc(x.address)}">Share</button></div></div></div>`;
+  }
+  function searchPage() {
+    const q = st.q.trim().toLowerCase();
+    let list = L.filter((x) => (!q || (x.address + ' ' + x.city).toLowerCase().includes(q)) && x.beds >= +st.beds && (!+st.maxp || x.price <= +st.maxp) && (st.type === 'all' || x.type === st.type));
+    list = list.slice().sort((a, b) => (st.sort === 'plh' ? a.price - b.price : st.sort === 'phl' ? b.price - a.price : a.dom - b.dom));
+    const per = 6; const pages = Math.max(1, Math.ceil(list.length / per)); if (st.page > pages) st.page = pages;
+    return `<div class="filters"><div class="searchbar"><input type="search" id="q" placeholder="Address, city or ZIP" value="${esc(st.q)}" aria-label="Search address"></div>
+      <select id="f-beds" aria-label="Beds">${[['0', 'Any beds'], ['1', '1+ beds'], ['2', '2+ beds'], ['3', '3+ beds'], ['4', '4+ beds']].map(([v, l]) => `<option value="${v}" ${st.beds === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select id="f-maxp" aria-label="Max price">${[['0', 'No max price'], ['500000', 'Up to $500k'], ['700000', 'Up to $700k'], ['900000', 'Up to $900k']].map(([v, l]) => `<option value="${v}" ${st.maxp === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select id="f-type" aria-label="Home type">${['all', 'House', 'Condo', 'Townhouse'].map((v) => `<option value="${v}" ${st.type === v ? 'selected' : ''}>${v === 'all' ? 'All home types' : v}</option>`).join('')}</select>
+      <select id="f-sort" aria-label="Sort">${[['new', 'Newest'], ['plh', 'Price (low to high)'], ['phl', 'Price (high to low)']].map(([v, l]) => `<option value="${v}" ${st.sort === v ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="muted">${list.length} homes</span><button class="btn" type="button" id="more-filters">More filters</button><button class="btn" type="button" id="map-view">Map</button><button class="btn" type="button" id="save-search">Save search</button>${st.compare.size ? `<button class="btn" type="button" id="compare-go">Compare (${st.compare.size})</button>` : ''}</div>
+      <div class="results">${list.slice((st.page - 1) * per, st.page * per).map(card).join('') || '<p class="muted">No homes match. Try widening your filters.</p>'}</div>
+      <div class="pager" role="navigation" aria-label="Pages">${Array.from({ length: pages }, (_, i) => `<button type="button" data-page="${i + 1}" ${st.page === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}</div>`;
+  }
+  function savedPage() {
+    const list = L.filter((x) => st.saved.has(x.id));
+    return `<h1>Saved homes</h1><p class="muted">${list.length} homes · we'll email you when prices change.</p><table class="list"><thead><tr><th>Home</th><th>Price</th><th>Beds / baths</th><th>Type</th><th></th></tr></thead><tbody>${list.map((x) => `<tr><td><a href="#/listing/${x.id}">${esc(x.address)}</a><div class="muted" style="font-size:13px">${esc(x.city)}, CA</div></td><td>${usd(x.price)}</td><td>${x.beds} bd · ${x.baths} ba</td><td>${x.type}</td><td><button class="btn" type="button" data-save="${x.id}" aria-label="Remove ${esc(x.address)} from saved">Remove</button></td></tr>`).join('')}</tbody></table>`;
+  }
+  function toursPage() {
+    return `<h1>My tours</h1><table class="list"><tbody>${st.tours.map((t) => `<tr><td>${esc(byId[t.listing].address)}</td><td>${esc(t.when)}</td><td>${esc(t.type)}</td><td><button class="btn" type="button" data-tourcancel="${t.id}">Cancel tour</button></td></tr>`).join('') || '<tr><td class="muted">No tours scheduled.</td></tr>'}</tbody></table>`;
+  }
+  async function loadDetail(id) {
+    const x = byId[id]; if (!x) return null;
+    const payload = { ...x, description: `${x.type === 'Condo' ? 'Light-filled corner condo' : 'Well-kept ' + x.type.toLowerCase()} in ${x.city} with ${x.beds} bedrooms and ${x.baths} bathrooms. Built in ${x.year}.`, features: { Interior: ['Central air', x.beds > 2 ? 'Primary suite with walk-in closet' : 'In-unit laundry', 'Hardwood floors'], Exterior: [x.lot ? 'Fenced yard' : 'Private balcony', 'Two-car parking'], Utilities: ['Gas range', 'Solar-ready roof'] }, schools: [['Starr King K-8', '7/10'], ['Encina High', '6/10']] };
+    await new Promise((r) => setTimeout(r, 450 + (id.charCodeAt(4) % 4) * 120));
+    const res = await fetch('data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload)));
+    return res.json();
+  }
+  function detailHtml(d) {
+    const t = st.tour && st.tour.listing === d.id ? st.tour : null;
+    return `<p class="muted"><a href="#/search">Search</a> › ${esc(d.city)} › ${esc(d.address)}</p><div class="detail"><div><div class="gallery" style="background:linear-gradient(135deg,hsl(${d.hue},35%,62%),hsl(${(d.hue + 40) % 360},30%,38%))"></div>
+      <h1 style="margin:14px 0 2px">${usd(d.price)}</h1><div style="font-size:18px">${esc(d.address)}, ${esc(d.city)}, CA</div><div class="muted">${d.beds} beds · ${d.baths} baths · ${d.type} · MLS ${d.id.replace('H-', '226')}</div>
+      <div class="facts"><div>Living area<b>${d.living.toLocaleString('en-US')} sq ft</b></div><div>Lot size<b>${d.lot ? d.lot.toLocaleString('en-US') + ' sq ft' : '—'}</b></div><div>Year built<b>${d.year}</b></div><div>HOA<b>${d.hoa ? usd(d.hoa) + '/mo' : 'None'}</b></div><div>Property tax<b>${usd(d.tax)}/yr</b></div><div>On Hearthstone<b>${d.dom} days</b></div></div>
+      <p>${esc(d.description)}</p>
+      ${[['features', 'Features', Object.entries(d.features).map(([k, v]) => `<tr><th>${k}</th><td>${v.map(esc).join(', ')}</td></tr>`).join('')], ['history', 'Price history', d.history.map(([dt, ev, p]) => `<tr><td>${dt}</td><td>${ev}</td><td>${usd(p)}</td></tr>`).join('')], ['schools', 'Nearby schools', d.schools.map(([n, r]) => `<tr><td>${esc(n)}</td><td>${r}</td></tr>`).join('')]].map(([k, l, rows]) => `<div class="acc"><button type="button" data-acc="${k}" aria-expanded="false">${l}<span>+</span></button><div id="acc-${k}" hidden><table><tbody>${rows}</tbody></table></div></div>`).join('')}
+      </div><aside class="aside">${t ? tourWizard(d, t) : `<button class="btn primary" type="button" id="tour-start" style="width:100%">Schedule a tour</button><p class="muted" style="font-size:13px;text-align:center">Tours available as early as today</p><hr style="border:0;border-top:1px solid #e7e3de"><div class="f"><label for="msg">Ask a question</label><textarea id="msg" rows="3" style="width:100%"></textarea></div><button class="btn" type="button" id="msg-send">Contact listing agent</button>`}</aside></div>`;
+  }
+  function tourWizard(d, t) {
+    if (t.done) return `<h2>Tour requested</h2><p>${esc(t.done)}</p><p class="muted">The listing agent will confirm by email.</p><a class="btn" href="#/tours">View my tours</a>`;
+    if (t.step === 1) {
+      const booked = BOOKED[`${d.id}|${t.date}|${t.type}`] || [];
+      return `<div class="wiz"><h2>Schedule a tour</h2><div class="rtypes" role="radiogroup" aria-label="Tour type">${[['video', 'Video chat', 'Tour live over video'], ['in_person', 'In person', 'Meet the agent at the home']].map(([k, l, s]) => `<label class="${t.type === k ? 'sel' : ''}"><input type="radio" name="ttype" value="${k}" ${t.type === k ? 'checked' : ''}> <strong>${l}</strong><div class="muted" style="font-size:12px">${s}</div></label>`).join('')}</div>
+        <div class="lab" style="font-weight:600">Date</div><div class="days" role="group" aria-label="Tour date">${DAYS.map((dd) => `<button type="button" data-day="${iso(dd)}" aria-pressed="${t.date === iso(dd)}">${dlabel(dd)}</button>`).join('')}</div>
+        <div class="f"><label for="t-time">Time</label><select id="t-time"><option value="">Choose a time…</option>${SLOTS.map((m) => `<option value="${hm(m)}" ${booked.includes(m) ? 'disabled' : ''} ${t.time === hm(m) ? 'selected' : ''}>${slotLabel(m)}${booked.includes(m) ? ' (unavailable)' : ''}</option>`).join('')}</select></div>
+        <p class="err" role="alert">${esc(t.err || '')}</p><button class="btn primary" type="button" id="t-next" style="width:100%">Next</button> <button class="btn" type="button" id="t-cancel" style="width:100%;margin-top:6px">Cancel</button></div>`;
+    }
+    if (t.step === 2) {
+      return `<div class="wiz"><h2>Your details</h2><div class="f"><label for="t-name">Full name</label><input type="text" id="t-name" value="${esc(t.name)}"></div><div class="f"><label for="t-email">Email</label><input type="email" id="t-email" value="${esc(t.email)}"></div><div class="f"><label for="t-phone">Phone</label><input type="tel" id="t-phone" value="${esc(t.phone)}"></div>
+        <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">Are you working with a real estate agent?</legend><label style="font-weight:400;display:inline"><input type="radio" name="hasagent" value="yes" ${t.hasAgent === 'yes' ? 'checked' : ''}> Yes</label> <label style="font-weight:400;display:inline;margin-left:12px"><input type="radio" name="hasagent" value="no" ${t.hasAgent === 'no' ? 'checked' : ''}> No</label></fieldset>
+        ${t.hasAgent === 'yes' ? `<div class="f"><label for="t-agent">Agent's name</label><input type="text" id="t-agent" value="${esc(t.agent)}"></div><div class="f"><label for="t-brokerage">Brokerage</label><input type="text" id="t-brokerage" value="${esc(t.brokerage)}"></div>` : ''}
+        ${t.hasAgent === 'no' ? `<label class="chk"><input type="checkbox" id="t-match" ${t.match ? 'checked' : ''}> Connect me with a Hearthstone buyer's agent</label>` : ''}
+        <label class="chk"><input type="checkbox" id="t-lender" ${t.lender ? 'checked' : ''}> Have Summit Home Loans contact me about getting pre-approved</label>
+        <p class="err" role="alert">${esc(t.err || '')}</p><button class="btn" type="button" id="t-back">Back</button> <button class="btn primary" type="button" id="t-next">Review</button></div>`;
+    }
+    return `<div class="wiz"><h2>Review</h2><p><strong>${t.type === 'in_person' ? 'In-person tour' : 'Video tour'}</strong><br>${dlabel(new Date(t.date + 'T00:00:00Z'))} at ${slotLabel(+t.time.slice(0, 2) * 60 + +t.time.slice(3))}</p><p>${esc(t.name)}<br>${esc(t.email)} · ${esc(t.phone)}</p><p>${t.hasAgent === 'yes' ? `Agent: ${esc(t.agent)}, ${esc(t.brokerage)}` : 'No agent yet'}</p><p class="muted" style="font-size:13px">${t.lender ? 'Summit Home Loans will contact you.' : 'No lender contact.'}</p>
+      <p class="err" role="alert">${esc(t.err || '')}</p><button class="btn" type="button" id="t-back">Back</button> <button class="btn primary" type="button" id="t-submit" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Sending…' : 'Request this tour'}</button></div>`;
+  }
+  let token = 0;
+  async function route() {
+    const p = (location.hash || '#/search').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    $('#saved-n').textContent = st.saved.size;
+    const v = $('#view'); const my = ++token;
+    if (p[0] === 'listing') {
+      v.innerHTML = '<div class="loading">Loading home details…</div>';
+      const d = cache[p[1]] || await loadDetail(p[1]);
+      if (my !== token) return;
+      if (d) cache[p[1]] = d;
+      v.innerHTML = d ? detailHtml(d) : '<p>Listing not found.</p>'; v.dataset.listing = p[1];
+      return;
+    }
+    if (p[0] === 'saved') v.innerHTML = savedPage();
+    else if (p[0] === 'tours') v.innerHTML = toursPage();
+    else if (['sell', 'mortgage', 'agents', 'fair', 'terms'].includes(p[0])) v.innerHTML = `<h1>${p[0][0].toUpperCase() + p[0].slice(1)}</h1><p class="muted">Coming soon to Hearthstone.</p>`;
+    else v.innerHTML = searchPage();
+  }
+  const rerender = async () => { const y = scrollY; const p = (location.hash || '').slice(2).split('/'); if (p[0] === 'listing' && cache[p[1]]) { $('#view').innerHTML = detailHtml(cache[p[1]]); } else await route(); scrollTo(0, y); };
+  const cache = {};
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const view = $('#view');
+  let qt;
+  view.addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.id === 'q') { clearTimeout(qt); qt = setTimeout(() => { st.q = t.value; st.page = 1; route().then(() => { const i = $('#q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }); }, 300); }
+    const tr = st.tour; if (!tr) return;
+    if (t.id === 't-name') tr.name = t.value; if (t.id === 't-email') tr.email = t.value; if (t.id === 't-phone') tr.phone = t.value;
+    if (t.id === 't-agent') tr.agent = t.value; if (t.id === 't-brokerage') tr.brokerage = t.value;
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'f-beds') { st.beds = t.value; st.page = 1; route(); }
+    if (t.id === 'f-maxp') { st.maxp = t.value; st.page = 1; route(); }
+    if (t.id === 'f-type') { st.type = t.value; st.page = 1; route(); }
+    if (t.id === 'f-sort') { st.sort = t.value; route(); }
+    if (t.dataset.compare) { t.checked ? st.compare.add(t.dataset.compare) : st.compare.delete(t.dataset.compare); route(); }
+    const tr = st.tour; if (!tr) return;
+    if (t.name === 'ttype') { tr.type = t.value; tr.time = ''; rerender(); }
+    if (t.id === 't-time') tr.time = t.value;
+    if (t.name === 'hasagent') { tr.hasAgent = t.value; rerender(); }
+    if (t.id === 't-match') tr.match = t.checked;
+    if (t.id === 't-lender') tr.lender = t.checked;
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const pg = t.closest('[data-page]'); if (pg) { st.page = +pg.dataset.page; route(); scrollTo(0, 0); return; }
+    if (t.closest('#more-filters') || t.closest('#map-view') || t.closest('#compare-go')) { toast('Available in the Hearthstone app.'); return; }
+    const sh = t.closest('[data-share]'); if (sh) { toast('Link copied'); return; }
+    if (t.closest('#save-search')) { await later(300); await rec({ event: 'search_save', query: st.q }); toast('Search saved — we\'ll email new matches'); return; }
+    const sv = t.closest('[data-save]');
+    if (sv) { const id = sv.dataset.save; const on = !st.saved.has(id); await later(250); await rec({ event: on ? 'listing_save' : 'listing_unsave', listing: id }); on ? st.saved.add(id) : st.saved.delete(id); rerender(); $('#saved-n').textContent = st.saved.size; return; }
+    const acc = t.closest('[data-acc]'); if (acc) { const d = $('#acc-' + acc.dataset.acc); d.hidden = !d.hidden; acc.setAttribute('aria-expanded', String(!d.hidden)); acc.querySelector('span').textContent = d.hidden ? '+' : '−'; return; }
+    const id = view.dataset.listing;
+    if (t.closest('#tour-start')) { st.tour = { listing: id, step: 1, type: 'video', date: iso(DAYS[0]), time: '', name: '', email: '', phone: '', hasAgent: '', agent: '', brokerage: '', match: true, lender: true, err: '' }; rerender(); return; }
+    const tr = st.tour;
+    if (t.closest('#t-cancel')) { st.tour = null; rerender(); return; }
+    const dy = t.closest('[data-day]'); if (dy && tr) { tr.date = dy.dataset.day; tr.time = ''; rerender(); return; }
+    if (t.closest('#t-back')) { tr.err = ''; tr.step--; rerender(); return; }
+    if (t.closest('#t-next')) {
+      tr.err = '';
+      if (tr.step === 1 && !tr.time) tr.err = 'Choose a time.';
+      if (tr.step === 2) {
+        if (tr.name.trim().split(/\s+/).length < 2) tr.err = 'Enter your full name.';
+        else if (!/^\S+@\S+\.\S+$/.test(tr.email.trim())) tr.err = 'Enter a valid email.';
+        else if (tr.phone.replace(/\D/g, '').length < 10) tr.err = 'Enter a 10-digit phone number.';
+        else if (!tr.hasAgent) tr.err = 'Tell us whether you have an agent.';
+        else if (tr.hasAgent === 'yes' && (!tr.agent.trim() || !tr.brokerage.trim())) tr.err = "Enter your agent's name and brokerage.";
+      }
+      if (!tr.err) tr.step++;
+      rerender(); return;
+    }
+    if (t.closest('#t-submit')) {
+      if (st.busy) return; st.busy = true; rerender();
+      await later(800);
+      const x = byId[tr.listing]; const digits = tr.phone.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
+      const clean = (s) => s.trim().replace(/\s+/g, ' ');
+      await rec({ event: 'tour_request', listing: x.id, address: x.address, type: tr.type, date: tr.date, time: tr.time, name: clean(tr.name), email: tr.email.trim().toLowerCase(), phone: digits, has_agent: tr.hasAgent, agent_name: tr.hasAgent === 'yes' ? clean(tr.agent) : '', brokerage: tr.hasAgent === 'yes' ? clean(tr.brokerage) : '', agent_match: tr.hasAgent === 'no' && tr.match ? 'yes' : 'no', lender_contact: tr.lender ? 'yes' : 'no' });
+      st.busy = false; const when = `${dlabel(new Date(tr.date + 'T00:00:00Z'))}, ${slotLabel(+tr.time.slice(0, 2) * 60 + +tr.time.slice(3))}`;
+      st.tours.push({ id: 'T-' + (3400 + st.tours.length), listing: x.id, when, type: tr.type === 'in_person' ? 'In person' : 'Video' });
+      tr.done = `${tr.type === 'in_person' ? 'In-person' : 'Video'} tour of ${x.address} on ${when}.`; rerender(); toast('Tour requested'); return;
+    }
+    if (t.closest('#msg-send')) { await later(400); await rec({ event: 'agent_message', listing: id }); toast('Message sent to the listing agent'); return; }
+    const tc = t.closest('[data-tourcancel]'); if (tc) { await later(300); await rec({ event: 'tour_cancel', tour: tc.dataset.tourcancel }); st.tours = st.tours.filter((x) => x.id !== tc.dataset.tourcancel); rerender(); return; }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

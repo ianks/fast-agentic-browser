@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Newsletter</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body style="padding:8px 16px"><h2>Newsletter</h2><p class="muted">One email a week. No spam.</p>
+<form id="f" class="row"><input id="e" type="email" placeholder="you@example.com" aria-label="Email address"><button class="primary">Subscribe</button></form><p id="m" role="status"></p>
+<script>q('#f').onsubmit = async (e) => { e.preventDefault(); await rec({ event: 'subscribe', email: q('#e').value.trim() }); q('#m').textContent = 'Subscribed!'; };</script>
+</body></html>

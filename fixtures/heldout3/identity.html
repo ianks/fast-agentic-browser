@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keyward Admin · Lumen Freight GmbH</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 "Inter", -apple-system, "Segoe UI", sans-serif; color: #172033; background: #f5f6fa; display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+  a { color: #3651d4; }
+  button, input, select { font: inherit; }
+  aside { background: #172033; color: #c3cbe0; padding: 14px 10px; }
+  .brand { color: #fff; font-weight: 700; font-size: 17px; padding: 4px 10px 14px; display: flex; gap: 8px; align-items: center; }
+  .brand i { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #6b8cff, #36d1c4); }
+  .org { font-size: 12px; color: #8793b3; padding: 0 10px 12px; }
+  .navsec > button { width: 100%; text-align: left; background: none; border: 0; color: #c3cbe0; padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; }
+  .navsec > button:hover, aside a:hover { background: #22304a; }
+  aside a { display: block; color: #c3cbe0; text-decoration: none; padding: 7px 10px; border-radius: 6px; }
+  aside a.on { background: #2b3d63; color: #fff; }
+  .navsec .kids a { padding-left: 26px; font-size: 13px; }
+  .main { min-width: 0; }
+  .top { height: 52px; background: #fff; border-bottom: 1px solid #e2e5ef; display: flex; align-items: center; padding: 0 24px; gap: 12px; }
+  .top input { width: 300px; padding: 6px 10px; border: 1px solid #d5d9e6; border-radius: 6px; }
+  .top .sp { flex: 1; }
+  .content { padding: 22px 26px 50px; }
+  .crumb { font-size: 13px; color: #6a7390; margin-bottom: 6px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #6a7390; margin: 0 0 14px; }
+  .card { background: #fff; border: 1px solid #e2e5ef; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #eef0f6; vertical-align: middle; }
+  th { font-size: 12px; color: #6a7390; font-weight: 600; background: #fafbfd; }
+  .btn { border: 1px solid #cfd4e2; background: #fff; border-radius: 6px; padding: 6px 12px; cursor: pointer; color: #172033; }
+  .btn.primary { background: #3651d4; border-color: #3651d4; color: #fff; }
+  .btn.danger { background: #fff; color: #c42b2b; border-color: #efc1c1; }
+  .btn.danger.solid { background: #c42b2b; color: #fff; border-color: #c42b2b; }
+  .btn.sm { padding: 3px 9px; font-size: 13px; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #e2e5ef; margin: 8px 0 16px; }
+  .tabs a { padding: 9px 14px; color: #6a7390; text-decoration: none; border-bottom: 2px solid transparent; }
+  .tabs a.on { color: #172033; border-bottom-color: #3651d4; font-weight: 600; }
+  .pill { font-size: 12px; border-radius: 9px; padding: 1px 8px; background: #eef0f6; }
+  .pill.ok { background: #e1f5ea; color: #19703d; }
+  .pill.warn { background: #fff3d6; color: #86590a; }
+  code { background: #f1f3f9; border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(23, 32, 51, .5); display: flex; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 40; }
+  .modal { background: #fff; border-radius: 10px; width: 500px; padding: 20px 22px; box-shadow: 0 24px 60px rgba(0,0,0,.3); }
+  .modal input[type=text] { width: 100%; padding: 8px 10px; border: 1px solid #cfd4e2; border-radius: 6px; }
+  .warnbox { background: #fff5f5; border: 1px solid #f3c7c7; color: #8a1f1f; border-radius: 6px; padding: 10px 12px; margin: 10px 0; }
+  .f { margin: 12px 0; }
+  .f label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .f select { padding: 6px 8px; border: 1px solid #cfd4e2; border-radius: 6px; min-width: 220px; }
+  .edit { background: #f8f9ff; border: 1px solid #d9def7; border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
+  .toast { position: fixed; bottom: 20px; right: 22px; background: #172033; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 60; }
+</style>
+</head>
+<body>
+<aside aria-label="Admin navigation">
+  <div class="brand"><i></i>Keyward</div><div class="org">Lumen Freight GmbH · admin console</div>
+  <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+  <div class="navsec"><button type="button" data-sec="directory" aria-expanded="false">Directory <span>▸</span></button><div class="kids" data-kids="directory" hidden><a href="#/directory/users" data-nav="directory/users">People</a><a href="#/directory/groups" data-nav="directory/groups">Groups</a><a href="#/directory/devices" data-nav="directory/devices">Devices</a></div></div>
+  <a href="#/applications" data-nav="applications">Applications</a>
+  <div class="navsec"><button type="button" data-sec="security" aria-expanded="false">Security <span>▸</span></button><div class="kids" data-kids="security" hidden><a href="#/security/authentication/password" data-nav="security/authentication">Authentication</a><a href="#/security/network" data-nav="security/network">Network zones</a><a href="#/security/tokens" data-nav="security/tokens">API tokens</a><a href="#/security/behavior" data-nav="security/behavior">Behavior detection</a></div></div>
+  <div class="navsec"><button type="button" data-sec="reports" aria-expanded="false">Reports <span>▸</span></button><div class="kids" data-kids="reports" hidden><a href="#/reports/system-log" data-nav="reports/system-log">System log</a><a href="#/reports/usage" data-nav="reports/usage">App usage</a></div></div>
+  <a href="#/settings" data-nav="settings">Settings</a>
+</aside>
+<div class="main"><div class="top"><input type="search" placeholder="Search people, apps and groups" aria-label="Search"><span class="sp"></span><span class="sub" style="margin:0">Jana Petersen · Super admin</span></div><div class="content" id="view"></div></div>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const TOKENS = [
+    { id: 'tok_8a20', name: 'ci-deploy', by: 'Oskar Brenning', created: '2025-11-02', used: '2 hours ago', scopes: 'apps.read, users.read' },
+    { id: 'tok_51c7', name: 'ci-deploy-legacy', by: 'Hanne Kvist', created: '2024-03-18', used: '41 days ago', scopes: 'apps.manage' },
+    { id: 'tok_3b91', name: 'ci-deploy-legacy', by: 'Oskar Brenning', created: '2023-06-07', used: '212 days ago', scopes: 'apps.manage, users.manage' },
+    { id: 'tok_77e4', name: 'ci-deploy-legacy-2', by: 'Oskar Brenning', created: '2024-01-15', used: '90 days ago', scopes: 'apps.read' },
+    { id: 'tok_0d12', name: 'scim-sync-workday', by: 'Jana Petersen', created: '2025-02-20', used: '6 minutes ago', scopes: 'users.manage, groups.manage' },
+    { id: 'tok_9f03', name: 'terraform-prod', by: 'Malte Voss', created: '2025-08-30', used: 'yesterday', scopes: 'policies.manage' },
+    { id: 'tok_c448', name: 'siem-export', by: 'Hanne Kvist', created: '2024-10-01', used: '3 hours ago', scopes: 'logs.read' },
+  ];
+  const USERS = [['Jana Petersen', 'jana.petersen@lumenfreight.de', 'Active', 'IT'], ['Oskar Brenning', 'oskar.brenning@lumenfreight.de', 'Active', 'Platform'], ['Hanne Kvist', 'hanne.kvist@lumenfreight.de', 'Active', 'Security'], ['Malte Voss', 'malte.voss@lumenfreight.de', 'Active', 'Platform'], ['Deniz Aydın', 'deniz.aydin@lumenfreight.de', 'Suspended', 'Finance'], ['Ricarda Lüders', 'ricarda.lueders@contractor.lumenfreight.de', 'Active', 'Contractors'], ['Tobias Brandl', 'tobias.brandl@lumenfreight.de', 'Password reset', 'Operations'],
+    ['Aylin Kaya', 'aylin.kaya@lumenfreight.de', 'Active', 'Customs'], ['Björn Hansen', 'bjoern.hansen@lumenfreight.de', 'Active', 'Operations'], ['Clara Weiß', 'clara.weiss@lumenfreight.de', 'Active', 'Finance'], ['Dario Esposito', 'dario.esposito@contractor.lumenfreight.de', 'Active', 'Contractors'],
+    ['Elif Şahin', 'elif.sahin@lumenfreight.de', 'Active', 'Sales'], ['Finn Jürgensen', 'finn.juergensen@lumenfreight.de', 'Active', 'Platform'], ['Greta Olsen', 'greta.olsen@lumenfreight.de', 'Suspended', 'Customs'], ['Hamid Rahimi', 'hamid.rahimi@lumenfreight.de', 'Active', 'Operations'],
+    ['Ines Kowalski', 'ines.kowalski@lumenfreight.de', 'Active', 'HR'], ['Jonas Keller', 'jonas.keller@contractor.lumenfreight.de', 'Active', 'Contractors'], ['Katrin Möller', 'katrin.moeller@lumenfreight.de', 'Active', 'Legal'], ['Lars Petersen', 'lars.petersen@lumenfreight.de', 'Active', 'IT'],
+    ['Mira Novak', 'mira.novak@lumenfreight.de', 'Password reset', 'Sales'], ['Nils Behrens', 'nils.behrens@lumenfreight.de', 'Active', 'Operations'], ['Olga Ivanova', 'olga.ivanova@lumenfreight.de', 'Active', 'Finance'], ['Paul Krüger', 'paul.krueger@lumenfreight.de', 'Active', 'Security'], ['Rosa Martín', 'rosa.martin@contractor.lumenfreight.de', 'Active', 'Contractors']];
+  const TIMES = [['15m', '15 minutes'], ['30m', '30 minutes'], ['1h', '1 hour'], ['2h', '2 hours'], ['4h', '4 hours'], ['8h', '8 hours'], ['12h', '12 hours'], ['24h', '24 hours']];
+  const tl = (v) => TIMES.find((x) => x[0] === v)[1];
+  const POLICIES = [
+    { id: 'pol-default', name: 'Default policy', applies: 'Everyone', idle: '2h', max: '12h', remember: 'yes', prio: 4 },
+    { id: 'pol-exec', name: 'Executives', applies: 'Group: Executives', idle: '4h', max: '24h', remember: 'yes', prio: 1 },
+    { id: 'pol-contractors', name: 'Contractors', applies: 'Group: Contractors', idle: '1h', max: '8h', remember: 'no', prio: 2 },
+    { id: 'pol-contractors-eu', name: 'Contractors – EU (legacy)', applies: 'Group: Contractors EU (inactive)', idle: '2h', max: '12h', remember: 'no', prio: 3 },
+  ];
+  const PWPOL = [['Default policy', 12, 90], ['Contractors', 14, 60], ['Service accounts', 32, 0]];
+  const st = { open: new Set(), modal: null, editing: null, busy: false };
+
+  function dashboard() { return `<h1>Dashboard</h1><p class="sub">Lumen Freight GmbH · 412 people · 38 applications</p><div class="card"><strong>Tasks</strong><ul><li>3 people locked out in the last 24 hours</li><li>1 API token unused for more than 180 days</li><li>Workday SCIM sync healthy</li></ul></div>`; }
+  function users() { const F = st.ufilter || 'All'; const list = USERS.filter((u) => F === 'All' || u[2] === F); return `<div class="crumb">Directory › People</div><h1>People</h1><p class="sub">${USERS.length} people · synced from Workday every 15 minutes</p><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">${['All', 'Active', 'Suspended', 'Password reset'].map((f) => `<button class="btn sm ${F === f ? 'primary' : ''}" type="button" data-ufilter="${f}">${f}</button>`).join('')}<span style="flex:1"></span><button class="btn sm" type="button" id="u-add">Add person</button><button class="btn sm" type="button" id="u-import">Import CSV</button><button class="btn sm" type="button" id="u-export">Export</button></div><div class="card"><table><thead><tr><th><input type="checkbox" aria-label="Select all people"></th><th>Name</th><th>Username</th><th>Department</th><th>Status</th><th></th></tr></thead><tbody>${list.map(([n, e, s, d]) => `<tr><td><input type="checkbox" aria-label="Select ${esc(n)}"></td><td>${esc(n)}</td><td>${esc(e)}</td><td>${esc(d)}</td><td><span class="pill ${s === 'Active' ? 'ok' : 'warn'}">${s}</span></td><td><button class="btn sm" type="button" data-uact="reset_mfa" data-user="${esc(e)}">Reset MFA</button> <button class="btn sm" type="button" data-uact="suspend" data-user="${esc(e)}">Suspend</button> <button class="btn sm danger" type="button" data-uact="delete" data-user="${esc(e)}">Delete</button></td></tr>`).join('')}</tbody></table></div>`; }
+  function tokens() { return `<div class="crumb">Security › API tokens</div><h1>API tokens</h1><p class="sub">Tokens act with the permissions of the admin who created them. Revoking is immediate and can't be undone.</p><div class="card"><table><thead><tr><th>Name</th><th>Created by</th><th>Created</th><th>Last used</th><th>Scopes</th><th></th></tr></thead><tbody>${TOKENS.map((t) => `<tr><td><strong>${esc(t.name)}</strong><div class="sub" style="margin:0"><code>${t.id}</code></div></td><td>${esc(t.by)}</td><td>${t.created}</td><td>${esc(t.used)}</td><td>${esc(t.scopes)}</td><td><button class="btn sm danger" type="button" data-revoke="${t.id}" aria-label="Revoke ${esc(t.name)} created by ${esc(t.by)} on ${t.created}">Revoke</button></td></tr>`).join('')}</tbody></table><p style="margin-top:12px"><button class="btn primary" type="button" id="new-token">Create token</button></p></div>`; }
+  function auth(tab) {
+    const T = [['password', 'Password'], ['mfa', 'Multifactor'], ['sessions', 'Sessions']];
+    let inner = '';
+    if (tab === 'password') inner = `<div class="card"><table><thead><tr><th>Password policy</th><th>Minimum length</th><th>Expires after</th></tr></thead><tbody>${PWPOL.map(([n, l, x]) => `<tr><td>${esc(n)}</td><td>${l} characters</td><td>${x ? x + ' days' : 'Never'}</td></tr>`).join('')}</tbody></table></div>`;
+    else if (tab === 'mfa') inner = `<div class="card"><p>Enrolled factors: Keyward Verify (push), FIDO2 security keys, TOTP apps.</p><p class="sub">SMS is disabled for all groups.</p><button class="btn" type="button" id="mfa-edit">Edit enrollment policy</button></div>`;
+    else {
+      const e = st.editing && POLICIES.find((p) => p.id === st.editing.id);
+      inner = `<div class="card"><p class="sub" style="margin-top:0">Sign-on session policies are evaluated in priority order. The first policy that matches the person applies.</p><table><thead><tr><th>Priority</th><th>Policy</th><th>Applies to</th><th>Idle timeout</th><th>Max session lifetime</th><th></th></tr></thead><tbody>${POLICIES.slice().sort((a, b) => a.prio - b.prio).map((p) => `<tr><td>${p.prio}</td><td><strong>${esc(p.name)}</strong></td><td>${esc(p.applies)}</td><td>${tl(p.idle)}</td><td>${tl(p.max)}</td><td><button class="btn sm" type="button" data-editpol="${p.id}" aria-label="Edit ${esc(p.name)}">Edit</button></td></tr>`).join('')}</tbody></table>
+        ${e ? `<div class="edit" role="region" aria-label="Edit ${esc(e.name)}"><h3 style="margin-top:0">Edit “${esc(e.name)}”</h3><div class="f"><label for="pol-idle">Idle session timeout</label><select id="pol-idle">${TIMES.slice(0, 6).map(([v, l]) => `<option value="${v}" ${st.editing.idle === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div><div class="f"><label for="pol-max">Maximum session lifetime</label><select id="pol-max">${TIMES.map(([v, l]) => `<option value="${v}" ${st.editing.max === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div><label style="display:block;margin:8px 0"><input type="checkbox" id="pol-remember" ${st.editing.remember === 'yes' ? 'checked' : ''}> Let people stay signed in on trusted devices</label><p class="err" style="color:#c42b2b">${esc(st.editing.err || '')}</p><button class="btn" type="button" id="pol-cancel">Cancel</button> <button class="btn primary" type="button" id="pol-save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Save policy'}</button></div>` : ''}</div>`;
+    }
+    return `<div class="crumb">Security › Authentication</div><h1>Authentication</h1><nav class="tabs" aria-label="Authentication settings">${T.map(([k, l]) => `<a href="#/security/authentication/${k}" class="${tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav>${inner}`;
+  }
+  function route() {
+    const h = (location.hash || '#/dashboard').slice(2); const p = h.split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', h.startsWith(a.dataset.nav)));
+    ['directory', 'security', 'reports'].forEach((s) => { if (h.startsWith(s)) st.open.add(s); });
+    document.querySelectorAll('[data-sec]').forEach((b) => { const on = st.open.has(b.dataset.sec); b.setAttribute('aria-expanded', String(on)); b.querySelector('span').textContent = on ? '▾' : '▸'; $(`[data-kids="${b.dataset.sec}"]`).hidden = !on; });
+    const v = $('#view');
+    if (p[0] === 'directory' && p[1] === 'users') v.innerHTML = users();
+    else if (p[0] === 'security' && p[1] === 'tokens') v.innerHTML = tokens();
+    else if (p[0] === 'security' && p[1] === 'authentication') { if (p[2] !== 'sessions') st.editing = null; v.innerHTML = auth(p[2] || 'password'); }
+    else if (p[0] === 'security' || p[0] === 'directory' || p[0] === 'reports') v.innerHTML = `<div class="crumb">${esc(p[0][0].toUpperCase() + p[0].slice(1))} › ${esc(p[1] || '')}</div><h1>${esc((p[1] || '').replace('-', ' '))}</h1><div class="card"><p class="sub">No items to show.</p></div>`;
+    else if (p[0] === 'applications') v.innerHTML = `<h1>Applications</h1><div class="card"><table><tbody>${['Microsoft 365', 'Workday', 'Slack', 'GitHub Enterprise', 'SAP Concur', 'Freightview TMS'].map((a) => `<tr><td>${a}</td><td><span class="pill ok">Active</span></td></tr>`).join('')}</tbody></table></div>`;
+    else if (p[0] === 'settings') v.innerHTML = `<h1>Settings</h1><div class="card"><p>Organization: Lumen Freight GmbH · Region: EU (Frankfurt)</p></div>`;
+    else { document.querySelector('[data-nav=dashboard]').classList.add('on'); v.innerHTML = dashboard(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  document.querySelectorAll('[data-sec]').forEach((b) => b.addEventListener('click', () => { const s = b.dataset.sec; st.open.has(s) ? st.open.delete(s) : st.open.add(s); route(); }));
+  function revokeModal(t) {
+    const root = $('#modal-root');
+    root.innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="rv-title"><h2 id="rv-title" style="margin-top:0">Revoke API token?</h2><table><tbody><tr><th>Name</th><td>${esc(t.name)}</td></tr><tr><th>Token ID</th><td><code>${t.id}</code></td></tr><tr><th>Created by</th><td>${esc(t.by)} on ${t.created}</td></tr><tr><th>Scopes</th><td>${esc(t.scopes)}</td></tr></tbody></table>
+      <div class="warnbox">Integrations using this token will stop working immediately. This can't be undone.</div><div class="f"><label for="rv-confirm">Type <strong>${esc(t.name)}</strong> to confirm</label><input type="text" id="rv-confirm" autocomplete="off"></div>
+      <p style="text-align:right"><button class="btn" type="button" id="rv-cancel">Cancel</button> <button class="btn danger solid" type="button" id="rv-go" disabled>Revoke token</button></p></div></div>`;
+    const inp = $('#rv-confirm'), go = $('#rv-go');
+    inp.addEventListener('input', () => { go.disabled = inp.value.trim() !== t.name; });
+    $('#rv-cancel').onclick = () => (root.innerHTML = '');
+    go.onclick = async () => {
+      if (go.disabled) return; go.disabled = true; go.textContent = 'Revoking…'; await later(700);
+      await rec({ event: 'token_revoke', token_id: t.id, name: t.name, created_by: t.by });
+      TOKENS.splice(TOKENS.indexOf(t), 1); root.innerHTML = ''; rerender(); toast(`Token ${t.name} (${t.id}) revoked`);
+    };
+    inp.focus();
+  }
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const rv = t.closest('[data-revoke]'); if (rv) { revokeModal(TOKENS.find((x) => x.id === rv.dataset.revoke)); return; }
+    if (t.closest('#new-token') || t.closest('#mfa-edit') || t.closest('#u-add') || t.closest('#u-import')) { toast('This requires a hardware-key re-authentication.'); return; }
+    if (t.closest('#u-export')) { toast('Export started. You will get an email when it is ready.'); return; }
+    const uf = t.closest('[data-ufilter]'); if (uf) { st.ufilter = uf.dataset.ufilter; rerender(); return; }
+    const ua = t.closest('[data-uact]'); if (ua) { await later(300); await rec({ event: 'user_' + ua.dataset.uact, user: ua.dataset.user }); toast('Done'); return; }
+    const ep = t.closest('[data-editpol]'); if (ep) { const p = POLICIES.find((x) => x.id === ep.dataset.editpol); st.editing = { id: p.id, idle: p.idle, max: p.max, remember: p.remember, err: '' }; rerender(); return; }
+    if (t.closest('#pol-cancel')) { st.editing = null; rerender(); return; }
+    if (t.closest('#pol-save')) {
+      const ed = st.editing; const p = POLICIES.find((x) => x.id === ed.id);
+      const mins = (v) => ({ '15m': 15, '30m': 30, '1h': 60, '2h': 120, '4h': 240, '8h': 480, '12h': 720, '24h': 1440 })[v];
+      if (mins(ed.idle) > mins(ed.max)) { ed.err = 'The idle timeout can’t be longer than the maximum session lifetime.'; rerender(); return; }
+      st.busy = true; rerender(); await later(700);
+      await rec({ event: 'policy_update', policy_id: p.id, policy: p.name, idle_timeout: ed.idle, max_lifetime: ed.max, remember_device: ed.remember });
+      Object.assign(p, { idle: ed.idle, max: ed.max, remember: ed.remember }); st.editing = null; st.busy = false; rerender(); toast(`${p.name} saved`); return;
+    }
+  });
+  view.addEventListener('change', (e) => { const t = e.target; const ed = st.editing; if (!ed) return; if (t.id === 'pol-idle') ed.idle = t.value; if (t.id === 'pol-max') ed.max = t.value; if (t.id === 'pol-remember') ed.remember = t.checked ? 'yes' : 'no'; ed.err = ''; });
+  route();
+})();
+</script>
+</body>
+</html>

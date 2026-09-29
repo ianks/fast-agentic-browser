@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keystone Residences · Resident portal</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.5 "Source Sans 3", "Segoe UI", -apple-system, sans-serif; color: #202a33; background: #f3f5f2; }
+  a { color: #25613f; }
+  button, input, select, textarea { font: inherit; }
+  header { background: #25613f; color: #fff; display: flex; align-items: center; gap: 20px; padding: 0 26px; height: 56px; }
+  header .logo { font-weight: 700; font-size: 18px; }
+  header .bld { color: #cfe6d7; font-size: 13px; }
+  header .sp { flex: 1; }
+  header .unit { background: #1b4a30; border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+  .shell { display: grid; grid-template-columns: 210px 1fr; min-height: calc(100vh - 56px); }
+  nav.side { background: #fff; border-right: 1px solid #e0e6e1; padding: 14px 0; }
+  nav.side a { display: flex; gap: 10px; align-items: center; padding: 9px 20px; color: #202a33; text-decoration: none; }
+  nav.side a.on { background: #e7f2eb; color: #25613f; font-weight: 600; box-shadow: inset 3px 0 0 #25613f; }
+  nav.side .sec { margin: 14px 20px 4px; font-size: 11px; color: #7c8a84; text-transform: uppercase; letter-spacing: .08em; }
+  main { padding: 22px 28px 40px; min-width: 0; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: #66746e; margin: 0 0 16px; }
+  .card { background: #fff; border: 1px solid #e0e6e1; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .btn { display: inline-block; border: 1px solid #c7d2cb; background: #fff; color: #202a33; border-radius: 8px; padding: 7px 14px; cursor: pointer; text-decoration: none; }
+  .btn.primary { background: #25613f; border-color: #25613f; color: #fff; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .docs { display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: start; }
+  .tree { list-style: none; margin: 0; padding: 0; }
+  .tree ul { list-style: none; margin: 0; padding-left: 18px; }
+  .tree button { background: none; border: 0; padding: 5px 6px; cursor: pointer; text-align: left; width: 100%; border-radius: 6px; color: #202a33; display: flex; gap: 6px; align-items: center; }
+  .tree button:hover { background: #f1f5f2; }
+  .tree button.doc.on { background: #e7f2eb; color: #25613f; font-weight: 600; }
+  .tree .caret { width: 14px; display: inline-block; color: #7c8a84; }
+  .viewer { background: #fff; border: 1px solid #e0e6e1; border-radius: 10px; min-height: 520px; display: flex; flex-direction: column; }
+  .viewer .vh { padding: 10px 14px; border-bottom: 1px solid #e0e6e1; display: flex; gap: 10px; align-items: center; }
+  .viewer .crumbs { color: #66746e; font-size: 13px; flex: 1; }
+  .viewer .tabs button { border: 0; background: none; padding: 6px 10px; border-bottom: 2px solid transparent; cursor: pointer; }
+  .viewer .tabs button[aria-selected=true] { border-bottom-color: #25613f; font-weight: 600; }
+  .viewer iframe { border: 0; width: 100%; flex: 1; min-height: 470px; background: #fafafa; }
+  .empty { padding: 60px; text-align: center; color: #7c8a84; }
+  .steps { display: flex; gap: 8px; margin: 0 0 16px; padding: 0; list-style: none; }
+  .steps li { flex: 1; padding: 8px 10px; border-radius: 8px; background: #e8ede9; color: #66746e; font-size: 13px; }
+  .steps li.on { background: #25613f; color: #fff; font-weight: 600; }
+  .steps li.done { background: #cfe6d7; color: #25613f; }
+  .rcards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .rcard { display: block; border: 1.5px solid #d5ddd8; border-radius: 10px; padding: 12px; background: #fff; cursor: pointer; text-align: center; }
+  .rcard.sel { border-color: #25613f; background: #f1f8f3; }
+  .rcard input { position: absolute; opacity: 0; pointer-events: none; }
+  .rcard .ico { font-size: 22px; display: block; }
+  .f { margin: 14px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; margin-bottom: 4px; }
+  .f select, .f textarea, .f input[type=text] { border: 1px solid #c7d2cb; border-radius: 8px; padding: 8px 10px; background: #fff; min-width: 280px; }
+  .f textarea { width: 100%; max-width: 560px; min-height: 90px; }
+  .opts label { display: block; padding: 4px 0; }
+  .alert { background: #fdecea; border: 1px solid #f5c2bd; color: #8a1c14; border-radius: 8px; padding: 10px 12px; margin: 12px 0; }
+  .ok { background: #e7f5ec; border: 1px solid #bfe3cb; color: #1c5a35; border-radius: 8px; padding: 10px 12px; margin: 12px 0; }
+  .err { color: #a3261d; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e9eeea; }
+  th { color: #66746e; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .pill { font-size: 12px; border-radius: 9px; padding: 1px 8px; background: #eef2ef; }
+  .pill.prog { background: #fff4d6; color: #7a5a00; }
+  .pill.new { background: #e3effd; color: #1d4e89; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(20, 30, 25, .45); display: flex; align-items: center; justify-content: center; z-index: 30; }
+  .modal { background: #fff; border-radius: 10px; padding: 18px 22px; width: 420px; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #202a33; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 50; }
+  .acc > button { width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid #e9eeea; padding: 10px 2px; cursor: pointer; font-weight: 600; }
+  footer { font-size: 12px; color: #7c8a84; padding: 14px 28px; border-top: 1px solid #e0e6e1; background: #fff; }
+</style>
+</head>
+<body>
+<header><span class="logo">Keystone Residences</span><span class="bld">88 Queens Quay West · Toronto</span><span class="sp"></span><span class="unit">Amara Okonkwo · Unit W-1407</span></header>
+<div class="shell">
+  <nav class="side" aria-label="Resident menu">
+    <a href="#/home" data-nav="home">Home</a>
+    <a href="#/payments" data-nav="payments">Rent &amp; payments</a>
+    <a href="#/maintenance" data-nav="maintenance">Maintenance</a>
+    <a href="#/documents" data-nav="documents">Documents</a>
+    <a href="#/amenities" data-nav="amenities">Amenities</a>
+    <a href="#/packages" data-nav="packages">Packages</a>
+    <div class="sec">Community</div>
+    <a href="#/community" data-nav="community">Notice board</a>
+    <a href="#/events" data-nav="events">Events</a>
+    <div class="sec">Account</div>
+    <a href="#/profile" data-nav="profile">Profile &amp; household</a>
+    <a href="#/help" data-nav="help">Help</a>
+  </nav>
+  <div><main id="view"></main><footer>Keystone Property Management · Property office 416-555-0142 · After-hours emergencies 416-555-0199</footer></div>
+</div>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const doc = (title, issued, paras) => ({ title, issued, paras });
+  const TREE = [
+    { id: 'lease', name: 'My lease', kids: [
+      { id: 'lease-2526', name: 'Lease agreement 2025–2026.pdf', doc: doc('Residential Tenancy Agreement', '1 August 2025', ['Tenant: Amara Okonkwo. Unit W-1407, West tower.', 'Term: 1 August 2025 to 31 July 2026, continuing month to month.', 'Monthly rent: CAD 2,840.00, due on the first of each month.']) },
+      { id: 'lease-renew', name: 'Lease renewal offer 2026–2027.pdf', doc: doc('Lease renewal offer', '2 June 2026', ['We are pleased to offer a 12-month renewal from 1 August 2026 at CAD 2,925.00 per month.', 'Please sign through the resident portal by 1 July 2026.']) },
+      { id: 'movein', name: 'Move-in inspection report.pdf', doc: doc('Move-in inspection report', '1 August 2025', ['Unit W-1407 inspected with the tenant present.', 'Noted: small scratch on kitchen counter; bedroom closet door sticks.']) },
+    ] },
+    { id: 'building', name: 'Building', kids: [
+      { id: 'rules', name: 'House rules.pdf', doc: doc('House rules', '15 January 2026', ['Quiet hours are 23:00 to 07:00.', 'Barbecues are not permitted on balconies.']) },
+      { id: 'parking', name: 'Parking', kids: [
+        { id: 'permit', name: 'Parking permit — Space P2-114.pdf', doc: doc('Parking permit', '1 August 2025', ['Permit PK-20417 for space P2-114, level P2.', 'Vehicle: grey Honda Fit, plate CKRT 482.']) },
+        { id: 'visitor', name: 'Visitor parking policy.pdf', doc: doc('Visitor parking', '3 March 2026', ['Visitors may park up to 48 hours with a pass from the concierge.']) },
+      ] },
+      { id: 'waste', name: 'Waste & recycling guide.pdf', doc: doc('Waste & recycling', '10 February 2026', ['Organics chute is on every floor next to the elevators.']) },
+      { id: 'bikes', name: 'Bike storage access.pdf', doc: doc('Bike storage', '5 May 2026', ['Bike rooms are on P1 in both towers. Use your fob to enter.']) },
+    ] },
+    { id: 'notices', name: 'Notices', kids: [
+      { id: 'n2026', name: '2026', kids: [
+        { id: 'works', name: 'Building works', kids: [
+          { id: 'elev-east', name: 'Elevator modernization — East tower.pdf', doc: doc('Elevator modernization — East tower (cars E1 and E2)', '8 September 2026', ['Keystone Property Management has contracted Tallis Vertical Transport to modernize both East tower passenger elevators.', 'Car E1: 12 January – 26 February 2027. Car E2: 1 March – 16 April 2027.', 'One elevator will stay in service at all times. Moves must be booked through the Amenities page.']) },
+          { id: 'elev-west', name: 'Elevator modernization — West tower.pdf', doc: doc('Elevator modernization — West tower (cars W1 and W2)', '8 September 2026', ['Keystone Property Management has contracted Northline Elevator Services to modernize both West tower passenger elevators.', 'Car W1: 5 October – 20 November 2026. Car W2: 23 November 2026 – 15 January 2027.', 'One elevator will stay in service at all times. The service elevator can be booked for moves only.']) },
+          { id: 'membrane', name: 'Garage membrane repair.pdf', doc: doc('Garage membrane repair', '20 July 2026', ['Level P2 rows 100–130 will be closed from 3 to 14 August 2026.']) },
+        ] },
+        { id: 'water', name: 'Water shut-off — 21 October.pdf', doc: doc('Water shut-off', '30 September 2026', ['Water will be off in the West tower on 21 October 2026 from 09:00 to 13:00 for valve replacement.']) },
+        { id: 'fire', name: 'Fire alarm testing schedule.pdf', doc: doc('Fire alarm testing', '4 January 2026', ['Monthly tests on the first Tuesday at 10:00.']) },
+      ] },
+      { id: 'n2025', name: '2025', kids: [
+        { id: 'elev-plan', name: 'Elevator modernization — planning notice.pdf', doc: doc('Elevator modernization — planning notice', '14 November 2025', ['Both towers will have their elevators modernized between late 2026 and spring 2027.', 'Contractor selection is under way; residents will be told who was chosen once contracts are signed.']) },
+        { id: 'windows', name: 'Window washing — September 2025.pdf', doc: doc('Window washing', '1 September 2025', ['Exterior window washing: West tower 15–19 September, East tower 22–26 September.']) },
+      ] },
+    ] },
+    { id: 'insurance', name: 'Insurance', kids: [
+      { id: 'ins', name: 'Certificate of tenant insurance 2026.pdf', doc: doc('Tenant insurance certificate', '1 August 2026', ['Insurer: Maplecrest Mutual. Policy TI-5582031. Liability CAD 2,000,000.']) },
+    ] },
+  ];
+  const find = (id, list = TREE, path = []) => { for (const n of list) { const p = [...path, n]; if (n.id === id) return p; if (n.kids) { const r = find(id, n.kids, p); if (r) return r; } } return null; };
+  const CATS = [['Plumbing', '🚰', ['Leak', 'Clogged drain', 'Toilet', 'Low water pressure', 'No hot water']], ['Electrical', '💡', ['Outlet not working', 'Light fixture', 'Breaker keeps tripping']], ['Appliances', '🧊', ['Fridge', 'Dishwasher', 'Stove / oven', 'Washer', 'Dryer']], ['Heating & cooling', '🌡️', ['No heat', 'No cooling', 'Thermostat', 'Noisy fan coil']], ['Doors, locks & keys', '🔑', ['Lock', 'Fob not working', 'Door alignment']], ['Pest control', '🐜', ['Ants', 'Cockroaches', 'Mice']], ['Windows & balcony', '🪟', ['Window seal', 'Balcony door', 'Blinds']], ['Other', '🛠️', ['Something else']]];
+  const LOCS = ['Kitchen', 'Bathroom', 'Ensuite bathroom', 'Laundry closet', 'Living room', 'Bedroom', 'Second bedroom', 'Balcony', 'Hallway'];
+  const WINDOWS = [['weekday_mornings', 'Weekday mornings (8:00–12:00)'], ['weekday_afternoons', 'Weekday afternoons (12:00–17:00)'], ['any', 'Any time']];
+  const st = { open: new Set(['notices']), doc: null, vtab: 'preview',
+    requests: [{ id: 'MR-2291', title: 'Bathroom exhaust fan is noisy', cat: 'Heating & cooling', date: '2026-09-12', status: 'In progress' }, { id: 'MR-2217', title: 'Balcony door sticks', cat: 'Windows & balcony', date: '2026-07-30', status: 'Completed' }],
+    mr: null, attempts: 0, busy: false };
+  const newMr = () => ({ step: 1, cat: '', issue: '', loc: '', desc: '', emergency: '', entry: '', pets: '', pet: '', secured: false, windows: '', err: '', fail: false });
+
+  function treeHtml(list) {
+    return list.map((n) => n.kids
+      ? `<li role="treeitem" aria-expanded="${st.open.has(n.id)}"><button type="button" data-folder="${n.id}"><span class="caret">${st.open.has(n.id) ? '▾' : '▸'}</span>📁 ${esc(n.name)}</button>${st.open.has(n.id) ? `<ul role="group">${treeHtml(n.kids)}</ul>` : ''}</li>`
+      : `<li role="treeitem"><button type="button" class="doc ${st.doc === n.id ? 'on' : ''}" data-doc="${n.id}"><span class="caret"></span>📄 ${esc(n.name)}</button></li>`).join('');
+  }
+  function srcdoc(d) {
+    return `<!doctype html><html><head><meta charset="utf-8"><style>body{font:15px/1.6 Georgia,serif;color:#222;margin:0;padding:30px 44px;background:#fff}h1{font-size:20px;margin:0 0 4px}.meta{color:#666;font:13px sans-serif;margin-bottom:18px}.lh{font:12px sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#25613f;margin-bottom:14px}footer{margin-top:30px;color:#777;font:12px sans-serif;border-top:1px solid #ddd;padding-top:10px}</style></head><body><div class="lh">Keystone Residences · Notice to residents</div><h1>${esc(d.title)}</h1><div class="meta">Issued ${esc(d.issued)} · Keystone Property Management</div>${d.paras.map((p) => `<p>${esc(p)}</p>`).join('')}<footer>Questions? Property office 416-555-0142 · office@keystoneresidences.ca</footer></body></html>`;
+  }
+  function documentsPage() {
+    const path = st.doc ? find(st.doc) : null; const node = path ? path[path.length - 1] : null;
+    return `<h1>Documents</h1><p class="sub">Your lease, building policies and notices. Documents open in the viewer on the right.</p><div class="docs"><div class="card" style="padding:10px"><ul class="tree" role="tree" aria-label="Document folders">${treeHtml(TREE)}</ul></div>
+      <div class="viewer">${node ? `<div class="vh"><span class="crumbs">Documents › ${path.slice(0, -1).map((n) => esc(n.name)).join(' › ')}</span><span class="tabs" role="tablist"><button type="button" role="tab" data-vtab="preview" aria-selected="${st.vtab === 'preview'}">Preview</button><button type="button" role="tab" data-vtab="details" aria-selected="${st.vtab === 'details'}">Details</button></span><button class="btn" type="button" id="dl">Download</button></div>
+        ${st.vtab === 'preview' ? `<iframe title="Document preview: ${esc(node.name)}" id="docframe"></iframe>` : `<div style="padding:16px"><table><tbody><tr><th>File</th><td>${esc(node.name)}</td></tr><tr><th>Issued</th><td>${esc(node.doc.issued)}</td></tr><tr><th>Shared with</th><td>All residents</td></tr></tbody></table></div>`}` : '<div class="empty">Select a document to preview it.</div>'}</div></div>`;
+  }
+  function homePage() {
+    return `<h1>Welcome back, Amara</h1><p class="sub">Thursday 1 October 2026</p><div class="cards3"><div class="card"><strong>Rent</strong><p>CAD 2,925.00 due 1 November</p><a class="btn" href="#/payments">Pay rent</a></div><div class="card"><strong>Maintenance</strong><p>1 open request</p><a class="btn" href="#/maintenance">View requests</a></div><div class="card"><strong>Packages</strong><p>2 waiting at the concierge</p><a class="btn" href="#/packages">See packages</a></div></div>
+      <div class="card"><strong>Latest notices</strong><ul><li>Water shut-off — 21 October (West tower)</li><li>Elevator modernization starts 5 October in the West tower</li></ul><a href="#/documents">Open documents</a></div>`;
+  }
+  function maintenancePage() {
+    return `<h1>Maintenance</h1><p class="sub">Report a problem in your unit. For floods, fire or no heat in winter call 416-555-0199.</p><p><a class="btn primary" href="#/maintenance/new">New request</a></p><div class="card"><table><thead><tr><th>Request</th><th>Category</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody>${st.requests.map((r) => `<tr><td><strong>${esc(r.title)}</strong><div class="sub" style="margin:0">${esc(r.id)}</div></td><td>${esc(r.cat)}</td><td>${esc(r.date)}</td><td><span class="pill ${r.status === 'In progress' ? 'prog' : r.status === 'Submitted' ? 'new' : ''}">${esc(r.status)}</span></td><td>${r.status !== 'Completed' ? `<button class="btn" type="button" data-cancelmr="${r.id}">Cancel request</button>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function newRequestPage() {
+    const m = st.mr || (st.mr = newMr()); const L = ['What needs fixing', 'Details', 'Access', 'Review'];
+    let body = '';
+    if (m.step === 1) {
+      const cat = CATS.find((c) => c[0] === m.cat);
+      body = `<div class="rcards" role="radiogroup" aria-label="Category">${CATS.map(([n, ic]) => `<label class="rcard ${m.cat === n ? 'sel' : ''}"><input type="radio" name="cat" value="${esc(n)}" ${m.cat === n ? 'checked' : ''}><span class="ico">${ic}</span>${esc(n)}</label>`).join('')}</div>
+        ${cat ? `<div class="f"><label for="issue">What's the issue?</label><select id="issue"><option value="">Choose…</option>${cat[2].map((i) => `<option ${m.issue === i ? 'selected' : ''}>${esc(i)}</option>`).join('')}</select></div>` : ''}
+        <div class="f"><label for="loc">Where in your unit?</label><select id="loc"><option value="">Choose a room…</option>${LOCS.map((l) => `<option ${m.loc === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>`;
+    } else if (m.step === 2) {
+      body = `<div class="f"><label for="desc">Describe the problem</label><textarea id="desc" placeholder="What's happening, since when, anything you've tried">${esc(m.desc)}</textarea></div>
+        <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">Is this an emergency?</legend><div class="opts"><label><input type="radio" name="emerg" value="no" ${m.emergency === 'no' ? 'checked' : ''}> No</label><label><input type="radio" name="emerg" value="yes" ${m.emergency === 'yes' ? 'checked' : ''}> Yes — water is flooding, no power, or it's unsafe</label></div></fieldset>
+        ${m.emergency === 'yes' ? '<div class="alert"><strong>Please call 416-555-0199 now.</strong> Emergencies can’t be handled through online requests.</div>' : ''}
+        <p><button class="btn" type="button" id="photos">Add photos (optional)</button></p>`;
+    } else if (m.step === 3) {
+      body = `<fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">May maintenance enter your unit if you're not home?</legend><div class="opts"><label><input type="radio" name="entry" value="permitted" ${m.entry === 'permitted' ? 'checked' : ''}> Yes, you may enter when I'm out</label><label><input type="radio" name="entry" value="home_only" ${m.entry === 'home_only' ? 'checked' : ''}> No, only when I'm home</label></div></fieldset>
+        ${m.entry === 'permitted' ? `<fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">Are there pets in the unit?</legend><div class="opts"><label><input type="radio" name="pets" value="no" ${m.pets === 'no' ? 'checked' : ''}> No pets</label><label><input type="radio" name="pets" value="yes" ${m.pets === 'yes' ? 'checked' : ''}> Yes</label></div></fieldset>
+          ${m.pets === 'yes' ? `<div class="f"><label for="pet">Type of pet</label><select id="pet"><option value="">Choose…</option>${['Dog', 'Cat', 'Other'].map((p) => `<option ${m.pet === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div><label style="display:block;margin:6px 0 12px"><input type="checkbox" id="secured" ${m.secured ? 'checked' : ''}> My pet will be crated or secured during the visit</label>` : ''}` : ''}
+        ${m.entry ? `<div class="f"><label for="win">Preferred time for the visit</label><select id="win"><option value="">Choose…</option>${WINDOWS.map(([k, l]) => `<option value="${k}" ${m.windows === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>` : ''}`;
+    } else {
+      body = `<table><tbody><tr><th>Category</th><td>${esc(m.cat)} — ${esc(m.issue)}</td></tr><tr><th>Location</th><td>${esc(m.loc)}</td></tr><tr><th>Description</th><td>${esc(m.desc)}</td></tr><tr><th>Emergency</th><td>${m.emergency === 'yes' ? 'Yes' : 'No'}</td></tr><tr><th>Entry</th><td>${m.entry === 'permitted' ? 'May enter when I\'m out' : 'Only when I\'m home'}</td></tr>${m.entry === 'permitted' ? `<tr><th>Pets</th><td>${m.pets === 'yes' ? esc(m.pet) + (m.secured ? ', secured during visit' : ', not secured') : 'None'}</td></tr>` : ''}<tr><th>Preferred time</th><td>${esc((WINDOWS.find((w) => w[0] === m.windows) || [, ''])[1])}</td></tr></tbody></table>
+        ${m.fail ? '<div class="alert" role="alert">We couldn\'t submit your request (error 502 — the maintenance system didn\'t respond). Nothing was sent. Your details are still here; please try again.</div>' : ''}`;
+    }
+    return `<p class="sub"><a href="#/maintenance">Maintenance</a> › New request</p><h1>New maintenance request</h1><ol class="steps">${L.map((l, i) => `<li class="${m.step === i + 1 ? 'on' : m.step > i + 1 ? 'done' : ''}">${i + 1}. ${l}</li>`).join('')}</ol><div class="card">${body}${m.err ? `<p class="err" role="alert">${esc(m.err)}</p>` : ''}
+      <p style="margin-top:14px">${m.step > 1 ? '<button class="btn" type="button" id="mr-back">Back</button> ' : '<a class="btn" href="#/maintenance">Cancel</a> '}${m.step < 4 ? `<button class="btn primary" type="button" id="mr-next" ${m.step === 2 && m.emergency === 'yes' ? 'disabled' : ''}>Continue</button>` : `<button class="btn primary" type="button" id="mr-submit" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Submitting…' : m.fail ? 'Try again' : 'Submit request'}</button>`}</p></div>`;
+  }
+  function paymentsPage() { return `<h1>Rent &amp; payments</h1><div class="card"><p>Balance: <strong>CAD 0.00</strong>. Next rent CAD 2,925.00 due 1 November 2026.</p><div class="f"><label for="pay-amt">Amount</label><input type="text" id="pay-amt" value="2925.00"></div><button class="btn primary" type="button" id="pay">Pay with chequing ••• 0921</button></div><div class="card"><strong>History</strong><table><tbody><tr><td>1 Oct 2026</td><td>Rent</td><td>CAD 2,925.00</td></tr><tr><td>1 Sep 2026</td><td>Rent</td><td>CAD 2,925.00</td></tr></tbody></table></div>`; }
+  function amenitiesPage() { return `<h1>Amenities</h1><div class="cards3">${[['Party room', 'CAD 75 per booking'], ['Guest suite', 'CAD 120 per night'], ['Service elevator (moves)', 'Free, 3-hour slots']].map(([n, p]) => `<div class="card"><strong>${n}</strong><p class="sub">${p}</p><button class="btn" type="button" data-amen="${esc(n)}">Book</button></div>`).join('')}</div>`; }
+  function faqPage() { return `<h1>Help</h1>${[['How do I get a new fob?', 'Visit the property office with photo ID. Replacement fobs are CAD 40.'], ['Who do I call after hours?', 'For emergencies call 416-555-0199.']].map(([q, a], i) => `<div class="acc"><button type="button" data-acc="${i}" aria-expanded="false">${q}</button><div id="acc${i}" hidden><p>${a}</p></div></div>`).join('')}`; }
+
+  function route() {
+    const p = (location.hash || '#/home').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] === 'documents') { if (p[1] && find(p[1])) { st.doc = p[1]; find(p[1]).slice(0, -1).forEach((n) => st.open.add(n.id)); } v.innerHTML = documentsPage(); const fr = $('#docframe'); if (fr) fr.srcdoc = srcdoc(find(st.doc).slice(-1)[0].doc); }
+    else if (p[0] === 'maintenance' && p[1] === 'new') v.innerHTML = newRequestPage();
+    else if (p[0] === 'maintenance') v.innerHTML = maintenancePage();
+    else if (p[0] === 'payments') v.innerHTML = paymentsPage();
+    else if (p[0] === 'amenities') v.innerHTML = amenitiesPage();
+    else if (p[0] === 'help') v.innerHTML = faqPage();
+    else if (['packages', 'community', 'events', 'profile'].includes(p[0])) v.innerHTML = `<h1>${p[0][0].toUpperCase() + p[0].slice(1)}</h1><div class="card"><p class="sub">Nothing new here right now.</p></div>`;
+    else { document.querySelector('[data-nav=home]').classList.add('on'); v.innerHTML = homePage(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  function validate(m) {
+    if (m.step === 1) { if (!m.cat) return 'Choose a category.'; if (!m.issue) return 'Choose the issue.'; if (!m.loc) return 'Choose where in your unit.'; }
+    if (m.step === 2) { if (m.desc.trim().length < 10) return 'Describe the problem in a few words (at least 10 characters).'; if (!m.emergency) return 'Tell us whether this is an emergency.'; }
+    if (m.step === 3) { if (!m.entry) return 'Tell us whether maintenance may enter.'; if (m.entry === 'permitted') { if (!m.pets) return 'Tell us about pets.'; if (m.pets === 'yes' && !m.pet) return 'Choose the type of pet.'; } if (!m.windows) return 'Choose a preferred time.'; }
+    return '';
+  }
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const fo = t.closest('[data-folder]'); if (fo) { const id = fo.dataset.folder; st.open.has(id) ? st.open.delete(id) : st.open.add(id); rerender(); return; }
+    const dc = t.closest('[data-doc]'); if (dc) { st.vtab = 'preview'; location.hash = '#/documents/' + dc.dataset.doc; return; }
+    const vt = t.closest('[data-vtab]'); if (vt) { st.vtab = vt.dataset.vtab; rerender(); return; }
+    if (t.closest('#dl')) { toast('Download started'); return; }
+    const acc = t.closest('[data-acc]'); if (acc) { const d = $('#acc' + acc.dataset.acc); d.hidden = !d.hidden; acc.setAttribute('aria-expanded', String(!d.hidden)); return; }
+    const m = st.mr;
+    if (t.closest('#mr-next')) { m.err = validate(m); if (!m.err) m.step++; rerender(); return; }
+    if (t.closest('#mr-back')) { m.err = ''; m.step--; rerender(); return; }
+    if (t.closest('#photos')) { toast('Photo upload is available in the Keystone mobile app.'); return; }
+    if (t.closest('#mr-submit')) {
+      if (st.busy) return; st.busy = true; m.fail = false; rerender();
+      await later(900);
+      st.busy = false;
+      if (st.attempts++ === 0) { m.fail = true; rerender(); return; }
+      const id = 'MR-' + (2300 + st.attempts);
+      await rec({ event: 'maintenance_submit', request: id, category: m.cat, issue: m.issue, location: m.loc, emergency: m.emergency, entry: m.entry, pets: m.entry === 'permitted' ? m.pets : 'n/a', pet_type: m.entry === 'permitted' && m.pets === 'yes' ? m.pet : '', pet_secured: m.entry === 'permitted' && m.pets === 'yes' ? (m.secured ? 'yes' : 'no') : '', window: m.windows });
+      st.requests.unshift({ id, title: m.issue + ' — ' + m.loc.toLowerCase(), cat: m.cat, date: '2026-10-01', status: 'Submitted' });
+      st.mr = null; location.hash = '#/maintenance'; toast('Request ' + id + ' submitted. We\'ll be in touch within 2 business days.');
+      return;
+    }
+    const cm = t.closest('[data-cancelmr]');
+    if (cm) {
+      const r = st.requests.find((x) => x.id === cm.dataset.cancelmr);
+      $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h3 style="margin-top:0">Cancel request ${esc(r.id)}?</h3><p>${esc(r.title)}</p><p style="text-align:right"><button class="btn" type="button" id="cx">Keep it</button> <button class="btn primary" type="button" id="cok">Cancel request</button></p></div></div>`;
+      $('#cx').onclick = () => ($('#modal-root').innerHTML = '');
+      $('#cok').onclick = async () => { await later(300); await rec({ event: 'maintenance_cancel', request: r.id }); r.status = 'Cancelled'; $('#modal-root').innerHTML = ''; rerender(); };
+      return;
+    }
+    if (t.closest('#pay')) { await later(600); await rec({ event: 'payment_submit', amount: $('#pay-amt').value }); toast('Payment scheduled'); return; }
+    const am = t.closest('[data-amen]'); if (am) { await later(300); await rec({ event: 'amenity_book', amenity: am.dataset.amen }); toast('Booking request sent'); return; }
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target; const m = st.mr; if (!m) return;
+    if (t.name === 'cat') { m.cat = t.value; m.issue = ''; m.err = ''; rerender(); }
+    if (t.id === 'issue') m.issue = t.value;
+    if (t.id === 'loc') m.loc = t.value;
+    if (t.name === 'emerg') { m.emergency = t.value; rerender(); }
+    if (t.name === 'entry') { m.entry = t.value; rerender(); }
+    if (t.name === 'pets') { m.pets = t.value; rerender(); }
+    if (t.id === 'pet') m.pet = t.value;
+    if (t.id === 'secured') m.secured = t.checked;
+    if (t.id === 'win') m.windows = t.value;
+  });
+  view.addEventListener('input', (e) => { if (e.target.id === 'desc' && st.mr) st.mr.desc = e.target.value; });
+  route();
+})();
+</script>
+</body>
+</html>

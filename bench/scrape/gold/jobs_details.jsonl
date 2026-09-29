@@ -1,0 +1,55 @@
+{"title": "Frontend Developer", "company": "Northwind", "location": "Oslo", "salary": null, "employment_type": "Part-time"}
+{"title": "Frontend Developer", "company": "Umbrella Labs", "location": "Copenhagen", "salary": "€78,000 – €139,000", "employment_type": "Part-time"}
+{"title": "Rust Engineer", "company": "Northwind", "location": "Remote", "salary": "€128,000 – €143,000", "employment_type": "Part-time"}
+{"title": "Rust Engineer", "company": "Fabrikam", "location": "Lisbon", "salary": "NOK 700 000", "employment_type": "Contract"}
+{"title": "Staff Engineer", "company": "Northwind", "location": "Amsterdam", "salary": "€120,000 – €147,000", "employment_type": "Full-time"}
+{"title": "Data Scientist", "company": "Stark Industries", "location": "Amsterdam", "salary": "€72,000 – €157,000", "employment_type": "Full-time"}
+{"title": "Data Scientist", "company": "Hooli", "location": "Berlin", "salary": null, "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Stark Industries", "location": "Oslo", "salary": "NOK 1 140 000", "employment_type": "Contract"}
+{"title": "iOS Developer", "company": "Contoso", "location": "Berlin", "salary": "€63,000 – €138,000", "employment_type": "Part-time"}
+{"title": "Security Engineer", "company": "Initech", "location": "Lisbon", "salary": "NOK 1 370 000", "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Umbrella Labs", "location": "Berlin", "salary": "NOK 1 090 000", "employment_type": "Contract"}
+{"title": "Product Designer", "company": "Wayne Tech", "location": "Oslo", "salary": null, "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Wayne Tech", "location": "Oslo", "salary": null, "employment_type": "Contract"}
+{"title": "Data Scientist", "company": "Initech", "location": "Copenhagen", "salary": null, "employment_type": "Full-time"}
+{"title": "Staff Engineer", "company": "Globex", "location": "Remote", "salary": "€125,000 – €162,000", "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Globex", "location": "Oslo", "salary": "NOK 1 290 000", "employment_type": "Part-time"}
+{"title": "Staff Engineer", "company": "Northwind", "location": "Lisbon", "salary": "€95,000 – €170,000", "employment_type": "Part-time"}
+{"title": "Backend Engineer", "company": "Vandelay", "location": "Oslo", "salary": "NOK 1 340 000", "employment_type": "Contract"}
+{"title": "Staff Engineer", "company": "Globex", "location": "Amsterdam", "salary": "NOK 1 010 000", "employment_type": "Part-time"}
+{"title": "Product Designer", "company": "Vandelay", "location": "Bergen", "salary": "NOK 1 080 000", "employment_type": "Contract"}
+{"title": "Frontend Developer", "company": "Fabrikam", "location": "Copenhagen", "salary": "NOK 1 260 000", "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Initech", "location": "Berlin", "salary": "NOK 650 000", "employment_type": "Contract"}
+{"title": "Staff Engineer", "company": "Fabrikam", "location": "Amsterdam", "salary": null, "employment_type": "Part-time"}
+{"title": "Frontend Developer", "company": "Northwind", "location": "Bergen", "salary": "€50,000 – €180,000", "employment_type": "Contract"}
+{"title": "Security Engineer", "company": "Stark Industries", "location": "Oslo", "salary": "€100,000 – €169,000", "employment_type": "Full-time"}
+{"title": "iOS Developer", "company": "Hooli", "location": "Amsterdam", "salary": "€116,000 – €174,000", "employment_type": "Full-time"}
+{"title": "Security Engineer", "company": "Northwind", "location": "Copenhagen", "salary": "€53,000 – €147,000", "employment_type": "Contract"}
+{"title": "Data Scientist", "company": "Contoso", "location": "Oslo", "salary": null, "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Initech", "location": "Remote", "salary": "NOK 1 400 000", "employment_type": "Contract"}
+{"title": "ML Engineer", "company": "Wayne Tech", "location": "Oslo", "salary": "€88,000 – €170,000", "employment_type": "Full-time"}
+{"title": "Rust Engineer", "company": "Contoso", "location": "Lisbon", "salary": null, "employment_type": "Part-time"}
+{"title": "Engineering Manager", "company": "Hooli", "location": "Copenhagen", "salary": "€85,000 – €158,000", "employment_type": "Full-time"}
+{"title": "Frontend Developer", "company": "Stark Industries", "location": "Oslo", "salary": "NOK 1 220 000", "employment_type": "Full-time"}
+{"title": "Security Engineer", "company": "Hooli", "location": "Amsterdam", "salary": "NOK 560 000", "employment_type": "Contract"}
+{"title": "Staff Engineer", "company": "Stark Industries", "location": "Lisbon", "salary": "€83,000 – €144,000", "employment_type": "Contract"}
+{"title": "SRE", "company": "Fabrikam", "location": "Remote", "salary": null, "employment_type": "Full-time"}
+{"title": "Backend Engineer", "company": "Vandelay", "location": "Bergen", "salary": "NOK 840 000", "employment_type": "Part-time"}
+{"title": "Frontend Developer", "company": "Initech", "location": "Oslo", "salary": "NOK 610 000", "employment_type": "Full-time"}
+{"title": "Security Engineer", "company": "Initech", "location": "Lisbon", "salary": "NOK 800 000", "employment_type": "Full-time"}
+{"title": "ML Engineer", "company": "Stark Industries", "location": "Berlin", "salary": "€102,000 – €159,000", "employment_type": "Full-time"}
+{"title": "Product Designer", "company": "Wayne Tech", "location": "Copenhagen", "salary": "NOK 1 270 000", "employment_type": "Full-time"}
+{"title": "Security Engineer", "company": "Stark Industries", "location": "Copenhagen", "salary": "NOK 1 290 000", "employment_type": "Part-time"}
+{"title": "QA Engineer", "company": "Hooli", "location": "Remote", "salary": "€99,000 – €152,000", "employment_type": "Contract"}
+{"title": "iOS Developer", "company": "Hooli", "location": "Remote", "salary": null, "employment_type": "Part-time"}
+{"title": "Security Engineer", "company": "Globex", "location": "Remote", "salary": "NOK 560 000", "employment_type": "Part-time"}
+{"title": "iOS Developer", "company": "Fabrikam", "location": "Remote", "salary": null, "employment_type": "Contract"}
+{"title": "iOS Developer", "company": "Northwind", "location": "Berlin", "salary": "€58,000 – €174,000", "employment_type": "Full-time"}
+{"title": "Frontend Developer", "company": "Umbrella Labs", "location": "Bergen", "salary": "€73,000 – €145,000", "employment_type": "Part-time"}
+{"title": "Security Engineer", "company": "Initech", "location": "Lisbon", "salary": "NOK 690 000", "employment_type": "Part-time"}
+{"title": "Rust Engineer", "company": "Hooli", "location": "Berlin", "salary": null, "employment_type": "Contract"}
+{"title": "Frontend Developer", "company": "Initech", "location": "Stockholm", "salary": "€105,000 – €156,000", "employment_type": "Contract"}
+{"title": "Engineering Manager", "company": "Hooli", "location": "Bergen", "salary": "NOK 1 210 000", "employment_type": "Contract"}
+{"title": "Rust Engineer", "company": "Umbrella Labs", "location": "Amsterdam", "salary": null, "employment_type": "Part-time"}
+{"title": "Product Designer", "company": "Initech", "location": "Bergen", "salary": "€80,000 – €161,000", "employment_type": "Contract"}
+{"title": "Engineering Manager", "company": "Fabrikam", "location": "Lisbon", "salary": "NOK 760 000", "employment_type": "Part-time"}

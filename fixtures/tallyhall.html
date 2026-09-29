@@ -1,0 +1,109 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Expenses · Tallyhall</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>
+main{max-width:960px}
+#items input[type=text]{width:220px}#items input.amt{width:100px;text-align:right}#items select{width:190px}
+.cbwrap{position:relative;width:300px}
+#apl{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid #bbb;max-height:230px;overflow:auto;z-index:20;margin:0;padding:0;list-style:none}
+#apl li{padding:5px 8px;cursor:pointer}#apl li[aria-selected=true]{background:#dbeafe}
+.st{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:#e5e7eb}
+</style></head>
+<body><header><strong>Tallyhall</strong><a href="#/">Reports</a><a href="#/">Cards</a><a href="#/">Mileage</a><span style="margin-left:auto">Ola Nordvik</span></header>
+<main id="view"></main>
+<div id="modal"></div>
+<script>
+const CATS = ['Airfare', 'Ground transport', 'Lodging', 'Meals', 'Client entertainment', 'Office supplies', 'Software', 'Other'];
+const APPROVERS = ['Aksel Brekke', 'Anja Rasmussen', 'Arvid Lund', 'Astrid Moe', 'Bjørn Eide', 'Camilla Strand', 'Dagny Holm', 'Einar Vik', 'Elin Sandvik', 'Erik Solberg',
+  'Frida Nygaard', 'Gunnar Aas', 'Hedda Berntsen', 'Henrik Solberg', 'Ida Kristiansen', 'Inga Solvang', 'Inger Solberg', 'Ingrid Salte', 'Ingrid Solberg', 'Ingrid Solheim',
+  'Ingrid Sørbø', 'Jon Tveit', 'Kari Solberg-Lie', 'Karin Dahl', 'Kjell Hauge', 'Lars Ødegård', 'Linnea Brun', 'Magnus Riise', 'Marit Ingridsen', 'Nils Aune',
+  'Ole Haugland', 'Petra Lie', 'Ragnhild Foss', 'Sigrid Solbakken', 'Silje Moen', 'Solveig Ingebrigtsen', 'Stian Berg', 'Tone Rud', 'Trond Myhre', 'Vilde Solberg'];
+const REPORTS = [['Q3 client visits', 'Approved', '1,284.10'], ['Oslo offsite prep', 'Draft', '96.00'], ['Bergen conference', 'Submitted', '2,410.75']];
+let seq = 0;
+const listView = () => `<h1>Expense reports</h1><button class="primary" id="new">New report</button>
+  <table style="margin-top:12px"><thead><tr><th>Report</th><th>Status</th><th>Total (USD)</th></tr></thead><tbody>${REPORTS.map(([n, s, t]) => `<tr><td>${n}</td><td><span class="st">${s}</span></td><td>${t}</td></tr>`).join('')}</tbody></table>`;
+const formView = () => `<p><a href="#/">← Reports</a></p><h1>New expense report</h1>
+  <label for="rname">Report name</label><input id="rname" type="text">
+  <label for="purpose">Business purpose (optional)</label><input id="purpose" type="text">
+  <h2>Line items</h2><table><thead><tr><th>Description</th><th>Category</th><th>Amount (USD)</th><th></th></tr></thead><tbody id="items"></tbody></table>
+  <p><button id="addl">+ Add line item</button></p>
+  <p>Total: <strong id="total">0.00</strong> USD</p>
+  <p id="ferr" role="alert" style="color:#b91c1c"></p>
+  <div class="row"><button id="draft">Save draft</button><button class="primary" id="submit">Submit for approval…</button></div><p id="fmsg" role="status"></p>`;
+const amt = (s) => { const n = Number(String(s).replace(/[$,\s]/g, '')); return Number.isFinite(n) ? n : NaN; };
+function readLines() { return qa('#items tr').map((tr) => ({ desc: q('.desc', tr).value.trim(), category: q('select', tr).value, amount: amt(q('.amt', tr).value) })); }
+function updateTotal() { const t = readLines().reduce((s, l) => s + (l.amount > 0 ? l.amount : 0), 0); q('#total').textContent = t.toFixed(2); }
+function addLine() {
+  const n = qa('#items tr').length + 1;
+  q('#items').insertAdjacentHTML('beforeend', `<tr><td><input class="desc" type="text" aria-label="Description, line ${n}"></td><td><select aria-label="Category, line ${n}"><option value="">Select category…</option>${CATS.map((c) => `<option>${c}</option>`).join('')}</select></td><td><input class="amt" type="text" inputmode="decimal" aria-label="Amount, line ${n}" placeholder="0.00"></td><td><button class="rm" aria-label="Remove line ${n}">Remove</button></td></tr>`);
+}
+function validate() {
+  const ls = readLines();
+  if (!q('#rname').value.trim()) return 'Give the report a name.';
+  if (!ls.length) return 'Add at least one line item.';
+  for (const [i, l] of ls.entries()) {
+    if (!l.desc) return `Line ${i + 1}: enter a description.`;
+    if (!l.category) return `Line ${i + 1}: choose a category.`;
+    if (!(l.amount > 0)) return `Line ${i + 1}: enter an amount greater than zero.`;
+  }
+  return '';
+}
+function payload() {
+  const ls = readLines().map((l) => ({ desc: l.desc, category: l.category, amount: l.amount.toFixed(2) }));
+  const total = ls.reduce((s, l) => s + Math.round(Number(l.amount) * 100), 0) / 100;
+  const summary = ls.slice().sort((a, b) => a.desc.toLowerCase().localeCompare(b.desc.toLowerCase())).map((l) => `${l.desc}|${l.category}|${l.amount}`).join('; ');
+  return { report: q('#rname').value.trim(), purpose: q('#purpose').value.trim(), count: ls.length, total: total.toFixed(2), items: summary, lines: ls };
+}
+function approverDialog() {
+  let chosen = null, active = -1, matches = [];
+  q('#modal').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="adh"><h2 id="adh">Submit for approval</h2>
+    <label for="apin" id="apll">Approver</label><div class="cbwrap"><input id="apin" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="apl" autocomplete="off" placeholder="Start typing a name"><ul id="apl" role="listbox" aria-labelledby="apll" hidden></ul></div>
+    <label for="apnote">Note to approver (optional)</label><textarea id="apnote" rows="2"></textarea>
+    <p id="aerr" role="alert" style="color:#b91c1c"></p><div class="row"><button id="acancel">Cancel</button><button class="primary" id="asend">Submit report</button></div></div></div>`;
+  const inp = q('#apin'), lb = q('#apl');
+  const paint = () => { lb.innerHTML = matches.map((n, i) => `<li role="option" id="apo${i}" aria-selected="${i === active}" data-n="${n}">${n}</li>`).join('') || '<li aria-disabled="true" class="muted">No matches</li>'; lb.hidden = false; inp.setAttribute('aria-expanded', 'true'); inp.setAttribute('aria-activedescendant', active >= 0 ? 'apo' + active : ''); };
+  const choose = (n) => { chosen = n; inp.value = n; lb.hidden = true; inp.setAttribute('aria-expanded', 'false'); };
+  let tseq = 0;
+  inp.oninput = async () => {
+    chosen = null; const my = ++tseq; const t = inp.value.trim().toLowerCase();
+    if (!t) { lb.hidden = true; inp.setAttribute('aria-expanded', 'false'); return; }
+    await later(150);
+    if (my !== tseq) return;
+    matches = APPROVERS.filter((n) => n.toLowerCase().includes(t)).slice(0, 8); active = -1; paint();
+  };
+  inp.onkeydown = (e) => {
+    if (lb.hidden || !matches.length) return;
+    if (e.key === 'ArrowDown') { active = Math.min(active + 1, matches.length - 1); paint(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { active = Math.max(active - 1, 0); paint(); e.preventDefault(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (active >= 0) choose(matches[active]); else if (matches.length === 1) choose(matches[0]); }
+    else if (e.key === 'Escape') { lb.hidden = true; }
+  };
+  lb.onmousedown = (e) => { const li = e.target.closest('li[data-n]'); if (li) { e.preventDefault(); choose(li.dataset.n); } };
+  lb.onclick = (e) => { const li = e.target.closest('li[data-n]'); if (li) choose(li.dataset.n); };
+  q('#acancel').onclick = () => { q('#modal').innerHTML = ''; };
+  q('#asend').onclick = async () => {
+    if (!chosen) { q('#aerr').textContent = 'Choose an approver from the list.'; return; }
+    q('#asend').disabled = true; await later(400);
+    const p = payload();
+    await rec({ event: 'submit', ...p, approver: chosen, note: q('#apnote').value.trim() });
+    q('#modal').innerHTML = '';
+    q('#view').innerHTML = `<h1>Report submitted</h1><p>“${p.report}” (${p.total} USD, ${p.count} items) was sent to ${chosen} for approval.</p><p><a href="#/">Back to reports</a></p>`;
+  };
+  inp.focus();
+}
+async function route() {
+  const my = ++seq; q('#view').innerHTML = '<p class="muted">Loading…</p>';
+  await later(250); if (my !== seq) return;
+  if (location.hash === '#/new') {
+    q('#view').innerHTML = formView();
+    q('#addl').onclick = addLine;
+    q('#items').oninput = updateTotal; q('#items').onchange = updateTotal;
+    q('#items').onclick = (e) => { const b = e.target.closest('.rm'); if (b) { const tr = b.closest('tr'); rec({ event: 'remove_line', line: qa('#items tr').indexOf(tr) + 1, desc: q('.desc', tr).value.trim(), category: q('select', tr).value, amount: q('.amt', tr).value.trim() }); tr.remove(); updateTotal(); } };
+    q('#draft').onclick = async () => { await later(300); await rec({ event: 'draft', ...payload() }); q('#fmsg').textContent = 'Draft saved.'; };
+    q('#submit').onclick = () => { const err = validate(); q('#ferr').textContent = err; if (!err) approverDialog(); };
+  } else {
+    q('#view').innerHTML = listView();
+    q('#new').onclick = () => { location.hash = '#/new'; };
+  }
+}
+addEventListener('hashchange', route);
+route();
+</script></body></html>

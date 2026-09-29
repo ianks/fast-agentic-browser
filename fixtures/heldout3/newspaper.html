@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Northgate Tribune · My Account</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.55 Georgia, "Times New Roman", serif; color: #1c1c1c; background: #fff; }
+  a { color: #0f4c81; }
+  button, input, select { font: 14px -apple-system, "Segoe UI", Arial, sans-serif; }
+  .mast { text-align: center; border-bottom: 3px double #1c1c1c; padding: 14px 0 8px; }
+  .mast .name { font: 700 34px "Old English Text MT", "UnifrakturMaguntia", Georgia, serif; letter-spacing: .01em; }
+  .mast .meta { font: 12px -apple-system, sans-serif; color: #555; }
+  .sect { display: flex; justify-content: center; gap: 18px; font: 13px -apple-system, sans-serif; padding: 8px; border-bottom: 1px solid #ddd; }
+  .sect a { color: #1c1c1c; text-decoration: none; }
+  .wrap { max-width: 1060px; margin: 0 auto; display: grid; grid-template-columns: 220px 1fr; gap: 30px; padding: 24px; }
+  .side a { display: block; padding: 8px 10px; color: #1c1c1c; text-decoration: none; font: 14px -apple-system, sans-serif; border-radius: 4px; }
+  .side a.on { background: #eef3f8; color: #0f4c81; font-weight: 600; }
+  .side h5 { font: 600 11px -apple-system, sans-serif; text-transform: uppercase; letter-spacing: .1em; color: #777; margin: 14px 10px 4px; }
+  h1 { font-weight: 400; font-size: 30px; margin: 0 0 6px; }
+  h2 { font-weight: 400; font-size: 21px; margin: 22px 0 8px; }
+  .sub { color: #666; font: 14px -apple-system, sans-serif; margin: 0 0 14px; }
+  .box { border: 1px solid #ddd; border-radius: 6px; padding: 16px 18px; margin-bottom: 16px; font-family: -apple-system, sans-serif; font-size: 14px; }
+  .btn { border: 1px solid #1c1c1c; background: #fff; color: #1c1c1c; border-radius: 3px; padding: 8px 16px; cursor: pointer; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #0f4c81; border-color: #0f4c81; color: #fff; }
+  .btn.big { font-size: 16px; padding: 12px 22px; }
+  .btn.danger { border-color: #b3261e; color: #b3261e; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .linkbtn { border: 0; background: none; color: #0f4c81; text-decoration: underline; cursor: pointer; padding: 0; }
+  .muted-link { font-size: 12px; color: #888; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 6px; border-bottom: 1px solid #eee; }
+  th { font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: .06em; }
+  .offer { text-align: center; border: 2px solid #0f4c81; border-radius: 8px; padding: 30px; background: #f5f9fd; }
+  .offer .price { font: 700 40px Georgia, serif; color: #0f4c81; }
+  .radios label { display: block; padding: 6px 0; }
+  .f { margin: 14px 0; }
+  .f > .lab { display: block; font-weight: 600; margin-bottom: 6px; }
+  .err { color: #b3261e; font-size: 14px; }
+  .ok { background: #eaf6ee; border: 1px solid #b6dfc2; padding: 10px 12px; border-radius: 4px; }
+  .toggle { width: 40px; height: 22px; border-radius: 999px; border: 0; background: #bbb; position: relative; cursor: pointer; vertical-align: middle; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: left .12s; }
+  .toggle[aria-checked=true] { background: #0f4c81; }
+  .toggle[aria-checked=true]::after { left: 21px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1c1c1c; color: #fff; padding: 10px 18px; border-radius: 4px; font-family: -apple-system, sans-serif; z-index: 60; }
+  footer { border-top: 3px double #1c1c1c; text-align: center; padding: 18px; font: 12px -apple-system, sans-serif; color: #666; }
+  nt-date-field { display: block; margin: 8px 0 14px; }
+</style>
+</head>
+<body>
+<div class="mast"><div class="name">The Northgate Tribune</div><div class="meta">Thursday, September 24, 2026 · Serving the Northgate Valley since 1887</div></div>
+<nav class="sect" aria-label="Sections"><a href="#/overview">News</a><a href="#/overview">Opinion</a><a href="#/overview">Sports</a><a href="#/overview">Arts</a><a href="#/overview">Puzzles</a><a href="#/overview">Obituaries</a></nav>
+<div class="wrap"><aside class="side" aria-label="My account"><h5>My account</h5><a href="#/overview" data-nav="overview">Overview</a><a href="#/subscription" data-nav="subscription">Subscription &amp; add-ons</a><a href="#/delivery" data-nav="delivery">Print delivery</a><a href="#/billing" data-nav="billing">Billing</a><a href="#/newsletters" data-nav="newsletters">Newsletters</a><h5>Help</h5><a href="#/help" data-nav="help">Contact us</a></aside><main id="view"></main></div>
+<footer>© 2026 Northgate Tribune Media · Customer care 1-800-555-0134 · <a href="#/help">Privacy</a> · <a href="#/help">Terms of sale</a></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const TODAY = '2026-09-24';
+  const pad = (n) => String(n).padStart(2, '0');
+  const isoOf = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+  const longDate = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  // <nt-date-field>: text input + calendar popup, all inside an open shadow root.
+  class NtDateField extends HTMLElement {
+    constructor() { super(); this.attachShadow({ mode: 'open' }); this._v = ''; this._open = false; const t = new Date(TODAY + 'T12:00:00Z'); this._y = t.getUTCFullYear(); this._m = t.getUTCMonth() + 1; }
+    get value() { return this._v; }
+    set value(v) { this._v = v || ''; if (v) { this._y = +v.slice(0, 4); this._m = +v.slice(5, 7); } this.render(); }
+    connectedCallback() { this.render(); }
+    commit(v) { this._v = v; this._open = false; this.render(); this.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: { value: v } })); }
+    render() {
+      const label = this.getAttribute('label') || 'Date';
+      const first = new Date(Date.UTC(this._y, this._m - 1, 1)); const lead = first.getUTCDay(); const dim = new Date(Date.UTC(this._y, this._m, 0)).getUTCDate();
+      const mName = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+      const cells = []; for (let i = 0; i < lead; i++) cells.push('<span></span>');
+      for (let d = 1; d <= dim; d++) { const iso = isoOf(this._y, this._m, d); cells.push(`<button type="button" class="day" data-iso="${iso}" aria-pressed="${this._v === iso}" aria-label="${longDate(iso)}" ${iso <= TODAY ? 'disabled' : ''}>${d}</button>`); }
+      const shown = this._v ? `${this._v.slice(5, 7)}/${this._v.slice(8, 10)}/${this._v.slice(0, 4)}` : '';
+      this.shadowRoot.innerHTML = `<style>
+        :host { font: 14px -apple-system, "Segoe UI", sans-serif; position: relative; }
+        label { display: block; font-weight: 600; margin-bottom: 4px; }
+        .row { display: flex; gap: 6px; align-items: center; }
+        input { padding: 7px 9px; border: 1px solid #999; border-radius: 3px; width: 150px; font: inherit; }
+        button { font: inherit; cursor: pointer; }
+        .cal-btn { border: 1px solid #999; background: #fff; border-radius: 3px; padding: 6px 9px; }
+        .pop { position: absolute; z-index: 20; top: 100%; left: 0; background: #fff; border: 1px solid #bbb; border-radius: 6px; box-shadow: 0 10px 28px rgba(0,0,0,.18); padding: 10px; width: 260px; }
+        .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .hd button { border: 0; background: none; font-size: 16px; padding: 2px 8px; }
+        .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .g span.w { font-size: 11px; color: #888; }
+        .day { border: 0; background: none; padding: 6px 0; border-radius: 4px; }
+        .day:hover { background: #eef3f8; }
+        .day[aria-pressed=true] { background: #0f4c81; color: #fff; }
+        .day[disabled] { color: #ccc; cursor: not-allowed; background: none; }
+        .hint { font-size: 12px; color: #777; margin-top: 3px; }
+        .bad { color: #b3261e; font-size: 12px; margin-top: 3px; }
+      </style>
+      <label for="in">${label}</label><div class="row"><input id="in" type="text" placeholder="MM/DD/YYYY" value="${shown}" aria-label="${label}" autocomplete="off"><button type="button" class="cal-btn" aria-label="Open calendar for ${label}" aria-expanded="${this._open}">📅</button></div>
+      <div class="hint">${this._v ? longDate(this._v) : 'Type a date or pick one from the calendar.'}</div><div class="bad" hidden></div>
+      ${this._open ? `<div class="pop" role="dialog" aria-label="Choose ${label}"><div class="hd"><button type="button" class="prev" aria-label="Previous month">‹</button><strong>${mName}</strong><button type="button" class="next" aria-label="Next month">›</button></div><div class="g">${['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((w) => `<span class="w">${w}</span>`).join('')}${cells.join('')}</div></div>` : ''}`;
+      const sr = this.shadowRoot;
+      sr.querySelector('.cal-btn').onclick = () => { this._open = !this._open; this.render(); };
+      const inp = sr.querySelector('input');
+      const parse = () => {
+        const m = inp.value.trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/) || inp.value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const bad = sr.querySelector('.bad');
+        if (!inp.value.trim()) { if (this._v) this.commit(''); return; }
+        if (!m) { bad.textContent = 'Use the format MM/DD/YYYY.'; bad.hidden = false; return; }
+        const [y, mo, d] = m[1].length === 4 ? [+m[1], +m[2], +m[3]] : [+m[3], +m[1], +m[2]];
+        const dt = new Date(Date.UTC(y, mo - 1, d)); if (dt.getUTCMonth() !== mo - 1) { bad.textContent = 'That date does not exist.'; bad.hidden = false; return; }
+        const iso = isoOf(y, mo, d); if (iso !== this._v) { this._y = y; this._m = mo; this.commit(iso); }
+      };
+      inp.addEventListener('change', parse);
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); parse(); } });
+      sr.querySelectorAll('.day').forEach((b) => (b.onclick = () => this.commit(b.dataset.iso)));
+      const pv = sr.querySelector('.prev'), nx = sr.querySelector('.next');
+      if (pv) pv.onclick = () => { this._m--; if (this._m < 1) { this._m = 12; this._y--; } this.render(); };
+      if (nx) nx.onclick = () => { this._m++; if (this._m > 12) { this._m = 1; this._y++; } this.render(); };
+    }
+  }
+  customElements.define('nt-date-field', NtDateField);
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  const ADDONS = [{ id: 'games', name: 'Crossword & Games', price: 2.0, desc: 'Daily crossword, Spelling Bloom, Tiles and the archive of 40,000 puzzles.' }, { id: 'cooking', name: 'Cooking', price: 1.5, desc: 'Recipes, meal plans and the Tribune Test Kitchen.' }, { id: 'audio', name: 'Audio edition', price: 1.0, desc: 'Narrated articles and the Morning Brief podcast.' }];
+  const st = { addons: new Set(['games', 'cooking', 'audio']), flow: null, holds: [{ stop: '2026-08-03', resume: '2026-08-10', papers: 'credit', status: 'Completed' }], hold: { papers: 'credit', err: '' }, busy: false, news: { morning: true, sports: false, puzzles: true, deals: true }, cancelled: false };
+  function overview() { return `<h1>Welcome back, Deborah</h1><p class="sub">Subscriber since 2011 · Account 40-118-2263</p><div class="box"><strong>Print + All-Access Digital, 7-day</strong><br>$34.99 every 4 weeks · next bill October 22, 2026<br>Delivering to 418 Alder Crest Rd, Northgate, OR 97410</div><div class="box">Going away? <a href="#/delivery">Schedule a vacation hold</a> · Missed a paper? <a href="#/delivery">Report a delivery problem</a></div>`; }
+  function subscription() {
+    const f = st.flow;
+    if (f && f.kind === 'remove') {
+      const a = ADDONS.find((x) => x.id === f.addon);
+      if (f.step === 1) return `<p class="sub"><a href="#/subscription">Subscription &amp; add-ons</a> › Remove ${esc(a.name)}</p><div class="offer"><p style="font:600 13px -apple-system,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#0f4c81">Before you go</p><h1>Keep ${esc(a.name)} for half price</h1><p>Stay for 3 months at</p><div class="price">$1.00</div><p class="sub">every 4 weeks, then $2.00. Cancel anytime.</p><p><button class="btn primary big" type="button" id="keep-offer">Keep ${esc(a.name)} for $1.00</button></p><p><button class="linkbtn muted-link" type="button" id="decline-offer">No thanks, continue removing</button></p></div>`;
+      if (f.step === 2) return `<p class="sub"><a href="#/subscription">Subscription &amp; add-ons</a> › Remove ${esc(a.name)}</p><h1>Why are you removing ${esc(a.name)}?</h1><p class="sub">Optional — it helps us improve.</p><div class="box radios">${['I don’t use it enough', 'It’s too expensive', 'I found puzzles elsewhere', 'Technical problems', 'Other'].map((r) => `<label><input type="radio" name="reason" value="${esc(r)}" ${f.reason === r ? 'checked' : ''}> ${esc(r)}</label>`).join('')}</div><p><button class="btn" type="button" id="flow-back">Back</button> <button class="btn primary" type="button" id="reason-next">Continue</button></p>`;
+      return `<p class="sub"><a href="#/subscription">Subscription &amp; add-ons</a> › Remove ${esc(a.name)}</p><h1>Remove ${esc(a.name)}?</h1><div class="box"><p>You'll keep access until the end of your billing period on <strong>October 22, 2026</strong>. After that your bill goes down by $${a.price.toFixed(2)}.</p><p>Your Print + All-Access subscription and your other add-ons stay exactly as they are.</p></div><p><button class="btn" type="button" id="flow-cancel">Keep ${esc(a.name)}</button> <button class="btn danger" type="button" id="remove-confirm" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Removing…' : 'Remove add-on'}</button></p>`;
+    }
+    if (f && f.kind === 'cancel') {
+      if (f.step === 1) return `<div class="offer"><h1>We'd hate to see you go</h1><p>Get 6 months of Print + All-Access for <strong>$17.50</strong> every 4 weeks.</p><p><button class="btn primary big" type="button" id="cancel-offer">Accept offer</button></p><p><button class="linkbtn muted-link" type="button" id="cancel-continue">Continue to cancel</button></p></div>`;
+      return `<h1>Cancel your subscription?</h1><div class="box">Print delivery and digital access end October 22, 2026.</div><p><button class="btn" type="button" id="flow-cancel">Keep subscription</button> <button class="btn danger" type="button" id="cancel-confirm">Cancel subscription</button></p>`;
+    }
+    if (st.cancelled) return `<h1>Subscription cancelled</h1><p class="sub">Your access ends October 22, 2026.</p>`;
+    return `<h1>Subscription &amp; add-ons</h1><div class="box"><strong>Print + All-Access Digital, 7-day</strong> <span class="sub">· $34.99 every 4 weeks</span><p style="margin:6px 0 0">Daily and Sunday print delivery, unlimited digital access, e-edition.</p><p style="margin:8px 0 0"><a href="#/subscription/change">Change plan</a></p></div>
+      <h2>Add-ons</h2><div class="box"><table><tbody>${ADDONS.map((a) => `<tr><td><strong>${esc(a.name)}</strong><br><span class="sub">${esc(a.desc)}</span></td><td>$${a.price.toFixed(2)} / 4 wks</td><td>${st.addons.has(a.id) ? `<button class="linkbtn" type="button" data-remove="${a.id}" aria-label="Remove ${esc(a.name)}">Remove</button>` : '<span class="sub">Removed · access until Oct 22</span>'}</td></tr>`).join('')}</tbody></table></div>
+      <h2>Other options</h2><div class="box"><p>Want to pause instead? <a href="#/delivery">Schedule a vacation hold</a>.</p><button class="btn danger" type="button" id="cancel-start">Cancel subscription</button></div>`;
+  }
+  function delivery() {
+    const h = st.hold;
+    return `<h1>Print delivery</h1><p class="sub">418 Alder Crest Rd, Northgate, OR 97410 · Carrier route N-14 · Papers arrive by 6:00 a.m.</p>
+      <h2>Vacation holds</h2><div class="box"><table><thead><tr><th>Stop</th><th>Resume</th><th>Missed papers</th><th>Status</th></tr></thead><tbody>${st.holds.map((x) => `<tr><td>${longDate(x.stop)}</td><td>${longDate(x.resume)}</td><td>${{ credit: 'Account credit', donate: 'Donated (Newspapers in Education)', bundle: 'Delivered on return' }[x.papers]}</td><td>${x.status}</td></tr>`).join('')}</tbody></table></div>
+      <h2>Schedule a vacation hold</h2><div class="box"><p style="margin-top:0">Holds must start at least 2 days from today. Your digital access continues while print is paused.</p>
+        <nt-date-field id="hold-stop" label="Stop delivery starting"></nt-date-field>
+        <nt-date-field id="hold-resume" label="Resume delivery on"></nt-date-field>
+        <div class="f"><span class="lab">While you're away</span><div class="radios" role="radiogroup" aria-label="Missed papers">${[['credit', 'Credit my account for the papers I miss'], ['donate', 'Donate my papers to Newspapers in Education (local schools)'], ['bundle', 'Save my papers and deliver them when I return']].map(([k, l]) => `<label><input type="radio" name="papers" value="${k}" ${h.papers === k ? 'checked' : ''}> ${l}</label>`).join('')}</div></div>
+        <p class="err" role="alert">${esc(h.err)}</p><button class="btn primary" type="button" id="hold-save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Scheduling…' : 'Schedule hold'}</button></div>
+      <h2>Report a problem</h2><div class="box"><select id="problem"><option>Missed delivery</option><option>Wet or damaged paper</option><option>Wrong newspaper</option></select> <button class="btn" type="button" id="report">Report for today</button></div>`;
+  }
+  function newsletters() { const L = [['morning', 'The Morning Brief'], ['sports', 'Valley Sports Wrap'], ['puzzles', 'Puzzle of the Day'], ['deals', 'Subscriber offers']]; return `<h1>Newsletters</h1><div class="box">${L.map(([k, l]) => `<p style="display:flex;justify-content:space-between;align-items:center;margin:8px 0">${l}<button type="button" class="toggle" role="switch" aria-checked="${st.news[k]}" aria-label="${l}" data-nl="${k}"></button></p>`).join('')}</div>`; }
+  function route() {
+    const p = (location.hash || '#/overview').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] !== 'subscription') st.flow = null;
+    if (p[0] === 'subscription' && p[1] === 'change') v.innerHTML = `<h1>Change plan</h1><div class="box"><p>Digital-only plans start at $16.00 every 4 weeks. Call 1-800-555-0134 to change your print schedule.</p></div>`;
+    else if (p[0] === 'subscription') v.innerHTML = subscription();
+    else if (p[0] === 'delivery') { v.innerHTML = delivery(); const h = st.hold; if (h.stop) $('#hold-stop').value = h.stop; if (h.resume) $('#hold-resume').value = h.resume; }
+    else if (p[0] === 'billing') v.innerHTML = `<h1>Billing</h1><div class="box">Visa ending 7730 · next charge $38.49 on October 22, 2026 (plan + add-ons)</div>`;
+    else if (p[0] === 'newsletters') v.innerHTML = newsletters();
+    else if (p[0] === 'help') v.innerHTML = `<h1>Contact us</h1><div class="box">Customer care: 1-800-555-0134, 6 a.m.–4 p.m. PT daily.</div>`;
+    else { document.querySelector('[data-nav=overview]').classList.add('on'); v.innerHTML = overview(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const view = $('#view');
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'hold-stop') st.hold.stop = t.value;
+    if (t.id === 'hold-resume') st.hold.resume = t.value;
+    if (t.name === 'papers') st.hold.papers = t.value;
+    if (t.name === 'reason' && st.flow) st.flow.reason = t.value;
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target; const f = st.flow;
+    const rm = t.closest('[data-remove]'); if (rm) { st.flow = { kind: 'remove', addon: rm.dataset.remove, step: 1, reason: '' }; rerender(); scrollTo(0, 0); return; }
+    if (t.closest('#keep-offer')) { await later(500); await rec({ event: 'retention_offer_accept', addon: f.addon, price: '1.00' }); st.flow = null; rerender(); toast('Great — you keep it for $1.00 for 3 months.'); return; }
+    if (t.closest('#decline-offer')) { f.step = 2; rerender(); return; }
+    if (t.closest('#reason-next')) { f.step = 3; rerender(); return; }
+    if (t.closest('#flow-back')) { f.step--; rerender(); return; }
+    if (t.closest('#flow-cancel')) { st.flow = null; rerender(); return; }
+    if (t.closest('#remove-confirm')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(800);
+      const a = ADDONS.find((x) => x.id === f.addon);
+      await rec({ event: 'addon_remove', addon_id: a.id, addon: a.name, effective: '2026-10-22', reason: f.reason || '' });
+      st.addons.delete(a.id); st.busy = false; st.flow = null; rerender(); toast(`${a.name} will be removed on October 22, 2026.`); return;
+    }
+    if (t.closest('#cancel-start')) { st.flow = { kind: 'cancel', step: 1 }; rerender(); return; }
+    if (t.closest('#cancel-offer')) { await later(400); await rec({ event: 'retention_offer_accept', addon: 'subscription', price: '17.50' }); st.flow = null; rerender(); return; }
+    if (t.closest('#cancel-continue')) { f.step = 2; rerender(); return; }
+    if (t.closest('#cancel-confirm')) { await later(600); await rec({ event: 'subscription_cancel' }); st.cancelled = true; st.flow = null; rerender(); return; }
+    if (t.closest('#hold-save')) {
+      const h = st.hold; h.err = '';
+      const min = '2026-09-26';
+      if (!h.stop || !h.resume) h.err = 'Choose both a stop date and a resume date.';
+      else if (h.stop < min) h.err = 'Holds must start on or after Saturday, September 26, 2026.';
+      else if (h.resume <= h.stop) h.err = 'The resume date must be after the stop date.';
+      else if ((new Date(h.resume) - new Date(h.stop)) / 864e5 > 60) h.err = 'Holds can last up to 60 days.';
+      if (h.err) { rerender(); return; }
+      st.busy = true; rerender(); await later(800);
+      await rec({ event: 'vacation_hold', stop: h.stop, resume: h.resume, papers: h.papers, days: String((new Date(h.resume) - new Date(h.stop)) / 864e5) });
+      st.holds.push({ stop: h.stop, resume: h.resume, papers: h.papers, status: 'Scheduled' }); st.hold = { papers: 'credit', err: '' }; st.busy = false; rerender(); toast('Vacation hold scheduled'); return;
+    }
+    if (t.closest('#report')) { await later(400); await rec({ event: 'delivery_problem', kind: $('#problem').value }); toast('Sorry about that — we\'ve credited your account.'); return; }
+    const nl = t.closest('[data-nl]'); if (nl) { const k = nl.dataset.nl; st.news[k] = !st.news[k]; await later(300); await rec({ event: 'newsletter_pref', list: k, value: st.news[k] ? 'on' : 'off' }); rerender(); return; }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

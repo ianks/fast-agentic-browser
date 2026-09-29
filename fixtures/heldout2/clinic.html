@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MyMossgrove · Mossgrove Health</title>
+<script src="../common.js"></script>
+<style>
+  :root { --g: #1f5f4a; --g2: #174a39; --g3: #e3efe8; --cream: #fbf7ee; --line: #e6dfcf; --ink: #22302b; --muted: #6b766f; --amber: #b8742a; --red: #b3261e; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; color: var(--ink); background: var(--cream); }
+  h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; font-weight: 600; color: var(--g2); }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 0 0 10px; }
+  h3 { font-size: 16px; margin: 0 0 8px; }
+  a { color: var(--g); }
+  .top { background: var(--g); color: #f2efe4; display: flex; align-items: center; gap: 18px; padding: 0 28px; height: 64px; }
+  .logo { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+  .logo b { font-family: "Iowan Old Style", Georgia, serif; font-size: 21px; letter-spacing: .3px; }
+  .logo small { display: block; font-size: 11px; opacity: .75; letter-spacing: .8px; text-transform: uppercase; }
+  .top .today { margin-left: 24px; font-size: 13px; background: rgba(255,255,255,.12); padding: 4px 12px; border-radius: 14px; }
+  .top .me { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .top .me .av { width: 34px; height: 34px; border-radius: 50%; background: #f1c98b; color: var(--g2); display: grid; place-items: center; font-weight: 700; }
+  .top .me button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 16px; padding: 5px 12px; cursor: pointer; font: inherit; font-size: 13px; }
+  .shell { display: grid; grid-template-columns: 232px 1fr; min-height: calc(100vh - 64px); }
+  nav.side { background: #fffdf8; border-right: 1px solid var(--line); padding: 18px 0; }
+  nav.side a { display: flex; align-items: center; gap: 12px; padding: 10px 24px; color: var(--ink); text-decoration: none; font-size: 15px; }
+  nav.side a:hover { background: var(--g3); }
+  nav.side a.on { background: var(--g3); color: var(--g2); font-weight: 600; box-shadow: inset 4px 0 var(--g); }
+  nav.side .ic { width: 20px; text-align: center; }
+  nav.side .count { margin-left: auto; background: var(--amber); color: #fff; font-size: 11px; border-radius: 9px; padding: 0 7px; }
+  nav.side .sep { border-top: 1px solid var(--line); margin: 14px 20px; }
+  nav.side .help { padding: 4px 24px; font-size: 13px; color: var(--muted); }
+  main { padding: 26px 36px 50px; max-width: 1060px; }
+  .crumbs { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .crumbs a { color: var(--muted); }
+  .lead { color: var(--muted); margin: 0 0 20px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card + .card { margin-top: 16px; }
+  .grid2 .card + .card, .grid3 .card + .card { margin-top: 0; }
+  .kv { display: grid; grid-template-columns: 170px 1fr; gap: 6px 14px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 8px; border: 1px solid #c9c2b1; background: #fff; color: var(--ink); cursor: pointer; text-decoration: none; }
+  .btn:hover { background: #f6f2e8; }
+  .btn.pri { background: var(--g); border-color: var(--g); color: #fff; }
+  .btn.pri:hover { background: var(--g2); }
+  .btn.sm { padding: 4px 12px; font-size: 13px; }
+  .btn.danger { color: var(--red); border-color: #e3b9b4; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; background: #fbe6c8; color: #8a4f0f; border-radius: 10px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px; }
+  .pill { display: inline-block; font-size: 12px; border-radius: 10px; padding: 1px 9px; background: var(--g3); color: var(--g2); }
+  .pill.grey { background: #eee9dc; color: #6b6558; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee7d8; font-size: 14px; vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+  td.flag-H, td.flag-L, td.flag-A { color: var(--red); font-weight: 700; }
+  .acc { width: 100%; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; color: var(--g2); margin-top: 12px; }
+  .acc .car { margin-left: auto; transition: transform .15s; color: var(--muted); }
+  .acc[aria-expanded=true] { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .acc[aria-expanded=true] .car { transform: rotate(180deg); }
+  .accbody { background: #fff; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 10px 10px; padding: 4px 8px 8px; }
+  input[type=text], input[type=search], input[type=email], input[type=tel], select, textarea { font: inherit; padding: 8px 10px; border: 1px solid #c9c2b1; border-radius: 8px; background: #fff; color: var(--ink); }
+  input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible { outline: 3px solid #f1c98b; outline-offset: 1px; }
+  textarea { width: 100%; max-width: 560px; }
+  label.f { display: block; font-weight: 600; margin: 14px 0 6px; font-size: 14px; }
+  fieldset.fs { border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px 16px; margin: 0 0 16px; background: #fff; }
+  fieldset.fs legend { font-weight: 700; padding: 0 6px; color: var(--g2); }
+  .radio, .chk { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; cursor: pointer; }
+  .radio input, .chk input { margin-top: 4px; accent-color: var(--g); width: 16px; height: 16px; }
+  .yn { display: flex; gap: 26px; }
+  .medopt { border: 1px solid #eee7d8; border-radius: 8px; padding: 8px 14px; margin: 8px 0; }
+  .medopt.on { border-color: #9cc5b2; background: #f5faf7; }
+  .medopt.dis { opacity: .7; }
+  .medopt b { display: block; }
+  .supply { margin: 4px 0 6px 26px; }
+  .supply label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .hint { font-size: 13px; color: #8a4f0f; margin: 6px 0 0; }
+  .prog { display: flex; list-style: none; padding: 0; margin: 0 0 22px; gap: 6px; counter-reset: s; }
+  .prog li { flex: 1; font-size: 13px; color: var(--muted); border-top: 4px solid #e2dbc9; padding-top: 6px; }
+  .prog li.on { border-color: var(--g); color: var(--g2); font-weight: 700; }
+  .prog li.done { border-color: #9cc5b2; color: var(--g); }
+  .err { background: #fdecea; border: 1px solid #f2c1bb; color: var(--red); border-radius: 8px; padding: 10px 14px; margin: 12px 0; font-size: 14px; }
+  .ok { background: #e6f3ec; border: 1px solid #b6d8c5; border-radius: 10px; padding: 18px 20px; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+  .phres { border: 1px solid #eee7d8; border-radius: 8px; margin-top: 10px; }
+  .phres .radio { padding: 10px 14px; border-bottom: 1px solid #f1ebdd; margin: 0; }
+  .phres .radio:last-child { border-bottom: 0; }
+  .phres .radio span.muted { display: block; }
+  .skel { height: 14px; border-radius: 6px; background: linear-gradient(90deg, #efe9da, #f8f4ea, #efe9da); background-size: 200% 100%; animation: sh 1.1s infinite; margin: 10px 0; }
+  @keyframes sh { to { background-position: -200% 0; } }
+  .comment { background: #f5faf7; border-left: 4px solid var(--g); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 16px; font-size: 14px; }
+  .msglist a { display: grid; grid-template-columns: 220px 1fr 110px; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #f1ebdd; color: var(--ink); text-decoration: none; }
+  .msglist a:hover { background: #fbf8f0; }
+  .msglist a.unread { font-weight: 700; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  .tabs [role=tab] { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 16px; font: inherit; cursor: pointer; color: var(--muted); }
+  .tabs [role=tab][aria-selected=true] { color: var(--g2); border-bottom-color: var(--g); font-weight: 700; }
+  .overlay { position: fixed; inset: 0; background: rgba(23, 40, 33, .45); display: flex; align-items: center; justify-content: center; z-index: 30; }
+  .dialog { background: #fff; border-radius: 12px; padding: 22px 24px; width: 460px; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--g2); color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 40; font-size: 14px; }
+  footer.foot { border-top: 1px solid var(--line); padding: 18px 36px; font-size: 12.5px; color: var(--muted); display: flex; gap: 22px; flex-wrap: wrap; background: #fffdf8; }
+  footer.foot a { color: var(--muted); }
+  .apptcard { display: flex; gap: 16px; align-items: center; }
+  .cal { width: 64px; text-align: center; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #fff; }
+  .cal .m { background: var(--g); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 0; text-transform: uppercase; }
+  .cal .d { font-size: 24px; font-weight: 700; color: var(--g2); padding: 2px 0 4px; }
+  ul.plain { list-style: none; padding: 0; margin: 0; }
+  ul.plain li { padding: 8px 0; border-bottom: 1px solid #f1ebdd; font-size: 14px; }
+  ul.plain li:last-child { border-bottom: 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="#/home" aria-label="MyMossgrove home">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 3c6 5 9 10 9 15a9 9 0 0 1-18 0c0-5 3-10 9-15z" fill="#9fd3b5"/><path d="M15 9v18" stroke="#1f5f4a" stroke-width="2"/><path d="M15 17l-4-3M15 21l5-4" stroke="#1f5f4a" stroke-width="2" fill="none"/></svg>
+    <span><b>Mossgrove Health</b><small>MyMossgrove patient portal</small></span>
+  </a>
+  <span class="today">Today: Thursday 24 September 2026</span>
+  <div class="me">
+    <span class="av" aria-hidden="true">NF</span>
+    <span>Nadia Farrokhzad<br><span style="font-size:12px;opacity:.75">MRN MH-0048213</span></span>
+    <button type="button" id="signout">Sign out</button>
+  </div>
+</header>
+<div class="shell">
+  <nav class="side" aria-label="Portal menu">
+    <a href="#/home" data-nav="home"><span class="ic">⌂</span>Home</a>
+    <a href="#/appointments" data-nav="appointments"><span class="ic">📅</span>Appointments</a>
+    <a href="#/messages" data-nav="messages"><span class="ic">✉</span>Messages<span class="count" id="msgcount">2</span></a>
+    <a href="#/results" data-nav="results"><span class="ic">🧪</span>Test results<span class="count" id="rescount">3</span></a>
+    <a href="#/medications" data-nav="medications"><span class="ic">💊</span>Medications</a>
+    <a href="#/record" data-nav="record"><span class="ic">📋</span>Health record</a>
+    <a href="#/billing" data-nav="billing"><span class="ic">£</span>Billing</a>
+    <a href="#/profile" data-nav="profile"><span class="ic">👤</span>Profile &amp; settings</a>
+    <div class="sep"></div>
+    <div class="help">Need urgent help? Call 111, or 999 in an emergency.</div>
+    <div class="help">Mossgrove reception: 01324 550 200<br>Mon–Fri 08:00–18:30</div>
+  </nav>
+  <main id="main"></main>
+</div>
+<footer class="foot">
+  <span>© 2026 Mossgrove Health Partnership</span>
+  <a href="#/help">Help &amp; FAQs</a>
+  <a href="#/privacy">Privacy notice</a>
+  <a href="#/accessibility">Accessibility</a>
+  <a href="#/profile">Proxy access</a>
+  <span>Riverside Clinic · Old Town Surgery · Kinmount Health Centre</span>
+</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3800); };
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmt = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MON[m - 1]} ${y}`; };
+  const main = q('#main');
+
+  // ------------------------------------------------------------------ data
+  const LAB = 'Mossgrove Central Laboratory';
+  const lipid = (t, l, h, tg) => [
+    ['Total cholesterol', t, 'mg/dL', '<200', t >= 200 ? 'H' : ''],
+    ['LDL cholesterol (calculated)', l, 'mg/dL', '<130', l >= 130 ? 'H' : ''],
+    ['HDL cholesterol', h, 'mg/dL', '>40', h < 40 ? 'L' : ''],
+    ['Triglycerides', tg, 'mg/dL', '<150', tg >= 150 ? 'H' : ''],
+    ['Non-HDL cholesterol', t - h, 'mg/dL', '<160', t - h >= 160 ? 'H' : ''],
+    ['Cholesterol/HDL ratio', (t / h).toFixed(1), '', '<5.0', t / h >= 5 ? 'H' : ''],
+  ];
+  const cbc = (wbc, rbc, hb, hct, plt) => [
+    ['White blood cells', wbc, '×10⁹/L', '4.0–11.0', ''], ['Red blood cells', rbc, '×10¹²/L', '3.8–5.2', ''],
+    ['Haemoglobin', hb, 'g/dL', '12.0–15.5', ''], ['Haematocrit', hct, '%', '36–46', ''], ['Platelets', plt, '×10⁹/L', '150–400', ''],
+  ];
+  // id, test, date, time, orderedBy, specimen, components, comment, new?
+  const RESULTS = [
+    ['R-260827-LP', 'Lipid panel', '2026-08-27', '08:14', 'Priya Venkataraman, NP', 'Blood, serum (fasting)', lipid(214, 131, 58, 125), 'A good improvement since June. Keep taking atorvastatin every night and we will recheck in the new year.', true],
+    ['R-260827-UA', 'Urinalysis', '2026-08-27', '08:14', 'Priya Venkataraman, NP', 'Urine, mid-stream', [
+      ['Colour', 'Yellow', '', 'Yellow', ''], ['Clarity', 'Clear', '', 'Clear', ''], ['Specific gravity', '1.018', '', '1.005–1.030', ''], ['pH', '6.0', '', '5.0–8.0', ''],
+      ['Protein', 'Negative', '', 'Negative', ''], ['Glucose', 'Negative', '', 'Negative', ''], ['Ketones', 'Negative', '', 'Negative', ''], ['Blood', 'Negative', '', 'Negative', ''],
+      ['Leukocyte esterase', 'Trace', '', 'Negative', 'A'], ['Nitrite', 'Negative', '', 'Negative', '']], 'Trace leukocytes only. No action needed unless you have symptoms such as burning or needing to go more often.', true],
+    ['R-260622-LP', 'Lipid panel', '2026-06-22', '07:52', 'Dr. Chidi Okonkwo', 'Blood, serum (fasting)', lipid(233, 162, 44, 135), 'LDL is up since March. I am increasing atorvastatin from 10 mg to 20 mg nightly; please repeat the test in about 8 weeks.', false],
+    ['R-260622-TH', 'Thyroid panel (TSH, free T4)', '2026-06-22', '07:52', 'Dr. Amara Lindahl', 'Blood, serum', [['TSH', '2.1', 'mIU/L', '0.4–4.0', ''], ['Free T4', '1.2', 'ng/dL', '0.8–1.8', '']], 'Normal thyroid function.', true],
+    ['R-260509-VD', 'Vitamin D, 25-hydroxy', '2026-05-09', '10:31', 'Dr. Amara Lindahl', 'Blood, serum', [['25-hydroxy vitamin D', '22', 'ng/mL', '30–100', 'L']], 'Slightly low. Please take vitamin D3 1,000 IU daily (available over the counter).', false],
+    ['R-260318-LP', 'Lipid panel', '2026-03-18', '08:05', 'Dr. Amara Lindahl', 'Blood, serum (fasting)', lipid(229, 139, 55, 176), 'Still above target. Continue atorvastatin 10 mg and the diet changes we discussed.', false],
+    ['R-260318-CBC', 'Complete blood count', '2026-03-18', '08:05', 'Dr. Amara Lindahl', 'Whole blood (EDTA)', cbc('6.4', '4.52', '13.6', '40.8', '262'), 'All within normal limits.', false],
+    ['R-260303-A1C', 'HbA1c', '2026-03-03', '09:40', 'Dr. Chidi Okonkwo', 'Whole blood (EDTA)', [['HbA1c', '5.8', '%', '<5.7', 'H'], ['Estimated average glucose', '120', 'mg/dL', '<117', 'H']], 'In the pre-diabetes range. I have sent you a diet and activity leaflet through Messages.', false],
+    ['R-260112-LP', 'Lipid panel', '2026-01-12', '08:20', 'Dr. Amara Lindahl', 'Blood, serum (fasting)', lipid(236, 148, 52, 180), 'Cholesterol remains high. Starting atorvastatin 10 mg nightly was discussed at your review.', false],
+    ['R-260112-CMP', 'Comprehensive metabolic panel', '2026-01-12', '08:20', 'Dr. Amara Lindahl', 'Blood, serum (fasting)', [
+      ['Glucose', '98', 'mg/dL', '70–99', ''], ['Urea nitrogen (BUN)', '14', 'mg/dL', '7–20', ''], ['Creatinine', '0.82', 'mg/dL', '0.59–1.04', ''], ['eGFR', '88', 'mL/min/1.73m²', '>60', ''],
+      ['Sodium', '139', 'mmol/L', '135–145', ''], ['Potassium', '4.3', 'mmol/L', '3.5–5.1', ''], ['Chloride', '102', 'mmol/L', '98–107', ''], ['Carbon dioxide', '25', 'mmol/L', '22–29', ''],
+      ['Calcium', '9.4', 'mg/dL', '8.6–10.3', ''], ['ALT', '24', 'U/L', '7–35', ''], ['AST', '21', 'U/L', '10–35', ''], ['Albumin', '4.3', 'g/dL', '3.5–5.0', '']], 'Kidney and liver function normal.', false],
+    ['R-251114-LP', 'Lipid panel', '2025-11-14', '08:02', 'Dr. Rosalind Ferreira-Hughes', 'Blood, serum (fasting)', lipid(251, 171, 48, 160), 'High LDL. Please book a review with your usual GP to discuss treatment.', false],
+    ['R-251114-CBC', 'Complete blood count', '2025-11-14', '08:02', 'Dr. Rosalind Ferreira-Hughes', 'Whole blood (EDTA)', cbc('7.1', '4.48', '13.2', '40.1', '248'), 'Normal.', false],
+    ['R-250602-LP', 'Lipid panel', '2025-06-02', '08:30', 'Dr. Amara Lindahl', 'Blood, serum (fasting)', lipid(242, 158, 50, 170), 'Above target. Diet and exercise first; recheck in 6 months.', false],
+    ['R-250602-A1C', 'HbA1c', '2025-06-02', '08:30', 'Dr. Amara Lindahl', 'Whole blood (EDTA)', [['HbA1c', '5.6', '%', '<5.7', ''], ['Estimated average glucose', '114', 'mg/dL', '<117', '']], 'Normal.', false],
+    ['R-241204-LP', 'Lipid panel', '2024-12-04', '08:11', 'Dr. Amara Lindahl', 'Blood, serum (fasting)', lipid(245, 163, 47, 175), 'Raised cholesterol. Let us talk about it at your annual review.', false],
+    ['R-241204-CBC', 'Complete blood count', '2024-12-04', '08:11', 'Dr. Amara Lindahl', 'Whole blood (EDTA)', cbc('6.8', '4.39', '12.9', '39.5', '231'), 'Normal.', false],
+    ['R-240419-B12', 'Vitamin B12', '2024-04-19', '11:05', 'Dr. Amara Lindahl', 'Blood, serum', [['Vitamin B12', '412', 'pg/mL', '200–900', '']], 'Normal.', false],
+    ['R-240419-SP', 'Spirometry', '2024-04-19', '11:40', 'Dr. Amara Lindahl', 'Lung function test (clinic)', [['FEV1', '82', '% predicted', '>80', ''], ['FVC', '91', '% predicted', '>80', ''], ['FEV1/FVC', '0.74', '', '>0.70', '']], 'Consistent with well-controlled asthma.', false],
+  ].map(([id, test, date, time, orderedBy, specimen, comps, comment, isNew]) => ({ id, test, date, time, orderedBy, specimen, comps, comment, isNew }));
+  const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+
+  const MEDS = [
+    { id: 'amlodipine-5mg', name: 'Amlodipine 5 mg tablet', short: 'amlodipine', directions: 'Take 1 tablet by mouth once daily', prescriber: 'Dr. Amara Lindahl', lastFilled: '2 Sep 2026', renew: true, supplies: [['30', '30 days'], ['90', '90 days']] },
+    { id: 'atorvastatin-20mg', name: 'Atorvastatin 20 mg tablet', short: 'atorvastatin', directions: 'Take 1 tablet by mouth once nightly', prescriber: 'Dr. Chidi Okonkwo', lastFilled: '20 Aug 2026', renew: true, supplies: [['30', '30 days'], ['90', '90 days (needs medication review)', true]], supplyHint: 'A 90-day supply needs a medication review — your last review was in August 2025.' },
+    { id: 'salbutamol-100mcg', name: 'Salbutamol 100 mcg inhaler', short: 'salbutamol', directions: '1–2 puffs as needed for wheeze', prescriber: 'Dr. Amara Lindahl', lastFilled: '3 Jun 2026', renew: true, supplies: [['30', '30 days (1 inhaler)']] },
+    { id: 'sertraline-50mg', name: 'Sertraline 50 mg tablet', short: 'sertraline', directions: 'Take 1 tablet by mouth once daily', prescriber: 'Dr. Amara Lindahl', lastFilled: '1 Sep 2026', renew: false, why: 'Renewal needs an appointment with your GP.' },
+    { id: 'vitamin-d3', name: 'Vitamin D3 1,000 IU capsule', short: 'vitamin D3', directions: 'Take 1 capsule daily', prescriber: 'Over the counter', lastFilled: '—', renew: false, why: 'Over-the-counter medicine — buy from any pharmacy.' },
+  ];
+  const PHARMACIES = [
+    { id: 'calder-old-town', name: 'Calder Pharmacy — Old Town', street: '12 Kirk Wynd', town: 'Dunmore', pc: 'DM1 2AB', dist: 0.4, hours: 'Open today until 18:00' },
+    { id: 'calderwood', name: 'Calderwood Chemists', street: '88 High Street', town: 'Dunmore', pc: 'DM1 3CD', dist: 0.7, hours: 'Open today until 17:30' },
+    { id: 'calder-riverside', name: 'Calder Pharmacy — Riverside', street: '4 Mill Lane', town: 'Dunmore', pc: 'DM2 4RT', dist: 1.1, hours: 'Open today until 19:00' },
+    { id: 'hollins-riverside', name: 'Hollins Pharmacy — Riverside', street: '2 Quay Road', town: 'Dunmore', pc: 'DM2 4QF', dist: 1.3, hours: 'Open today until 18:00' },
+    { id: 'riverside-late-night', name: 'Riverside Late Night Pharmacy', street: '17 Ferry Road', town: 'Dunmore', pc: 'DM2 5FR', dist: 1.6, hours: 'Open today until 23:00' },
+    { id: 'kinmount-health', name: 'Kinmount Health Centre Pharmacy', street: '3 Station Road', town: 'Kinmount', pc: 'KN4 1AA', dist: 4.2, hours: 'Open today until 18:00' },
+  ];
+  const MESSAGES = [
+    { id: 'MSG-7781', from: 'Dr. Chidi Okonkwo', subject: 'Your HbA1c result and next steps', date: '2026-09-18', unread: true, body: 'Hello Nadia,\n\nAs discussed, I have attached our leaflet on reducing your blood sugar through diet and activity. We will repeat the HbA1c at your annual review.\n\nBest wishes,\nDr. Okonkwo' },
+    { id: 'MSG-7764', from: 'Mossgrove Reception', subject: 'Reminder: annual review on Tuesday 6 October', date: '2026-09-15', unread: true, body: 'Dear Nadia,\n\nThis is a reminder of your annual review with Dr. Amara Lindahl at Riverside Clinic on Tuesday 6 October 2026 at 10:20. Please complete the pre-visit questionnaire beforehand.\n\nMossgrove Reception' },
+    { id: 'MSG-7702', from: 'Priya Venkataraman, NP', subject: 'Blood test booked for 27 August', date: '2026-08-20', unread: false, body: 'Hi Nadia, your fasting blood test is booked for Thursday 27 August at 08:10 at Riverside Clinic. Please do not eat after midnight. Water is fine.' },
+    { id: 'MSG-7655', from: 'Calder Pharmacy — Old Town', subject: 'Your prescription is ready to collect', date: '2026-09-02', unread: false, body: 'Your amlodipine is ready to collect from Calder Pharmacy — Old Town, 12 Kirk Wynd.' },
+    { id: 'MSG-7590', from: 'Dr. Amara Lindahl', subject: 'Vitamin D result', date: '2026-05-12', unread: false, body: 'Your vitamin D is slightly low. Please take a daily vitamin D3 1,000 IU supplement.' },
+  ];
+  const st = { openYears: new Set([2026]), resFilter: '', recordTab: 'allergies', appt: { id: 'AP-55120', date: 'Tuesday 6 October 2026', time: '10:20', who: 'Dr. Amara Lindahl', what: 'Annual review', where: 'Riverside Clinic, 4 Mill Lane', active: true }, sent: [], renewalsRequested: new Set() };
+  let RW = null;
+  let loadTok = 0;
+
+  // ------------------------------------------------------------------ router
+  const route = () => location.hash.replace(/^#\/?/, '') || 'home';
+  function setNav(r) {
+    const top = r.split('/')[0];
+    qa('nav.side a').forEach((a) => a.classList.toggle('on', a.dataset.nav === top));
+    const unreadRes = RESULTS.filter((x) => x.isNew).length;
+    q('#rescount').textContent = unreadRes; q('#rescount').hidden = !unreadRes;
+    const unreadMsg = MESSAGES.filter((m) => m.unread).length;
+    q('#msgcount').textContent = unreadMsg; q('#msgcount').hidden = !unreadMsg;
+  }
+  function render() {
+    const r = route();
+    const p = r.split('/');
+    setNav(r);
+    window.scrollTo(0, 0);
+    if (p[0] === 'home') return renderHome();
+    if (p[0] === 'results') return p[1] ? renderResult(p[1]) : renderResults();
+    if (p[0] === 'medications') return p[1] === 'renew' ? renderRenew(p[2]) : renderMeds();
+    if (p[0] === 'appointments') return p[1] === 'request' ? renderApptRequest() : renderAppts();
+    if (p[0] === 'messages') return p[1] === 'new' ? renderCompose() : p[1] ? renderMessage(p[1]) : renderMessages();
+    if (p[0] === 'record') return renderRecord();
+    if (p[0] === 'billing') return renderBilling();
+    if (p[0] === 'profile') return renderProfile();
+    if (['help', 'privacy', 'accessibility'].includes(p[0])) return renderStatic(p[0]);
+    main.innerHTML = `<h1>Page not found</h1><p class="lead">We couldn't find that page. <a href="#/home">Go to your home page</a>.</p>`;
+  }
+  window.addEventListener('hashchange', render);
+
+  // ------------------------------------------------------------------ home
+  function renderHome() {
+    const newRes = RESULTS.filter((x) => x.isNew);
+    main.innerHTML = `<h1>Good morning, Nadia</h1><p class="lead">Here's what's happening with your care.</p>
+      <div class="grid2">
+        <section class="card" aria-labelledby="h-appt"><h2 id="h-appt">Next appointment</h2>
+          ${st.appt.active ? `<div class="apptcard"><div class="cal"><div class="m">Oct</div><div class="d">6</div></div>
+            <div><b>${esc(st.appt.what)}</b> with ${esc(st.appt.who)}<div class="muted">${esc(st.appt.date)} at ${st.appt.time} · ${esc(st.appt.where)}</div></div></div>
+            <div class="row" style="margin-top:14px"><a class="btn sm" href="#/appointments">View details</a><a class="btn sm" href="#/help">Pre-visit questionnaire</a></div>`
+            : '<p class="muted">You have no upcoming appointments.</p><a class="btn sm" href="#/appointments/request">Request an appointment</a>'}
+        </section>
+        <section class="card" aria-labelledby="h-res"><h2 id="h-res">${newRes.length} new result${newRes.length === 1 ? '' : 's'}</h2>
+          <ul class="plain">${newRes.map((x) => `<li><a href="#/results/${x.id}">${esc(x.test)}</a> <span class="muted">· collected ${fmt(x.date)}</span></li>`).join('') || '<li class="muted">No new results.</li>'}</ul>
+          <a class="btn sm" href="#/results" style="margin-top:10px">All test results</a>
+        </section>
+        <section class="card" aria-labelledby="h-msg"><h2 id="h-msg">Messages</h2>
+          <ul class="plain">${MESSAGES.slice(0, 3).map((m) => `<li><a href="#/messages/${m.id}">${esc(m.subject)}</a><div class="muted">${esc(m.from)} · ${fmt(m.date)}</div></li>`).join('')}</ul>
+          <div class="row" style="margin-top:10px"><a class="btn sm" href="#/messages">Inbox</a><a class="btn sm" href="#/messages/new">New message</a></div>
+        </section>
+        <section class="card" aria-labelledby="h-todo"><h2 id="h-todo">To do</h2>
+          <ul class="plain">
+            <li>Complete your pre-visit questionnaire before 6 October <a href="#/help">Start</a></li>
+            <li>Check your emergency contact details <a href="#/profile">Review</a></li>
+            <li>Flu vaccination: you are eligible this autumn <a href="#/appointments/request">Book</a></li>
+          </ul>
+        </section>
+      </div>
+      <h2 style="margin-top:26px">Quick links</h2>
+      <div class="grid3">
+        <a class="card" href="#/medications/renew" style="text-decoration:none"><b>Request a prescription renewal</b><div class="muted">For your repeat medicines</div></a>
+        <a class="card" href="#/messages/new" style="text-decoration:none"><b>Message your care team</b><div class="muted">Replies within 2 working days</div></a>
+        <a class="card" href="#/record" style="text-decoration:none"><b>View your health record</b><div class="muted">Allergies, immunisations, conditions</div></a>
+      </div>
+      <div class="grid2" style="margin-top:18px">
+        <section class="card"><h2>Health library</h2><ul class="plain">${['Understanding your cholesterol results', 'Living with high blood pressure', 'Pre-diabetes: small changes that help', 'Using your inhaler correctly', 'Vitamin D: who needs a supplement?', 'Getting the most from a medication review'].map((t) => `<li><a href="#/help">${t}</a></li>`).join('')}</ul></section>
+        <section class="card"><h2>Services at Mossgrove</h2><ul class="plain">${['Flu and COVID-19 vaccinations', 'Blood tests (phlebotomy)', 'Asthma and COPD reviews', 'Travel health', 'Physiotherapy self-referral', 'Mental health support'].map((t) => `<li><a href="#/help">${t}</a></li>`).join('')}</ul></section>
+      </div>`;
+  }
+
+  // ------------------------------------------------------------------ results
+  function renderResults() {
+    const years = [2026, 2025, 2024];
+    const f = st.resFilter.toLowerCase();
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Test results</div>
+      <h1>Test results</h1><p class="lead">Results appear here once your clinician has reviewed them. Select a test to see its values.</p>
+      <div class="row"><label for="res-filter" class="muted">Filter by test name</label><input type="search" id="res-filter" value="${esc(st.resFilter)}" placeholder="e.g. lipid" style="width:260px"></div>
+      <div id="res-years">${years.map((y) => {
+        const rows = RESULTS.filter((x) => x.date.startsWith(String(y)) && x.test.toLowerCase().includes(f));
+        const open = st.openYears.has(y);
+        return `<button type="button" class="acc" id="acc-${y}" aria-expanded="${open}" aria-controls="accb-${y}" data-year="${y}">${y}<span class="muted" style="font-weight:400">${rows.length} result${rows.length === 1 ? '' : 's'}</span><span class="car">▾</span></button>
+          <div class="accbody" id="accb-${y}" role="region" aria-labelledby="acc-${y}" ${open ? '' : 'hidden'}>
+          ${rows.length ? `<table><thead><tr><th>Test</th><th>Collected</th><th>Status</th><th></th></tr></thead><tbody>${rows.map((x) => `<tr><td><a href="#/results/${x.id}">${esc(x.test)}</a>${x.isNew ? '<span class="badge">New</span>' : ''}</td><td>${fmt(x.date)}</td><td><span class="pill">Final</span></td><td style="text-align:right"><a class="btn sm" href="#/results/${x.id}" aria-label="View ${esc(x.test)}, ${fmt(x.date)}">View</a></td></tr>`).join('')}</tbody></table>` : '<p class="muted" style="padding:10px">No results match your filter.</p>'}
+          </div>`;
+      }).join('')}</div>
+      <p class="muted" style="margin-top:18px">Some results, such as imaging and screening, are shared by letter and may not appear here.</p>`;
+    q('#res-filter').addEventListener('input', (e) => { st.resFilter = e.target.value; const pos = e.target.selectionStart; renderResults(); const i = q('#res-filter'); i.focus(); i.setSelectionRange(pos, pos); });
+  }
+  main.addEventListener('click', (e) => {
+    const acc = e.target.closest('button.acc[data-year]');
+    if (acc) { const y = +acc.dataset.year; st.openYears.has(y) ? st.openYears.delete(y) : st.openYears.add(y); renderResults(); q('#acc-' + y).focus(); }
+  });
+
+  async function renderResult(id) {
+    const meta = RESULTS.find((x) => x.id === id);
+    if (!meta) { main.innerHTML = `<h1>Result not found</h1><p><a href="#/results">Back to test results</a></p>`; return; }
+    const tok = ++loadTok;
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/results">Test results</a> › ${esc(meta.test)}</div>
+      <h1>${esc(meta.test)}</h1><p class="lead" aria-live="polite">Loading result…</p><div class="card"><div class="skel" style="width:40%"></div><div class="skel"></div><div class="skel" style="width:80%"></div><div class="skel" style="width:65%"></div></div>`;
+    const detail = {
+      id: meta.id, test: meta.test, collected: `${fmt(meta.date)}, ${meta.time}`, reported: `${fmt(addDays(meta.date, 1))}, ${meta.id.endsWith('SP') ? '12:10' : '15:4' + (meta.id.length % 10)}`,
+      status: 'Final', orderedBy: meta.orderedBy, lab: meta.id.endsWith('SP') ? 'Riverside Clinic respiratory service' : LAB, specimen: meta.specimen,
+      components: meta.comps.map(([name, value, units, range, flag]) => ({ name, value: String(value), units, range, flag })), comment: meta.comment,
+    };
+    await sleep(400 + (meta.id.charCodeAt(meta.id.length - 1) * 37) % 500);
+    const data = await fetch('data:application/json,' + encodeURIComponent(JSON.stringify(detail))).then((r) => r.json());
+    if (tok !== loadTok || route() !== 'results/' + id) return;
+    meta.isNew = false; setNav(route());
+    const flagLabel = { H: 'High', L: 'Low', A: 'Abnormal' };
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/results">Test results</a> › ${esc(data.test)}</div>
+      <h1>${esc(data.test)}</h1><p class="lead">Collected ${esc(data.collected)} · Reported ${esc(data.reported)} · <span class="pill">${esc(data.status)}</span></p>
+      <div class="card"><dl class="kv">
+        <dt>Ordered by</dt><dd>${esc(data.orderedBy)}</dd>
+        <dt>Performing lab</dt><dd>${esc(data.lab)}</dd>
+        <dt>Specimen</dt><dd>${esc(data.specimen)}</dd>
+        <dt>Result ID</dt><dd>${esc(data.id)}</dd></dl></div>
+      <div class="card"><h2>Results</h2>
+        <table><thead><tr><th>Component</th><th>Your value</th><th>Units</th><th>Standard range</th><th>Flag</th></tr></thead><tbody>
+        ${data.components.map((c) => `<tr><td>${esc(c.name)}</td><td class="${c.flag ? 'flag-' + c.flag : ''}">${esc(c.value)}</td><td>${esc(c.units)}</td><td>${esc(c.range)}</td><td class="${c.flag ? 'flag-' + c.flag : ''}">${c.flag ? esc(flagLabel[c.flag]) : ''}</td></tr>`).join('')}
+        </tbody></table>
+        <div class="comment"><b>Comment from ${esc(data.orderedBy)}</b><br>${esc(data.comment)}</div>
+      </div>
+      <div class="row" style="margin-top:16px"><a class="btn" href="#/results">← Back to test results</a><button type="button" class="btn" id="pdf">Download PDF</button><a class="btn" href="#/messages/new">Message your clinician</a></div>`;
+    q('#pdf').addEventListener('click', () => toast(`Preparing ${data.test} (${data.id}).pdf…`));
+  }
+
+  // ------------------------------------------------------------------ medications
+  function renderMeds() {
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Medications</div>
+      <div class="row" style="justify-content:space-between"><div><h1>Medications</h1><p class="lead" style="margin:0">Your current medicines and repeat prescriptions.</p></div><a class="btn pri" href="#/medications/renew">Request renewal</a></div>
+      <div class="card" style="margin-top:18px"><table><thead><tr><th>Medicine</th><th>Directions</th><th>Prescriber</th><th>Last filled</th><th>Status</th></tr></thead><tbody>
+      ${MEDS.map((m) => `<tr><td><b>${esc(m.name)}</b></td><td>${esc(m.directions)}</td><td>${esc(m.prescriber)}</td><td>${esc(m.lastFilled)}</td><td>${st.renewalsRequested.has(m.id) ? '<span class="pill">Renewal requested</span>' : m.renew ? `<span class="pill">Active</span> <a href="#/medications/renew/${m.id}" class="muted">Renew</a>` : `<span class="pill grey">${m.id === 'vitamin-d3' ? 'Over the counter' : 'Needs appointment'}</span>`}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="card"><h2>Allergies</h2><p style="margin:0">Penicillin — rash (2009)</p></div>
+      <p class="muted">Preferred pharmacy: Calder Pharmacy — Old Town, 12 Kirk Wynd. <a href="#/profile">Change</a></p>`;
+  }
+
+  const RW_STEPS = ['Medicines', 'Pharmacy', 'Questions', 'Review'];
+  function newRW(pre) { return { step: 0, meds: pre && MEDS.some((m) => m.id === pre && m.renew) ? { [pre]: true } : {}, supply: {}, phMode: 'preferred', q: '', searching: false, results: null, phPick: '', delivery: 'no', side: '', sideTxt: '', other: '', otherTxt: '', msg: '', review: false, err: '', busy: false, done: null }; }
+  function renderRenew(pre) {
+    if (!RW || RW.done || (pre && !RW.meds[pre] && RW.step === 0)) RW = newRW(pre);
+    drawRenew();
+  }
+  function drawRenew() {
+    const w = RW;
+    if (w.done) {
+      main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/medications">Medications</a> › Renewal</div>
+        <h1>Request sent</h1><div class="ok"><b>Reference ${esc(w.done)}</b><p style="margin:6px 0 0">We've sent your renewal request to your care team. We'll message you when your prescription is ready — usually within 2 working days.</p></div>
+        <div class="row" style="margin-top:16px"><a class="btn" href="#/medications">Back to medications</a><a class="btn" href="#/home">Home</a></div>`;
+      return;
+    }
+    const body = [rwStep1, rwStep2, rwStep3, rwStep4][w.step]();
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/medications">Medications</a> › Request renewal</div>
+      <h1>Request a prescription renewal</h1><p class="lead">Step ${w.step + 1} of 4: ${RW_STEPS[w.step]}</p>
+      <ol class="prog">${RW_STEPS.map((s, i) => `<li class="${i === w.step ? 'on' : i < w.step ? 'done' : ''}">${i + 1}. ${s}</li>`).join('')}</ol>
+      <div id="rw-body">${body}</div>
+      ${w.err ? `<div class="err" role="alert">${esc(w.err)}</div>` : ''}
+      <div class="actions">
+        ${w.step > 0 ? '<button type="button" class="btn" id="rw-back">Back</button>' : '<a class="btn" href="#/medications">Cancel</a>'}
+        ${w.step < 3 ? '<button type="button" class="btn pri" id="rw-next">Continue</button>' : `<button type="button" class="btn pri" id="rw-submit" ${w.busy ? 'disabled' : ''}>${w.busy ? 'Sending…' : 'Submit request'}</button>`}
+      </div>`;
+  }
+  function rwStep1() {
+    return `<fieldset class="fs"><legend>Which medicines would you like to renew?</legend>
+      ${MEDS.filter((m) => m.renew).map((m) => {
+        const on = !!RW.meds[m.id];
+        const sup = RW.supply[m.id] || '30';
+        return `<div class="medopt ${on ? 'on' : ''}">
+          <label class="chk"><input type="checkbox" id="rw-med-${m.id}" data-med="${m.id}" ${on ? 'checked' : ''}><span><b>${esc(m.name)}</b><span class="muted">${esc(m.directions)} · ${esc(m.prescriber)} · last filled ${esc(m.lastFilled)}</span></span></label>
+          ${on ? `<div class="supply"><label for="rw-supply-${m.id}">Supply for ${esc(m.short)}</label>
+            <select id="rw-supply-${m.id}" data-supply="${m.id}">${m.supplies.map(([v, l, dis]) => `<option value="${v}" ${dis ? 'disabled' : ''} ${v === sup ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+            ${m.supplyHint ? `<p class="hint">${esc(m.supplyHint)}</p>` : ''}</div>` : ''}
+        </div>`;
+      }).join('')}
+      ${MEDS.filter((m) => !m.renew).map((m) => `<div class="medopt dis"><span class="chk"><input type="checkbox" disabled aria-label="${esc(m.name)} (can't be renewed online)"><span><b>${esc(m.name)}</b><span class="muted">${esc(m.why)}</span></span></span></div>`).join('')}
+      </fieldset>`;
+  }
+  function phResults() {
+    const w = RW;
+    if (w.searching) return '<p class="muted" aria-live="polite">Searching pharmacies…</p>';
+    if (!w.results) return '<p class="muted">Search by pharmacy name, street or postcode.</p>';
+    if (!w.results.length) return `<p class="muted">No pharmacies match “${esc(w.q)}”.</p>`;
+    return `<div class="phres" role="radiogroup" aria-label="Pharmacies">${w.results.map((id) => { const p = PHARMACIES.find((x) => x.id === id); return `<label class="radio"><input type="radio" name="rw-phres" value="${p.id}" id="rw-phres-${p.id}" ${w.phPick === p.id ? 'checked' : ''}><span><b>${esc(p.name)}</b><span class="muted">${esc(p.street)}, ${esc(p.town)} ${esc(p.pc)} · ${p.dist} miles · ${esc(p.hours)}</span></span></label>`; }).join('')}</div>`;
+  }
+  function rwStep2() {
+    const w = RW; const pref = PHARMACIES[0];
+    return `<fieldset class="fs"><legend>Which pharmacy should we send it to?</legend>
+      <label class="radio"><input type="radio" name="rw-ph" value="preferred" id="rw-ph-pref" ${w.phMode === 'preferred' ? 'checked' : ''}><span>Use my preferred pharmacy: ${esc(pref.name)}, ${esc(pref.street)}</span></label>
+      <label class="radio"><input type="radio" name="rw-ph" value="other" id="rw-ph-other" ${w.phMode === 'other' ? 'checked' : ''}><span>Choose a different pharmacy</span></label>
+      ${w.phMode === 'other' ? `<div style="margin:8px 0 0 26px"><label class="f" for="rw-q" style="margin-top:4px">Find a pharmacy</label>
+        <div class="row"><input type="search" id="rw-q" placeholder="Pharmacy name or postcode" value="${esc(w.q)}" style="width:300px"><button type="button" class="btn" id="rw-search">Search</button></div>
+        <div id="rw-results">${phResults()}</div></div>` : ''}
+      </fieldset>
+      <fieldset class="fs"><legend>How would you like to get your medicines?</legend>
+        <label class="radio"><input type="radio" name="rw-del" value="no" id="rw-del-no" ${w.delivery === 'no' ? 'checked' : ''}><span>Collect from the pharmacy</span></label>
+        <label class="radio"><input type="radio" name="rw-del" value="yes" id="rw-del-yes" ${w.delivery === 'yes' ? 'checked' : ''}><span>Home delivery (+£3.50, 2–3 working days)</span></label>
+      </fieldset>`;
+  }
+  function rwStep3() {
+    const w = RW;
+    const yn = (name, val) => `<div class="yn"><label class="radio"><input type="radio" name="${name}" value="yes" id="${name}-yes" ${val === 'yes' ? 'checked' : ''}><span>Yes</span></label><label class="radio"><input type="radio" name="${name}" value="no" id="${name}-no" ${val === 'no' ? 'checked' : ''}><span>No</span></label></div>`;
+    return `<fieldset class="fs"><legend>Have you had any side effects from these medicines?</legend>${yn('rw-se', w.side)}
+        ${w.side === 'yes' ? `<label class="f" for="rw-se-txt">Tell us about the side effects</label><textarea id="rw-se-txt" rows="3">${esc(w.sideTxt)}</textarea>` : ''}</fieldset>
+      <fieldset class="fs"><legend>Have you started, stopped or changed any other medicines?</legend>${yn('rw-oc', w.other)}
+        ${w.other === 'yes' ? `<label class="f" for="rw-oc-txt">Tell us what changed</label><textarea id="rw-oc-txt" rows="3">${esc(w.otherTxt)}</textarea>` : ''}</fieldset>
+      <label class="f" for="rw-msg">Message for your clinician (optional)</label><textarea id="rw-msg" rows="3">${esc(w.msg)}</textarea>`;
+  }
+  function rwStep4() {
+    const w = RW;
+    const ph = w.phMode === 'preferred' ? PHARMACIES[0] : PHARMACIES.find((p) => p.id === w.phPick);
+    const meds = MEDS.filter((m) => w.meds[m.id]);
+    const ch = (s) => `<button type="button" class="btn sm" data-goto="${s}">Change</button>`;
+    return `<div class="card"><table><tbody>
+      <tr><th style="width:190px">Medicines</th><td>${meds.map((m) => `${esc(m.name)} — ${w.supply[m.id] || '30'} days`).join('<br>')}</td><td>${ch(0)}</td></tr>
+      <tr><th>Pharmacy</th><td>${esc(ph.name)}<div class="muted">${esc(ph.street)}, ${esc(ph.town)} ${esc(ph.pc)}</div></td><td>${ch(1)}</td></tr>
+      <tr><th>Collection</th><td>${w.delivery === 'yes' ? 'Home delivery (+£3.50)' : 'Collect from the pharmacy'}</td><td>${ch(1)}</td></tr>
+      <tr><th>Side effects</th><td>${w.side === 'yes' ? 'Yes — ' + esc(norm(w.sideTxt)) : 'No'}</td><td>${ch(2)}</td></tr>
+      <tr><th>Other medicines changed</th><td>${w.other === 'yes' ? 'Yes — ' + esc(norm(w.otherTxt)) : 'No'}</td><td>${ch(2)}</td></tr>
+      <tr><th>Message</th><td>${w.msg.trim() ? esc(norm(w.msg)) : '<span class="muted">None</span>'}</td><td>${ch(2)}</td></tr>
+      </tbody></table></div>
+      <div class="card"><label class="chk"><input type="checkbox" id="rw-review" ${w.review ? 'checked' : ''}><span><b>Also book a medication review appointment</b><span class="muted">A review lets your clinician issue longer supplies, such as 90 days of atorvastatin.</span></span></label></div>`;
+  }
+  async function phSearch() {
+    const w = RW;
+    const inp = q('#rw-q'); if (inp) w.q = inp.value;
+    w.searching = true; w.phPick = ''; w.err = '';
+    q('#rw-results').innerHTML = phResults();
+    const toks = norm(w.q).toLowerCase().split(/[\s,—–()-]+/).filter((t) => t.length > 1);
+    await sleep(650);
+    const scored = PHARMACIES.map((p) => { const hay = `${p.name} ${p.street} ${p.town} ${p.pc}`.toLowerCase(); return [p, toks.filter((t) => hay.includes(t)).length]; });
+    w.results = (toks.length ? scored.filter(([, s]) => s > 0) : scored).sort((a, b) => b[1] - a[1] || a[0].dist - b[0].dist).map(([p]) => p.id);
+    w.searching = false;
+    if (route().startsWith('medications/renew') && RW === w && w.step === 1 && q('#rw-results')) q('#rw-results').innerHTML = phResults();
+  }
+  function rwValidate() {
+    const w = RW;
+    if (w.step === 0 && !Object.values(w.meds).some(Boolean)) return 'Select at least one medicine to renew.';
+    if (w.step === 1 && w.phMode === 'other' && !w.phPick) return 'Search for a pharmacy and choose one from the results.';
+    if (w.step === 2) {
+      if (!w.side) return 'Tell us whether you have had any side effects.';
+      if (w.side === 'yes' && !norm(w.sideTxt)) return 'Tell us about the side effects.';
+      if (!w.other) return 'Tell us whether any of your other medicines have changed.';
+      if (w.other === 'yes' && !norm(w.otherTxt)) return 'Tell us what changed.';
+    }
+    return '';
+  }
+  main.addEventListener('change', (e) => {
+    if (!RW || !route().startsWith('medications/renew')) return;
+    const t = e.target, w = RW;
+    if (t.dataset.med) { w.meds[t.dataset.med] = t.checked; if (!t.checked) delete w.supply[t.dataset.med]; w.err = ''; drawRenew(); return; }
+    if (t.dataset.supply) { w.supply[t.dataset.supply] = t.value; return; }
+    if (t.name === 'rw-ph') { w.phMode = t.value; w.err = ''; drawRenew(); return; }
+    if (t.name === 'rw-phres') { w.phPick = t.value; return; }
+    if (t.name === 'rw-del') { w.delivery = t.value; return; }
+    if (t.name === 'rw-se') { w.side = t.value; drawRenew(); return; }
+    if (t.name === 'rw-oc') { w.other = t.value; drawRenew(); return; }
+    if (t.id === 'rw-review') { w.review = t.checked; }
+  });
+  main.addEventListener('input', (e) => {
+    if (!RW || !route().startsWith('medications/renew')) return;
+    const t = e.target;
+    if (t.id === 'rw-q') RW.q = t.value;
+    if (t.id === 'rw-se-txt') RW.sideTxt = t.value;
+    if (t.id === 'rw-oc-txt') RW.otherTxt = t.value;
+    if (t.id === 'rw-msg') RW.msg = t.value;
+  });
+  main.addEventListener('keydown', (e) => { if (e.target.id === 'rw-q' && e.key === 'Enter') { e.preventDefault(); phSearch(); } });
+  main.addEventListener('click', async (e) => {
+    if (!RW || !route().startsWith('medications/renew')) return;
+    const t = e.target, w = RW;
+    if (t.closest('#rw-search')) { phSearch(); return; }
+    if (t.closest('#rw-back')) { w.err = ''; w.step--; drawRenew(); return; }
+    const g = t.closest('[data-goto]'); if (g) { w.err = ''; w.step = +g.dataset.goto; drawRenew(); return; }
+    if (t.closest('#rw-next')) { w.err = rwValidate(); if (!w.err) w.step++; drawRenew(); return; }
+    if (t.closest('#rw-submit')) {
+      if (w.busy) return;
+      w.busy = true; drawRenew();
+      await sleep(900);
+      const ph = w.phMode === 'preferred' ? PHARMACIES[0] : PHARMACIES.find((p) => p.id === w.phPick);
+      const ids = Object.keys(w.meds).filter((k) => w.meds[k]).sort();
+      await post({
+        event: 'renewal_request', meds: ids.map((id) => `${id}:${w.supply[id] || '30'}`).join('; '), pharmacy: ph.id, pharmacy_name: ph.name,
+        delivery: w.delivery, side_effects: w.side, side_effects_details: w.side === 'yes' ? norm(w.sideTxt) : '',
+        other_changes: w.other, other_changes_details: w.other === 'yes' ? norm(w.otherTxt) : '', message: norm(w.msg),
+      });
+      if (w.review) await post({ event: 'appointment_request', reason: 'medication-review', clinician: '', days: '', notes: 'Requested with prescription renewal' });
+      ids.forEach((id) => st.renewalsRequested.add(id));
+      w.busy = false; w.done = 'RX-' + (40812 + st.renewalsRequested.size);
+      drawRenew();
+    }
+  });
+
+  // ------------------------------------------------------------------ appointments
+  function renderAppts() {
+    const past = [
+      ['27 Aug 2026 08:10', 'Blood test (fasting)', 'Phlebotomy, Riverside Clinic'], ['22 Jun 2026 07:45', 'Blood test (fasting)', 'Phlebotomy, Riverside Clinic'],
+      ['16 Jun 2026 15:30', 'Cholesterol follow-up', 'Dr. Chidi Okonkwo, Old Town Surgery'], ['3 Mar 2026 09:20', 'Asthma review', 'Dr. Chidi Okonkwo, Old Town Surgery'],
+      ['12 Jan 2026 08:15', 'Annual review', 'Dr. Amara Lindahl, Riverside Clinic'], ['14 Nov 2025 11:00', 'Same-day appointment', 'Dr. Rosalind Ferreira-Hughes, Kinmount Health Centre'],
+    ];
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Appointments</div>
+      <div class="row" style="justify-content:space-between"><h1>Appointments</h1><a class="btn pri" href="#/appointments/request">Request an appointment</a></div>
+      <div class="card"><h2>Upcoming</h2>${st.appt.active ? `<div class="apptcard"><div class="cal"><div class="m">Oct</div><div class="d">6</div></div><div><b>${esc(st.appt.what)}</b> with ${esc(st.appt.who)}<div class="muted">${esc(st.appt.date)} at ${st.appt.time} · ${esc(st.appt.where)} · Ref ${st.appt.id}</div></div></div>
+        <div class="row" style="margin-top:14px"><button type="button" class="btn sm" id="ap-resched">Reschedule</button><button type="button" class="btn sm danger" id="ap-cancel">Cancel appointment</button></div>` : '<p class="muted">No upcoming appointments.</p>'}</div>
+      <div class="card"><h2>Past appointments</h2><table><thead><tr><th>Date</th><th>Type</th><th>With</th><th></th></tr></thead><tbody>
+      ${past.map(([d, t, w]) => `<tr><td>${d}</td><td>${t}</td><td>${w}</td><td><button type="button" class="btn sm" data-avs="${esc(t)}">After-visit summary</button></td></tr>`).join('')}</tbody></table></div>`;
+    const c = q('#ap-cancel');
+    if (c) c.addEventListener('click', () => confirmBox('Cancel your annual review on Tuesday 6 October 2026 at 10:20?', 'Cancel appointment', async () => { await post({ event: 'appointment_cancel', appointment: st.appt.id }); st.appt.active = false; renderAppts(); toast('Appointment cancelled.'); }));
+    const r = q('#ap-resched'); if (r) r.addEventListener('click', () => toast('To reschedule, call reception on 01324 550 200.'));
+    qa('[data-avs]').forEach((b) => b.addEventListener('click', () => toast(`The after-visit summary for “${b.dataset.avs}” will open as a PDF.`)));
+  }
+  function renderApptRequest() {
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/appointments">Appointments</a> › Request</div>
+      <h1>Request an appointment</h1><p class="lead">We'll message you with a time within 2 working days.</p>
+      <div class="card">
+        <label class="f" for="ar-reason">Reason</label><select id="ar-reason"><option value="">Choose a reason</option><option value="follow-up">Follow-up</option><option value="new-problem">New problem</option><option value="medication-review">Medication review</option><option value="flu-vaccination">Flu vaccination</option><option value="annual-review">Annual review</option></select>
+        <label class="f" for="ar-who">Preferred clinician</label><select id="ar-who"><option value="">No preference</option><option>Dr. Amara Lindahl</option><option>Dr. Chidi Okonkwo</option><option>Priya Venkataraman, NP</option></select>
+        <label class="f" for="ar-notes">Anything we should know? (optional)</label><textarea id="ar-notes" rows="3"></textarea>
+        <div id="ar-err" class="err" role="alert" hidden></div>
+        <div class="actions"><a class="btn" href="#/appointments">Cancel</a><button type="button" class="btn pri" id="ar-send">Send request</button></div>
+      </div>`;
+    q('#ar-send').addEventListener('click', async () => {
+      const reason = q('#ar-reason').value;
+      if (!reason) { q('#ar-err').textContent = 'Choose a reason for the appointment.'; q('#ar-err').hidden = false; return; }
+      q('#ar-send').disabled = true; await sleep(700);
+      await post({ event: 'appointment_request', reason, clinician: q('#ar-who').value, days: '', notes: norm(q('#ar-notes').value) });
+      location.hash = '#/appointments'; toast('Appointment request sent.');
+    });
+  }
+
+  // ------------------------------------------------------------------ messages
+  function renderMessages() {
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Messages</div>
+      <div class="row" style="justify-content:space-between"><h1>Messages</h1><a class="btn pri" href="#/messages/new">New message</a></div>
+      <div class="card msglist" style="padding:4px 0">${[...st.sent, ...MESSAGES].map((m) => `<a href="#/messages/${m.id}" class="${m.unread ? 'unread' : ''}"><span>${esc(m.from)}</span><span>${esc(m.subject)}</span><span class="muted">${fmt(m.date)}</span></a>`).join('')}</div>`;
+  }
+  function renderMessage(id) {
+    const m = [...st.sent, ...MESSAGES].find((x) => x.id === id);
+    if (!m) { main.innerHTML = '<h1>Message not found</h1><p><a href="#/messages">Back to messages</a></p>'; return; }
+    m.unread = false; setNav(route());
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/messages">Messages</a> › ${esc(m.subject)}</div>
+      <h1>${esc(m.subject)}</h1><p class="lead">${esc(m.from)} · ${fmt(m.date)}</p>
+      <div class="card" style="white-space:pre-wrap">${esc(m.body)}</div>
+      <div class="row" style="margin-top:14px"><a class="btn" href="#/messages">Back</a><a class="btn" href="#/messages/new">Reply</a></div>`;
+  }
+  function renderCompose() {
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › <a href="#/messages">Messages</a> › New message</div>
+      <h1>New message</h1><p class="lead">For non-urgent questions only. We reply within 2 working days.</p>
+      <div class="card">
+        <label class="f" for="mc-to">To</label><select id="mc-to"><option value="">Choose a recipient</option><option>Dr. Amara Lindahl's team</option><option>Dr. Chidi Okonkwo's team</option><option>Priya Venkataraman, NP</option><option>Pharmacy team</option><option>Billing</option></select>
+        <label class="f" for="mc-subj">Subject</label><input type="text" id="mc-subj" style="width:100%;max-width:560px">
+        <label class="f" for="mc-body">Message</label><textarea id="mc-body" rows="6"></textarea>
+        <div id="mc-err" class="err" role="alert" hidden></div>
+        <div class="actions"><a class="btn" href="#/messages">Cancel</a><button type="button" class="btn pri" id="mc-send">Send message</button></div>
+      </div>`;
+    q('#mc-send').addEventListener('click', async () => {
+      const to = q('#mc-to').value, subject = norm(q('#mc-subj').value), body = norm(q('#mc-body').value);
+      if (!to || !subject || !body) { q('#mc-err').textContent = 'Choose a recipient and fill in the subject and message.'; q('#mc-err').hidden = false; return; }
+      q('#mc-send').disabled = true; await sleep(700);
+      await post({ event: 'message_send', to, subject });
+      st.sent.unshift({ id: 'MSG-S' + (st.sent.length + 1), from: 'You → ' + to, subject, date: '2026-09-24', unread: false, body });
+      location.hash = '#/messages'; toast('Message sent.');
+    });
+  }
+
+  // ------------------------------------------------------------------ record, billing, profile
+  function renderRecord() {
+    const tabs = [['allergies', 'Allergies'], ['immunizations', 'Immunisations'], ['conditions', 'Conditions']];
+    const body = {
+      allergies: '<table><thead><tr><th>Allergen</th><th>Reaction</th><th>Severity</th><th>Recorded</th></tr></thead><tbody><tr><td>Penicillin</td><td>Rash</td><td>Moderate</td><td>2009</td></tr><tr><td>Elastoplast (adhesive)</td><td>Skin irritation</td><td>Mild</td><td>2017</td></tr></tbody></table>',
+      immunizations: '<table><thead><tr><th>Vaccine</th><th>Date</th><th>Given at</th></tr></thead><tbody><tr><td>Influenza (seasonal)</td><td>14 Oct 2025</td><td>Riverside Clinic</td></tr><tr><td>COVID-19 booster</td><td>2 Oct 2025</td><td>Kinmount Health Centre</td></tr><tr><td>Tetanus, diphtheria, polio</td><td>9 Mar 2019</td><td>Old Town Surgery</td></tr><tr><td>Hepatitis A</td><td>21 Jul 2016</td><td>Old Town Surgery</td></tr></tbody></table>',
+      conditions: '<table><thead><tr><th>Condition</th><th>Since</th><th>Status</th></tr></thead><tbody><tr><td>Hypertension</td><td>2021</td><td>Active</td></tr><tr><td>Raised cholesterol (hyperlipidaemia)</td><td>2024</td><td>Active</td></tr><tr><td>Asthma, mild persistent</td><td>2004</td><td>Active</td></tr><tr><td>Generalised anxiety disorder</td><td>2022</td><td>Active</td></tr><tr><td>Pre-diabetes</td><td>2026</td><td>Monitoring</td></tr></tbody></table>',
+    };
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Health record</div><h1>Health record</h1><p class="lead">A summary of the information in your GP record.</p>
+      <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" id="tab-${k}" aria-selected="${st.recordTab === k}" aria-controls="panel-rec">${l}</button>`).join('')}</div>
+      <div class="card" role="tabpanel" id="panel-rec" aria-labelledby="tab-${st.recordTab}">${body[st.recordTab]}</div>`;
+    qa('[role=tab]').forEach((b) => b.addEventListener('click', () => { st.recordTab = b.id.slice(4); renderRecord(); }));
+  }
+  function renderBilling() {
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Billing</div><h1>Billing</h1><p class="lead">Prescription charges and private services.</p>
+      <div class="grid2"><div class="card"><h2>Balance</h2><p style="font-size:28px;margin:0;color:var(--g2)">£0.00</p><p class="muted">Nothing to pay.</p></div>
+      <div class="card"><h2>Prescription prepayment certificate</h2><p class="muted" style="margin-top:0">Your 12-month certificate is valid until 31 March 2027.</p></div></div>
+      <div class="card"><h2>Statements</h2><table><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+      <tr><td>1 Apr 2026</td><td>Prescription prepayment certificate (12 months)</td><td>£114.50</td><td>Paid</td></tr><tr><td>18 Nov 2025</td><td>Travel vaccination consultation</td><td>£25.00</td><td>Paid</td></tr><tr><td>21 Jul 2025</td><td>Medical report for insurer</td><td>£95.00</td><td>Paid</td></tr></tbody></table></div>`;
+  }
+  function renderProfile() {
+    main.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Profile &amp; settings</div><h1>Profile &amp; settings</h1>
+      <div class="card"><h2>Contact details</h2><dl class="kv"><dt>Name</dt><dd>Nadia Farrokhzad</dd><dt>Date of birth</dt><dd>11 April 1979</dd><dt>Address</dt><dd>27 Weaver's Close, Dunmore DM1 4HZ</dd><dt>Mobile</dt><dd>07700 900 512</dd><dt>Email</dt><dd>nadia.farrokhzad@kestrelmail.co.uk</dd></dl>
+        <div class="row" style="margin-top:14px"><button type="button" class="btn sm" id="pf-edit">Edit contact details</button></div></div>
+      <div class="card"><h2>Emergency contact</h2><dl class="kv"><dt>Name</dt><dd>Reza Farrokhzad (brother)</dd><dt>Phone</dt><dd>07700 900 877</dd></dl></div>
+      <div class="card"><h2>Preferred pharmacy</h2><p style="margin:0">Calder Pharmacy — Old Town, 12 Kirk Wynd, Dunmore DM1 2AB</p></div>
+      <div class="card"><h2>Notifications</h2><label class="chk"><input type="checkbox" id="pf-sms" checked><span>Text me appointment reminders</span></label><label class="chk"><input type="checkbox" id="pf-email" checked><span>Email me when a new result or message arrives</span></label><div class="actions"><button type="button" class="btn" id="pf-save">Save preferences</button></div></div>`;
+    q('#pf-edit').addEventListener('click', () => toast('To change your name or date of birth, contact reception. Address changes open in the next release.'));
+    q('#pf-save').addEventListener('click', async () => { q('#pf-save').disabled = true; await sleep(600); await post({ event: 'profile_update', section: 'notifications', sms: q('#pf-sms').checked ? 'yes' : 'no', email: q('#pf-email').checked ? 'yes' : 'no' }); q('#pf-save').disabled = false; toast('Preferences saved.'); });
+  }
+  function renderStatic(k) {
+    const T = { help: ['Help & FAQs', 'Find answers about repeat prescriptions, test results and appointments. For anything urgent call 111.'], privacy: ['Privacy notice', 'Mossgrove Health Partnership is the data controller for your GP record.'], accessibility: ['Accessibility', 'We aim to meet WCAG 2.2 AA. Tell us if something does not work for you.'] }[k];
+    main.innerHTML = `<h1>${esc(T[0])}</h1><div class="card"><p style="margin:0">${esc(T[1])}</p></div>`;
+  }
+
+  // ------------------------------------------------------------------ dialogs
+  function confirmBox(msg, okLabel, onOk) {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-t"><h2 id="dlg-t">Are you sure?</h2><p>${esc(msg)}</p><div class="actions" style="justify-content:flex-end"><button type="button" class="btn" id="dlg-no">Keep it</button><button type="button" class="btn pri" id="dlg-ok">${esc(okLabel)}</button></div></div></div>`;
+    q('#dlg-no').addEventListener('click', () => (q('#modal-root').innerHTML = ''));
+    q('#dlg-ok').addEventListener('click', async () => { q('#dlg-ok').disabled = true; await sleep(500); q('#modal-root').innerHTML = ''; await onOk(); });
+  }
+  q('#signout').addEventListener('click', () => toast('Sign-out is disabled in this demo session.'));
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quayside Motors · Servicing, MOT &amp; repairs in Bristol</title>
+<script src="../common.js"></script>
+<style>
+  :root { --o: #ff6a13; --o2: #fff1e8; --k: #111111; --k2: #262626; --line: #e4e4e4; --muted: #6b6b6b; --bg: #fafafa; --bad: #c0271a; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Helvetica Neue", Arial, sans-serif; color: var(--k); background: var(--bg); }
+  a { color: var(--k); }
+  .topline { background: var(--o); color: #111; font-size: 13px; font-weight: 700; padding: 6px 30px; display: flex; gap: 26px; }
+  .topline span:last-child { margin-left: auto; }
+  header.hd { background: var(--k); color: #fff; display: flex; align-items: center; gap: 30px; padding: 0 30px; height: 70px; position: sticky; top: 0; z-index: 10; }
+  .brand { color: #fff; text-decoration: none; display: flex; flex-direction: column; line-height: 1.1; }
+  .brand b { font-size: 21px; letter-spacing: 3px; font-weight: 900; }
+  .brand b i { color: var(--o); font-style: normal; }
+  .brand span { font-size: 11px; letter-spacing: 1.5px; color: #aaa; text-transform: uppercase; }
+  header nav { display: flex; gap: 4px; }
+  header nav a { color: #ddd; text-decoration: none; padding: 8px 12px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; border-radius: 4px; }
+  header nav a:hover, header nav a.on { color: #fff; background: var(--k2); }
+  header .cta { margin-left: auto; background: var(--o); color: #111; text-decoration: none; font-weight: 800; padding: 11px 20px; border-radius: 4px; text-transform: uppercase; letter-spacing: .8px; font-size: 13.5px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 30px 30px 60px; }
+  h1 { font-size: 34px; margin: 0 0 8px; font-weight: 900; letter-spacing: -.5px; }
+  h2 { font-size: 22px; margin: 0 0 12px; font-weight: 800; }
+  h3 { font-size: 17px; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 22px; font-size: 16px; }
+  .hero { background: linear-gradient(120deg, #111 0%, #1f1f1f 60%, #3a1b08 100%); color: #fff; border-radius: 6px; padding: 46px 44px; margin-bottom: 30px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 30px; align-items: center; }
+  .hero h1 { font-size: 40px; }
+  .hero p { color: #d0d0d0; font-size: 17px; }
+  .hero ul { margin: 0; padding: 0; list-style: none; }
+  .hero li { padding: 6px 0; border-bottom: 1px solid #333; }
+  .hero li::before { content: "✓ "; color: var(--o); font-weight: 900; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
+  .card .price { font-size: 30px; font-weight: 900; margin: 6px 0; }
+  .card .price small { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-weight: 800; font-size: 14px; padding: 11px 20px; border-radius: 4px; border: 2px solid var(--k); background: #fff; color: var(--k); cursor: pointer; text-decoration: none; text-transform: uppercase; letter-spacing: .5px; }
+  .btn.pri { background: var(--o); border-color: var(--o); color: #111; }
+  .btn.dark { background: var(--k); color: #fff; }
+  .btn.sm { padding: 6px 12px; font-size: 12.5px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .stars { color: var(--o); letter-spacing: 2px; }
+  details { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  label.f { display: block; font-weight: 700; margin: 16px 0 6px; }
+  input[type=text], input[type=email], input[type=tel], select, textarea { font: inherit; font-size: 16px; padding: 10px 12px; border: 2px solid #cfcfcf; border-radius: 4px; background: #fff; width: 320px; max-width: 100%; }
+  textarea { width: 100%; }
+  input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible { outline: 3px solid var(--o); outline-offset: 1px; }
+  input.plate { font-family: "Charles Wright", "Arial Black", Arial, sans-serif; font-weight: 900; font-size: 24px; letter-spacing: 3px; text-transform: uppercase; background: #ffd60a; border: 2px solid #111; width: 230px; padding: 8px 12px 8px 44px; background-image: linear-gradient(90deg, #1a47b8 0 34px, transparent 34px); }
+  .wiz { display: grid; grid-template-columns: 1fr 300px; gap: 26px; align-items: start; }
+  .steps { display: flex; list-style: none; margin: 0 0 22px; padding: 0; gap: 4px; }
+  .steps li { flex: 1; background: #ececec; color: #777; font-size: 12.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; padding: 9px 10px; }
+  .steps li.on { background: var(--k); color: #fff; }
+  .steps li.done { background: #ffd9c2; color: #7a2f00; }
+  .opt { position: relative; display: block; background: #fff; border: 2px solid var(--line); border-radius: 6px; padding: 14px 16px 14px 46px; margin: 10px 0; cursor: pointer; }
+  .opt input { position: absolute; left: 16px; top: 17px; width: 18px; height: 18px; accent-color: var(--o); }
+  .opt:has(input:checked) { border-color: var(--o); background: var(--o2); }
+  .opt.dis { opacity: .55; cursor: not-allowed; }
+  .opt .p { float: right; font-weight: 900; }
+  .badge { display: inline-block; background: var(--k); color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; margin-left: 6px; letter-spacing: .5px; }
+  .summary { background: #fff; border: 2px solid var(--k); border-radius: 6px; padding: 18px; position: sticky; top: 90px; }
+  .summary h3 { text-transform: uppercase; letter-spacing: .8px; font-size: 14px; }
+  .summary .ln { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+  .summary .tot { border-top: 2px solid var(--k); margin-top: 8px; padding-top: 8px; font-weight: 900; font-size: 18px; }
+  .veh { display: flex; gap: 14px; align-items: center; background: #fff; border: 2px solid #1f9d55; border-radius: 6px; padding: 14px 16px; margin-top: 14px; }
+  .veh .ic { font-size: 30px; }
+  .err { background: #fdecea; border-left: 5px solid var(--bad); color: #7d1a10; padding: 12px 16px; margin: 14px 0; font-weight: 600; }
+  .upsell { background: var(--o2); border: 2px dashed var(--o); border-radius: 6px; padding: 12px 16px; margin-top: 14px; }
+  .chk { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; margin: 8px 0; }
+  .chk input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--o); }
+  iframe.widget { width: 100%; height: 470px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .picked { margin-top: 10px; font-weight: 800; font-size: 16px; }
+  .actions { display: flex; gap: 12px; margin-top: 24px; align-items: center; }
+  .ok { background: #fff; border: 2px solid #1f9d55; border-radius: 6px; padding: 24px; }
+  footer.ft { background: var(--k); color: #bbb; padding: 34px 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; font-size: 13.5px; }
+  footer.ft b { color: #fff; display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .8px; font-size: 12.5px; }
+  footer.ft a { color: #ddd; display: block; padding: 2px 0; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--k); color: #fff; padding: 12px 18px; border-left: 5px solid var(--o); z-index: 40; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topline"><span>☎ 0117 496 0831</span><span>Mon–Fri 07:45–17:30 · Sat 08:00–12:30</span><span>Free collection within 3 miles of BS1</span></div>
+<header class="hd">
+  <a class="brand" href="#/"><b>QUAYSIDE <i>MOTORS</i></b><span>Independent garage · Bristol</span></a>
+  <nav aria-label="Main">
+    <a href="#/services" data-nav="services">Services</a>
+    <a href="#/mot" data-nav="mot">MOT</a>
+    <a href="#/tyres" data-nav="tyres">Tyres</a>
+    <a href="#/offers" data-nav="offers">Offers</a>
+    <a href="#/reviews" data-nav="reviews">Reviews</a>
+    <a href="#/contact" data-nav="contact">Contact</a>
+  </nav>
+  <a class="cta" href="#/book">Book online</a>
+</header>
+<main id="main"></main>
+<footer class="ft">
+  <div><b>Quayside Motors</b>Unit 7, Quayside Trading Estate<br>Bristol BS1 6XN<br>0117 496 0831<br>hello@quaysidemotors.co.uk</div>
+  <div><b>Opening hours</b>Mon–Fri 07:45–17:30<br>Saturday 08:00–12:30<br>Sunday closed</div>
+  <div><b>Services</b><a href="#/services">Servicing</a><a href="#/mot">MOT testing</a><a href="#/tyres">Tyres &amp; tracking</a><a href="#/offers">Air-con regas</a></div>
+  <div><b>About</b><a href="#/reviews">Customer reviews</a><a href="#/contact">Find us</a><a href="#/terms">Terms &amp; conditions</a><a href="#/privacy">Privacy</a></div>
+</footer>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3800); };
+  const gbp = (n) => '£' + Number(n).toFixed(2);
+  const main = q('#main');
+
+  const PKGS = [
+    { id: 'none', name: 'No service', price: 0, mins: 0, desc: 'Just the MOT or extras below' },
+    { id: 'interim', name: 'Interim service', price: 149, mins: 120, desc: '6 months / 6,000 miles · oil and filter, 40-point check' },
+    { id: 'full', name: 'Full service', price: 239, mins: 180, desc: '12 months / 12,000 miles · oil, oil/air filters, 72-point check', tag: 'Most popular' },
+    { id: 'major', name: 'Major service', price: 349, mins: 240, desc: '24 months · full service plus spark plugs, fuel filter, brake fluid' },
+  ];
+  const MOT = { price: 54.85, mins: 60 };
+  const EXTRAS = [
+    { id: 'aircon', name: 'Air-con regas', price: 69 }, { id: 'brakefluid', name: 'Brake fluid change', price: 45 },
+    { id: 'wipers', name: 'Wiper blades (pair)', price: 28 }, { id: 'pollen', name: 'Pollen filter', price: 32 },
+  ];
+  const DVLA = {
+    LK19ZPW: { desc: 'ŠKODA OCTAVIA ESTATE SE L 1.5 TSI', year: '2019', fuel: 'Petrol', colour: 'Moon White', mot: 'MOT due 14 October 2026', last: 'Last serviced here 11 September 2025 at 38,902 miles' },
+    WR68KTE: { desc: 'FORD FIESTA ZETEC 1.0 ECOBOOST', year: '2018', fuel: 'Petrol', colour: 'Magnetic Grey', mot: 'MOT due 2 March 2027', last: 'No service history with us' },
+    BD21XFP: { desc: 'TOYOTA YARIS DESIGN HEV', year: '2021', fuel: 'Hybrid', colour: 'Pearl White', mot: 'MOT due 9 May 2027', last: 'Last serviced here 30 April 2026' },
+  };
+  const DOW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const niceDate = (iso) => { const d = new Date(iso + 'T12:00:00Z'); return `${DOW[d.getUTCDay()]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]}`; };
+  const regKey = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const regFmt = (k) => (k.length > 3 ? k.slice(0, -3) + ' ' + k.slice(-3) : k);
+
+  let bk = null;
+  const newBk = (preset) => ({
+    preset: preset || '', step: 0, reg: '', miles: '', vehicle: null, vehKey: '', lookup: 'idle', manualMake: '', manualModel: '',
+    pkg: preset === 'mot' ? 'none' : PKGS.some((p) => p.id === preset) ? preset : 'full', mot: preset === 'mot', extras: new Set(),
+    slot: null, wait: 'no', courtesy: false, name: '', email: '', phone: '', notes: '', reminders: false, err: '', busy: false, done: null,
+  });
+  const jobMins = () => PKGS.find((p) => p.id === bk.pkg).mins + (bk.mot ? MOT.mins : 0) + 30 * bk.extras.size;
+  const total = () => PKGS.find((p) => p.id === bk.pkg).price + (bk.mot ? MOT.price : 0) + EXTRAS.filter((x) => bk.extras.has(x.id)).reduce((s, x) => s + x.price, 0) + (bk.courtesy && bk.wait === 'no' ? 15 : 0);
+
+  const route = () => location.hash.replace(/^#\/?/, '');
+  function render() {
+    const r = route(); const p = r.split('/');
+    qa('header nav a').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    window.scrollTo(0, 0);
+    if (!r) return renderHome();
+    if (p[0] === 'book') { if (!bk || bk.done || (p[1] && p[1] !== bk.preset)) bk = newBk(p[1]); return drawBook(); }
+    if (p[0] === 'services') return renderServices();
+    if (p[0] === 'mot') return renderMot();
+    if (p[0] === 'tyres') return renderTyres();
+    if (p[0] === 'offers') return renderOffers();
+    if (p[0] === 'reviews') return renderReviews();
+    if (p[0] === 'contact') return renderContact();
+    if (p[0] === 'terms' || p[0] === 'privacy') { main.innerHTML = `<h1>${p[0] === 'terms' ? 'Terms &amp; conditions' : 'Privacy'}</h1><div class="card"><p style="margin:0">Quayside Motors Ltd, company no. 03318842. We only use your details to manage your booking and, if you ask us to, to send reminders.</p></div>`; return; }
+    main.innerHTML = '<h1>Page not found</h1><p><a href="#/">Back to the home page</a></p>';
+  }
+  window.addEventListener('hashchange', render);
+
+  const REVIEWS = [
+    ['Ffion R.', 5, 'Booked a full service online, dropped the car at 8:30 and it was ready by 2. Clear explanation of everything they checked.'],
+    ['Dev K.', 5, 'Honest garage — told me my brakes had another 5,000 miles in them rather than selling me new pads.'],
+    ['Maggie O.', 4, 'MOT done while I waited with a coffee. Only knocked a star because parking is tight.'],
+    ['Tomasz W.', 5, 'Fixed an air-con fault two main dealers couldn’t find. Fair price.'],
+    ['Anjali P.', 5, 'Courtesy car was clean and the booking system is easy.'],
+  ];
+  function renderHome() {
+    main.innerHTML = `<section class="hero"><div><h1>Servicing, MOT and repairs you can trust</h1><p>Family-run independent garage on Bristol's harbourside since 1998. Main-dealer standards, without main-dealer prices.</p>
+        <div class="row"><a class="btn pri" href="#/book">Book online</a><a class="btn" href="#/services" style="background:transparent;color:#fff;border-color:#fff">Compare services</a></div></div>
+        <ul><li>Manufacturer-approved parts — keeps your warranty</li><li>DVSA-approved MOT test centre</li><li>Free video health check with every service</li><li>4.9 ★ from 1,240 Google reviews</li></ul></section>
+      <h2>Servicing &amp; MOT prices</h2>
+      <div class="grid4">
+        ${PKGS.filter((x) => x.id !== 'none').map((x) => `<div class="card"><h3>${x.name}${x.tag ? `<span class="badge">${x.tag}</span>` : ''}</h3><div class="price">£${x.price}<small> from</small></div><p class="muted">${x.desc}</p><a class="btn sm" href="#/book/${x.id}" aria-label="Book ${x.name}">Book now</a></div>`).join('')}
+        <div class="card"><h3>MOT test</h3><div class="price">£54.85<small> fixed</small></div><p class="muted">DVSA maximum fee. Free retest within 10 working days.</p><a class="btn sm" href="#/book/mot" aria-label="Book an MOT">Book now</a></div>
+      </div>
+      <div class="grid3" style="grid-template-columns:1fr 1fr;margin-top:26px">
+        <div class="card"><h3>When is your MOT due?</h3><label class="f" for="mot-check-reg" style="margin-top:4px">Registration</label>
+          <div class="row"><input type="text" id="mot-check-reg" class="plate" maxlength="10" placeholder="AB12 CDE" autocomplete="off"><button type="button" class="btn" id="mot-check">Check</button></div><p class="muted" id="mot-check-out" aria-live="polite"></p></div>
+        <div class="card"><h3>Popular jobs</h3><div class="row" style="gap:8px">${['Brake pads & discs', 'Clutch replacement', 'Diagnostics', 'Timing belt', 'Batteries', 'Exhausts', 'Suspension', 'Wheel alignment', 'Pre-purchase inspection'].map((j) => `<a class="btn sm" href="#/services">${j}</a>`).join('')}</div></div>
+      </div>
+      <h2 style="margin-top:34px">What our customers say</h2>
+      <div class="grid3">${REVIEWS.slice(0, 3).map(([n, s, t]) => `<div class="card"><div class="stars">${'★'.repeat(s)}${'☆'.repeat(5 - s)}</div><p>${esc(t)}</p><b>${esc(n)}</b></div>`).join('')}</div>
+      <p><a href="#/reviews">Read all reviews</a></p>
+      <h2 style="margin-top:30px">Frequently asked questions</h2>
+      <details><summary>Can I wait while my car is serviced?</summary><p>Yes, for jobs up to 90 minutes (for example an MOT on its own). Longer jobs need the car to be left with us; courtesy cars are available on request.</p></details>
+      <details><summary>What's the difference between an interim and a full service?</summary><p>An interim service is a 40-point check with an oil and filter change, ideal between full services. A full service adds air filter, a 72-point inspection and more.</p></details>
+      <details><summary>Do you do MOTs on Saturdays?</summary><p>Yes, Saturday mornings from 08:00 until 12:30.</p></details>
+      <details><summary>How do I pay?</summary><p>You pay when you collect your car. We take cards, Apple Pay and bank transfer.</p></details>`;
+    q('#mot-check').addEventListener('click', async () => {
+      const k = regKey(q('#mot-check-reg').value), out = q('#mot-check-out');
+      if (!k) { out.textContent = 'Enter a registration.'; return; }
+      out.textContent = 'Checking…'; await sleep(500);
+      out.textContent = DVLA[k] ? `${regFmt(k)} (${DVLA[k].desc}): ${DVLA[k].mot}.` : "We couldn't find that registration.";
+    });
+  }
+  function renderServices() {
+    const rows = [['Engine oil and filter change', 1, 1, 1], ['Air filter', 0, 1, 1], ['Brake check and measurement', 1, 1, 1], ['Suspension and steering check', 1, 1, 1], ['Battery health test', 1, 1, 1], ['Coolant and antifreeze check', 1, 1, 1], ['Spark plugs (petrol)', 0, 0, 1], ['Fuel filter (diesel)', 0, 0, 1], ['Brake fluid change', 0, 0, 1], ['Free video health check', 1, 1, 1]];
+    main.innerHTML = `<h1>Servicing</h1><p class="lead">Every service follows your manufacturer's schedule and is stamped in your service history.</p>
+      <div class="card"><table><thead><tr><th>Included</th><th>Interim £149</th><th>Full £239</th><th>Major £349</th></tr></thead><tbody>${rows.map(([n, a, b, c]) => `<tr><td>${n}</td>${[a, b, c].map((v) => `<td>${v ? '✓' : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>
+      <div class="actions"><a class="btn pri" href="#/book">Book a service</a></div></div>`;
+  }
+  function renderMot() {
+    main.innerHTML = `<h1>MOT testing</h1><p class="lead">DVSA-approved test centre. MOT test £54.85, free retest within 10 working days.</p>
+      <div class="grid3"><div class="card"><h3>How long does it take?</h3><p class="muted">About an hour. You're welcome to wait in our customer lounge.</p></div><div class="card"><h3>When can I get my MOT?</h3><p class="muted">Up to a month (minus a day) before your due date and keep the same renewal date.</p></div><div class="card"><h3>If it fails</h3><p class="muted">We'll quote for repairs before doing any work.</p></div></div>
+      <div class="actions"><a class="btn pri" href="#/book/mot">Book an MOT</a></div>`;
+  }
+  function renderTyres() {
+    main.innerHTML = `<h1>Tyres</h1><p class="lead">Premium, mid-range and budget tyres fitted while you wait.</p>
+      <div class="card"><label class="f" for="ty-size" style="margin-top:0">Tyre size</label><input type="text" id="ty-size" placeholder="e.g. 205/55 R16 91V">
+        <label class="f" for="ty-qty">How many?</label><select id="ty-qty"><option>1</option><option selected>2</option><option>4</option></select>
+        <label class="f" for="ty-email">Email for your quote</label><input type="email" id="ty-email">
+        <div class="actions"><button type="button" class="btn dark" id="ty-go">Get a quote</button></div></div>`;
+    q('#ty-go').addEventListener('click', async () => {
+      const size = norm(q('#ty-size').value), email = norm(q('#ty-email').value).toLowerCase();
+      if (!size || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Enter your tyre size and email address.');
+      q('#ty-go').disabled = true; await sleep(800);
+      await post({ event: 'tyre_quote_request', size, qty: q('#ty-qty').value, email });
+      toast('Thanks — we’ll email your quote within the hour.'); q('#ty-go').disabled = false;
+    });
+  }
+  function renderOffers() {
+    main.innerHTML = `<h1>Offers</h1><div class="grid3">
+      <div class="card"><h3>Air-con regas £69</h3><p class="muted">Add it to any service booking. Includes leak test.</p></div>
+      <div class="card"><h3>Free winter check</h3><p class="muted">Battery, coolant, lights and wipers — free with any MOT in October.</p></div>
+      <div class="card"><h3>10% off tyres</h3><p class="muted">When you buy 4 premium tyres. Ends 31 October 2026.</p></div></div>
+      <div class="actions"><a class="btn pri" href="#/book">Book online</a></div>`;
+  }
+  function renderReviews() {
+    main.innerHTML = `<h1>Customer reviews</h1><p class="lead">4.9 ★ average from 1,240 Google reviews.</p>${REVIEWS.map(([n, s, t]) => `<div class="card" style="margin-bottom:12px"><div class="stars">${'★'.repeat(s)}${'☆'.repeat(5 - s)}</div><p style="margin:6px 0">${esc(t)}</p><b>${esc(n)}</b></div>`).join('')}`;
+  }
+  function renderContact() {
+    main.innerHTML = `<h1>Contact &amp; find us</h1><div class="grid3" style="grid-template-columns:1fr 1fr">
+      <div class="card"><h3>Quayside Motors</h3><p>Unit 7, Quayside Trading Estate<br>Bristol BS1 6XN</p><p>☎ 0117 496 0831<br>hello@quaysidemotors.co.uk</p><p class="muted">Parking for 6 customer cars at the front of the unit.</p></div>
+      <div class="card"><h3>Send us a message</h3><label class="f" for="ct-name" style="margin-top:0">Your name</label><input type="text" id="ct-name"><label class="f" for="ct-email">Email</label><input type="email" id="ct-email"><label class="f" for="ct-msg">Message</label><textarea id="ct-msg" rows="4"></textarea><div class="actions"><button type="button" class="btn dark" id="ct-send">Send message</button></div></div></div>`;
+    q('#ct-send').addEventListener('click', async () => {
+      const name = norm(q('#ct-name').value), email = norm(q('#ct-email').value).toLowerCase(), msg = norm(q('#ct-msg').value);
+      if (!name || !email || !msg) return toast('Please fill in all three fields.');
+      q('#ct-send').disabled = true; await sleep(700);
+      await post({ event: 'contact_message', name, email });
+      toast('Message sent — we reply within one working day.'); q('#ct-send').disabled = false;
+    });
+  }
+
+  // ------------------------------------------------------------------ booking wizard
+  const STEPS = ['Vehicle', 'Services', 'Date & time', 'Your details', 'Confirm'];
+  function summaryHtml() {
+    const pk = PKGS.find((p) => p.id === bk.pkg);
+    const lines = [];
+    if (pk.id !== 'none') lines.push([pk.name, pk.price]);
+    if (bk.mot) lines.push(['MOT test', MOT.price]);
+    EXTRAS.filter((x) => bk.extras.has(x.id)).forEach((x) => lines.push([x.name, x.price]));
+    if (bk.courtesy && bk.wait === 'no') lines.push(['Courtesy car (1 day)', 15]);
+    return `<aside class="summary" aria-label="Your booking"><h3>Your booking</h3>
+      <div class="muted">${bk.vehicle ? `<b style="color:#111">${esc(regFmt(bk.vehKey))}</b> · ${esc(bk.vehicle.desc)}` : 'Vehicle not added yet'}</div>
+      <div style="margin:10px 0">${lines.map(([n, p]) => `<div class="ln"><span>${esc(n)}</span><span>${gbp(p)}</span></div>`).join('') || '<div class="muted">No services selected</div>'}</div>
+      <div class="ln"><span>Drop-off</span><span>${bk.slot ? `${esc(niceDate(bk.slot.date))}, ${bk.slot.time}` : '—'}</span></div>
+      <div class="ln tot"><span>Total</span><span>${gbp(total())}</span></div><div class="muted">Pay when you collect. Prices include VAT.</div></aside>`;
+  }
+  function drawBook() {
+    if (bk.done) {
+      main.innerHTML = `<div class="ok"><h1>You're booked in!</h1><p style="font-size:17px">Booking reference <b>${esc(bk.done)}</b>. We've emailed your confirmation to ${esc(bk.email)}.</p><p class="muted">Drop-off ${esc(niceDate(bk.slot.date))} at ${bk.slot.time} · Unit 7, Quayside Trading Estate, Bristol BS1 6XN.</p><div class="actions"><a class="btn" href="#/">Back to home</a></div></div>`;
+      return;
+    }
+    const body = [stVehicle, stServices, stWhen, stDetails, stConfirm][bk.step]();
+    main.innerHTML = `<h1>Book online</h1><p class="lead">Takes about 2 minutes. No payment needed now.</p>
+      <ol class="steps">${STEPS.map((s, i) => `<li class="${i === bk.step ? 'on' : i < bk.step ? 'done' : ''}">${i + 1}. ${s}</li>`).join('')}</ol>
+      <div class="wiz"><section aria-label="${STEPS[bk.step]}">${body}
+        ${bk.err ? `<div class="err" role="alert">${esc(bk.err)}</div>` : ''}
+        <div class="actions">${bk.step ? '<button type="button" class="btn" id="bk-back">Back</button>' : ''}
+        ${bk.step < 4 ? `<button type="button" class="btn dark" id="bk-next" ${bk.lookup === 'busy' ? 'disabled' : ''}>Continue</button>` : `<button type="button" class="btn pri" id="bk-confirm" ${bk.busy ? 'disabled' : ''}>${bk.busy ? 'Booking…' : 'Confirm booking'}</button>`}</div>
+      </section>${summaryHtml()}</div>`;
+  }
+  function stVehicle() {
+    let veh = '';
+    if (bk.lookup === 'busy') veh = '<p class="muted" aria-live="polite">Looking up your vehicle…</p>';
+    else if (bk.vehicle) veh = `<div class="veh"><span class="ic">🚗</span><div><b>${esc(bk.vehicle.desc)}</b><div class="muted">${esc(bk.vehicle.year)} · ${esc(bk.vehicle.fuel)} · ${esc(bk.vehicle.colour)}</div><div class="muted">${esc(bk.vehicle.mot)} · ${esc(bk.vehicle.last)}</div></div></div>`;
+    else if (bk.lookup === 'notfound') veh = `<div class="err" style="font-weight:400">We couldn't find that registration. Check it, or enter your car's details below.</div>
+      <label class="f" for="bk-make">Make</label><input type="text" id="bk-make" value="${esc(bk.manualMake)}"><label class="f" for="bk-model">Model</label><input type="text" id="bk-model" value="${esc(bk.manualModel)}">`;
+    return `<div class="card"><label class="f" for="bk-reg" style="margin-top:0">Registration</label>
+      <div class="row"><input type="text" id="bk-reg" class="plate" maxlength="10" autocomplete="off" placeholder="AB12 CDE" value="${esc(bk.reg)}"><button type="button" class="btn" id="bk-find">Find my vehicle</button></div>
+      ${veh}
+      <label class="f" for="bk-miles">Current mileage</label><input type="text" id="bk-miles" inputmode="numeric" placeholder="e.g. 48,000" value="${esc(bk.miles)}" style="width:200px"></div>`;
+  }
+  function stServices() {
+    return `<fieldset class="card" style="margin:0"><legend class="f" style="padding:0 4px">Choose a service</legend>
+      ${PKGS.map((p) => `<label class="opt"><input type="radio" name="bk-pkg" value="${p.id}" ${bk.pkg === p.id ? 'checked' : ''}><b>${p.name}${p.price ? ` £${p.price} (about ${p.mins / 60} h)` : ''}</b>${p.tag ? `<span class="badge">${p.tag}</span>` : ''}<div class="muted">${p.desc}</div></label>`).join('')}
+      </fieldset>
+      <div class="card" style="margin-top:14px">${bk.vehicle && bk.vehicle.mot.includes('October 2026') ? '<p class="muted" style="margin-top:0">Your MOT is due on 14 October 2026.</p>' : ''}
+        <label class="opt" style="margin-top:0"><input type="checkbox" id="bk-mot" ${bk.mot ? 'checked' : ''}><b>MOT test £54.85 (about 1 h)</b><div class="muted">DVSA-approved test, free retest within 10 working days</div></label></div>
+      <fieldset class="card" style="margin-top:14px"><legend class="f" style="padding:0 4px">Extras</legend>
+      ${EXTRAS.map((x) => `<label class="chk"><input type="checkbox" data-extra="${x.id}" ${bk.extras.has(x.id) ? 'checked' : ''}><span>${x.name} <b>£${x.price}</b></span></label>`).join('')}</fieldset>`;
+  }
+  function stWhen() {
+    const mins = jobMins();
+    const canWait = mins <= 90;
+    if (!canWait && bk.wait === 'yes') bk.wait = 'no';
+    const sel = bk.slot ? `${bk.slot.date}T${bk.slot.time}` : '';
+    return `<div class="card"><iframe class="widget" id="bk-frame" title="Choose a drop-off time" src="garage_slots.html?mins=${mins}&sel=${encodeURIComponent(sel)}"></iframe>
+      <div class="picked" aria-live="polite">${bk.slot ? `Drop-off: ${esc(niceDate(bk.slot.date))} at ${bk.slot.time}` : 'No drop-off time selected yet.'}</div></div>
+      <fieldset class="card" style="margin-top:14px"><legend class="f" style="padding:0 4px">While we work on your car</legend>
+        <label class="opt"><input type="radio" name="bk-wait" value="no" ${bk.wait === 'no' ? 'checked' : ''}><b>Leave it with us</b><div class="muted">We'll call you when it's ready. Collection by ${bk.slot && new Date(bk.slot.date + 'T12:00:00').getDay() === 6 ? '12:30 on Saturdays' : '17:30'}.</div></label>
+        <label class="opt ${canWait ? '' : 'dis'}"><input type="radio" name="bk-wait" value="yes" ${bk.wait === 'yes' ? 'checked' : ''} ${canWait ? '' : 'disabled'}><b>Wait on site (jobs up to 90 minutes only)</b><div class="muted">${canWait ? 'Customer lounge with Wi-Fi and coffee.' : `Your booking takes about ${mins / 60} hours, so you'll need to leave the car with us.`}</div></label>
+        ${bk.wait === 'no' ? `<div class="upsell"><label class="chk" style="margin:0"><input type="checkbox" id="bk-courtesy" ${bk.courtesy ? 'checked' : ''}><span><b>Courtesy car (+£15 per day, subject to availability)</b><br><span class="muted">Fully insured small hatchback, ready when you drop off.</span></span></label></div>` : ''}
+      </fieldset>`;
+  }
+  function stDetails() {
+    return `<div class="card"><label class="f" for="bk-name" style="margin-top:0">Full name</label><input type="text" id="bk-name" autocomplete="name" value="${esc(bk.name)}">
+      <label class="f" for="bk-email">Email</label><input type="email" id="bk-email" autocomplete="email" value="${esc(bk.email)}">
+      <label class="f" for="bk-phone">Mobile number</label><input type="tel" id="bk-phone" autocomplete="tel" value="${esc(bk.phone)}">
+      <label class="f" for="bk-notes">Notes for the technician (optional)</label><textarea id="bk-notes" rows="3" placeholder="Warning lights, noises, anything we should know">${esc(bk.notes)}</textarea>
+      <label class="chk"><input type="checkbox" id="bk-rem" ${bk.reminders ? 'checked' : ''}><span>Send me MOT and service reminders</span></label></div>`;
+  }
+  function stConfirm() {
+    const pk = PKGS.find((p) => p.id === bk.pkg);
+    const svc = [pk.id !== 'none' ? pk.name : '', bk.mot ? 'MOT test' : '', ...EXTRAS.filter((x) => bk.extras.has(x.id)).map((x) => x.name)].filter(Boolean).join(', ');
+    return `<div class="card"><table><tbody>
+      <tr><th style="width:180px">Vehicle</th><td>${esc(regFmt(bk.vehKey))} · ${esc(bk.vehicle.desc)} · ${esc(Number(String(bk.miles).replace(/\D/g, '')).toLocaleString('en-GB'))} miles</td></tr>
+      <tr><th>Services</th><td>${esc(svc)}</td></tr>
+      <tr><th>Drop-off</th><td>${esc(niceDate(bk.slot.date))} at ${bk.slot.time}</td></tr>
+      <tr><th>While we work</th><td>${bk.wait === 'yes' ? 'Waiting on site' : 'Leaving the car with you'}${bk.wait === 'no' ? (bk.courtesy ? ' · courtesy car requested' : ' · no courtesy car') : ''}</td></tr>
+      <tr><th>Contact</th><td>${esc(bk.name)} · ${esc(bk.email)} · ${esc(bk.phone)}</td></tr>
+      <tr><th>Notes</th><td>${bk.notes.trim() ? esc(norm(bk.notes)) : '<span class="muted">None</span>'}</td></tr>
+      <tr><th>Total</th><td><b>${gbp(total())}</b> — pay on collection</td></tr></tbody></table></div>`;
+  }
+  async function lookup() {
+    const key = regKey(bk.reg);
+    if (!key) { bk.err = 'Enter your registration.'; drawBook(); return false; }
+    bk.lookup = 'busy'; bk.vehicle = null; bk.err = ''; drawBook();
+    await sleep(700);
+    if (DVLA[key]) { bk.vehicle = { ...DVLA[key] }; bk.vehKey = key; bk.lookup = 'found'; }
+    else { bk.lookup = 'notfound'; bk.vehKey = key; }
+    drawBook();
+    return bk.lookup === 'found';
+  }
+  function captureStep() {
+    const v = (id) => (q('#' + id) ? q('#' + id).value : null);
+    if (bk.step === 0) { if (v('bk-reg') != null) bk.reg = v('bk-reg'); if (v('bk-miles') != null) bk.miles = v('bk-miles'); if (v('bk-make') != null) { bk.manualMake = v('bk-make'); bk.manualModel = v('bk-model'); } }
+    if (bk.step === 3) { bk.name = v('bk-name'); bk.email = v('bk-email'); bk.phone = v('bk-phone'); bk.notes = v('bk-notes'); bk.reminders = q('#bk-rem').checked; }
+  }
+  async function next() {
+    captureStep();
+    bk.err = '';
+    if (bk.step === 0) {
+      const miles = String(bk.miles).replace(/[,\s]|miles?/gi, '');
+      if (!regKey(bk.reg)) { bk.err = 'Enter your registration.'; return drawBook(); }
+      if (!/^\d{1,6}$/.test(miles)) { bk.err = 'Enter your current mileage, for example 48000.'; return drawBook(); }
+      if (bk.vehKey !== regKey(bk.reg) || bk.lookup === 'idle') { const ok = await lookup(); if (!ok) { bk.err = 'Enter the make and model, then continue.'; return drawBook(); } }
+      if (bk.lookup === 'notfound') {
+        if (!norm(bk.manualMake) || !norm(bk.manualModel)) { bk.err = 'Enter the make and model, then continue.'; return drawBook(); }
+        bk.vehicle = { desc: `${norm(bk.manualMake)} ${norm(bk.manualModel)}`.toUpperCase(), year: '', fuel: '', colour: '', mot: '', last: '' };
+      }
+    }
+    if (bk.step === 1 && bk.pkg === 'none' && !bk.mot && !bk.extras.size) { bk.err = 'Choose a service, an MOT or at least one extra.'; return drawBook(); }
+    if (bk.step === 2 && !bk.slot) { bk.err = 'Choose a drop-off time.'; return drawBook(); }
+    if (bk.step === 3) {
+      if (!norm(bk.name)) { bk.err = 'Enter your full name.'; return drawBook(); }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(norm(bk.email))) { bk.err = 'Enter a valid email address.'; return drawBook(); }
+      const d = String(bk.phone).replace(/\D/g, '');
+      if (d.length < 10 || d.length > 13) { bk.err = 'Enter a valid mobile number, for example 07700 900123.'; return drawBook(); }
+    }
+    bk.step++; drawBook();
+  }
+  main.addEventListener('click', async (e) => {
+    if (!route().startsWith('book') || !bk) return;
+    const t = e.target;
+    if (t.closest('#bk-find')) { captureStep(); await lookup(); return; }
+    if (t.closest('#bk-next')) { await next(); return; }
+    if (t.closest('#bk-back')) { captureStep(); bk.err = ''; bk.step--; drawBook(); return; }
+    if (t.closest('#bk-confirm') && !bk.busy) {
+      bk.busy = true; drawBook();
+      await sleep(900);
+      await post({
+        event: 'service_booking', reg: regFmt(bk.vehKey), mileage: String(bk.miles).replace(/\D/g, ''), vehicle: bk.vehicle.desc, package: bk.pkg, mot: bk.mot ? 'yes' : 'no',
+        extras: [...bk.extras].sort().join(','), date: bk.slot.date, time: bk.slot.time, wait: bk.wait, courtesy_car: bk.courtesy && bk.wait === 'no' ? 'yes' : 'no',
+        name: norm(bk.name), email: norm(bk.email).toLowerCase(), phone: String(bk.phone).replace(/\D/g, ''), notes: norm(bk.notes), reminders: bk.reminders ? 'yes' : 'no', total: total().toFixed(2),
+      });
+      bk.busy = false; bk.done = 'QM-' + (58200 + (regKey(bk.reg).charCodeAt(2) || 7));
+      drawBook();
+    }
+  });
+  main.addEventListener('change', (e) => {
+    if (!route().startsWith('book') || !bk) return;
+    const t = e.target;
+    if (t.name === 'bk-pkg') { bk.pkg = t.value; bk.err = ''; drawBook(); }
+    if (t.id === 'bk-mot') { bk.mot = t.checked; bk.err = ''; drawBook(); }
+    if (t.dataset.extra) { t.checked ? bk.extras.add(t.dataset.extra) : bk.extras.delete(t.dataset.extra); drawBook(); }
+    if (t.name === 'bk-wait') { bk.wait = t.value; drawBook(); }
+    if (t.id === 'bk-courtesy') { bk.courtesy = t.checked; drawBook(); }
+  });
+  main.addEventListener('input', (e) => {
+    if (!route().startsWith('book') || !bk) return;
+    const t = e.target;
+    if (t.id === 'bk-reg') bk.reg = t.value;
+    if (t.id === 'bk-miles') bk.miles = t.value;
+    if (t.id === 'bk-make') bk.manualMake = t.value;
+    if (t.id === 'bk-model') bk.manualModel = t.value;
+    if (t.id === 'bk-name') bk.name = t.value;
+    if (t.id === 'bk-email') bk.email = t.value;
+    if (t.id === 'bk-phone') bk.phone = t.value;
+    if (t.id === 'bk-notes') bk.notes = t.value;
+  });
+  main.addEventListener('keydown', (e) => { if (e.target.id === 'bk-reg' && e.key === 'Enter') { e.preventDefault(); captureStep(); lookup(); } });
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || !e.data || e.data.type !== 'bookwell:slot' || !bk || bk.step !== 2) return;
+    bk.slot = { date: e.data.date, time: e.data.time }; bk.err = '';
+    const p = q('.picked'); if (p) p.textContent = `Drop-off: ${niceDate(bk.slot.date)} at ${bk.slot.time}`;
+    const s = q('aside.summary'); if (s) s.outerHTML = summaryHtml();
+    const er = q('.wiz .err'); if (er) er.remove();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

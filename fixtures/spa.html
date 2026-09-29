@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Quantum Kettle · HomeGoods</title><link rel="stylesheet" href="style.css"><script src="common.js"></script>
+<style>[role=tab][aria-selected=true]{border-bottom:3px solid #2563eb}</style></head>
+<body><header><strong>HomeGoods</strong><a href="#">Kitchen</a><a href="#">Bath</a></header>
+<main><h1>Quantum Kettle</h1><p>1.7L smart kettle with 5 temperature presets.</p>
+<div role="tablist" class="row">
+  <button role="tab" aria-selected="true" data-t="overview">Overview</button>
+  <button role="tab" aria-selected="false" data-t="specs">Specs</button>
+  <button role="tab" aria-selected="false" data-t="reviews">Reviews (3)</button>
+</div>
+<div role="tabpanel" id="panel"><p>Boils a full kettle in under 3 minutes.</p></div>
+</main>
+<script>
+const PANELS = {
+  overview: '<p>Boils a full kettle in under 3 minutes.</p>',
+  specs: '<table><tr><td>Capacity</td><td>1.7 L</td></tr><tr><td>Power</td><td>3000 W</td></tr></table>',
+  reviews: '<div class="card review"><strong>★★★★★ Love it</strong><p>Fast and quiet.</p><button>Helpful</button></div><div class="card review"><strong>★★☆☆☆ Leaks</strong><p>Lid leaks a bit.</p><button>Helpful</button></div><button id="wr" class="primary">Write a review</button>',
+};
+qa('[role=tab]').forEach((t) => t.onclick = async () => {
+  qa('[role=tab]').forEach((x) => x.setAttribute('aria-selected', 'false'));
+  t.setAttribute('aria-selected', 'true');
+  q('#panel').innerHTML = '<p class="muted">Loading…</p>';
+  await later(300);
+  q('#panel').innerHTML = PANELS[t.dataset.t];
+  qa('.review button', q('#panel')).forEach((b) => b.onclick = () => rec({ event: 'helpful', review: q('strong', b.parentElement).textContent }));
+  const wr = q('#wr');
+  if (wr) wr.onclick = async () => {
+    await later(150);
+    q('#panel').insertAdjacentHTML('beforeend', `<form id="rf" class="card" aria-label="Your review"><label for="rt">Rating</label><select id="rt"><option value="">Choose a rating</option><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select><label for="rb">Review</label><textarea id="rb" rows="3"></textarea><div><button class="primary">Submit review</button></div></form>`);
+    q('#rf').onsubmit = async (e) => { e.preventDefault(); await rec({ event: 'review', rating: q('#rt').value, text: q('#rb').value.trim() }); q('#rf').outerHTML = '<p role="status">Thanks for your review!</p>'; };
+  };
+});
+</script></body></html>

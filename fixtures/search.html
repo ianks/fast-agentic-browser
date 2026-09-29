@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Shop · Search</title><link rel="stylesheet" href="style.css"><script src="common.js"></script></head>
+<body>
+<header><strong>GadgetHub</strong><a href="#">Deals</a><a href="#">Help</a><a href="#">Cart (0)</a></header>
+<main>
+  <form id="f" class="row"><input id="q" type="search" name="q" placeholder="Search products" aria-label="Search products"><button class="primary">Search</button></form>
+  <p class="muted" id="status">Try "headphones" or "wireless mouse".</p>
+  <ul id="results" style="list-style:none;padding:0"></ul>
+</main>
+<script>
+const ITEMS = [
+  ['mx3', 'Logitech MX Master 3', '$79.99'], ['mx3s', 'Logitech MX Master 3S', '$99.99'],
+  ['mxany', 'Logitech MX Anywhere 3S', '$79.99'], ['basilisk', 'Razer Basilisk V3 Pro', '$149.99'],
+  ['magic', 'Apple Magic Mouse', '$79.00'], ['m185', 'Logitech M185 Wireless Mouse', '$14.99'],
+  ['pebble', 'Logitech Pebble Mouse 2 M350s', '$24.99'], ['viper', 'Razer Viper V3 HyperSpeed', '$69.99'],
+];
+q('#f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const term = q('#q').value.trim();
+  if (!term) return;
+  q('#status').textContent = 'Searching…';
+  q('#results').innerHTML = '';
+  rec({ event: 'search', q: term });
+  await later(250);
+  q('#status').textContent = ITEMS.length + ' results for "' + term + '"';
+  q('#results').innerHTML = ITEMS.map(([id, name, price]) =>
+    `<li class="card result"><a href="item.html?id=${id}">${name}</a> <span class="muted">${price}</span> <button onclick="this.textContent='♥ Saved';rec({event:'wishlist',id:'${id}'})">Add to wishlist</button></li>`).join('');
+});
+</script></body></html>

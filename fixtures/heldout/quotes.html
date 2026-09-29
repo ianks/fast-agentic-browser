@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ferrule Procurement · RFQ-3107</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f7f7f2; }
+  header { background: #3f3f46; }
+  main { max-width: 980px; }
+  .rfq { background: #fff; border: 1px solid #e4e4e7; border-radius: 10px; padding: 14px 18px; }
+  .rfq dl { display: grid; grid-template-columns: 170px 1fr; gap: 6px; margin: 0; }
+  .rfq dt { color: #71717a; } .rfq dd { margin: 0; }
+  table { background: #fff; margin-top: 14px; }
+  .st { font-size: 12px; border-radius: 8px; padding: 1px 7px; background: #e4e4e7; }
+  .st.Accepted { background: #bbf7d0; } .st.Declined { background: #fecaca; } .st.Revision { background: #fde68a; }
+  .dialog { width: 520px; }
+  .qd { display: grid; grid-template-columns: 190px 1fr; gap: 6px; }
+  .qd dt { color: #71717a; } .qd dd { margin: 0; }
+</style>
+</head>
+<body>
+<header><strong>Ferrule</strong><span>Procurement</span><a href="#" data-dead>Requests</a><a href="#" data-dead>Suppliers</a><span style="margin-left:auto">Buyer: Ansel Whitcombe</span></header>
+<main>
+  <p class="muted">Requests › RFQ-3107</p>
+  <h1>RFQ-3107 · Ergonomic task chairs</h1>
+  <section class="rfq" aria-label="Request details"><dl><dt>Quantity</dt><dd>250 chairs</dd><dt>Deliver to</dt><dd>Harrowgate Works, Unit 4, Leeds LS10 1QT</dd><dt>Requested by</dt><dd>Facilities — Oona Castellanos</dd><dt>Quotes due</dt><dd>2 July 2026 (closed)</dd></dl></section>
+  <h2>Supplier quotes</h2>
+  <p class="muted">Open a quote to see lead time, warranty, shipping and terms. Totals below exclude shipping.</p>
+  <table><thead><tr><th>Supplier</th><th>Model</th><th>Unit price</th><th>Subtotal (250)</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+<div class="overlay" id="qdlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="qd-h">
+    <div class="row" style="justify-content:space-between"><h3 id="qd-h" style="margin:0"></h3><button type="button" id="qd-x" aria-label="Close quote">✕</button></div>
+    <dl class="qd" id="qd-b"></dl>
+    <div class="row" style="justify-content:flex-end;margin-top:16px" id="qd-actions"></div>
+  </div>
+</div>
+<div class="overlay" id="cdlg" hidden>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="cd-h" aria-describedby="cd-b">
+    <h3 id="cd-h" style="margin-top:0"></h3><p id="cd-b"></p>
+    <label id="cd-note-l" for="cd-note" hidden>Message to supplier</label><textarea id="cd-note" style="width:460px;height:60px" hidden></textarea>
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button type="button" id="cd-no">Cancel</button><button type="button" class="primary" id="cd-yes"></button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const QTY = 250;
+  const QUOTES = [
+    { id: 'Q-1', vendor: 'Brightmoor Seating', model: 'Arden Mesh Pro', unit: 183, lead: 12, warranty: 60, ship: 3000, terms: 'Net 30', cert: 'BIFMA X5.1, FSC' },
+    { id: 'Q-2', vendor: 'Oakhaven Contract', model: 'Oakhaven 7', unit: 179, lead: 20, warranty: 60, ship: 900, terms: 'Net 45', cert: 'BIFMA X5.1' },
+    { id: 'Q-3', vendor: 'Sitwell Supply Co.', model: 'Sitwell Flex', unit: 184, lead: 10, warranty: 24, ship: 0, terms: 'Net 30', cert: 'EN 1335' },
+    { id: 'Q-4', vendor: 'Palliser Office', model: 'Palliser Contour', unit: 186, lead: 15, warranty: 36, ship: 2100, terms: 'Net 30', cert: 'BIFMA X5.1, EN 1335' },
+    { id: 'Q-5', vendor: 'Harrow & Lyle', model: 'H&L Ergo 2', unit: 192, lead: 8, warranty: 48, ship: 950, terms: '50% upfront', cert: 'EN 1335' },
+    { id: 'Q-6', vendor: 'Palliser Office Direct', model: 'Contour Lite', unit: 171, lead: 30, warranty: 12, ship: 1200, terms: 'Prepaid', cert: '—' },
+  ];
+  const st = {};
+  const gbp = (n) => '£' + n.toLocaleString('en-GB');
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  const accepted = () => QUOTES.find((x) => st[x.id] === 'Accepted');
+  function render() {
+    q('#rows').innerHTML = QUOTES.map((x) => `<tr><td><strong>${x.vendor}</strong></td><td>${x.model}</td><td>${gbp(x.unit)}</td><td>${gbp(x.unit * QTY)}</td><td><span class="st ${st[x.id] || ''}">${st[x.id] || 'Received'}</span></td><td><button type="button" data-open="${x.id}" aria-label="View quote from ${x.vendor}">View quote</button></td></tr>`).join('');
+  }
+  let cur = null, cfn = null;
+  function openQuote(x) {
+    cur = x;
+    q('#qd-h').textContent = `${x.vendor} — ${x.model}`;
+    q('#qd-b').innerHTML = `<dt>Unit price</dt><dd>${gbp(x.unit)}</dd><dt>Subtotal for ${QTY}</dt><dd>${gbp(x.unit * QTY)}</dd><dt>Shipping &amp; delivery</dt><dd>${x.ship ? gbp(x.ship) : 'Free'}</dd><dt>Lead time</dt><dd>${x.lead} business days after PO</dd><dt>Warranty</dt><dd>${x.warranty} months</dd><dt>Payment terms</dt><dd>${x.terms}</dd><dt>Certifications</dt><dd>${x.cert}</dd>`;
+    const done = st[x.id] === 'Accepted' || st[x.id] === 'Declined';
+    q('#qd-actions').innerHTML = done ? `<span class="muted">This quote is ${st[x.id].toLowerCase()}.</span>` : `<button type="button" id="qa-decline">Decline</button><button type="button" id="qa-rev">Request revision</button><button type="button" class="primary" id="qa-accept" ${accepted() ? 'disabled' : ''}>Accept quote</button>`;
+    q('#qdlg').hidden = false;
+  }
+  const confirmBox = (h, b, yes, note, fn) => { q('#cd-h').textContent = h; q('#cd-b').textContent = b; q('#cd-yes').textContent = yes; q('#cd-note').hidden = !note; q('#cd-note-l').hidden = !note; q('#cd-note').value = ''; cfn = fn; q('#cdlg').hidden = false; };
+  q('#rows').addEventListener('click', (e) => { const b = e.target.closest('[data-open]'); if (b) openQuote(QUOTES.find((x) => x.id === b.dataset.open)); });
+  q('#qd-x').onclick = () => { q('#qdlg').hidden = true; };
+  q('#qd-actions').addEventListener('click', (e) => {
+    const x = cur;
+    if (e.target.id === 'qa-accept') confirmBox(`Accept ${x.vendor}'s quote?`, `A purchase order for ${QTY} × ${x.model} (${gbp(x.unit * QTY + x.ship)} including shipping) will be sent, and the other quotes will be closed.`, 'Accept and send PO', false, async () => { await later(500); await rec({ event: 'quote_accept', rfq: 'RFQ-3107', vendor: x.vendor, quote: x.id, total: String(x.unit * QTY + x.ship) }); st[x.id] = 'Accepted'; toast('Purchase order sent.'); });
+    if (e.target.id === 'qa-decline') confirmBox(`Decline ${x.vendor}'s quote?`, 'The supplier will be notified.', 'Decline quote', false, async () => { await later(300); await rec({ event: 'quote_decline', rfq: 'RFQ-3107', vendor: x.vendor }); st[x.id] = 'Declined'; });
+    if (e.target.id === 'qa-rev') confirmBox(`Ask ${x.vendor} to revise?`, 'Tell the supplier what to change.', 'Send request', true, async () => { await later(300); await rec({ event: 'quote_revision', rfq: 'RFQ-3107', vendor: x.vendor, note: q('#cd-note').value.trim() }); st[x.id] = 'Revision'; });
+  });
+  q('#cd-no').onclick = () => { q('#cdlg').hidden = true; cfn = null; };
+  q('#cd-yes').onclick = async () => { const f = cfn; if (!f) return; q('#cd-yes').disabled = true; await f(); q('#cd-yes').disabled = false; q('#cdlg').hidden = true; q('#qdlg').hidden = true; cfn = null; render(); };
+  render();
+})();
+</script>
+</body>
+</html>

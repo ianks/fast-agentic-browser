@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swiftlet Mobile · Change plan</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f0fdfa; }
+  header { background: #115e59; }
+  main { max-width: 1060px; }
+  .current { background: #fff; border: 1px solid #99f6e4; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
+  .plan { background: #fff; border: 1px solid #ccfbf1; border-radius: 14px; padding: 14px 16px; }
+  .plan h2 { margin: 0; font-size: 19px; }
+  .plan .gb { font-size: 28px; font-weight: 800; color: #0f766e; }
+  .plan .price { font-size: 18px; font-weight: 700; }
+  .inc button.tg { background: none; border: 0; padding: 6px 0; color: #0f766e; font-weight: 600; }
+  .inc ul { margin: 4px 0 8px; padding-left: 18px; font-size: 14px; }
+  .tag { font-size: 12px; background: #fef3c7; border-radius: 8px; padding: 1px 7px; }
+</style>
+</head>
+<body>
+<header><strong>Swiftlet Mobile</strong><span>My account</span><span style="margin-left:auto">07700 900 318 · Bronwen Ashdown-Pryce</span></header>
+<main>
+  <h1>Change your plan</h1>
+  <div class="current"><div>Current plan: <strong id="cur-name"></strong> · <span id="cur-desc"></span></div><span class="muted">Next bill: 1 Nov 2026</span></div>
+  <p class="muted">All plans are 30-day rolling with no contract. Prices include VAT. Open “What's included” for roaming and extras.</p>
+  <div class="plans" id="plans"></div>
+</main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0"></h3>
+    <fieldset style="border:0;padding:0"><legend style="font-weight:600">When should it start?</legend>
+      <label style="font-weight:400;display:flex;gap:8px"><input type="radio" name="when" value="now" checked> Straight away (you'll pay a prorated £<span id="pr"></span> today)</label>
+      <label style="font-weight:400;display:flex;gap:8px"><input type="radio" name="when" value="next_bill"> From my next bill date, 1 Nov 2026</label></fieldset>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="dlg-no">Keep my current plan</button><button type="button" class="primary" id="dlg-yes">Confirm plan change</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const PLANS = [
+    { id: 's10', name: 'Swiftlet 10', gb: '10 GB', gbn: 10, price: 12, inc: ['Unlimited UK calls & texts', 'Roaming in the EU at no extra cost', '5G ready'] },
+    { id: 's15r', name: 'Swiftlet 15 Roam', gb: '15 GB', gbn: 15, price: 16, inc: ['Unlimited UK calls & texts', 'Roaming in the EU and 40 more destinations at no extra cost', '5G ready'] },
+    { id: 's20l', name: 'Swiftlet 20 Lite', gb: '20 GB', gbn: 20, price: 19, inc: ['Unlimited UK calls & texts', 'Roaming in the EU at no extra cost (fair use 20 GB)', '4G only'] },
+    { id: 's25', name: 'Swiftlet 25', gb: '25 GB', gbn: 25, price: 18, inc: ['Unlimited UK calls & texts', 'EU roaming: £2.50 per day you use your phone abroad', '5G ready'], tag: 'Best seller' },
+    { id: 's25t', name: 'Swiftlet 25 Travel', gb: '25 GB', gbn: 25, price: 21, inc: ['Unlimited UK calls & texts', 'Roaming in the EU at no extra cost', '5G ready', '2 GB in the USA'] },
+    { id: 's30', name: 'Swiftlet 30', gb: '30 GB', gbn: 30, price: 22, inc: ['Unlimited UK calls & texts', 'Roaming in the EU at no extra cost', '5G ready'] },
+    { id: 's40', name: 'Swiftlet 40 Saver', gb: '40 GB', gbn: 40, price: 20, inc: ['Unlimited UK calls & texts', 'Roaming not included — add a Roam Pass (£5 per week)', '5G ready'], tag: 'Online exclusive' },
+    { id: 'sun', name: 'Swiftlet Unlimited', gb: 'Unlimited', gbn: 999, price: 30, inc: ['Unlimited UK calls & texts', 'Roaming in the EU at no extra cost (fair use 30 GB)', '5G ready'] },
+  ];
+  let cur = PLANS[0]; const open = new Set(); let pending = null;
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  function render() {
+    q('#cur-name').textContent = cur.name; q('#cur-desc').textContent = `${cur.gb} · £${cur.price}/month`;
+    q('#plans').innerHTML = PLANS.map((p) => `<article class="plan" aria-label="${p.name}"><h2>${p.name} ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}</h2><div class="gb">${p.gb}</div><div class="price">£${p.price}<span class="muted" style="font-weight:400;font-size:13px"> a month</span></div>
+      <div class="inc"><button type="button" class="tg" aria-expanded="${open.has(p.id)}" aria-controls="inc-${p.id}" data-tg="${p.id}">${open.has(p.id) ? '▾' : '▸'} What's included</button><ul id="inc-${p.id}" ${open.has(p.id) ? '' : 'hidden'}>${p.inc.map((x) => `<li>${x}</li>`).join('')}</ul></div>
+      ${p === cur ? '<span class="muted">Your current plan</span>' : `<button type="button" class="primary" data-pick="${p.id}" aria-label="Switch to ${p.name}">Switch to this plan</button>`}</article>`).join('');
+  }
+  q('#plans').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-tg]'); if (t) { open.has(t.dataset.tg) ? open.delete(t.dataset.tg) : open.add(t.dataset.tg); render(); return; }
+    const p = e.target.closest('[data-pick]'); if (!p) return;
+    pending = PLANS.find((x) => x.id === p.dataset.pick);
+    q('#dlg-h').textContent = `Switch from ${cur.name} to ${pending.name}?`; q('#pr').textContent = ((pending.price - cur.price) * 0.4 > 0 ? (pending.price - cur.price) * 0.4 : 0).toFixed(2);
+    qa('input[name=when]').forEach((r) => { r.checked = r.value === 'now'; });
+    q('#dlg').hidden = false;
+  });
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; pending = null; };
+  q('#dlg-yes').onclick = async () => {
+    const when = (qa('input[name=when]').find((r) => r.checked) || {}).value; q('#dlg-yes').disabled = true; await later(500); q('#dlg-yes').disabled = false;
+    await rec({ event: 'plan_change', from: cur.name, to: pending.name, effective: when });
+    q('#dlg').hidden = true; cur = pending; pending = null; render(); toast(when === 'now' ? 'Your new plan is active.' : 'Your plan will change on 1 Nov 2026.');
+  };
+  render();
+})();
+</script>
+</body>
+</html>

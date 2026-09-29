@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Register · Palisade Summit 2026</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #0b1020; color: #e5e7eb; }
+  header { background: #0b1020; border-bottom: 1px solid #1f2937; }
+  main { max-width: 900px; }
+  a { color: #93c5fd; }
+  .panel { background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 20px 24px; }
+  .muted { color: #9ca3af; }
+  .tabs { display: flex; gap: 0; margin-bottom: 16px; }
+  .tabs div { flex: 1; padding: 8px; text-align: center; border-bottom: 2px solid #1f2937; color: #6b7280; font-size: 14px; }
+  .tabs div.on { border-color: #f59e0b; color: #fbbf24; font-weight: 600; }
+  .tix { display: grid; grid-template-columns: 1fr 120px 150px; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #1f2937; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button { width: 34px; padding: 4px 0; background: #1f2937; color: #fff; border-color: #374151; }
+  .stepper output { min-width: 22px; text-align: center; font-weight: 700; }
+  input[type=text], input[type=email], select { background: #0b1020; color: #e5e7eb; border-color: #374151; }
+  button { background: #1f2937; color: #e5e7eb; border-color: #374151; }
+  button.primary { background: #f59e0b; border-color: #f59e0b; color: #111827; font-weight: 700; }
+  .att { border: 1px solid #1f2937; border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+  .att h3 { margin: 0 0 6px; font-size: 15px; color: #fbbf24; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  .err { color: #fca5a5; font-size: 13px; }
+  .ok { color: #86efac; font-size: 13px; }
+  .check { font-weight: 400; display: flex; gap: 8px; align-items: center; }
+  .totals { margin-top: 14px; border-top: 1px solid #1f2937; padding-top: 10px; }
+  .totals div { display: flex; justify-content: space-between; }
+  .dialog { background: #111827; color: #e5e7eb; border: 1px solid #374151; }
+</style>
+</head>
+<body>
+<header><strong style="color:#fbbf24">PALISADE SUMMIT 2026</strong><span class="muted">Rotterdam · 9–10 June</span><a href="#" data-dead style="margin-left:auto">Programme</a><a href="#" data-dead>Venue</a></header>
+<main>
+  <h1>Registration</h1>
+  <div class="panel">
+    <div class="tabs" id="tabs"><div data-s="1">1 Tickets</div><div data-s="2">2 Attendees</div><div data-s="3">3 Extras</div><div data-s="4">4 Payment</div></div>
+    <div id="body"></div>
+    <div class="err" id="err" role="alert" hidden></div>
+    <div class="row" style="margin-top:16px" id="nav"></div>
+  </div>
+</main>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0">Complete registration?</h3>
+    <div id="dlg-b"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes">Yes, register</button></div>
+  </div>
+</div>
+<script>
+(() => {
+  const TICKETS = [
+    { id: 'standard', name: 'Standard pass', desc: 'Both conference days', price: 390 },
+    { id: 'workshop', name: 'Standard + workshop day', desc: 'Conference days plus one workshop on 8 June', price: 540 },
+    { id: 'student', name: 'Student pass', desc: 'Valid student ID required at entry', price: 120 },
+    { id: 'virtual', name: 'Virtual pass', desc: 'Livestream and recordings', price: 95 },
+  ];
+  const WORKSHOPS = [
+    { id: 'otel', name: 'Hands-on observability with OpenTelemetry', full: false },
+    { id: 'rust-data', name: 'Rust for data pipelines', full: true },
+    { id: 'eda', name: 'Designing event-driven systems', full: false },
+    { id: 'eda2', name: 'Designing event-driven systems II (advanced)', full: false },
+    { id: 'a11y', name: 'Accessible dashboards', full: false },
+  ];
+  const DIETS = ['No requirements', 'Vegetarian', 'Vegan', 'Gluten-free', 'Halal', 'Kosher'];
+  const st = { step: 1, qty: { standard: 0, workshop: 0, student: 0, virtual: 0 }, att: [], dinner: false, donate: true, promo: '', promoMsg: '', company: '', vat: '', pay: 'card', done: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toLocaleString('en-US');
+  qa('[data-dead]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  const seats = () => TICKETS.flatMap((t) => Array.from({ length: st.qty[t.id] }, () => t));
+  const subtotal = () => seats().reduce((a, t) => a + t.price, 0) + (st.dinner ? 65 * seats().length : 0) + (st.donate ? 5 : 0);
+  const err = (m) => { q('#err').textContent = m || ''; q('#err').hidden = !m; };
+  function syncAtt() { const s = seats(); while (st.att.length < s.length) st.att.push({ name: '', email: '', workshop: '', diet: 'No requirements' }); st.att.length = s.length; }
+  function collect() {
+    if (st.step === 2) qa('.att').forEach((el, i) => { const a = st.att[i]; a.name = q('[data-f=name]', el).value.trim().replace(/\s+/g, ' '); a.email = q('[data-f=email]', el).value.trim().toLowerCase(); const w = q('[data-f=workshop]', el); a.workshop = w ? w.value : ''; a.diet = q('[data-f=diet]', el).value; });
+    if (st.step === 3) { st.dinner = q('#dinner').checked; st.donate = q('#donate').checked; }
+    if (st.step === 4) { st.company = q('#company').value.trim(); st.vat = q('#vat').value.trim(); st.pay = (qa('input[name=pay]').find((r) => r.checked) || {}).value || ''; }
+  }
+  function render() {
+    qa('#tabs div').forEach((d) => d.classList.toggle('on', +d.dataset.s === st.step));
+    err('');
+    const b = q('#body'); let h = '';
+    if (st.done) { b.innerHTML = st.done; q('#nav').innerHTML = ''; return; }
+    if (st.step === 1) {
+      h = `<p class="muted">Early-bird pricing ended on 31 January 2026.</p>` + TICKETS.map((t) => `<div class="tix"><div><strong>${t.name}</strong><br><span class="muted">${t.desc}</span></div><div>${eur(t.price)}</div>
+        <div class="stepper"><button type="button" data-dec="${t.id}" aria-label="Remove one ${t.name}">−</button><output aria-label="${t.name} quantity" id="q-${t.id}">${st.qty[t.id]}</output><button type="button" data-inc="${t.id}" aria-label="Add one ${t.name}">+</button></div></div>`).join('') + `<div class="totals"><div><span>Tickets</span><strong>${eur(seats().reduce((a, t) => a + t.price, 0))}</strong></div></div>`;
+    } else if (st.step === 2) {
+      syncAtt();
+      h = seats().map((t, i) => { const a = st.att[i]; return `<section class="att" aria-label="Attendee ${i + 1}"><h3>Attendee ${i + 1} · ${t.name}</h3><div class="cols">
+        <div><label for="a${i}-name">Full name (attendee ${i + 1})</label><input id="a${i}-name" data-f="name" type="text" value="${esc(a.name)}"></div>
+        <div><label for="a${i}-email">Email (attendee ${i + 1})</label><input id="a${i}-email" data-f="email" type="email" value="${esc(a.email)}"></div>
+        ${t.id === 'workshop' ? `<div><label for="a${i}-ws">Workshop (attendee ${i + 1})</label><select id="a${i}-ws" data-f="workshop" style="width:330px"><option value="">Choose a workshop…</option>${WORKSHOPS.map((w) => `<option value="${w.id}" ${a.workshop === w.id ? 'selected' : ''} ${w.full ? 'disabled' : ''}>${w.name}${w.full ? ' — full' : ''}</option>`).join('')}</select></div>` : ''}
+        <div><label for="a${i}-diet">Dietary needs (attendee ${i + 1})</label><select id="a${i}-diet" data-f="diet">${DIETS.map((d) => `<option ${a.diet === d ? 'selected' : ''}>${d}</option>`).join('')}</select></div></div></section>`; }).join('');
+    } else if (st.step === 3) {
+      h = `<label class="check"><input type="checkbox" id="dinner" ${st.dinner ? 'checked' : ''}> Add the speakers' dinner on 9 June (+€65 per attendee)</label>
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="donate" ${st.donate ? 'checked' : ''}> Add €5 to the Palisade diversity scholarship fund</label>
+        <label for="promo" style="margin-top:16px">Promo code</label><div class="row"><input id="promo" type="text" value="${esc(st.promo)}" autocomplete="off"><button type="button" id="apply">Apply</button></div><div id="promo-msg" class="${st.promoMsg.startsWith('✓') ? 'ok' : 'err'}" role="status">${esc(st.promoMsg)}</div>
+        <div class="totals"><div><span>Total</span><strong id="total">${eur(subtotal())}</strong></div></div>`;
+    } else {
+      h = `<div class="cols"><div><label for="company">Company name for the invoice</label><input id="company" type="text" value="${esc(st.company)}"></div><div><label for="vat">VAT number (optional)</label><input id="vat" type="text" value="${esc(st.vat)}"></div></div>
+        <fieldset style="border:0;padding:0;margin-top:14px"><legend style="font-weight:600">Payment method</legend>
+        <label class="check"><input type="radio" name="pay" value="card" ${st.pay === 'card' ? 'checked' : ''}> Credit or debit card</label>
+        <label class="check"><input type="radio" name="pay" value="invoice" ${st.pay === 'invoice' ? 'checked' : ''}> Pay by invoice (bank transfer within 14 days)</label></fieldset>
+        <div id="card-box" ${st.pay === 'card' ? '' : 'hidden'} class="muted" style="margin-top:10px">Card details are collected on the next screen by our payment provider.</div>
+        <div class="totals"><div><span>Total due</span><strong>${eur(subtotal())}</strong></div></div>`;
+    }
+    b.innerHTML = h;
+    q('#nav').innerHTML = `${st.step > 1 ? '<button type="button" id="back">Back</button>' : ''}${st.step < 4 ? '<button type="button" class="primary" id="next">Continue</button>' : '<button type="button" class="primary" id="finish">Complete registration</button>'}`;
+    if (st.step === 3) {
+      const upd = () => { collect(); q('#total').textContent = eur(subtotal()); };
+      q('#dinner').onchange = upd; q('#donate').onchange = upd;
+      q('#apply').onclick = async () => {
+        const code = q('#promo').value.trim().toUpperCase(); if (!code) return;
+        q('#apply').disabled = true; q('#promo-msg').className = 'muted'; q('#promo-msg').textContent = 'Checking code…';
+        await later(400); q('#apply').disabled = false;
+        st.promo = '';
+        if (code === 'PALISADE-EARLY') st.promoMsg = 'This code expired on 31 January 2026.';
+        else if (code === 'PAL-SPEAKER') st.promoMsg = 'This code is reserved for confirmed speakers.';
+        else st.promoMsg = 'We don\'t recognise that code.';
+        collect(); render();
+      };
+    }
+    if (st.step === 4) qa('input[name=pay]').forEach((r) => (r.onchange = () => { collect(); q('#card-box').hidden = st.pay !== 'card'; }));
+  }
+  q('#body').addEventListener('click', (e) => {
+    const inc = e.target.closest('[data-inc]'); const dec = e.target.closest('[data-dec]');
+    if (inc && st.qty[inc.dataset.inc] < 6) st.qty[inc.dataset.inc]++;
+    if (dec && st.qty[dec.dataset.dec] > 0) st.qty[dec.dataset.dec]--;
+    if (inc || dec) render();
+  });
+  q('#nav').addEventListener('click', (e) => {
+    const id = e.target.id;
+    if (id === 'back') { collect(); st.step--; render(); }
+    if (id === 'next') {
+      collect();
+      if (st.step === 1 && !seats().length) return err('Add at least one ticket.');
+      if (st.step === 2) {
+        for (const [i, a] of st.att.entries()) {
+          if (a.name.split(' ').length < 2) return err(`Enter a full name for attendee ${i + 1}.`);
+          if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(a.email)) return err(`Enter a valid email for attendee ${i + 1}.`);
+          if (seats()[i].id === 'workshop' && !a.workshop) return err(`Choose a workshop for attendee ${i + 1}.`);
+        }
+        if (new Set(st.att.map((a) => a.email)).size !== st.att.length) return err('Each attendee needs their own email address.');
+      }
+      st.step++; render();
+    }
+    if (id === 'finish') {
+      collect();
+      if (!st.company) return err('Enter the company name for the invoice.');
+      if (!st.pay) return err('Choose a payment method.');
+      q('#dlg-b').innerHTML = `<p>${seats().length} ticket(s) for ${esc(st.company)} · total ${eur(subtotal())} · ${st.pay === 'invoice' ? 'pay by invoice' : 'card payment'}.</p>`;
+      q('#dlg').hidden = false;
+    }
+  });
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; };
+  q('#dlg-yes').onclick = async () => {
+    q('#dlg-yes').disabled = true; await later(500); q('#dlg-yes').disabled = false; q('#dlg').hidden = true;
+    const s = seats();
+    await rec({ event: 'registration_complete', tickets: Object.entries(st.qty).filter(([, n]) => n).map(([k, n]) => `${k}:${n}`).join(','),
+      attendees: st.att.map((a, i) => `${a.name.toLowerCase()}|${a.email}|${s[i].id === 'workshop' ? a.workshop : '-'}`).sort().join('; '),
+      dinner: st.dinner ? 'yes' : 'no', donation: st.donate ? 'yes' : 'no', promo: st.promo || 'none', company: st.company, payment: st.pay, total: String(subtotal()) });
+    st.done = `<h2>You're registered!</h2><p>Confirmation PS26-${4100 + s.length} is on its way to ${esc(st.att[0].email)}. ${st.pay === 'invoice' ? 'The invoice will follow within one business day.' : ''}</p>`;
+    render();
+  };
+  render();
+})();
+</script>
+</body>
+</html>

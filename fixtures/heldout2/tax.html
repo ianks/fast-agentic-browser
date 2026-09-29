@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Norrbrook Revenue · File your Income Tax Return</title>
+<script src="../common.js"></script>
+<style>
+  :root { --ink: #0b0c0c; --blue: #0b2a4a; --link: #1d5ea8; --line: #b1b4b6; --soft: #f3f2f1; --green: #00703c; --red: #d4351c; --focus: #ffdd00; --muted: #505a5f; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 17px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); background: #fff; }
+  a, button.link { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+  button.link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+  a:focus, button:focus, input:focus, select:focus, textarea:focus, [tabindex]:focus { outline: 3px solid var(--focus); outline-offset: 0; box-shadow: inset 0 0 0 2px var(--ink); }
+  a:focus, button.link:focus { background: var(--focus); color: var(--ink); box-shadow: 0 -2px var(--focus), 0 4px var(--ink); text-decoration: none; outline: none; }
+  .gw { max-width: 1020px; margin: 0 auto; padding: 0 20px; }
+  header.gov { background: var(--blue); color: #fff; border-bottom: 10px solid #1d70b8; }
+  header.gov .gw { display: flex; align-items: center; gap: 22px; min-height: 64px; }
+  .logo { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; font-size: 21px; letter-spacing: .2px; }
+  .logo:focus { color: var(--ink); }
+  .service { font-size: 17px; font-weight: 700; border-left: 1px solid rgba(255,255,255,.35); padding-left: 20px; }
+  .acct { margin-left: auto; display: flex; gap: 16px; align-items: center; font-size: 15px; }
+  .acct .muted-h { color: #c9d6e3; }
+  .acct button { color: #fff; background: none; border: 0; font: inherit; text-decoration: underline; cursor: pointer; }
+  .acct button:focus { color: var(--ink); background: var(--focus); }
+  .phase { border-bottom: 1px solid var(--line); padding: 10px 0; font-size: 15px; }
+  .tag { display: inline-block; padding: 2px 8px; font-size: 14px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; background: #1d70b8; color: #fff; margin-right: 8px; }
+  .tag.grey { background: #eeefef; color: #383f43; }
+  .tag.green { background: #cce2d8; color: #005a30; }
+  .tag.blue { background: #d2e2f1; color: #144e81; }
+  .tag.red { background: #f6d7d2; color: #942514; }
+  nav.primary { display: flex; gap: 26px; border-bottom: 1px solid var(--line); padding: 12px 0; font-size: 16px; }
+  nav.primary a { text-decoration: none; font-weight: 700; color: var(--link); padding: 4px 0; }
+  nav.primary a.on { color: var(--ink); border-bottom: 4px solid #1d70b8; }
+  main { padding: 26px 20px 60px; min-height: 60vh; }
+  h1 { font-size: 36px; line-height: 1.15; margin: 0 0 20px; }
+  h2 { font-size: 24px; margin: 28px 0 14px; }
+  h3 { font-size: 19px; margin: 20px 0 10px; }
+  .caption { color: var(--muted); font-size: 19px; margin: 0 0 4px; }
+  .lead { font-size: 19px; }
+  .hint { color: var(--muted); font-size: 16px; margin: 0 0 8px; }
+  .muted { color: var(--muted); font-size: 15px; }
+  .cols { display: grid; grid-template-columns: 250px 1fr; gap: 40px; }
+  .subnav h3 { font-size: 16px; margin: 18px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .subnav ul { list-style: none; margin: 0; padding: 0; }
+  .subnav li { margin: 4px 0; font-size: 16px; }
+  .subnav a.on { font-weight: 700; color: var(--ink); text-decoration: none; border-left: 4px solid #1d70b8; padding-left: 8px; margin-left: -12px; }
+  .subnav .ok { color: var(--green); font-weight: 700; margin-left: 4px; }
+  .field { margin: 0 0 24px; }
+  .field > label, .field > .lbl, legend { display: block; font-weight: 700; margin-bottom: 6px; font-size: 19px; }
+  legend.small { font-size: 17px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 24px; min-width: 0; }
+  input[type=text], input[type=password], input[type=email], select, textarea { font: inherit; border: 2px solid var(--ink); padding: 6px 8px; width: 100%; max-width: 440px; background: #fff; border-radius: 0; }
+  input.w5 { max-width: 90px; } input.w10 { max-width: 200px; } input.w20 { max-width: 330px; }
+  select.w10 { max-width: 220px; }
+  .err-field { border-left: 5px solid var(--red); padding-left: 15px; }
+  .err-field input, .err-field select { border-color: var(--red); }
+  .err-msg { color: var(--red); font-weight: 700; margin: 0 0 6px; }
+  .date { display: flex; gap: 16px; }
+  .date label { font-weight: 400; font-size: 17px; margin-bottom: 4px; display: block; }
+  .prefix { display: flex; align-items: stretch; max-width: 240px; }
+  .prefix span { border: 2px solid var(--ink); border-right: 0; background: var(--soft); padding: 6px 10px; font-weight: 700; }
+  .radios label, .checks label { display: flex; align-items: center; gap: 12px; font-weight: 400; font-size: 19px; margin: 0 0 12px; cursor: pointer; position: relative; }
+  .radios input, .checks input { width: 30px; height: 30px; margin: 0; accent-color: var(--ink); flex: none; cursor: pointer; }
+  .radios.inline { display: flex; gap: 30px; }
+  .conditional { border-left: 4px solid var(--line); margin: 0 0 16px 14px; padding: 6px 0 2px 22px; }
+  .btn { font: inherit; font-size: 19px; background: var(--green); color: #fff; border: 2px solid transparent; box-shadow: 0 2px 0 #002d18; padding: 8px 14px 7px; cursor: pointer; margin: 0 10px 20px 0; border-radius: 0; }
+  .btn.secondary { background: var(--soft); color: var(--ink); box-shadow: 0 2px 0 #929191; }
+  .btn.warning { background: var(--red); box-shadow: 0 2px 0 #55150b; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn:focus { background: var(--focus); color: var(--ink); box-shadow: 0 2px 0 var(--ink); outline: none; }
+  .back { display: inline-block; margin: 0 0 18px; font-size: 16px; }
+  .error-summary { border: 5px solid var(--red); padding: 16px 20px; margin: 0 0 26px; }
+  .error-summary h2 { margin: 0 0 10px; font-size: 22px; }
+  .error-summary ul { margin: 0; padding: 0; list-style: none; }
+  .error-summary button.link { color: var(--red); font-weight: 700; }
+  .banner { border: 5px solid #1d70b8; margin: 0 0 26px; }
+  .banner .bh { background: #1d70b8; color: #fff; padding: 4px 16px 6px; font-weight: 700; }
+  .banner .bb { padding: 14px 16px; }
+  .banner.success { border-color: var(--green); }
+  .banner.success .bh { background: var(--green); }
+  dl.summary { margin: 0 0 26px; }
+  dl.summary .r { display: grid; grid-template-columns: 34% 1fr auto; gap: 16px; border-bottom: 1px solid var(--line); padding: 10px 0; }
+  dl.summary dt { font-weight: 700; } dl.summary dd { margin: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 0 0 24px; }
+  th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 10px 12px 10px 0; vertical-align: top; font-size: 16px; }
+  th { font-weight: 700; }
+  td.num, th.num { text-align: right; }
+  ul.tasks { list-style: none; margin: 0 0 20px; padding: 0; border-top: 1px solid var(--line); }
+  ul.tasks li { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: 12px 0; }
+  .panel { border: 1px solid var(--line); padding: 18px 20px; margin: 0 0 20px; }
+  .panel h2 { margin-top: 0; font-size: 22px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .inset { border-left: 10px solid var(--line); padding: 10px 16px; margin: 0 0 22px; }
+  .don { border: 1px solid var(--line); padding: 14px 18px 4px; margin-bottom: 16px; }
+  .don legend { font-size: 19px; padding: 0 6px; margin-left: -6px; }
+  .don-grid { display: grid; grid-template-columns: 1fr 190px auto; gap: 18px; align-items: start; }
+  .don-grid label { font-weight: 700; display: block; margin-bottom: 4px; }
+  .cb { position: relative; }
+  .cb ul[role=listbox] { position: absolute; z-index: 5; left: 0; right: 0; max-width: 440px; margin: 0; padding: 0; list-style: none; background: #fff; border: 2px solid var(--ink); border-top: 0; max-height: 260px; overflow: auto; }
+  .cb li { padding: 8px 10px; border-bottom: 1px solid #e3e3e3; cursor: pointer; font-size: 16px; }
+  .cb li[aria-selected=true], .cb li:hover { background: #1d70b8; color: #fff; }
+  .cb li.none { cursor: default; color: var(--muted); }
+  .cb li.none:hover { background: #fff; color: var(--muted); }
+  .overlay { position: fixed; inset: 0; background: rgba(11,12,12,.6); display: flex; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 50; }
+  .dialog { background: #fff; width: 520px; max-width: calc(100vw - 40px); padding: 26px 30px 10px; border-top: 8px solid #1d70b8; }
+  .dialog h2 { margin-top: 0; }
+  .toast { position: fixed; right: 20px; bottom: 20px; background: var(--ink); color: #fff; padding: 12px 18px; z-index: 60; max-width: 420px; }
+  footer { border-top: 1px solid var(--line); background: var(--soft); padding: 26px 0 36px; font-size: 15px; color: var(--muted); }
+  footer ul { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .msg-row { display: grid; grid-template-columns: 1fr 140px; border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .msg-row.unread a { font-weight: 700; }
+  .result-box { background: #1d70b8; color: #fff; padding: 18px 22px; margin: 0 0 24px; }
+  .result-box .big { font-size: 32px; font-weight: 700; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header class="gov">
+  <div class="gw">
+    <a class="logo" href="#/home"><svg width="34" height="30" viewBox="0 0 34 30" aria-hidden="true"><path d="M17 2 L32 10 L32 13 L2 13 L2 10 Z" fill="#fff"/><rect x="5" y="15" width="3" height="10" fill="#fff"/><rect x="12" y="15" width="3" height="10" fill="#fff"/><rect x="19" y="15" width="3" height="10" fill="#fff"/><rect x="26" y="15" width="3" height="10" fill="#fff"/><rect x="2" y="26" width="30" height="3" fill="#fff"/></svg><span>Norrbrook Revenue</span></a>
+    <span class="service">File your Income Tax Return</span>
+    <div class="acct"><span>Aoife Brennan</span><span class="muted-h">Taxpayer no. 7719402K</span><button type="button" id="signout">Sign out</button></div>
+  </div>
+</header>
+<div class="gw">
+  <div class="phase"><strong class="tag">Beta</strong>This is a new service – your <a href="#/feedback">feedback</a> will help us to improve it.</div>
+  <nav class="primary" id="pnav" aria-label="Account menu">
+    <a href="#/home" data-sec="home">Home</a>
+    <a href="#/return" data-sec="return">Your tax return</a>
+    <a href="#/documents" data-sec="documents">Documents</a>
+    <a href="#/payments" data-sec="payments">Payments</a>
+    <a href="#/messages" data-sec="messages" id="nav-msgs">Messages</a>
+    <a href="#/profile" data-sec="profile">Profile</a>
+  </nav>
+</div>
+<main id="main" class="gw" tabindex="-1"></main>
+<footer>
+  <div class="gw">
+    <ul>
+      <li><a href="#/help">Help using this service</a></li>
+      <li><a href="#/contact">Contact Norrbrook Revenue</a></li>
+      <li><a href="#/accessibility">Accessibility statement</a></li>
+      <li><a href="#/cookies">Cookies</a></li>
+      <li><a href="#/privacy">Privacy notice</a></li>
+      <li><a href="#/terms">Terms and conditions</a></li>
+    </ul>
+    <div>© Norrbrook Revenue Commissioners · Revenue House, Quay Street, Norrbrook N01 R7T2</div>
+  </div>
+</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 4000); };
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const money = (n) => { const [i, d] = Number(n).toFixed(2).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + d; };
+  const eur = (n) => '€' + money(n);
+  function parseAmount(s) {
+    const t = String(s ?? '').replace(/€|eur/gi, '').replace(/\s+/g, '');
+    if (!/^(\d{1,3}(,\d{3})+|\d+)(\.\d{1,2})?$/.test(t)) return null;
+    const v = Number(t.replace(/,/g, ''));
+    return v > 0 ? v : null;
+  }
+  const busy = (b, label) => { b.disabled = true; b.dataset.label = b.textContent; b.innerHTML = `<span class="spin"></span>${esc(label)}`; };
+  const unbusy = (b) => { b.disabled = false; b.textContent = b.dataset.label || b.textContent; };
+
+  const CHARITIES = [
+    ['10001', 'Norrbrook Red Cross'], ['10018', 'Guide Dogs Norrbrook'], ['10442', 'Northside Hospice Foundation'],
+    ['11020', "Norrbrook Children's Hospital Trust"], ['12580', "St. Aldric's Parish Outreach"], ['13377', 'Kestrel Bay Lifeboat Fund'],
+    ['14415', 'Oakwood Cancer Support Centre'], ['15209', 'Glenmore Mountain Rescue'], ['16098', 'Dementia Carers Norrbrook'],
+    ['16632', 'Brightside Mental Health Alliance'], ['17264', 'Harbour Lights Homeless Services'], ['17893', 'Heron Wetlands Trust'],
+    ['18127', 'Open Door Refugee Support'], ['18540', 'Autism Family Network'], ['18803', 'Seaview Animal Sanctuary'],
+    ['18830', 'Seaview Animal Rescue'], ['19330', 'Lanterns Bereavement Care'], ['19702', 'Clean Coasts Norrbrook'],
+    ['19951', 'Coastline Conservation Trust'], ['20417', 'Rathmines Food Bank'], ['20588', 'Westgate Soup Run'],
+    ['20960', 'Castle Hill Youth Orchestra'], ['21205', 'Rathmines Rowing Club Foundation'], ['21476', 'Fairfield Community Garden'],
+    ['21933', 'Rathmines Community Food Bank'], ['22108', 'Riverbend Literacy Project'], ['22496', 'Hollins Park Food Cooperative'],
+    ['22741', 'Tannery Row Arts Collective'], ['23017', "Millbrook Men's Shed"], ['23390', 'Seaview Sea Scouts'],
+  ];
+  function searchCharities(qs) {
+    const toks = norm(qs).toLowerCase().replace(/[()·,–-]/g, ' ').split(/\s+/).filter(Boolean);
+    if (!toks.length) return [];
+    const qq = toks.join(' ');
+    const hits = CHARITIES.filter(([n, name]) => { const hay = (name + ' chy ' + n).toLowerCase().replace(/[()·,–-]/g, ' '); return toks.every((t) => hay.includes(t)); });
+    const score = ([n, name]) => { const nm = name.toLowerCase(); if (qq === n || qq === 'chy ' + n) return 0; if (nm === qq) return 1; if (nm.startsWith(qq)) return 2; return 3; };
+    return hits.sort((a, b) => score(a) - score(b) || a[1].localeCompare(b[1])).slice(0, 8);
+  }
+  function resolveExact(text) {
+    const t = norm(text).toLowerCase();
+    if (!t) return null;
+    for (const [n, name] of CHARITIES) {
+      const nm = name.toLowerCase();
+      if ([nm, `${nm} (chy ${n})`, `${nm} · chy ${n}`, `${nm} - chy ${n}`, `${nm}, chy ${n}`, `chy ${n}`, n].includes(t)) return [n, name];
+    }
+    return null;
+  }
+
+  let rowSeq = 1;
+  const newRow = () => ({ id: rowSeq++, chy: '', name: '', text: '', amount: '' });
+  const st = {
+    expiredOnce: false, signedOut: false, relogBanner: false,
+    deps: [], depFlash: null, taskFlash: null,
+    sec: { personal: 'done', dependants: 'todo', employment: 'done', 'self-employment': 'todo', rental: 'todo', pensions: 'todo', medical: 'todo', tuition: 'todo', donations: 'todo', 'remote-working': 'progress', 'home-carer': 'todo' },
+    don: { rows: [newRow()], saved: null },
+    answers: {},
+    submitted: null,
+    profile: { email: 'aoife.brennan@postbox.ie', phone: '087 412 9930', address: 'Flat 6, 31 Clontarf Road, Norrbrook N04 KX27', bank: 'IBAN ending 4471 (Harbour Credit Union)' },
+    msgs: [
+      { id: 'm4', from: 'Norrbrook Revenue', subject: 'Your 2025 Employment Detail Summary is ready', date: '19 September 2026', unread: true, body: 'Your Employment Detail Summary for 2025 is now available in Documents. It shows the pay and tax your employer reported for you. You can use it to complete the Employment section of your return, which we have pre-filled for you.' },
+      { id: 'm3', from: 'Norrbrook Revenue', subject: 'Reminder: the 2025 return deadline is 31 October 2026', date: '2 September 2026', unread: true, body: 'This is a reminder that you need to file your 2025 Income Tax Return by 31 October 2026. If you file online you get an extension to 12 November 2026. You have started your return; you can continue where you left off at any time.' },
+      { id: 'm2', from: 'Norrbrook Revenue', subject: 'Tax credit certificate for 2026', date: '14 December 2025', unread: false, body: 'Your 2026 tax credit certificate has been issued to your employer, Clearwater Analytics Ltd. Your yearly tax credits are €4,000.00 and your standard rate cut-off point is €44,000.00.' },
+      { id: 'm1', from: 'Norrbrook Revenue', subject: 'Refund issued for 2024', date: '3 June 2025', unread: false, body: 'We have issued a refund of €214.60 for 2024 to your bank account ending 4471. It should reach your account within 5 working days.' },
+    ],
+  };
+  let dw = null; // add-dependant wizard
+
+  const SECTIONS = [
+    { g: 'Your details', items: [['personal', 'Personal details'], ['dependants', 'Dependants']] },
+    { g: 'Income', items: [['employment', 'Employment'], ['self-employment', 'Self-employment'], ['rental', 'Rental income'], ['pensions', 'Pensions and annuities']] },
+    { g: 'Deductions and reliefs', items: [['medical', 'Medical expenses'], ['tuition', 'Tuition fees'], ['donations', 'Charitable donations'], ['remote-working', 'Remote working'], ['home-carer', 'Home carer credit']] },
+  ];
+  const SEC_NAME = Object.fromEntries(SECTIONS.flatMap((g) => g.items));
+  const statusTag = (s) => s === 'done' ? '<strong class="tag green">Completed</strong>' : s === 'progress' ? '<strong class="tag blue">In progress</strong>' : '<strong class="tag grey">Not started</strong>';
+  const doneCount = () => Object.values(st.sec).filter((s) => s === 'done').length;
+
+  const YN = {
+    'self-employment': { q: 'Did you have any income from self-employment in 2025?', hint: 'For example, freelance work, a sole trade or commission not taxed through payroll.', fields: [['gross', 'Gross income from self-employment (€)'], ['expenses', 'Allowable business expenses (€)']] },
+    rental: { q: 'Did you receive rent from a property in 2025?', hint: 'Include rent from rooms let in your home only if it was over the Rent-a-Room limit.', fields: [['gross', 'Gross rent received (€)'], ['expenses', 'Mortgage interest and other allowable expenses (€)']] },
+    pensions: { q: 'Did you receive a pension or annuity in 2025 that was not taxed through payroll?', hint: 'For example, a foreign pension.', fields: [['amount', 'Amount received (€)'], ['tax', 'Tax already deducted (€)']] },
+    medical: { q: 'Did you pay for health expenses in 2025 that were not reimbursed?', hint: 'You can claim relief at 20% on qualifying expenses. Keep your receipts for 6 years.', fields: [['doctor', 'Doctor and consultant fees (€)'], ['medicines', 'Prescribed medicines (€)'], ['other', 'Other qualifying health expenses (€)']] },
+    tuition: { q: 'Did you pay tuition fees for an approved course in 2025?', hint: 'Only fees for courses on the approved list qualify. The first €3,000 of fees does not qualify.', fields: [['college', 'College or institution', 'text'], ['course', 'Course name', 'text'], ['fees', 'Fees paid (€)']] },
+    'home-carer': { q: 'Did you or your spouse or civil partner care for a dependent person at home in 2025?', hint: 'The home carer credit is up to €1,950 a year.', fields: [['person', 'Name of the person cared for', 'text'], ['income', "Home carer's own income in 2025 (€)"]] },
+  };
+
+  const INFO = {
+    feedback: ['Give feedback', '<p>Tell us what you think of this service. Your feedback helps us make it better.</p><p class="muted">Feedback is collected separately and is not linked to your tax record.</p>'],
+    help: ['Help using this service', '<p>You can save your progress at any time and come back later. Sections marked <strong>Completed</strong> can still be changed until you submit your return.</p><p>If you get stuck, call our helpline on 01 738 3636 (Monday to Friday, 9:30am to 4:30pm).</p>'],
+    contact: ['Contact Norrbrook Revenue', '<p>Use Messages to contact us about your return. Phone: 01 738 3636. Post: Revenue House, Quay Street, Norrbrook N01 R7T2.</p>'],
+    accessibility: ['Accessibility statement', '<p>This service is designed to meet WCAG 2.2 AA. If you have difficulty using it, contact us and we will help.</p>'],
+    cookies: ['Cookies', '<p>We use essential cookies to keep you signed in and to remember your progress. We do not use advertising cookies.</p>'],
+    privacy: ['Privacy notice', '<p>We collect the information in your return to calculate your tax. We share it only where the law allows.</p>'],
+    terms: ['Terms and conditions', '<p>By using this service you agree to keep your sign-in details private and to give information that is true and complete.</p>'],
+    'services/refund': ['Claim a refund for an earlier year', '<p>You can claim refunds for up to 4 years back. Returns for 2021 and earlier are closed.</p>'],
+    'services/property': ['Local Property Tax', '<p>Your Local Property Tax is paid in full for 2026. Next valuation date: 1 November 2029.</p>'],
+    'services/employment': ['Jobs and pensions', '<p>Employer: Clearwater Analytics Ltd (registered 1 March 2021). To add a new job, your employer must register you first.</p>'],
+    'services/credits': ['Review your tax credits', '<p>Your 2026 credits: Personal tax credit €2,000.00, Employee tax credit €2,000.00. Rent tax credit can be claimed in your return.</p>'],
+  };
+
+  // ------------------------------------------------------------------ helpers for rendering
+  const route = () => location.hash.replace(/^#\/?/, '') || 'home';
+  const back = (href, label = 'Back') => `<a class="back" href="${href}">‹ ${esc(label)}</a>`;
+  function errorSummary(errs) {
+    if (!errs.length) return '';
+    return `<div class="error-summary" role="alert" tabindex="-1"><h2>There is a problem</h2><ul>${errs.map(([id, m]) => `<li><button type="button" class="link" data-focus="${esc(id)}">${esc(m)}</button></li>`).join('')}</ul></div>`;
+  }
+  function subnav(active) {
+    return `<nav class="subnav" aria-label="Sections of your return"><h3 style="margin-top:0">2025 return</h3><ul><li><a href="#/return" class="${active === 'overview' ? 'on' : ''}">Overview</a></li></ul>` +
+      SECTIONS.map((g) => `<h3>${esc(g.g)}</h3><ul>${g.items.map(([k, l]) => `<li><a href="#/return/${k}" class="${active === k ? 'on' : ''}">${esc(l)}</a>${st.sec[k] === 'done' ? '<span class="ok" aria-label="completed">✓</span>' : ''}</li>`).join('')}</ul>`).join('') +
+      `<h3>Submit</h3><ul><li><a href="#/return/review" class="${active === 'review' ? 'on' : ''}">Check and submit</a></li></ul></nav>`;
+  }
+  const returnPage = (active, inner) => `<div class="cols">${subnav(active)}<div>${inner}</div></div>`;
+
+  // ------------------------------------------------------------------ pages
+  function pHome() {
+    const unread = st.msgs.filter((m) => m.unread).length;
+    return `<p class="caption">Aoife Brennan · 7719402K</p><h1>Your Norrbrook Revenue account</h1>
+      <div class="grid2">
+        <div class="panel"><h2>2025 Income Tax Return</h2>${st.submitted ? '<p><strong class="tag green">Submitted</strong></p><p>Reference ' + esc(st.submitted) + '</p>' : `<p><strong class="tag blue">In progress</strong></p><p>${doneCount()} of 11 sections completed.</p><p>Deadline: <strong>31 October 2026</strong> (12 November 2026 if you file online).</p>`}<p><a href="#/return">${st.submitted ? 'View your return' : 'Continue your return'}</a></p></div>
+        <div class="panel"><h2>Messages</h2><p>You have <strong>${unread}</strong> unread message${unread === 1 ? '' : 's'}.</p><p><a href="#/messages">Go to your messages</a></p></div>
+        <div class="panel"><h2>Payments and refunds</h2><p>Nothing to pay.</p><p class="muted">Last refund: €214.60 for 2024, paid 3 June 2025.</p><p><a href="#/payments">View payments</a></p></div>
+        <div class="panel"><h2>Tax credits for 2026</h2><table><tbody><tr><td>Personal tax credit</td><td class="num">€2,000.00</td></tr><tr><td>Employee tax credit</td><td class="num">€2,000.00</td></tr><tr><td>Standard rate cut-off point</td><td class="num">€44,000.00</td></tr></tbody></table><p><a href="#/services/credits">Review your tax credits</a></p></div>
+      </div>
+      <h2>Other services</h2>
+      <ul>
+        <li><a href="#/services/refund">Claim a refund for an earlier year</a></li>
+        <li><a href="#/services/employment">Jobs and pensions</a></li>
+        <li><a href="#/services/property">Local Property Tax</a></li>
+        <li><a href="#/documents">Statements and documents</a></li>
+      </ul>`;
+  }
+
+  function pReturn() {
+    const flash = st.taskFlash; st.taskFlash = null;
+    return returnPage('overview', `<p class="caption">2025 Income Tax Return</p><h1>Your tax return</h1>
+      ${flash ? `<div class="banner success" role="status"><div class="bh">Success</div><div class="bb">${esc(flash)}</div></div>` : ''}
+      ${st.submitted ? `<div class="inset">You submitted this return. Reference ${esc(st.submitted)}.</div>` : `<p class="lead">You have completed ${doneCount()} of 11 sections.</p>`}
+      ${SECTIONS.map((g) => `<h2>${esc(g.g)}</h2><ul class="tasks">${g.items.map(([k, l]) => `<li><a href="#/return/${k}">${esc(l)}</a>${statusTag(st.sec[k])}</li>`).join('')}</ul>`).join('')}
+      <h2>Submit</h2><ul class="tasks"><li><a href="#/return/review">Check and submit your return</a>${st.submitted ? '<strong class="tag green">Submitted</strong>' : '<strong class="tag grey">Not started</strong>'}</li></ul>`);
+  }
+
+  function pPersonal() {
+    const p = st.profile;
+    return returnPage('personal', `<p class="caption">Your details</p><h1>Personal details</h1>
+      <p>We have filled in these details from your Norrbrook Revenue record.</p>
+      <dl class="summary">
+        <div class="r"><dt>Name</dt><dd>Aoife Brennan</dd><dd></dd></div>
+        <div class="r"><dt>Taxpayer number</dt><dd>7719402K</dd><dd></dd></div>
+        <div class="r"><dt>Date of birth</dt><dd>14 March 1988</dd><dd></dd></div>
+        <div class="r"><dt>Marital or civil status</dt><dd>Single</dd><dd></dd></div>
+        <div class="r"><dt>Address</dt><dd>${esc(p.address)}</dd><dd><a href="#/profile">Change<span class="muted"> address</span></a></dd></div>
+        <div class="r"><dt>Email</dt><dd>${esc(p.email)}</dd><dd><a href="#/profile">Change<span class="muted"> email</span></a></dd></div>
+      </dl>
+      <p><a href="#/return">Return to your tax return</a></p>`);
+  }
+
+  function pDependants() {
+    const flash = st.depFlash; st.depFlash = null;
+    const rows = st.deps.map((d, i) => `<div class="r"><dt>${esc(d.first + ' ' + d.last)}</dt><dd>${esc(REL[d.rel])} · born ${esc(longDate(d.dob))}${d.childcare === 'yes' ? ` · childcare ${esc(eur(d.amount))}` : ''}</dd><dd><button type="button" class="link" data-dep-remove="${i}">Remove<span class="muted"> ${esc(d.first)}</span></button></dd></div>`).join('');
+    return returnPage('dependants', `<p class="caption">Your details</p><h1>Dependants</h1>
+      ${flash ? `<div class="banner success" role="status"><div class="bh">Success</div><div class="bb">${esc(flash)}</div></div>` : ''}
+      <p>Tell us about children and relatives who depend on you. You may be able to claim credits and reliefs for them, such as the childcare relief.</p>
+      ${st.deps.length ? `<dl class="summary">${rows}</dl>` : '<div class="inset">You have not added any dependants for 2025.</div>'}
+      <button type="button" class="btn secondary" id="dep-add">Add a dependant</button>
+      <p><a href="#/return">Return to your tax return</a></p>`);
+  }
+
+  const REL = { child: 'Child', stepchild: 'Stepchild', foster: 'Foster child', relative: 'Dependent relative' };
+  const longDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
+  function newDw() { return { rel: '', first: '', last: '', day: '', month: '', year: '', residency: '', months: '', edu: '', childcare: '', provider: '', reg: '', amount: '', ok1: false, ok2: false, ok3: false, errs: [] }; }
+  function dwDob() {
+    const d = +dw.day, m = +dw.month, y = +dw.year;
+    if (!/^\d{1,2}$/.test(String(dw.day).trim()) || !/^\d{4}$/.test(String(dw.year).trim()) || !m) return null;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  // age on 31 December 2025 (everyone born in year y has had their birthday by then)
+  function dwAge() { const iso = dwDob(); if (!iso) return null; return 2025 - Number(iso.slice(0, 4)); }
+
+  function pAddDep(step) {
+    if (!dw) dw = newDw();
+    if (step >= 2 && !dw.ok1) step = 1;
+    if (step >= 3 && !dw.ok2) step = 2;
+    const age = dwAge();
+    if (step === 3 && age !== null && age >= 13) step = 4;
+    if (step === 4 && age !== null && age < 13 && !dw.ok3) step = 3;
+    const errs = dw.errs; dw.errs = [];
+    const has = (id) => errs.find((e) => e[0] === id);
+    const fe = (id) => has(id) ? `<p class="err-msg">${esc(has(id)[1])}</p>` : '';
+    const ec = (id) => has(id) ? ' err-field' : '';
+    const nm = dw.first ? esc(norm(dw.first)) : 'they';
+    let h = `<p class="caption">Add a dependant · Step ${Math.min(step, 4)} of 4</p>`;
+    if (step === 1) {
+      h += `${back('#/return/dependants')}${errorSummary(errs)}<h1>Who is the dependant?</h1>
+        <div class="field${ec('d-rel')}"><label for="d-rel">Relationship to you</label>${fe('d-rel')}<select id="d-rel" class="w10"><option value="">Select an option</option>${Object.entries(REL).map(([v, l]) => `<option value="${v}" ${dw.rel === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="field${ec('d-first')}"><label for="d-first">First name</label>${fe('d-first')}<input type="text" id="d-first" class="w20" value="${esc(dw.first)}" autocomplete="off"></div>
+        <div class="field${ec('d-last')}"><label for="d-last">Last name</label>${fe('d-last')}<input type="text" id="d-last" class="w20" value="${esc(dw.last)}" autocomplete="off"></div>
+        <fieldset class="field${ec('d-day')}"><legend>Date of birth</legend><p class="hint">For example, 27 3 2012</p>${fe('d-day')}
+          <div class="date"><div><label for="d-day">Day</label><input type="text" id="d-day" class="w5" inputmode="numeric" value="${esc(dw.day)}"></div>
+          <div><label for="d-month">Month</label><select id="d-month"><option value="">Month</option>${MONTHS.map((m, i) => `<option value="${i + 1}" ${String(dw.month) === String(i + 1) ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+          <div><label for="d-year">Year</label><input type="text" id="d-year" class="w5" style="max-width:110px" inputmode="numeric" value="${esc(dw.year)}"></div></div></fieldset>
+        <button type="button" class="btn" data-dep-next="1">Continue</button>`;
+    } else if (step === 2) {
+      h += `${back('#/return/dependants/add/1')}${errorSummary(errs)}<h1>Living arrangements</h1>
+        <fieldset class="field${ec('d-res')}"><legend>Did ${nm} live with you in 2025?</legend>${fe('d-res')}<div class="radios" id="d-res">
+          <label><input type="radio" name="d-res" value="all_year" ${dw.residency === 'all_year' ? 'checked' : ''}> All year</label>
+          <label><input type="radio" name="d-res" value="part_year" ${dw.residency === 'part_year' ? 'checked' : ''}> Part of the year</label>
+          <div class="conditional" id="d-months-box" ${dw.residency === 'part_year' ? '' : 'hidden'}><div class="field${ec('d-months')}"><label for="d-months" style="font-size:17px">How many months did they live with you?</label>${fe('d-months')}<select id="d-months" class="w10"><option value="">Select</option>${Array.from({ length: 11 }, (_, i) => `<option value="${i + 1}" ${String(dw.months) === String(i + 1) ? 'selected' : ''}>${i + 1} month${i ? 's' : ''}</option>`).join('')}</select></div></div>
+          <label><input type="radio" name="d-res" value="none" ${dw.residency === 'none' ? 'checked' : ''}> Not at all</label></div></fieldset>
+        ${age !== null && age >= 18 ? `<fieldset class="field${ec('d-edu')}"><legend>Were they in full-time education in 2025?</legend>${fe('d-edu')}<div class="radios inline" id="d-edu"><label><input type="radio" name="d-edu" value="yes" ${dw.edu === 'yes' ? 'checked' : ''}> Yes</label><label><input type="radio" name="d-edu" value="no" ${dw.edu === 'no' ? 'checked' : ''}> No</label></div></fieldset>` : ''}
+        <button type="button" class="btn" data-dep-next="2">Continue</button>`;
+    } else if (step === 3) {
+      h += `${back('#/return/dependants/add/2')}${errorSummary(errs)}<h1>Childcare</h1>
+        <p>You can claim relief on fees you paid to a registered childcare provider for a child under 13.</p>
+        <fieldset class="field${ec('d-cc')}"><legend>Did you pay for registered childcare for ${nm} in 2025?</legend>${fe('d-cc')}<div class="radios" id="d-cc">
+          <label><input type="radio" name="d-cc" value="yes" ${dw.childcare === 'yes' ? 'checked' : ''}> Yes</label>
+          <div class="conditional" id="d-cc-box" ${dw.childcare === 'yes' ? '' : 'hidden'}>
+            <div class="field${ec('d-prov')}"><label for="d-prov" style="font-size:17px">Name of childcare provider</label>${fe('d-prov')}<input type="text" id="d-prov" class="w20" value="${esc(dw.provider)}"></div>
+            <div class="field${ec('d-reg')}"><label for="d-reg" style="font-size:17px">Provider registration number</label><p class="hint">Starts with CCR-, for example CCR-12345</p>${fe('d-reg')}<input type="text" id="d-reg" class="w10" value="${esc(dw.reg)}"></div>
+            <div class="field${ec('d-amt')}"><label for="d-amt" style="font-size:17px">Amount you paid in 2025</label>${fe('d-amt')}<div class="prefix"><span aria-hidden="true">€</span><input type="text" id="d-amt" inputmode="decimal" value="${esc(dw.amount)}"></div></div>
+          </div>
+          <label><input type="radio" name="d-cc" value="no" ${dw.childcare === 'no' ? 'checked' : ''}> No</label></div></fieldset>
+        <button type="button" class="btn" data-dep-next="3">Continue</button>`;
+    } else {
+      const dob = dwDob();
+      const under13 = age < 13;
+      const rows = [
+        ['Relationship', REL[dw.rel], 1], ['Name', `${norm(dw.first)} ${norm(dw.last)}`, 1], ['Date of birth', longDate(dob), 1],
+        ['Lived with you in 2025', dw.residency === 'all_year' ? 'All year' : dw.residency === 'part_year' ? `Part of the year (${dw.months} months)` : 'Not at all', 2],
+      ];
+      if (age >= 18) rows.push(['Full-time education', dw.edu === 'yes' ? 'Yes' : 'No', 2]);
+      if (under13) {
+        rows.push(['Paid for registered childcare', dw.childcare === 'yes' ? 'Yes' : 'No', 3]);
+        if (dw.childcare === 'yes') rows.push(['Childcare provider', `${norm(dw.provider)} (${regFmt(dw.reg)})`, 3], ['Amount paid in 2025', eur(parseAmount(dw.amount)), 3]);
+      }
+      h += `${back(under13 ? '#/return/dependants/add/3' : '#/return/dependants/add/2')}<h1>Check your answers</h1>
+        <dl class="summary">${rows.map(([k, v, s]) => `<div class="r"><dt>${esc(k)}</dt><dd>${esc(v)}</dd><dd><a href="#/return/dependants/add/${s}">Change<span class="muted"> ${esc(k.toLowerCase())}</span></a></dd></div>`).join('')}</dl>
+        <p>By saving, you confirm these details are correct to the best of your knowledge.</p>
+        <button type="button" class="btn" id="dep-save">Save dependant</button>
+        <p><button type="button" class="link" id="dep-cancel">Cancel and discard</button></p>`;
+    }
+    return returnPage('dependants', h);
+  }
+  const regFmt = (s) => { const t = String(s || '').toUpperCase().replace(/\s+/g, ''); const m = t.match(/^CCR-?(\d{5})$/); return m ? 'CCR-' + m[1] : t; };
+
+  function readStep(step) {
+    const v = (id) => (q('#' + id) ? q('#' + id).value : '');
+    const r = (name) => { const c = document.querySelector(`input[name="${name}"]:checked`); return c ? c.value : ''; };
+    const errs = [];
+    if (step === 1) {
+      dw.rel = v('d-rel'); dw.first = v('d-first'); dw.last = v('d-last'); dw.day = v('d-day').trim(); dw.month = v('d-month'); dw.year = v('d-year').trim();
+      if (!dw.rel) errs.push(['d-rel', 'Select the relationship to you']);
+      if (!norm(dw.first)) errs.push(['d-first', 'Enter their first name']);
+      if (!norm(dw.last)) errs.push(['d-last', 'Enter their last name']);
+      const dob = dwDob();
+      if (!dob) errs.push(['d-day', 'Enter a real date of birth, for example 27 3 2012']);
+      else if (dob > '2025-12-31') errs.push(['d-day', 'Date of birth must be on or before 31 December 2025']);
+      else if (dob < '1900-01-01') errs.push(['d-day', 'Date of birth must be after 1 January 1900']);
+      dw.ok1 = !errs.length;
+    }
+    if (step === 2) {
+      dw.residency = r('d-res'); dw.months = v('d-months'); dw.edu = r('d-edu');
+      if (!dw.residency) errs.push(['d-res', `Select whether they lived with you in 2025`]);
+      if (dw.residency === 'part_year' && !dw.months) errs.push(['d-months', 'Select how many months they lived with you']);
+      if (dwAge() >= 18 && !dw.edu) errs.push(['d-edu', 'Select whether they were in full-time education']);
+      dw.ok2 = !errs.length;
+    }
+    if (step === 3) {
+      dw.childcare = r('d-cc'); dw.provider = v('d-prov'); dw.reg = v('d-reg'); dw.amount = v('d-amt');
+      if (!dw.childcare) errs.push(['d-cc', 'Select yes if you paid for registered childcare']);
+      if (dw.childcare === 'yes') {
+        if (!norm(dw.provider)) errs.push(['d-prov', 'Enter the name of the childcare provider']);
+        if (!/^CCR-\d{5}$/.test(regFmt(dw.reg))) errs.push(['d-reg', 'Enter the registration number in the correct format, like CCR-12345']);
+        if (parseAmount(dw.amount) === null) errs.push(['d-amt', 'Enter the amount you paid, like 1500 or 1500.00']);
+      }
+      dw.ok3 = !errs.length;
+    }
+    dw.errs = errs;
+    return !errs.length;
+  }
+
+  function pDonations() {
+    const d = st.don;
+    const saved = d.saved;
+    const rows = d.rows.map((r, i) => `<fieldset class="don" data-row="${r.id}"><legend>Donation ${i + 1}</legend><div class="don-grid">
+        <div class="cb"><label for="don-chy-${r.id}">Charity</label><p class="hint" style="font-size:15px;margin:0 0 4px">Search by name or CHY number</p>
+          <input type="text" id="don-chy-${r.id}" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="don-lb-${r.id}" autocomplete="off" value="${esc(r.chy ? `${r.name} (CHY ${r.chy})` : r.text)}" data-cb="${r.id}">
+          <ul id="don-lb-${r.id}" role="listbox" aria-label="Matching charities" hidden></ul></div>
+        <div><label for="don-amt-${r.id}">Amount (€)</label><p class="hint" style="font-size:15px;margin:0 0 4px">For example, 150.00</p><input type="text" id="don-amt-${r.id}" inputmode="decimal" value="${esc(r.amount)}" data-amt="${r.id}"></div>
+        <div style="padding-top:58px"><button type="button" class="link" data-don-remove="${r.id}" aria-label="Remove donation ${i + 1}">Remove</button></div>
+      </div></fieldset>`).join('');
+    return returnPage('donations', `<p class="caption">Deductions and reliefs</p><h1>Charitable donations</h1>
+      <div id="don-errs"></div>
+      <div class="banner" id="don-relog" role="status" ${st.relogBanner ? '' : 'hidden'}><div class="bh">Important</div><div class="bb">You're signed in again. Select 'Save donations' to save your changes.</div></div>
+      <div class="banner success" id="don-ok" role="status" ${saved ? '' : 'hidden'}><div class="bh">Success</div><div class="bb" id="don-ok-text">${saved ? esc(saved) : ''}</div></div>
+      <p>Tell us about donations you made in 2025 to charities registered with Norrbrook Revenue. You'll need each charity's registration number (CHY).</p>
+      <details style="margin:0 0 20px"><summary>Which donations qualify?</summary><div class="inset" style="margin-top:10px">Donations to approved charities, schools, universities and sports bodies qualify. Membership fees, raffle tickets and payments for goods do not. Keep your receipts for 6 years.</div></details>
+      <div id="don-rows">${rows}</div>
+      <p><button type="button" class="btn secondary" id="don-add">Add another donation</button></p>
+      <button type="button" class="btn" id="don-save">Save donations</button>
+      <p><a href="#/return">Return to your tax return</a></p>`);
+  }
+
+  function pYN(key) {
+    const c = YN[key];
+    const a = st.answers[key] || {};
+    return returnPage(key, `<p class="caption">${key === 'self-employment' || key === 'rental' || key === 'pensions' ? 'Income' : 'Deductions and reliefs'}</p><h1>${esc(SEC_NAME[key])}</h1>
+      <div id="yn-errs"></div>
+      <fieldset class="field"><legend>${esc(c.q)}</legend><p class="hint">${esc(c.hint)}</p><div class="radios">
+        <label><input type="radio" name="yn" value="yes" ${a.answer === 'yes' ? 'checked' : ''}> Yes</label>
+        <div class="conditional" id="yn-box" ${a.answer === 'yes' ? '' : 'hidden'}>${c.fields.map(([k, l, t]) => `<div class="field"><label for="yn-${k}" style="font-size:17px">${esc(l)}</label><input type="text" id="yn-${k}" class="${t === 'text' ? 'w20' : 'w10'}" value="${esc(a[k] || '')}"></div>`).join('')}</div>
+        <label><input type="radio" name="yn" value="no" ${a.answer === 'no' ? 'checked' : ''}> No</label></div></fieldset>
+      <button type="button" class="btn" id="yn-save" data-key="${key}">Save and continue</button>`);
+  }
+
+  function pRemote() {
+    const a = st.answers['remote-working'] || { days: '96', costs: '' };
+    return returnPage('remote-working', `<p class="caption">Deductions and reliefs</p><h1>Remote working</h1><div id="yn-errs"></div>
+      <p>You can claim 30% of the cost of electricity, heat and broadband for the days you worked from home.</p>
+      <div class="field"><label for="rw-days">Days you worked from home in 2025</label><p class="hint">Your employer reported 96 days.</p><input type="text" id="rw-days" class="w5" value="${esc(a.days)}"></div>
+      <div class="field"><label for="rw-costs">Total electricity, heating and broadband costs for 2025 (€)</label><p class="hint">Enter the full-year bills for your home, not just the remote-working share.</p><input type="text" id="rw-costs" class="w10" value="${esc(a.costs)}"></div>
+      <button type="button" class="btn" id="rw-save">Save and continue</button>`);
+  }
+
+  function pEmployment() {
+    return returnPage('employment', `<p class="caption">Income</p><h1>Employment</h1>
+      <p>Your employer reported this information to us. If something is wrong, ask your employer to correct it.</p>
+      <table><thead><tr><th>Employer</th><th class="num">Gross pay</th><th class="num">Income tax</th><th class="num">USC</th><th class="num">PRSI</th></tr></thead>
+      <tbody><tr><td>Clearwater Analytics Ltd<div class="muted">Employer no. 9912044W · 1 Jan – 31 Dec 2025</div></td><td class="num">€58,420.00</td><td class="num">€11,212.40</td><td class="num">€1,436.18</td><td class="num">€2,336.80</td></tr></tbody></table>
+      <div class="inset">Benefit in kind: none reported. Pension contributions deducted by your employer: €2,921.00.</div>
+      <p><a href="#/return">Return to your tax return</a></p>`);
+  }
+
+  function pReview() {
+    if (st.submitted) return returnPage('review', `<h1>Return submitted</h1><div class="result-box"><div>Your reference number</div><div class="big">${esc(st.submitted)}</div></div><p>We'll send you a Statement of Liability within 5 working days.</p>`);
+    const open = Object.entries(st.sec).filter(([, s]) => s !== 'done').map(([k]) => SEC_NAME[k]);
+    return returnPage('review', `<p class="caption">Submit</p><h1>Check and submit your return</h1><div id="rv-errs"></div>
+      <div class="result-box"><div>Estimated result for 2025</div><div class="big">Refund of €184.20</div><div>This estimate will change as you complete your return.</div></div>
+      ${open.length ? `<div class="inset"><strong>${open.length} section${open.length === 1 ? ' is' : 's are'} not completed:</strong> ${esc(open.join(', '))}. You can still submit, but you may miss out on credits and reliefs.</div>` : ''}
+      <h2>Declaration</h2>
+      <div class="checks"><label><input type="checkbox" id="rv-decl"> I declare that the information I have given in this return is correct and complete to the best of my knowledge.</label></div>
+      <button type="button" class="btn" id="rv-submit">Submit return</button>`);
+  }
+
+  function pDocuments() {
+    const docs = [['Employment Detail Summary 2025', '19 September 2026', 'd1'], ['Tax Credit Certificate 2026', '14 December 2025', 'd2'], ['Statement of Liability 2024', '28 May 2025', 'd3'], ['Employment Detail Summary 2024', '15 January 2025', 'd4'], ['Tax Credit Certificate 2025', '12 December 2024', 'd5'], ['Local Property Tax receipt 2026', '6 January 2026', 'd6']];
+    return `<h1>Documents</h1><p>Statements and certificates we have issued to you.</p><table><thead><tr><th>Document</th><th>Issued</th><th></th></tr></thead><tbody>${docs.map(([n, d, id]) => `<tr><td>${esc(n)}</td><td>${esc(d)}</td><td><button type="button" class="link" data-doc="${esc(n)}">View<span class="muted"> ${esc(n)}</span></button></td></tr>`).join('')}</tbody></table>`;
+  }
+  function pPayments() {
+    return `<h1>Payments and refunds</h1><div class="inset"><strong>Balance: €0.00</strong> — you have nothing to pay.</div>
+      <table><thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody>
+      <tr><td>3 June 2025</td><td>Refund for 2024 (to IBAN ending 4471)</td><td class="num">€214.60</td></tr>
+      <tr><td>30 October 2024</td><td>Local Property Tax 2025</td><td class="num">€315.00</td></tr>
+      <tr><td>2 June 2024</td><td>Refund for 2023 (to IBAN ending 4471)</td><td class="num">€97.35</td></tr></tbody></table>
+      <p><button type="button" class="btn secondary" disabled>Make a payment</button></p>`;
+  }
+  function pMessages() {
+    return `<h1>Messages</h1><div>${st.msgs.map((m) => `<div class="msg-row ${m.unread ? 'unread' : ''}"><div><a href="#/messages/${m.id}">${esc(m.subject)}</a><div class="muted">${esc(m.from)}</div></div><div class="muted">${esc(m.date)}</div></div>`).join('')}</div>`;
+  }
+  function pMessage(id) {
+    const m = st.msgs.find((x) => x.id === id);
+    if (!m) return pNotFound();
+    m.unread = false; updNav();
+    return `${back('#/messages', 'Back to messages')}<h1>${esc(m.subject)}</h1><p class="muted">From ${esc(m.from)} · ${esc(m.date)}</p><p>${esc(m.body)}</p>
+      <h2>Reply</h2><div class="field"><label for="msg-reply">Your message</label><textarea id="msg-reply" rows="5"></textarea></div><button type="button" class="btn" id="msg-send" data-id="${m.id}">Send reply</button>`;
+  }
+  function pProfile() {
+    const p = st.profile;
+    const row = (k, l) => `<div class="r"><dt>${esc(l)}</dt><dd id="pf-v-${k}">${esc(p[k])}</dd><dd><button type="button" class="link" data-pf="${k}">Change<span class="muted"> ${esc(l.toLowerCase())}</span></button></dd></div>`;
+    return `<h1>Your profile</h1><dl class="summary">${row('email', 'Email address')}${row('phone', 'Phone number')}${row('address', 'Postal address')}${row('bank', 'Bank account for refunds')}</dl><div id="pf-edit"></div>`;
+  }
+  const pNotFound = () => `<h1>Page not found</h1><p>If you typed the web address, check it is correct.</p><p><a href="#/home">Go to your account home</a></p>`;
+
+  function updNav() {
+    const unread = st.msgs.filter((m) => m.unread).length;
+    q('#nav-msgs').textContent = unread ? `Messages (${unread})` : 'Messages';
+  }
+
+  function render() {
+    const r = route();
+    const parts = r.split('/');
+    qa('#pnav a').forEach((a) => a.classList.toggle('on', parts[0] === a.dataset.sec));
+    let h;
+    if (r === 'home') h = pHome();
+    else if (r === 'return') h = pReturn();
+    else if (parts[0] === 'return') {
+      const s = parts[1];
+      if (s === 'personal') h = pPersonal();
+      else if (s === 'dependants' && parts[2] === 'add') h = pAddDep(+(parts[3] || 1) || 1);
+      else if (s === 'dependants') h = pDependants();
+      else if (s === 'employment') h = pEmployment();
+      else if (s === 'donations') h = pDonations();
+      else if (s === 'remote-working') h = pRemote();
+      else if (YN[s]) h = pYN(s);
+      else if (s === 'review') h = pReview();
+      else h = pNotFound();
+    } else if (r === 'documents') h = pDocuments();
+    else if (r === 'payments') h = pPayments();
+    else if (r === 'messages') h = pMessages();
+    else if (parts[0] === 'messages' && parts[1]) h = pMessage(parts[1]);
+    else if (r === 'profile') h = pProfile();
+    else if (INFO[r]) h = `<h1>${esc(INFO[r][0])}</h1>${INFO[r][1]}<p><a href="#/home">Back to your account</a></p>`;
+    else h = pNotFound();
+    q('#main').innerHTML = h;
+    const es = q('#main .error-summary'); if (es) es.focus();
+    window.scrollTo(0, 0);
+    updNav();
+  }
+  window.addEventListener('hashchange', render);
+
+  // ------------------------------------------------------------------ donations combobox
+  const cbState = {};
+  function rowById(id) { return st.don.rows.find((r) => r.id === +id); }
+  function openList(id, results, query) {
+    const input = q('#don-chy-' + id), lb = q('#don-lb-' + id);
+    if (!input || !lb || document.activeElement !== input) return;
+    cbState[id] = { results, active: -1 };
+    lb.innerHTML = results.length ? results.map(([n, name], i) => `<li role="option" id="don-opt-${id}-${i}" data-chy="${n}" aria-selected="false">${esc(name)} · CHY ${n}</li>`).join('') : `<li class="none">No registered charities match “${esc(query)}”</li>`;
+    lb.hidden = false; input.setAttribute('aria-expanded', 'true'); input.removeAttribute('aria-activedescendant');
+  }
+  function closeList(id) {
+    const input = q('#don-chy-' + id), lb = q('#don-lb-' + id);
+    if (lb) lb.hidden = true;
+    if (input) { input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
+  }
+  function runSearch(id, now) {
+    const input = q('#don-chy-' + id); if (!input) return;
+    const text = input.value;
+    clearTimeout(cbState['t' + id]);
+    if (!norm(text)) { closeList(id); return; }
+    const lb = q('#don-lb-' + id);
+    if (document.activeElement === input) { lb.innerHTML = '<li class="none">Searching…</li>'; lb.hidden = false; input.setAttribute('aria-expanded', 'true'); }
+    cbState['t' + id] = setTimeout(() => openList(id, searchCharities(text), norm(text)), now ? 120 : 300);
+  }
+  function choose(id, chy) {
+    const r = rowById(id); const c = CHARITIES.find((x) => x[0] === chy); if (!r || !c) return;
+    r.chy = c[0]; r.name = c[1]; r.text = '';
+    const input = q('#don-chy-' + id); input.value = `${c[1]} (CHY ${c[0]})`;
+    closeList(id);
+  }
+  q('#main').addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.dataset.cb) { const r = rowById(t.dataset.cb); r.chy = ''; r.name = ''; r.text = t.value; runSearch(t.dataset.cb); }
+    if (t.dataset.amt) { rowById(t.dataset.amt).amount = t.value; }
+  });
+  q('#main').addEventListener('keydown', (e) => {
+    const t = e.target; if (!t.dataset || !t.dataset.cb) return;
+    const id = t.dataset.cb; const s = cbState[id]; const lb = q('#don-lb-' + id);
+    if (e.key === 'Escape') { closeList(id); return; }
+    if (!s || lb.hidden || !s.results.length) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      s.active = e.key === 'ArrowDown' ? Math.min(s.results.length - 1, s.active + 1) : Math.max(0, s.active - 1);
+      qa('li[role=option]', lb).forEach((li, i) => li.setAttribute('aria-selected', String(i === s.active)));
+      t.setAttribute('aria-activedescendant', `don-opt-${id}-${s.active}`);
+    } else if (e.key === 'Enter' && s.active >= 0) { e.preventDefault(); choose(id, s.results[s.active][0]); }
+  });
+  q('#main').addEventListener('focusin', (e) => { const t = e.target; if (t.dataset && t.dataset.cb) { const r = rowById(t.dataset.cb); if (!r.chy && norm(t.value)) runSearch(t.dataset.cb, true); } });
+  q('#main').addEventListener('focusout', (e) => {
+    const t = e.target; if (!t.dataset || !t.dataset.cb) return;
+    const id = t.dataset.cb;
+    setTimeout(() => {
+      if (document.activeElement === t) return;
+      closeList(id);
+      const r = rowById(id);
+      if (r && !r.chy) { const hit = resolveExact(t.value); if (hit) choose(id, hit[0]); }
+    }, 180);
+  });
+  q('#main').addEventListener('mousedown', (e) => { if (e.target.closest('ul[role=listbox]')) e.preventDefault(); });
+
+  function collectDonations() {
+    const errs = [];
+    const out = [];
+    st.don.rows.forEach((r, i) => {
+      const input = q('#don-chy-' + r.id), amt = q('#don-amt-' + r.id);
+      if (input && !r.chy) { const hit = resolveExact(input.value); if (hit) choose(r.id, hit[0]); }
+      if (amt) r.amount = amt.value;
+      const text = input ? norm(input.value) : '';
+      if (!r.chy && !text && !norm(r.amount)) return;
+      if (!r.chy) { errs.push(['don-chy-' + r.id, `Select a charity from the list for donation ${i + 1}`]); return; }
+      const v = parseAmount(r.amount);
+      if (v === null) { errs.push(['don-amt-' + r.id, `Enter the amount you gave to ${r.name}, like 150 or 150.00`]); return; }
+      if (out.some((o) => o.chy === r.chy)) { errs.push(['don-chy-' + r.id, `You have already added ${r.name}. Add the amounts together instead`]); return; }
+      out.push({ chy: r.chy, name: r.name, amount: v });
+    });
+    if (!errs.length && !out.length) errs.push(['don-chy-' + st.don.rows[0].id, 'Add at least one donation']);
+    return { errs, out };
+  }
+
+  function showTimeout() {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="to-h">
+      <h2 id="to-h">Your session has timed out</h2>
+      <p>For your security, we signed you out after 15 minutes without activity. Sign in again to continue — the details you entered on this page have been kept.</p>
+      <div class="error-summary" id="to-err" role="alert" hidden><ul><li style="color:var(--red);font-weight:700">The username or password is incorrect.</li></ul></div>
+      <div class="field"><label for="to-user">Username</label><input type="text" id="to-user" autocomplete="username" class="w20"></div>
+      <div class="field"><label for="to-pass">Password</label><input type="password" id="to-pass" autocomplete="current-password" class="w20"></div>
+      <button type="button" class="btn" id="to-signin">Sign in</button>
+      <p><button type="button" class="link" id="to-forgot">Forgotten your password?</button></p></div></div>`;
+    setTimeout(() => { const u = q('#to-user'); if (u) u.focus(); }, 30);
+  }
+  q('#modal-root').addEventListener('click', async (e) => {
+    const t = e.target;
+    if (t.closest('#to-forgot')) { toast('We have sent a password reset link to the email address on your record.'); return; }
+    if (t.closest('#to-signin')) {
+      const b = q('#to-signin'); if (b.disabled) return;
+      const u = norm(q('#to-user').value).toLowerCase(), p = q('#to-pass').value;
+      busy(b, 'Signing in…');
+      await sleep(600);
+      if (u !== 'aoife.brennan' || p !== 'Harbour-Kestrel-57') { unbusy(b); q('#to-err').hidden = false; q('#to-pass').value = ''; return; }
+      await post({ event: 'session_login', user: 'aoife.brennan' });
+      st.signedOut = false;
+      q('#modal-root').innerHTML = '';
+      if (route() === 'return/donations') { st.relogBanner = true; const bn = q('#don-relog'); if (bn) bn.hidden = false; }
+      else toast('You are signed in again.');
+      return;
+    }
+    if (t.closest('[data-x]')) { q('#modal-root').innerHTML = ''; return; }
+    if (t.closest('#so-ok')) { q('#modal-root').innerHTML = ''; st.signedOut = true; st.expiredOnce = true; showTimeout(); q('#to-h').textContent = 'You have signed out'; q('#to-h').nextElementSibling.textContent = 'Sign in again to continue.'; return; }
+  });
+  q('#modal-root').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.target.id === 'to-pass' || e.target.id === 'to-user')) { e.preventDefault(); q('#to-signin').click(); } });
+  q('#signout').addEventListener('click', () => {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="so-h"><h2 id="so-h">Sign out?</h2><p>Any answers you have not saved will be lost.</p><button type="button" class="btn" id="so-ok">Sign out</button><button type="button" class="btn secondary" data-x>Stay signed in</button></div></div>`;
+  });
+
+  // ------------------------------------------------------------------ main clicks
+  q('#main').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'd-res') q('#d-months-box').hidden = t.value !== 'part_year';
+    if (t.name === 'd-cc') q('#d-cc-box').hidden = t.value !== 'yes';
+    if (t.name === 'yn') q('#yn-box').hidden = t.value !== 'yes';
+  });
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const opt = t.closest('li[role=option][data-chy]');
+    if (opt) { const id = opt.id.split('-')[2]; choose(id, opt.dataset.chy); q('#don-chy-' + id).focus(); return; }
+    const f = t.closest('[data-focus]'); if (f) { const el = q('#' + f.dataset.focus); if (el) el.focus(); return; }
+    if (t.closest('#dep-add')) { dw = newDw(); location.hash = '#/return/dependants/add/1'; return; }
+    const nx = t.closest('[data-dep-next]');
+    if (nx) {
+      const step = +nx.dataset.depNext;
+      const ok = readStep(step);
+      if (!ok) { render(); return; }
+      let next = step + 1;
+      if (next === 3 && dwAge() >= 13) next = 4;
+      location.hash = '#/return/dependants/add/' + next;
+      return;
+    }
+    if (t.closest('#dep-cancel')) { dw = null; location.hash = '#/return/dependants'; return; }
+    if (t.closest('#dep-save')) {
+      const b = t.closest('#dep-save'); if (b.disabled) return;
+      busy(b, 'Saving…');
+      await sleep(800);
+      const age = dwAge(), under13 = age < 13, cc = under13 ? dw.childcare : 'n/a';
+      const d = { rel: dw.rel, first: norm(dw.first), last: norm(dw.last), dob: dwDob(), residency: dw.residency, months: dw.residency === 'part_year' ? String(dw.months) : '', edu: age >= 18 ? dw.edu : 'n/a', childcare: cc, provider: cc === 'yes' ? norm(dw.provider) : '', reg: cc === 'yes' ? regFmt(dw.reg) : '', amount: cc === 'yes' ? parseAmount(dw.amount) : null };
+      await post({ event: 'dependant_save', tax_year: '2025', relationship: d.rel, first_name: d.first, last_name: d.last, dob: d.dob, residency: d.residency, months: d.months, full_time_education: d.edu, childcare: d.childcare, provider: d.provider, provider_reg: d.reg, childcare_amount: d.amount === null ? '' : d.amount.toFixed(2) });
+      st.deps.push(d); st.sec.dependants = 'done'; dw = null;
+      st.depFlash = `Dependant added: ${d.first} ${d.last}`;
+      location.hash = '#/return/dependants';
+      return;
+    }
+    const rm = t.closest('[data-dep-remove]');
+    if (rm) {
+      const d = st.deps[+rm.dataset.depRemove];
+      q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dr-h"><h2 id="dr-h">Remove ${esc(d.first)} ${esc(d.last)}?</h2><p>Any reliefs you claimed for them will be removed from your return.</p><button type="button" class="btn warning" id="dr-ok">Remove dependant</button><button type="button" class="btn secondary" data-x>Cancel</button></div></div>`;
+      q('#dr-ok').addEventListener('click', async () => { await sleep(400); await post({ event: 'dependant_remove', first_name: d.first, last_name: d.last }); st.deps = st.deps.filter((x) => x !== d); if (!st.deps.length) st.sec.dependants = 'todo'; q('#modal-root').innerHTML = ''; render(); });
+      return;
+    }
+    if (t.closest('#don-add')) {
+      collectRowsFromDom();
+      st.don.rows.push(newRow());
+      render();
+      const last = st.don.rows[st.don.rows.length - 1]; const el = q('#don-chy-' + last.id); if (el) el.focus();
+      return;
+    }
+    const drm = t.closest('[data-don-remove]');
+    if (drm) {
+      collectRowsFromDom();
+      st.don.rows = st.don.rows.filter((r) => r.id !== +drm.dataset.donRemove);
+      if (!st.don.rows.length) st.don.rows.push(newRow());
+      render();
+      return;
+    }
+    if (t.closest('#don-save')) { saveDonations(t.closest('#don-save')); return; }
+    if (t.closest('#yn-save')) {
+      const key = t.closest('#yn-save').dataset.key; const c = YN[key];
+      const ans = (document.querySelector('input[name=yn]:checked') || {}).value;
+      const errs = [];
+      const a = { answer: ans };
+      if (!ans) errs.push(['yn-box', 'Select yes or no']);
+      if (ans === 'yes') for (const [k, l, ty] of c.fields) { const v = q('#yn-' + k).value; a[k] = ty === 'text' ? norm(v) : v.trim(); if (ty === 'text' ? !a[k] : parseAmount(v) === null && v.trim() !== '0') errs.push(['yn-' + k, `Enter ${l.replace(/ \(€\)$/, '').toLowerCase()}`]); }
+      q('#yn-errs').innerHTML = errorSummary(errs);
+      if (errs.length) return;
+      const b = t.closest('#yn-save'); busy(b, 'Saving…'); await sleep(500);
+      const recd = { event: 'section_save', section: key, answer: ans };
+      if (ans === 'yes') for (const [k, , ty] of c.fields) recd[k] = ty === 'text' ? a[k] : (parseAmount(a[k]) || 0).toFixed(2);
+      await post(recd);
+      st.answers[key] = a; st.sec[key] = 'done'; st.taskFlash = `${SEC_NAME[key]} saved.`;
+      location.hash = '#/return';
+      return;
+    }
+    if (t.closest('#rw-save')) {
+      const days = q('#rw-days').value.trim(), costs = q('#rw-costs').value;
+      const errs = [];
+      if (!/^\d{1,3}$/.test(days) || +days > 366) errs.push(['rw-days', 'Enter the number of days, for example 96']);
+      if (parseAmount(costs) === null) errs.push(['rw-costs', 'Enter your total costs, for example 2140.00']);
+      q('#yn-errs').innerHTML = errorSummary(errs);
+      if (errs.length) return;
+      const b = t.closest('#rw-save'); busy(b, 'Saving…'); await sleep(500);
+      await post({ event: 'section_save', section: 'remote-working', days, costs: parseAmount(costs).toFixed(2) });
+      st.answers['remote-working'] = { days, costs }; st.sec['remote-working'] = 'done'; st.taskFlash = 'Remote working saved.';
+      location.hash = '#/return';
+      return;
+    }
+    if (t.closest('#rv-submit')) {
+      if (!q('#rv-decl').checked) { q('#rv-errs').innerHTML = errorSummary([['rv-decl', 'Confirm the declaration to submit your return']]); return; }
+      const b = t.closest('#rv-submit'); busy(b, 'Submitting…'); await sleep(900);
+      await post({ event: 'return_submit', tax_year: '2025', sections_completed: `${doneCount()}/11` });
+      st.submitted = 'NR-2025-7719402K-0318'; render();
+      return;
+    }
+    const doc = t.closest('[data-doc]');
+    if (doc) {
+      q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dv-h"><h2 id="dv-h">${esc(doc.dataset.doc)}</h2><p class="muted">Aoife Brennan · 7719402K</p><p>This document is available as a PDF. It opens in a new window in the full service.</p><button type="button" class="btn secondary" data-x>Close</button></div></div>`;
+      return;
+    }
+    if (t.closest('#msg-send')) {
+      const body = norm(q('#msg-reply').value);
+      if (!body) { toast('Enter a message.'); return; }
+      const b = t.closest('#msg-send'); busy(b, 'Sending…'); await sleep(600);
+      await post({ event: 'message_send', reply_to: b.dataset.id, body });
+      q('#msg-reply').value = ''; unbusy(b); toast('Your message has been sent. We aim to reply within 5 working days.');
+      return;
+    }
+    const pf = t.closest('[data-pf]');
+    if (pf) {
+      const k = pf.dataset.pf;
+      q('#pf-edit').innerHTML = `<div class="panel"><div class="field"><label for="pf-in">New value</label><input type="text" id="pf-in" class="w20" value="${esc(st.profile[k])}"></div><button type="button" class="btn" id="pf-save" data-k="${k}">Save</button><button type="button" class="btn secondary" id="pf-cancel">Cancel</button></div>`;
+      return;
+    }
+    if (t.closest('#pf-cancel')) { q('#pf-edit').innerHTML = ''; return; }
+    if (t.closest('#pf-save')) {
+      const b = t.closest('#pf-save'); const k = b.dataset.k; const v = norm(q('#pf-in').value);
+      if (!v) return;
+      busy(b, 'Saving…'); await sleep(500);
+      await post({ event: 'profile_update', field: k, value: v });
+      st.profile[k] = v; render(); toast('Your details have been updated.');
+      return;
+    }
+  });
+  function collectRowsFromDom() {
+    for (const r of st.don.rows) {
+      const input = q('#don-chy-' + r.id), amt = q('#don-amt-' + r.id);
+      if (input && !r.chy) r.text = input.value;
+      if (amt) r.amount = amt.value;
+    }
+  }
+  async function saveDonations(b) {
+    if (b.disabled) return;
+    const { errs, out } = collectDonations();
+    q('#don-errs').innerHTML = errorSummary(errs);
+    q('#don-ok').hidden = true;
+    if (errs.length) { q('#don-errs .error-summary').focus(); return; }
+    if (st.signedOut) { showTimeout(); return; }
+    busy(b, 'Saving…');
+    await sleep(600);
+    if (!st.expiredOnce) { st.expiredOnce = true; st.signedOut = true; unbusy(b); showTimeout(); return; }
+    await sleep(100);
+    const list = out.slice().sort((a, c) => +a.chy - +c.chy);
+    const total = list.reduce((s, x) => s + Math.round(x.amount * 100), 0) / 100;
+    await post({ event: 'donations_save', tax_year: '2025', donations: list.map((x) => `CHY ${x.chy}:${x.amount.toFixed(2)}`).join('; '), total: total.toFixed(2), count: String(list.length) });
+    st.sec.donations = 'done'; st.relogBanner = false;
+    st.don.saved = `Donations saved: ${list.length} donation${list.length === 1 ? '' : 's'}, total ${eur(total)}.`;
+    unbusy(b);
+    q('#don-relog').hidden = true;
+    q('#don-ok-text').textContent = st.don.saved; q('#don-ok').hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

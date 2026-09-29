@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Larder &amp; Ladle · Recipes</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #fffaf2; }
+  header { background: #9a3412; }
+  main { max-width: 1000px; }
+  .search { display: flex; gap: 8px; margin: 10px 0 16px; }
+  .search input { width: 360px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rc { background: #fff; border: 1px solid #fde7c7; border-radius: 12px; overflow: hidden; }
+  .rc .img { height: 120px; background: linear-gradient(135deg, #fdba74, #fb7185); }
+  .rc .b { padding: 10px 12px; }
+  .rec-top { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+  .hero { height: 240px; border-radius: 12px; background: linear-gradient(135deg, #fdba74, #b45309); }
+  .actions { display: flex; gap: 8px; position: relative; margin: 12px 0; }
+  .pop { position: absolute; top: 44px; left: 0; background: #fff; border: 1px solid #e7d3b8; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.15); padding: 12px 14px; width: 280px; z-index: 5; }
+  .pop label { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .stars button { border: 0; background: none; font-size: 20px; padding: 0 2px; color: #d6d3d1; }
+  .nl { position: fixed; inset: 0; background: rgba(40,20,0,.55); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .nl .box { background: #fff; border-radius: 16px; width: 440px; padding: 22px 24px; position: relative; }
+  .nl .x { position: absolute; top: 8px; right: 10px; border: 0; background: none; font-size: 20px; }
+</style>
+</head>
+<body>
+<header><strong>Larder &amp; Ladle</strong><a href="#/">Recipes</a><a href="#/collections">My collections</a><span style="margin-left:auto">Hi, Wren Achterberg-Yusuf</span></header>
+<main id="view"></main>
+<div class="nl" id="nl" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="nl-h">
+    <button type="button" class="x" id="nl-x" aria-label="Close">✕</button>
+    <h2 id="nl-h" style="margin-top:0">Never miss a recipe 🍲</h2>
+    <p>Get five new weeknight dinners in your inbox every Friday.</p>
+    <label for="nl-email">Email address</label><input id="nl-email" type="email" value="wren.ay@kitemail.co.uk" style="width:360px">
+    <div class="row" style="margin-top:14px"><button type="button" class="primary" id="nl-yes">Subscribe</button><button type="button" id="nl-no">No thanks</button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const R = [
+    { slug: 'smoked-paprika-white-bean-stew', title: 'Smoked paprika white bean stew', mins: 35, serves: 4, tags: ['vegan', 'one-pot'] },
+    { slug: 'smoky-white-bean-stew', title: 'Smoky white bean stew with chorizo', mins: 40, serves: 4, tags: ['one-pot'] },
+    { slug: 'smoked-paprika-chickpea-stew', title: 'Smoked paprika chickpea stew', mins: 30, serves: 4, tags: ['vegan'] },
+    { slug: 'white-bean-kale-soup', title: 'White bean & kale soup', mins: 25, serves: 6, tags: ['vegetarian'] },
+    { slug: 'paprika-chicken-traybake', title: 'Paprika chicken traybake', mins: 50, serves: 4, tags: ['traybake'] },
+    { slug: 'miso-mushroom-noodles', title: 'Miso mushroom noodles', mins: 20, serves: 2, tags: ['vegetarian', 'quick'] },
+  ];
+  const COLLECTIONS = ['Weeknight', 'Weeknight vegetarian', 'Batch cooking', 'Dinner party'];
+  const saved = {}; // slug -> [collections]
+  const st = { search: '', pop: false, modalShown: false, modalDone: false };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3000); };
+  const view = q('#view');
+  const blocked = () => !q('#nl').hidden;
+  // Newsletter interstitial: appears after a short delay, and once more on the next page if only closed with ✕.
+  function armModal(ms) { setTimeout(() => { if (st.modalDone) return; q('#nl').hidden = false; view.setAttribute('inert', ''); view.setAttribute('aria-hidden', 'true'); st.modalShown = true; }, ms); }
+  const closeModal = (done) => { q('#nl').hidden = true; view.removeAttribute('inert'); view.removeAttribute('aria-hidden'); if (done) st.modalDone = true; };
+  q('#nl-x').onclick = () => { closeModal(false); st.rearm = true; };
+  q('#nl-no').onclick = () => closeModal(true);
+  q('#nl-yes').onclick = async () => { await rec({ event: 'newsletter_subscribe', email: q('#nl-email').value.trim() }); closeModal(true); toast('Subscribed!'); };
+  function route() {
+    const p = (location.hash || '#/').slice(2).split('/');
+    st.pop = false;
+    if (st.rearm && !st.modalDone) { st.rearm = false; armModal(1200); }
+    if (p[0] === 'r') return renderRecipe(p[1]);
+    if (p[0] === 'collections') { view.innerHTML = `<h1>My collections</h1>${COLLECTIONS.map((c) => `<h3>${c}</h3><ul>${R.filter((r) => (saved[r.slug] || []).includes(c)).map((r) => `<li>${esc(r.title)}</li>`).join('') || '<li class="muted">Empty</li>'}</ul>`).join('')}`; return; }
+    const t = st.search.toLowerCase();
+    view.innerHTML = `<h1>What's for dinner?</h1><div class="search"><input type="search" id="s" aria-label="Search recipes" placeholder="Search recipes" value="${esc(st.search)}"><button type="button" id="s-go">Search</button></div>
+      <div class="cards">${R.filter((r) => !t || r.title.toLowerCase().includes(t)).map((r) => `<article class="rc"><div class="img" role="img" aria-label="${esc(r.title)}"></div><div class="b"><a href="#/r/${r.slug}"><strong>${esc(r.title)}</strong></a><div class="muted">${r.mins} min · serves ${r.serves} · ${r.tags.join(', ')}</div></div></article>`).join('') || '<p class="muted">No recipes found.</p>'}</div>`;
+    q('#s-go').onclick = () => { if (blocked()) return; st.search = q('#s').value.trim(); route(); };
+    q('#s').onkeydown = (e) => { if (e.key === 'Enter' && !blocked()) { st.search = q('#s').value.trim(); route(); } };
+  }
+  function renderRecipe(slug) {
+    const r = R.find((x) => x.slug === slug); if (!r) { view.innerHTML = '<p>Recipe not found.</p>'; return; }
+    const mine = saved[slug] || [];
+    view.innerHTML = `<p><a href="#/">← All recipes</a></p><div class="rec-top"><div><h1 style="margin:0 0 6px">${esc(r.title)}</h1><div class="muted">${r.mins} minutes · serves ${r.serves} · ${r.tags.join(', ')}</div>
+      <div class="actions"><button type="button" id="save" aria-haspopup="dialog" aria-expanded="${st.pop}">${mine.length ? '★ Saved' : '☆ Save'}</button><button type="button" id="print">Print</button><span class="stars" role="group" aria-label="Rate this recipe">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-rate="${n}" aria-label="Rate ${n} star${n > 1 ? 's' : ''}">★</button>`).join('')}</span>
+      ${st.pop ? `<div class="pop" role="dialog" aria-label="Save to collections"><strong>Save to…</strong>${COLLECTIONS.map((c) => `<label><input type="checkbox" data-col="${c}" ${mine.includes(c) ? 'checked' : ''}> ${c}</label>`).join('')}<div class="row" style="justify-content:flex-end;margin-top:8px"><button type="button" id="pop-cancel">Cancel</button><button type="button" class="primary" id="pop-done">Done</button></div></div>` : ''}</div>
+      <h3>Ingredients</h3><ul><li>2 tins white beans</li><li>1 tbsp smoked paprika</li><li>1 onion, 2 garlic cloves</li><li>1 tin chopped tomatoes</li><li>Handful of spinach</li></ul>
+      <h3>Method</h3><ol><li>Soften the onion and garlic.</li><li>Add paprika, tomatoes and beans; simmer 20 minutes.</li><li>Stir through spinach and season.</li></ol></div><div class="hero" role="img" aria-label="Photo of ${esc(r.title)}"></div></div>`;
+    q('#save').onclick = () => { if (blocked()) return; st.pop = !st.pop; renderRecipe(slug); };
+    q('#print').onclick = () => { if (!blocked()) toast('Printing is disabled in preview.'); };
+    qa('[data-rate]').forEach((b) => (b.onclick = async () => { if (blocked()) return; await rec({ event: 'recipe_rate', recipe: r.title, stars: b.dataset.rate }); toast('Thanks for rating!'); }));
+    const pc = q('#pop-cancel'); if (pc) pc.onclick = () => { st.pop = false; renderRecipe(slug); };
+    const pd = q('#pop-done');
+    if (pd) pd.onclick = async () => {
+      if (blocked()) return;
+      const cols = qa('[data-col]').filter((c) => c.checked).map((c) => c.dataset.col).sort();
+      pd.disabled = true; await later(300);
+      await rec({ event: 'recipe_save', recipe: r.title, collections: cols.join(', ') || '(none)' });
+      saved[slug] = cols; st.pop = false; renderRecipe(slug); toast(cols.length ? `Saved to ${cols.join(', ')}.` : 'Removed from your collections.');
+    };
+  }
+  window.addEventListener('hashchange', route);
+  route();
+  armModal(1800);
+})();
+</script>
+</body>
+</html>

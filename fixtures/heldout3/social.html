@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cadence · Fernwood Studio</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif; color: #1c1f26; background: #f7f7fb; display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+  aside { background: #fff; border-right: 1px solid #e6e6ef; padding: 16px 12px; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; padding: 0 8px 14px; }
+  .brand i { width: 24px; height: 24px; border-radius: 7px; background: conic-gradient(#6c5ce7, #00b894, #fdcb6e, #6c5ce7); }
+  .org { font-size: 12px; color: #7a7f8c; padding: 0 8px 12px; }
+  .create { width: 100%; background: #6c5ce7; color: #fff; border: 0; border-radius: 8px; padding: 10px; font-weight: 600; cursor: pointer; margin-bottom: 14px; }
+  aside h6 { margin: 12px 8px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #9aa0ac; }
+  aside a { display: block; padding: 7px 10px; border-radius: 7px; color: #2c3140; text-decoration: none; }
+  aside a.on { background: #efedfd; color: #4b3cc7; font-weight: 600; }
+  .main { min-width: 0; }
+  .topbar { height: 54px; background: #fff; border-bottom: 1px solid #e6e6ef; display: flex; align-items: center; padding: 0 24px; gap: 12px; }
+  .topbar .sp { flex: 1; }
+  .content { padding: 22px 26px 40px; }
+  h1 { font-size: 21px; margin: 0 0 4px; }
+  .sub { color: #7a7f8c; margin: 0 0 16px; }
+  .btn { border: 1px solid #d6d7e3; background: #fff; border-radius: 8px; padding: 7px 14px; cursor: pointer; font: inherit; color: #1c1f26; }
+  .btn.primary { background: #6c5ce7; border-color: #6c5ce7; color: #fff; font-weight: 600; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .card { background: #fff; border: 1px solid #e6e6ef; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #e6e6ef; margin-bottom: 14px; }
+  .tabs button { border: 0; background: none; padding: 9px 14px; cursor: pointer; color: #7a7f8c; border-bottom: 2px solid transparent; font: inherit; }
+  .tabs button[aria-selected=true] { color: #1c1f26; border-bottom-color: #6c5ce7; font-weight: 600; }
+  .seg { display: inline-flex; background: #efeff5; border-radius: 8px; padding: 3px; margin-bottom: 12px; }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font: inherit; color: #5a5f6c; }
+  .seg button[aria-selected=true] { background: #fff; color: #1c1f26; box-shadow: 0 1px 2px rgba(0,0,0,.08); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #eeeef4; }
+  th { font-size: 12px; color: #7a7f8c; font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: #fff; border: 1px solid #e6e6ef; border-radius: 10px; padding: 14px; }
+  .kpi b { display: block; font-size: 22px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(28, 31, 38, .45); display: flex; align-items: flex-start; justify-content: center; padding-top: 40px; z-index: 40; overflow: auto; }
+  .modal { background: #fff; border-radius: 12px; width: 760px; max-width: 94vw; box-shadow: 0 30px 80px rgba(0,0,0,.25); }
+  .modal header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #eeeef4; }
+  .modal .body { padding: 16px 18px; }
+  .modal footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid #eeeef4; background: #fafafd; border-radius: 0 0 12px 12px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { display: flex; align-items: center; gap: 8px; border: 1.5px solid #d6d7e3; border-radius: 999px; padding: 5px 12px 5px 6px; background: #fff; cursor: pointer; font: inherit; color: #5a5f6c; }
+  .chip .av { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; }
+  .chip[aria-pressed=true] { border-color: #6c5ce7; background: #f3f1fe; color: #1c1f26; }
+  .chip[aria-pressed=false] .av { filter: grayscale(1); opacity: .5; }
+  textarea.compose { width: 100%; min-height: 120px; border: 1px solid #d6d7e3; border-radius: 8px; padding: 10px; font: inherit; resize: vertical; }
+  .counter { text-align: right; font-size: 12px; color: #7a7f8c; }
+  .when { display: flex; gap: 8px; margin: 12px 0; }
+  .when label { border: 1px solid #d6d7e3; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  .when label.sel { border-color: #6c5ce7; background: #f3f1fe; }
+  .sched { display: grid; grid-template-columns: 250px 1fr; gap: 16px; background: #fafafd; border: 1px solid #eeeef4; border-radius: 10px; padding: 12px; }
+  .cal { user-select: none; }
+  .cal .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .cal .hd button { border: 0; background: none; cursor: pointer; font-size: 16px; padding: 2px 8px; }
+  .cal .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .cal .g span { font-size: 11px; color: #9aa0ac; }
+  .cal .g button { border: 0; background: none; padding: 5px 0; border-radius: 6px; cursor: pointer; font: inherit; }
+  .cal .g button:hover { background: #efedfd; }
+  .cal .g button[aria-pressed=true] { background: #6c5ce7; color: #fff; }
+  .cal .g button[disabled] { color: #c8cad4; cursor: not-allowed; background: none; }
+  .f { margin-bottom: 10px; }
+  .f label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 3px; color: #4a4f5c; }
+  .f select { padding: 6px 8px; border: 1px solid #d6d7e3; border-radius: 6px; min-width: 200px; font: inherit; background: #fff; }
+  .err { color: #c0392b; font-size: 13px; margin-top: 8px; }
+  .toast { position: fixed; bottom: 20px; right: 24px; background: #1c1f26; color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 60; }
+  .post { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eeeef4; }
+  .post .av { width: 30px; height: 30px; border-radius: 50%; flex: none; }
+  .calgrid { display: grid; grid-template-columns: repeat(7, 1fr); border-left: 1px solid #e6e6ef; border-top: 1px solid #e6e6ef; }
+  .calgrid div { min-height: 76px; border-right: 1px solid #e6e6ef; border-bottom: 1px solid #e6e6ef; padding: 4px 6px; font-size: 12px; background: #fff; }
+  .calgrid .ev { background: #efedfd; border-radius: 4px; padding: 1px 4px; margin-top: 2px; color: #4b3cc7; }
+  .toggle { width: 38px; height: 22px; border-radius: 999px; background: #d6d7e3; border: 0; position: relative; cursor: pointer; vertical-align: middle; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .12s; }
+  .toggle[aria-checked=true] { background: #6c5ce7; }
+  .toggle[aria-checked=true]::after { left: 19px; }
+</style>
+</head>
+<body>
+<aside aria-label="Cadence navigation">
+  <div class="brand"><i></i>Cadence</div>
+  <div class="org">Fernwood Studio · Pro plan</div>
+  <button class="create" type="button" id="create">+ Create post</button>
+  <h6>Publish</h6><a href="#/calendar" data-nav="calendar">Calendar</a><a href="#/queue" data-nav="queue">Queue</a><a href="#/drafts" data-nav="drafts">Drafts</a><a href="#/sent" data-nav="sent">Sent</a>
+  <h6>Engage</h6><a href="#/inbox" data-nav="inbox">Inbox</a>
+  <h6>Analytics</h6><a href="#/analytics/overview" data-nav="analytics/overview">Overview</a><a href="#/analytics/posts" data-nav="analytics/posts">Posts</a><a href="#/analytics/audience" data-nav="analytics/audience">Audience</a>
+  <h6>Settings</h6><a href="#/settings/channels" data-nav="settings/channels">Channels</a><a href="#/settings/team" data-nav="settings/team">Team</a>
+</aside>
+<div class="main">
+  <div class="topbar"><span class="sub" style="margin:0">Thursday 24 September 2026</span><span class="sp"></span><button class="btn" type="button" id="help">Help</button><span style="width:30px;height:30px;border-radius:50%;background:#dfe6e9;display:grid;place-items:center;font-size:12px;font-weight:700">IB</span></div>
+  <div class="content" id="view"></div>
+</div>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const CH = [
+    { id: 'linkedin', name: 'LinkedIn', handle: 'Fernwood Studio', color: '#0a66c2', short: 'in' },
+    { id: 'instagram', name: 'Instagram', handle: '@fernwood.studio', color: '#d6249f', short: 'IG' },
+    { id: 'x', name: 'X', handle: '@fernwoodstudio', color: '#111', short: 'X' },
+    { id: 'facebook', name: 'Facebook', handle: 'Fernwood Studio', color: '#1877f2', short: 'f' },
+    { id: 'threads', name: 'Threads', handle: '@fernwood.studio', color: '#333', short: '@' },
+  ];
+  const TZ = [['UTC', 'UTC'], ['Europe/Oslo', 'Europe/Oslo (CEST, UTC+2)'], ['Europe/London', 'Europe/London (BST, UTC+1)'], ['Europe/Berlin', 'Europe/Berlin (CEST, UTC+2)'], ['America/New_York', 'America/New_York (EDT, UTC−4)']];
+  const TODAY = '2026-09-24';
+  // ---------- analytics data ----------
+  const IG = {
+    feed: [['2026-09-23', 'Competition win: Laksevåg waterfront', 15240, 933], ['2026-09-17', 'Materials: Norwegian larch', 9870, 317], ['2026-09-14', 'Before / after: Nordnes park', 11650, 480], ['2026-09-10', 'Meet Ingvild, our new partner', 13020, 712], ['2026-09-04', 'Moodboard: alpine meadow', 8120, 242], ['2026-08-30', 'Site visit in Voss', 7650, 280]],
+    reels: [['2026-09-22', 'Studio tour: Bergen office', 18400, 1034], ['2026-09-19', 'Plant palette for coastal gardens', 14330, 698], ['2026-09-14', 'Timelapse: planting the Bryggen roof garden', 12000, 882], ['2026-09-13', 'Sketch to site: Nordnes steps', 16210, 1120], ['2026-09-08', 'Q&A with our planting designer', 10150, 400], ['2026-09-02', 'Autumn colour in Fløyen', 12400, 630], ['2026-08-28', 'Rain garden explained', 9420, 420]],
+    stories: [['2026-09-24', 'Behind the scenes: model shop', 2310, 88], ['2026-09-21', 'Poll: favourite native shrub', 2650, 214], ['2026-09-15', 'Site visit highlights', 1980, 61], ['2026-09-09', 'Office dog Tuva', 3120, 190]],
+  };
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const rnd = mulberry32(914);
+  const TITLES = ['Project spotlight: Møhlenpris courtyard', 'We are at Arkitekturdagene', 'Case study: school playground', 'Our approach to stormwater', 'Hiring update', 'Award shortlist', 'Planting season notes', 'Studio reading list', 'Talk recap: green roofs', 'Team offsite'];
+  const OTHER = {};
+  for (const ch of ['linkedin', 'x', 'facebook']) {
+    OTHER[ch] = [];
+    for (let d = 23; d >= 1; d -= 2 + Math.floor(rnd() * 3)) {
+      const imp = 2000 + Math.floor(rnd() * 9000); let eng = Math.floor(imp * (0.01 + rnd() * 0.05));
+      while (((eng / imp) * 100).toFixed(2).includes('7.35')) eng++;
+      OTHER[ch].push([`2026-09-${String(d).padStart(2, '0')}`, TITLES[Math.floor(rnd() * TITLES.length)], imp, eng]);
+    }
+  }
+  const fmtD = (s) => new Date(s + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const RANGES = [['7', 'Last 7 days'], ['14', 'Last 14 days'], ['30', 'Last 30 days'], ['month', 'This month (September)']];
+  const inRange = (d, r) => { if (r === 'month') return d.startsWith('2026-09'); const diff = (new Date(TODAY) - new Date(d)) / 864e5; return diff >= 0 && diff < +r; };
+
+  const st = { range: '7', chTab: 'all', igTab: 'feed', composer: null, busy: false,
+    queue: [{ id: 'Q-118', ch: ['linkedin'], when: 'Tue 29 Sep, 11:00', text: 'Join us at Arkitekturdagene next week.' }, { id: 'Q-121', ch: ['instagram', 'facebook'], when: 'Thu 1 Oct, 18:30', text: 'Autumn planting guide — link in bio.' }],
+    drafts: [{ id: 'D-40', ch: ['x'], text: 'Thread: five native shrubs for west-coast gardens…' }], channelsOn: Object.fromEntries(CH.map((c) => [c.id, true])) };
+  const newComposer = () => ({ ch: new Set(CH.map((c) => c.id)), text: '', when: 'now', date: null, month: 8, year: 2026, time: '', tz: 'UTC', err: '', custom: false });
+
+  function analyticsPosts() {
+    const tabs = [['all', 'All channels'], ['linkedin', 'LinkedIn'], ['instagram', 'Instagram'], ['x', 'X'], ['facebook', 'Facebook']];
+    const rows = (list, rateLabel = 'Engagement rate') => { const L = list.filter((r) => inRange(r[0], st.range)); return `<table><thead><tr><th>Date</th><th>Post</th><th class="num">Impressions</th><th class="num">Engagements</th><th class="num">${rateLabel}</th></tr></thead><tbody>${L.map(([d, t, imp, eng]) => `<tr><td>${fmtD(d)}</td><td>${esc(t)}</td><td class="num">${imp.toLocaleString('en-GB')}</td><td class="num">${eng.toLocaleString('en-GB')}</td><td class="num">${((eng / imp) * 100).toFixed(2)}%</td></tr>`).join('') || '<tr><td colspan="5" class="sub">No posts in this date range.</td></tr>'}</tbody></table>`; };
+    let inner = '';
+    if (st.chTab === 'all') {
+      const agg = CH.filter((c) => c.id !== 'threads').map((c) => { const L = c.id === 'instagram' ? [...IG.feed, ...IG.reels] : OTHER[c.id]; const F = L.filter((r) => inRange(r[0], st.range)); return [c.name, F.length, F.reduce((a, r) => a + r[2], 0), F.reduce((a, r) => a + r[3], 0)]; });
+      inner = `<table><thead><tr><th>Channel</th><th class="num">Posts</th><th class="num">Impressions</th><th class="num">Engagements</th></tr></thead><tbody>${agg.map(([n, c, i, e]) => `<tr><td>${n}</td><td class="num">${c}</td><td class="num">${i.toLocaleString('en-GB')}</td><td class="num">${e.toLocaleString('en-GB')}</td></tr>`).join('')}</tbody></table><p class="sub" style="margin-top:10px">Pick a channel tab to see individual posts.</p>`;
+    } else if (st.chTab === 'instagram') {
+      const sub = [['feed', 'Feed posts'], ['reels', 'Reels'], ['stories', 'Stories']];
+      inner = `<div class="seg" role="tablist" aria-label="Instagram post type">${sub.map(([k, l]) => `<button type="button" role="tab" data-igtab="${k}" aria-selected="${st.igTab === k}">${l}</button>`).join('')}</div><div role="tabpanel">${st.igTab === 'stories' ? rows(IG.stories, 'Reply rate') : rows(IG[st.igTab])}</div>`;
+    } else inner = rows(OTHER[st.chTab]);
+    return `<h1>Post performance</h1><p class="sub">How each published post performed.</p><div style="display:flex;gap:12px;align-items:center;margin-bottom:10px"><label for="range" style="font-weight:600">Date range</label><select id="range" style="padding:6px 8px;border:1px solid #d6d7e3;border-radius:6px">${RANGES.map(([v, l]) => `<option value="${v}" ${st.range === v ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="sub" style="margin:0">Times in Europe/Oslo</span></div>
+      <div class="card"><div class="tabs" role="tablist" aria-label="Channel">${tabs.map(([k, l]) => `<button type="button" role="tab" data-chtab="${k}" aria-selected="${st.chTab === k}">${l}</button>`).join('')}</div><div role="tabpanel">${inner}</div></div>`;
+  }
+  function overview() { return `<h1>Analytics overview</h1><p class="sub">September 2026 so far</p><div class="kpis"><div class="kpi">Followers<b>18,420</b><span class="sub">+312 this month</span></div><div class="kpi">Posts published<b>41</b></div><div class="kpi">Impressions<b>402,118</b></div><div class="kpi">Link clicks<b>3,904</b></div></div><div class="card"><p>Your best day to post is <strong>Tuesday</strong>, around 09:00.</p></div>`; }
+  function audience() { return `<h1>Audience</h1><div class="card"><table><thead><tr><th>Top cities</th><th class="num">Share</th></tr></thead><tbody><tr><td>Bergen</td><td class="num">31%</td></tr><tr><td>Oslo</td><td class="num">22%</td></tr><tr><td>Stavanger</td><td class="num">9%</td></tr><tr><td>Copenhagen</td><td class="num">5%</td></tr></tbody></table></div>`; }
+  const chBadges = (ids) => ids.map((id) => { const c = CH.find((x) => x.id === id); return `<span class="av" style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:${c.color};color:#fff;font-size:10px;font-weight:700;margin-right:3px" title="${c.name}">${c.short}</span>`; }).join('');
+  function queuePage() { return `<h1>Queue</h1><p class="sub">Scheduled and queued posts.</p><div class="card">${st.queue.map((q) => `<div class="post"><div>${chBadges(q.ch)}</div><div style="flex:1"><strong>${esc(q.when)}</strong><div>${esc(q.text)}</div></div><button class="btn" type="button" data-unq="${q.id}">Delete</button></div>`).join('') || '<p class="sub">Nothing queued.</p>'}</div>`; }
+  function draftsPage() { return `<h1>Drafts</h1><div class="card">${st.drafts.map((d) => `<div class="post"><div>${chBadges(d.ch)}</div><div style="flex:1">${esc(d.text)}</div></div>`).join('') || '<p class="sub">No drafts.</p>'}</div>`; }
+  function calendarPage() { const days = []; for (let i = 0; i < 35; i++) { const d = i - 1; days.push(d >= 1 && d <= 30 ? `<div><strong>${d}</strong>${d === 29 ? '<div class="ev">11:00 LinkedIn</div>' : ''}${d === 24 ? '<div class="ev">Today</div>' : ''}</div>` : '<div></div>'); } return `<h1>Calendar</h1><p class="sub">September 2026</p><div class="calgrid">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => `<div style="min-height:0;font-weight:600">${d}</div>`).join('')}${days.join('')}</div>`; }
+  function channelsPage() { return `<h1>Channels</h1><div class="card">${CH.map((c) => `<div class="post" style="align-items:center"><span class="av" style="background:${c.color}"></span><div style="flex:1"><strong>${c.name}</strong> · ${esc(c.handle)}</div><button class="btn" type="button" data-disc="${c.id}">Disconnect</button></div>`).join('')}</div>`; }
+
+  function composerHtml() {
+    const c = st.composer;
+    const monthName = new Date(Date.UTC(c.year, c.month, 1)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const first = (new Date(Date.UTC(c.year, c.month, 1)).getUTCDay() + 6) % 7; const dim = new Date(Date.UTC(c.year, c.month + 1, 0)).getUTCDate();
+    const cells = []; for (let i = 0; i < first; i++) cells.push('<span></span>');
+    for (let d = 1; d <= dim; d++) { const iso = `${c.year}-${String(c.month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; cells.push(`<button type="button" data-cal="${iso}" aria-pressed="${c.date === iso}" ${iso < TODAY ? 'disabled' : ''} aria-label="${new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}">${d}</button>`); }
+    const times = []; for (let m = 0; m < 24 * 60; m += 15) times.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'));
+    const primary = c.when === 'now' ? 'Publish now' : c.when === 'schedule' ? 'Schedule post' : 'Add to queue';
+    return `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="cmp-h"><header><strong id="cmp-h">Create post</strong><button class="btn" type="button" id="cmp-close" aria-label="Close composer">✕</button></header><div class="body">
+      <div style="font-size:12px;font-weight:600;color:#4a4f5c;margin-bottom:6px">Post to <span class="sub" style="font-weight:400">(last used: all channels)</span></div>
+      <div class="chips" role="group" aria-label="Channels">${CH.map((ch) => `<button type="button" class="chip" data-ch="${ch.id}" aria-pressed="${c.ch.has(ch.id)}" aria-label="${ch.name} ${esc(ch.handle)}"><span class="av" style="background:${ch.color}">${ch.short}</span>${ch.name}</button>`).join('')}</div>
+      <textarea class="compose" id="cmp-text" placeholder="What would you like to share?" aria-label="Post text">${esc(c.text)}</textarea><div class="counter" id="cmp-count">${c.text.length} characters${c.ch.has('x') ? ' · X limit 280' : ''}</div>
+      <div style="display:flex;gap:10px;align-items:center;margin:8px 0"><button class="btn" type="button" id="cmp-media">🖼 Add image or video</button><span class="sub" style="margin:0">Customize for each channel</span><button type="button" class="toggle" role="switch" aria-checked="${c.custom}" id="cmp-custom" aria-label="Customize for each channel"></button></div>
+      <div class="when" role="radiogroup" aria-label="When to post">${[['now', 'Publish now'], ['schedule', 'Schedule for later'], ['queue', 'Add to queue (next slot Tue 29 Sep, 11:00)']].map(([k, l]) => `<label class="${c.when === k ? 'sel' : ''}"><input type="radio" name="when" value="${k}" ${c.when === k ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+      ${c.when === 'schedule' ? `<div class="sched"><div class="cal" aria-label="Pick a date"><div class="hd"><button type="button" id="cal-prev" aria-label="Previous month">‹</button><strong>${monthName}</strong><button type="button" id="cal-next" aria-label="Next month">›</button></div><div class="g">${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => `<span>${d}</span>`).join('')}${cells.join('')}</div></div>
+        <div><div class="f"><label>Date</label><div id="cmp-date">${c.date ? new Date(c.date + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : '<span class="sub">Pick a day on the calendar</span>'}</div></div>
+        <div class="f"><label for="cmp-time">Time</label><select id="cmp-time"><option value="">--:--</option>${times.map((t) => `<option ${c.time === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+        <div class="f"><label for="cmp-tz">Time zone</label><select id="cmp-tz">${TZ.map(([v, l]) => `<option value="${v}" ${c.tz === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div></div>` : ''}
+      <div class="err" role="alert">${esc(c.err)}</div></div>
+      <footer><button class="btn" type="button" id="cmp-draft">Save as draft</button><button class="btn primary" type="button" id="cmp-go" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Working…' : primary}</button></footer></div></div>`;
+  }
+  function openComposer() { st.composer = newComposer(); renderComposer(); }
+  function renderComposer() { $('#modal-root').innerHTML = st.composer ? composerHtml() : ''; }
+
+  function route() {
+    const h = (location.hash || '#/queue').slice(2);
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === h));
+    const v = $('#view');
+    if (h === 'analytics/posts') v.innerHTML = analyticsPosts();
+    else if (h === 'analytics/overview') v.innerHTML = overview();
+    else if (h === 'analytics/audience') v.innerHTML = audience();
+    else if (h === 'drafts') v.innerHTML = draftsPage();
+    else if (h === 'calendar') v.innerHTML = calendarPage();
+    else if (h === 'settings/channels') v.innerHTML = channelsPage();
+    else if (['sent', 'inbox', 'settings/team'].includes(h)) v.innerHTML = `<h1>${h.split('/').pop()[0].toUpperCase() + h.split('/').pop().slice(1)}</h1><div class="card"><p class="sub">Nothing new.</p></div>`;
+    else { document.querySelector('[data-nav=queue]').classList.add('on'); v.innerHTML = queuePage(); }
+  }
+  window.addEventListener('hashchange', route);
+  $('#create').addEventListener('click', openComposer);
+  $('#help').addEventListener('click', () => toast('Help center opens in a new tab.'));
+  const view = $('#view');
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const ct = t.closest('[data-chtab]'); if (ct) { st.chTab = ct.dataset.chtab; route(); return; }
+    const it = t.closest('[data-igtab]'); if (it) { st.igTab = it.dataset.igtab; route(); return; }
+    const uq = t.closest('[data-unq]'); if (uq) { await later(300); await rec({ event: 'queue_delete', post: uq.dataset.unq }); st.queue = st.queue.filter((q) => q.id !== uq.dataset.unq); route(); return; }
+    const dc = t.closest('[data-disc]'); if (dc) { await later(300); await rec({ event: 'channel_disconnect', channel: dc.dataset.disc }); toast('Channel disconnected'); return; }
+  });
+  view.addEventListener('change', (e) => { if (e.target.id === 'range') { st.range = e.target.value; route(); } });
+  const mr = $('#modal-root');
+  mr.addEventListener('click', async (e) => {
+    const t = e.target; const c = st.composer; if (!c) return;
+    if (t.closest('#cmp-close')) { st.composer = null; renderComposer(); return; }
+    const chip = t.closest('[data-ch]'); if (chip) { const id = chip.dataset.ch; c.ch.has(id) ? c.ch.delete(id) : c.ch.add(id); c.err = ''; renderComposer(); return; }
+    if (t.closest('#cmp-media')) { toast('Media library is empty. Upload from your computer in the desktop app.'); return; }
+    if (t.closest('#cmp-custom')) { c.custom = !c.custom; renderComposer(); return; }
+    if (t.closest('#cal-prev')) { c.month--; if (c.month < 0) { c.month = 11; c.year--; } renderComposer(); return; }
+    if (t.closest('#cal-next')) { c.month++; if (c.month > 11) { c.month = 0; c.year++; } renderComposer(); return; }
+    const cd = t.closest('[data-cal]'); if (cd && !cd.disabled) { c.date = cd.dataset.cal; c.err = ''; renderComposer(); return; }
+    const text = c.text.trim().replace(/\s+/g, ' ');
+    const chans = CH.filter((x) => c.ch.has(x.id)).map((x) => x.id).join(',');
+    if (t.closest('#cmp-draft')) {
+      if (!text) { c.err = 'Write something first.'; renderComposer(); return; }
+      st.busy = true; renderComposer(); await later(400);
+      await rec({ event: 'post_draft', channels: chans, text }); st.drafts.unshift({ id: 'D-' + (41 + st.drafts.length), ch: [...c.ch], text });
+      st.busy = false; st.composer = null; renderComposer(); toast('Saved to drafts'); route(); return;
+    }
+    if (t.closest('#cmp-go')) {
+      if (!c.ch.size) { c.err = 'Choose at least one channel.'; renderComposer(); return; }
+      if (!text) { c.err = 'Write something first.'; renderComposer(); return; }
+      if (c.ch.has('instagram')) { c.err = 'Instagram posts need an image or video. Add media or remove Instagram.'; renderComposer(); return; }
+      if (c.ch.has('x') && text.length > 280) { c.err = 'Too long for X (280 characters).'; renderComposer(); return; }
+      if (c.when === 'schedule' && (!c.date || !c.time)) { c.err = 'Pick a date and time.'; renderComposer(); return; }
+      st.busy = true; renderComposer(); await later(700);
+      if (c.when === 'now') { await rec({ event: 'post_publish', channels: chans, text }); toast('Published'); }
+      else if (c.when === 'queue') { await rec({ event: 'post_queue', channels: chans, text }); st.queue.push({ id: 'Q-' + (130 + st.queue.length), ch: [...c.ch], when: 'Tue 29 Sep, 11:00', text }); toast('Added to queue'); }
+      else { await rec({ event: 'post_schedule', channels: chans, date: c.date, time: c.time, timezone: c.tz, text }); st.queue.push({ id: 'Q-' + (130 + st.queue.length), ch: [...c.ch], when: new Date(c.date + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }) + ', ' + c.time + ' (' + c.tz + ')', text }); toast('Post scheduled'); }
+      st.busy = false; st.composer = null; renderComposer(); route(); return;
+    }
+  });
+  mr.addEventListener('change', (e) => {
+    const t = e.target; const c = st.composer; if (!c) return;
+    if (t.name === 'when') { c.when = t.value; c.err = ''; renderComposer(); }
+    if (t.id === 'cmp-time') c.time = t.value;
+    if (t.id === 'cmp-tz') c.tz = t.value;
+  });
+  mr.addEventListener('input', (e) => { const c = st.composer; if (c && e.target.id === 'cmp-text') { c.text = e.target.value; $('#cmp-count').textContent = `${c.text.length} characters${c.ch.has('x') ? ' · X limit 280' : ''}`; } });
+  route();
+})();
+</script>
+</body>
+</html>

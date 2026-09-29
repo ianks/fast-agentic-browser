@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kestrel Sign</title>
+<script src="../common.js"></script>
+<style>
+  :root { --navy: #13294b; --navy2: #1d3a66; --coral: #ff6f59; --coral2: #e8563f; --ink: #1b2436; --muted: #69748a; --line: #e2e6ee; --bg: #f4f6fa; --ok: #1b8a5a; --warn: #b7791f; --bad: #c2362b; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14.5px/1.45 "Helvetica Neue", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: #2458b3; }
+  button { font: inherit; }
+  header.top { background: var(--navy); color: #fff; }
+  header.top .in { display: flex; align-items: center; gap: 22px; height: 58px; padding: 0 24px; }
+  .logo { display: flex; align-items: center; gap: 9px; color: #fff; text-decoration: none; font-weight: 800; font-size: 18px; }
+  .logo svg { display: block; }
+  nav.main { display: flex; gap: 2px; height: 100%; }
+  nav.main a { color: #c6d2e6; text-decoration: none; padding: 0 14px; display: flex; align-items: center; border-bottom: 3px solid transparent; font-weight: 600; }
+  nav.main a.on { color: #fff; border-bottom-color: var(--coral); }
+  .top .right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .trial { background: rgba(255,255,255,.1); border-radius: 14px; padding: 3px 12px; font-size: 13px; color: #ffd9d2; }
+  .trial a { color: #fff; font-weight: 700; }
+  .btn { border: 1px solid #c5ccd9; background: #fff; color: var(--ink); border-radius: 6px; padding: 7px 14px; cursor: pointer; font-weight: 600; }
+  .btn.pri { background: var(--coral); border-color: var(--coral); color: #fff; }
+  .btn.pri:hover { background: var(--coral2); }
+  .btn.navy { background: var(--navy2); border-color: var(--navy2); color: #fff; }
+  .btn.danger { color: var(--bad); border-color: #efbdb7; }
+  .btn.sm { padding: 3px 10px; font-size: 13px; }
+  .btn.link { border: 0; background: none; color: #2458b3; padding: 0; text-decoration: underline; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .av { width: 32px; height: 32px; border-radius: 50%; background: #ffd1c8; color: #7a2a1c; display: grid; place-items: center; font-weight: 800; font-size: 12px; }
+  main { padding: 22px 24px 50px; max-width: 1240px; margin: 0 auto; }
+  h1 { font-size: 23px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 0 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+  .kpis a { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px; text-decoration: none; color: var(--ink); }
+  .kpis b { font-size: 26px; display: block; }
+  .kpis span { color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+  .folders a { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+  .folders a.on { background: #e8eefb; color: #1d3a66; font-weight: 700; }
+  .folders a span { color: var(--muted); font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; background: #fafbfd; }
+  tr.click { cursor: pointer; }
+  tr.click:hover td { background: #f7f9fd; }
+  .chip { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 10px; background: #e8eefb; color: #1d3a66; white-space: nowrap; }
+  .chip.ok { background: #e3f4ec; color: var(--ok); } .chip.warn { background: #fff3dc; color: var(--warn); } .chip.bad { background: #fde7e4; color: var(--bad); } .chip.grey { background: #eef0f4; color: #5a6477; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .alert { border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start; }
+  .alert.bad { background: #fdecea; border: 1px solid #f5c2bc; color: #7d2119; }
+  .alert.ok { background: #e6f5ee; border: 1px solid #b7e0cb; color: #14553a; }
+  .alert.info { background: #eef3fd; border: 1px solid #c9d7f5; color: #1d3a66; }
+  .stepper { display: flex; gap: 0; margin-bottom: 18px; background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .stepper div { flex: 1; padding: 10px 12px; font-size: 13px; color: var(--muted); border-right: 1px solid var(--line); }
+  .stepper div:last-child { border-right: 0; }
+  .stepper div.on { background: #fff4f1; color: var(--coral2); font-weight: 800; box-shadow: inset 0 -3px var(--coral); }
+  .stepper div.done { color: var(--ok); font-weight: 600; }
+  .tpl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tpl label { border: 1px solid var(--line); border-radius: 10px; padding: 14px; cursor: pointer; display: block; background: #fff; }
+  .tpl label:has(input:checked) { border-color: var(--coral); box-shadow: 0 0 0 2px #ffd6cd; }
+  .tpl input { margin-right: 6px; }
+  .tpl b { font-size: 15px; }
+  .drop { border: 2px dashed #c9d0dc; border-radius: 10px; padding: 18px; text-align: center; color: var(--muted); margin-top: 14px; background: #fafbfd; }
+  .rcp { display: grid; grid-template-columns: 70px 1.2fr 1.4fr 190px 40px; gap: 10px; align-items: end; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .rcp.noorder { grid-template-columns: 1.2fr 1.4fr 190px 40px; }
+  .rcp label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+  input[type=text], input[type=email], input[type=number], select, textarea { font: inherit; border: 1px solid #c5ccd9; border-radius: 6px; padding: 7px 10px; background: #fff; width: 100%; }
+  textarea { resize: vertical; }
+  .lb { position: relative; }
+  .lb > button { width: 100%; text-align: left; border: 1px solid #c5ccd9; background: #fff; border-radius: 6px; padding: 7px 10px; cursor: pointer; display: flex; justify-content: space-between; }
+  .lb ul[role=listbox] { position: absolute; top: 38px; left: 0; right: 0; list-style: none; margin: 0; padding: 4px; background: #fff; border: 1px solid #c5ccd9; border-radius: 8px; box-shadow: 0 10px 26px rgba(19,41,75,.18); z-index: 15; }
+  .lb li[role=option] { padding: 7px 9px; border-radius: 5px; cursor: pointer; }
+  .lb li[role=option]:hover { background: #f1f4fb; }
+  .lb li[role=option][aria-selected=true] { background: #e8eefb; font-weight: 700; }
+  .lb li small { display: block; color: var(--muted); font-weight: 400; }
+  .field { margin-bottom: 14px; }
+  .field > label { display: block; font-weight: 700; margin-bottom: 5px; }
+  .inline { display: flex; align-items: center; gap: 10px; }
+  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .tr { width: 40px; height: 22px; border-radius: 11px; background: #c5ccd9; position: relative; flex: none; }
+  .switch .tr::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .switch input:checked + .tr { background: var(--ok); }
+  .switch input:checked + .tr::after { left: 21px; }
+  .switch input:focus-visible + .tr { outline: 2px solid var(--coral); }
+  .errs { background: #fdecea; border: 1px solid #f5c2bc; color: #7d2119; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+  .errs ul { margin: 4px 0 0 18px; padding: 0; }
+  .wzfoot { display: flex; justify-content: space-between; margin-top: 18px; }
+  dl.rv { display: grid; grid-template-columns: 180px 1fr; gap: 8px 16px; margin: 0; }
+  dl.rv dt { color: var(--muted); font-weight: 700; }
+  dl.rv dd { margin: 0; }
+  .overlay { position: fixed; inset: 0; background: rgba(19,41,75,.5); display: flex; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 40; }
+  .overlay.top { z-index: 60; background: rgba(19,41,75,.7); }
+  .dialog { background: #fff; border-radius: 12px; width: 480px; max-width: calc(100vw - 30px); padding: 22px 24px; box-shadow: 0 24px 60px rgba(0,0,0,.3); position: relative; }
+  .dialog .acts { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+  .dialog .x { position: absolute; top: 12px; right: 12px; border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+  .promo { width: 560px; padding: 0; overflow: hidden; }
+  .promo .hero { background: linear-gradient(135deg, var(--navy), #2b4f8a); color: #fff; padding: 26px 28px; }
+  .promo .hero h2 { font-size: 22px; margin: 0 0 6px; }
+  .promo .bodyp { padding: 18px 28px 22px; }
+  .promo ul { margin: 0 0 6px; padding-left: 18px; }
+  .menu { position: absolute; right: 0; top: 40px; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 30px rgba(19,41,75,.18); padding: 4px; z-index: 15; min-width: 190px; }
+  .menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 5px; cursor: pointer; }
+  .menu button:hover { background: #f1f4fb; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 8px; z-index: 70; }
+  .audit li { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; display: flex; gap: 14px; }
+  .audit ul { list-style: none; margin: 0; padding: 0; }
+  .audit .w { color: var(--muted); min-width: 150px; }
+  footer { color: var(--muted); font-size: 12.5px; padding: 20px 24px 30px; border-top: 1px solid var(--line); display: flex; gap: 18px; flex-wrap: wrap; }
+  footer a { color: var(--muted); }
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .search { position: relative; max-width: 360px; }
+  .search input { padding-left: 30px; }
+  .search::before { content: "⌕"; position: absolute; left: 10px; top: 6px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="logo" href="#/home"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M3 20 C8 6, 18 4, 23 5 C17 8, 13 12, 11 21 Z" fill="#ff6f59"/><path d="M3 20 L11 21 L8 24 Z" fill="#fff"/></svg>Kestrel Sign</a>
+  <nav class="main" id="mainnav" aria-label="Main">
+    <a href="#/home" data-r="home">Home</a>
+    <a href="#/envelopes/inbox" data-r="envelopes">Envelopes</a>
+    <a href="#/templates" data-r="templates">Templates</a>
+    <a href="#/reports" data-r="reports">Reports</a>
+    <a href="#/settings" data-r="settings">Settings</a>
+  </nav>
+  <div class="right">
+    <span class="trial">Business trial · 3 days left · <a href="#/upgrade">Upgrade</a></span>
+    <a class="btn pri" href="#/new" id="start-btn">Start</a>
+    <span class="av" title="Jonah Abernathy-Yu">JA</span>
+  </div>
+</div></header>
+<main id="main"></main>
+<footer><span>© 2026 Kestrel Sign Ltd</span><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/security">Security</a><a href="#/legal/esign-act">Legality of e-signatures</a><a href="#/help">Help centre</a><span style="margin-left:auto">Signed in as jonah@tidemarkhq.com · Tidemark HQ</span></footer>
+<div id="modal-root"></div>
+<div id="promo-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 4000); };
+  const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const busy = (b, label) => { b.disabled = true; b.dataset.l = b.innerHTML; b.innerHTML = `<span class="spin"></span>${esc(label)}`; };
+  const unbusy = (b) => { b.disabled = false; b.innerHTML = b.dataset.l; };
+
+  const ME = { name: 'Jonah Abernathy-Yu', email: 'jonah@tidemarkhq.com' };
+  const TEMPLATES = [
+    ['mutual-nda-v3', 'Mutual NDA (v3)', 'Two-way confidentiality agreement. Current version approved by Legal in June 2026.', 4, '18 Sep 2026'],
+    ['mutual-nda-v2', 'Mutual NDA (v2 — legacy)', 'Previous NDA wording. Kept for renewals of agreements signed before June 2026.', 4, '2 May 2026'],
+    ['consulting', 'Consulting agreement', 'Statement of work and terms for independent consultants.', 9, '11 Sep 2026'],
+    ['contractor-pack', 'Contractor onboarding pack', 'Contractor agreement, IP assignment and tax form in one envelope.', 14, '22 Sep 2026'],
+    ['lease-renewal', 'Lease renewal', 'Commercial unit lease renewal for Calloway Yard tenants.', 6, '21 Sep 2026'],
+    ['offer-letter', 'Offer letter', 'Employment offer letter with salary and start date fields.', 3, '9 Sep 2026'],
+  ];
+  const tplName = (id) => (TEMPLATES.find((t) => t[0] === id) || [id, id])[1];
+  const ROLES = [['sign', 'Needs to sign', 'Signs the document'], ['cc', 'Receives a copy', 'Gets a copy when it is complete'], ['approve', 'Needs to approve', 'Approves without signing'], ['inperson', 'In-person signer', 'Signs on your device, in person']];
+  const roleName = (r) => ROLES.find((x) => x[0] === r)[1];
+
+  const ENVS = [
+    { id: 'ENV-40318', folder: 'sent', subject: 'Lease renewal – Unit 4B, Calloway Yard', template: 'lease-renewal', sent: '21 Sep 2026, 16:42', expires: '20 Oct 2026', status: 'waiting', doc: 'Lease_Renewal_Unit4B_Calloway_Yard.pdf', pages: 6,
+      recipients: [
+        { n: 1, name: 'Priyanka Raghunathan', email: 'priyanka.raghunathan@calowayyard.co.uk', role: 'sign', status: 'bounced' },
+        { n: 2, name: 'Priya Raghavan', email: 'priya.raghavan@tidemarkhq.com', role: 'sign', status: 'sent' },
+        { n: 3, name: ME.name, email: ME.email, role: 'cc', status: 'waiting' },
+      ],
+      audit: [['21 Sep 2026 16:42', 'Envelope sent by Jonah Abernathy-Yu'], ['21 Sep 2026 16:43', 'Delivery to priyanka.raghunathan@calowayyard.co.uk failed: mailbox does not exist (550 5.1.1)'], ['21 Sep 2026 16:43', 'Email delivered to priya.raghavan@tidemarkhq.com']] },
+    { id: 'ENV-40322', folder: 'sent', subject: 'Contractor onboarding – Ilse Vandermeer', template: 'contractor-pack', sent: '22 Sep 2026, 10:05', expires: '22 Oct 2026', status: 'waiting', doc: 'Contractor_Pack_Vandermeer.pdf', pages: 14,
+      recipients: [{ n: 1, name: 'Ilse Vandermeer', email: 'ilse@vandermeer.studio', role: 'sign', status: 'viewed' }, { n: 2, name: 'Keziah Lund', email: 'keziah.lund@tidemarkhq.com', role: 'cc', status: 'waiting' }],
+      audit: [['22 Sep 2026 10:05', 'Envelope sent by Jonah Abernathy-Yu'], ['22 Sep 2026 18:31', 'Viewed by Ilse Vandermeer']] },
+    { id: 'ENV-40301', folder: 'sent', subject: 'Mutual NDA – Brightfold Analytics', template: 'mutual-nda-v3', sent: '17 Sep 2026, 09:12', expires: '17 Oct 2026', status: 'waiting', doc: 'Mutual_NDA_v3_Brightfold.pdf', pages: 4,
+      recipients: [{ n: 1, name: 'Tomasz Lewandowski', email: 'tomasz@brightfold.ai', role: 'sign', status: 'signed' }, { n: 2, name: 'Bartholomew Oyelowo-Grant', email: 'b.oyelowo-grant@tidemarkhq.com', role: 'sign', status: 'sent' }],
+      audit: [['17 Sep 2026 09:12', 'Envelope sent by Jonah Abernathy-Yu'], ['18 Sep 2026 14:02', 'Signed by Tomasz Lewandowski']] },
+    { id: 'ENV-40295', folder: 'sent', subject: 'Consulting agreement – Q4 advisory, Ruth Okonjo', template: 'consulting', sent: '15 Sep 2026, 13:30', expires: '15 Oct 2026', status: 'waiting', doc: 'Consulting_Agreement_Okonjo.pdf', pages: 9,
+      recipients: [{ n: 1, name: 'Ruth Okonjo', email: 'ruth@okonjo-advisory.com', role: 'sign', status: 'viewed' }, { n: 2, name: 'Jonah Abernathy-Yu', email: ME.email, role: 'sign', status: 'waiting' }],
+      audit: [['15 Sep 2026 13:30', 'Envelope sent by Jonah Abernathy-Yu'], ['16 Sep 2026 08:10', 'Viewed by Ruth Okonjo']] },
+    { id: 'ENV-40288', folder: 'sent', subject: 'Offer letter – Dev Anand', template: 'offer-letter', sent: '12 Sep 2026, 11:00', expires: '26 Sep 2026', status: 'waiting', doc: 'Offer_Letter_Anand.pdf', pages: 3,
+      recipients: [{ n: 1, name: 'Dev Anand', email: 'dev.anand@fastmail.com', role: 'sign', status: 'sent' }],
+      audit: [['12 Sep 2026 11:00', 'Envelope sent by Jonah Abernathy-Yu'], ['19 Sep 2026 11:00', 'Automatic reminder sent to Dev Anand']] },
+    { id: 'ENV-40277', folder: 'completed', subject: 'Lease renewal – Unit 4A, Calloway Yard', template: 'lease-renewal', sent: '8 Sep 2026, 15:20', expires: '—', status: 'completed', doc: 'Lease_Renewal_Unit4A_Calloway_Yard.pdf', pages: 6,
+      recipients: [{ n: 1, name: 'Marcus Oyelaran', email: 'marcus@oyelaran-ceramics.co.uk', role: 'sign', status: 'signed' }, { n: 2, name: 'Priya Raghavan', email: 'priya.raghavan@tidemarkhq.com', role: 'sign', status: 'signed' }],
+      audit: [['8 Sep 2026 15:20', 'Envelope sent by Jonah Abernathy-Yu'], ['9 Sep 2026 09:44', 'Signed by Marcus Oyelaran'], ['9 Sep 2026 12:10', 'Signed by Priya Raghavan'], ['9 Sep 2026 12:10', 'Envelope completed']] },
+    { id: 'ENV-40240', folder: 'completed', subject: 'Mutual NDA – Quillon Partners', template: 'mutual-nda-v3', sent: '1 Sep 2026, 10:00', expires: '—', status: 'completed', doc: 'Mutual_NDA_v3_Quillon.pdf', pages: 4,
+      recipients: [{ n: 1, name: 'Hélène Moreau', email: 'helene.moreau@quillon.fr', role: 'sign', status: 'signed' }, { n: 2, name: 'Bartholomew Oyelowo-Grant', email: 'b.oyelowo-grant@tidemarkhq.com', role: 'sign', status: 'signed' }],
+      audit: [['1 Sep 2026 10:00', 'Envelope sent'], ['2 Sep 2026 16:30', 'Envelope completed']] },
+    { id: 'ENV-40212', folder: 'completed', subject: 'Contractor onboarding – Kofi Mensah', template: 'contractor-pack', sent: '26 Aug 2026, 14:11', expires: '—', status: 'completed', doc: 'Contractor_Pack_Mensah.pdf', pages: 14, recipients: [{ n: 1, name: 'Kofi Mensah', email: 'kofi@mensah.dev', role: 'sign', status: 'signed' }], audit: [['26 Aug 2026 14:11', 'Envelope sent'], ['27 Aug 2026 09:02', 'Envelope completed']] },
+    { id: 'ENV-40190', folder: 'completed', subject: 'Offer letter – Saoirse Byrne', template: 'offer-letter', sent: '19 Aug 2026, 09:30', expires: '—', status: 'completed', doc: 'Offer_Letter_Byrne.pdf', pages: 3, recipients: [{ n: 1, name: 'Saoirse Byrne', email: 'saoirse.byrne@gmail.com', role: 'sign', status: 'signed' }], audit: [['19 Aug 2026 09:30', 'Envelope sent'], ['19 Aug 2026 20:14', 'Envelope completed']] },
+    { id: 'ENV-40177', folder: 'voided', subject: 'Mutual NDA – Brightfold Analytics (duplicate)', template: 'mutual-nda-v3', sent: '16 Sep 2026, 17:55', expires: '—', status: 'voided', doc: 'Mutual_NDA_v3_Brightfold.pdf', pages: 4, recipients: [{ n: 1, name: 'Tomasz Lewandowski', email: 'tomasz@brightfold.ai', role: 'sign', status: 'voided' }], audit: [['16 Sep 2026 17:55', 'Envelope sent'], ['16 Sep 2026 18:02', 'Voided by Jonah Abernathy-Yu: “Duplicate, sent twice”']] },
+    { id: 'ENV-40330', folder: 'inbox', subject: 'Supplier agreement – Northgate Freight', template: '', sent: '23 Sep 2026, 12:00', expires: '7 Oct 2026', status: 'action', from: 'Mairead Quinlan (Northgate Freight)', doc: 'Supplier_Agreement_Northgate.pdf', pages: 11, recipients: [{ n: 1, name: ME.name, email: ME.email, role: 'sign', status: 'sent' }], audit: [['23 Sep 2026 12:00', 'Sent to you by Mairead Quinlan']] },
+    { id: 'ENV-40327', folder: 'inbox', subject: 'Updated IP assignment – Tidemark HQ', template: '', sent: '22 Sep 2026, 17:18', expires: '6 Oct 2026', status: 'action', from: 'Keziah Lund (Tidemark HQ)', doc: 'IP_Assignment_2026.pdf', pages: 2, recipients: [{ n: 1, name: ME.name, email: ME.email, role: 'sign', status: 'sent' }], audit: [['22 Sep 2026 17:18', 'Sent to you by Keziah Lund']] },
+    { id: 'ENV-40309', folder: 'inbox', subject: 'Parking permit form – Calloway Yard', template: '', sent: '19 Sep 2026, 08:40', expires: '3 Oct 2026', status: 'action', from: 'Calloway Yard Management', doc: 'Parking_Permit_2026.pdf', pages: 1, recipients: [{ n: 1, name: ME.name, email: ME.email, role: 'sign', status: 'sent' }], audit: [['19 Sep 2026 08:40', 'Sent to you by Calloway Yard Management']] },
+  ];
+  const DRAFTS = [
+    { id: 'DRAFT-1102', template: 'consulting', subject: 'Please sign: Consulting agreement', message: 'Hi Mira, here is the consulting agreement we discussed.', order: false, rows: [{ name: 'Mira Castellanos', email: 'mira@castellanos.design', role: 'sign', order: 1 }], reminders: false, every: '2', expiry: '120', decline: true, updated: '20 Sep 2026' },
+    { id: 'DRAFT-1098', template: 'offer-letter', subject: 'Your offer from Tidemark', message: '', order: false, rows: [{ name: 'Aarav Menon', email: 'aarav.menon@outlook.com', role: 'sign', order: 1 }, { name: 'Keziah Lund', email: 'keziah.lund@tidemarkhq.com', role: 'cc', order: 2 }], reminders: true, every: '2', expiry: '14', decline: true, updated: '11 Sep 2026' },
+  ];
+  const STATUS = { bounced: ['bad', 'Delivery failed (bounced)'], sent: ['grey', 'Sent — not viewed'], viewed: ['warn', 'Viewed'], signed: ['ok', 'Signed'], waiting: ['grey', 'Waiting'], voided: ['grey', 'Voided'], resent: ['grey', 'Resent — not viewed'], completed: ['ok', 'Copy sent'] };
+  const ENV_STATUS = { waiting: ['warn', 'Waiting for others'], completed: ['ok', 'Completed'], voided: ['grey', 'Voided'], action: ['bad', 'Needs your signature'] };
+
+  const st = { promoShown: false, promoTimer: null, search: '', wz: null, menuOpen: false, lbOpen: null, envSeq: 40341, draftSeq: 1110, lastSent: null,
+    settings: { name: ME.name, title: 'Operations Director', company: 'Tidemark HQ', notifyViewed: true, notifySigned: true, notifyDaily: false } };
+
+  const route = () => (location.hash.replace(/^#\/?/, '') || 'home').split('/').map(decodeURIComponent);
+
+  // ---------------------------------------------------------------- pages
+  function pHome() {
+    const waiting = ENVS.filter((e) => e.status === 'waiting').length, action = ENVS.filter((e) => e.status === 'action').length, done = ENVS.filter((e) => e.status === 'completed').length;
+    const problems = ENVS.filter((e) => e.recipients.some((r) => r.status === 'bounced'));
+    return `<h1>Welcome back, Jonah</h1><p class="sub">Thursday 24 September 2026 · Tidemark HQ</p>
+      <div class="kpis"><a href="#/envelopes/inbox"><b>${action}</b><span>Action required</span></a><a href="#/envelopes/sent"><b>${waiting}</b><span>Waiting for others</span></a><a href="#/envelopes/sent"><b>1</b><span>Expiring soon</span></a><a href="#/envelopes/completed"><b>${done}</b><span>Completed (30 days)</span></a></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:start"><div>
+        ${problems.length ? `<div class="panel"><h2>Needs attention</h2>${problems.map((e) => `<div class="alert bad"><span>⚠</span><div><b>Delivery failed</b> — <a href="#/envelope/${e.id}">${esc(e.subject)}</a><div class="muted">${esc(e.recipients.filter((r) => r.status === 'bounced').map((r) => r.name).join(', '))} didn't receive the envelope.</div></div></div>`).join('')}</div>` : ''}
+        <div class="panel"><h2>Recent envelopes</h2><table><tbody>${ENVS.filter((e) => e.folder === 'sent').slice(0, 5).map((e) => `<tr><td><a href="#/envelope/${e.id}">${esc(e.subject)}</a><div class="muted">${esc(e.recipients.map((r) => r.name).join(', '))}</div></td><td><span class="chip ${ENV_STATUS[e.status][0]}">${ENV_STATUS[e.status][1]}</span></td><td class="muted">${esc(e.sent)}</td></tr>`).join('')}</tbody></table></div>
+      </div><div>
+        <div class="panel"><h2>Send a document</h2><p class="muted">Start from a template or upload a file.</p><a class="btn pri" href="#/new">Start an envelope</a> <a class="btn" href="#/templates">Browse templates</a>
+          <table style="margin-top:12px"><tbody>${TEMPLATES.map(([id, n]) => `<tr><td>${esc(n)}</td><td style="text-align:right"><a href="#/new/t/${id}">Use</a></td></tr>`).join('')}</tbody></table></div>
+        <div class="panel"><h2>Guides</h2><ul style="margin:0;padding-left:18px"><li><a href="#/help">Set a signing order</a></li><li><a href="#/help">Correct a recipient after sending</a></li><li><a href="#/help">Send automatic reminders</a></li><li><a href="#/help">Void an envelope</a></li></ul></div>
+        <div class="panel"><h2>Your trial</h2><p class="muted">Your Business trial ends on 27 September 2026. After that you'll move to the Free plan (3 envelopes a month).</p><a href="#/upgrade">Compare plans</a></div>
+      </div></div>`;
+  }
+  const FOLDERS = [['inbox', 'Inbox'], ['sent', 'Sent'], ['drafts', 'Drafts'], ['completed', 'Completed'], ['voided', 'Voided']];
+  function pEnvelopes(folder) {
+    const s = st.search.toLowerCase();
+    const counts = Object.fromEntries(FOLDERS.map(([f]) => [f, f === 'drafts' ? DRAFTS.length : ENVS.filter((e) => e.folder === f).length]));
+    let body;
+    if (folder === 'drafts') {
+      const ds = DRAFTS.filter((d) => !s || d.subject.toLowerCase().includes(s) || d.rows.some((r) => r.name.toLowerCase().includes(s)));
+      body = `<table><thead><tr><th>Subject</th><th>Recipients</th><th>Template</th><th>Last edited</th></tr></thead><tbody>${ds.map((d) => `<tr class="click" data-href="#/new/d/${d.id}"><td><a href="#/new/d/${d.id}">${esc(d.subject)}</a></td><td>${esc(d.rows.map((r) => r.name).join(', ') || '—')}</td><td>${esc(tplName(d.template))}</td><td class="muted">${esc(d.updated)}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">No drafts.</td></tr>'}</tbody></table>`;
+    } else {
+      const es = ENVS.filter((e) => e.folder === folder && (!s || e.subject.toLowerCase().includes(s) || e.recipients.some((r) => r.name.toLowerCase().includes(s) || r.email.includes(s))));
+      body = `<table><thead><tr><th>Subject</th><th>${folder === 'inbox' ? 'From' : 'Recipients'}</th><th>Status</th><th>${folder === 'inbox' ? 'Received' : 'Sent'}</th></tr></thead><tbody>${es.map((e) => `<tr class="click" data-href="#/envelope/${e.id}"><td><a href="#/envelope/${e.id}">${esc(e.subject)}</a><div class="muted">${e.id}</div></td><td>${esc(folder === 'inbox' ? e.from : e.recipients.map((r) => r.name).join(', '))}</td><td><span class="chip ${ENV_STATUS[e.status][0]}">${ENV_STATUS[e.status][1]}</span>${e.recipients.some((r) => r.status === 'bounced') ? ' <span class="chip bad">Delivery failed</span>' : ''}</td><td class="muted">${esc(e.sent)}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">No envelopes.</td></tr>'}</tbody></table>`;
+    }
+    return `<h1>Envelopes</h1><p class="sub">Everything you've sent and received.</p><div class="cols">
+      <div class="panel folders" style="padding:10px"><a class="btn pri" href="#/new" style="display:block;text-align:center;margin-bottom:10px;color:#fff">Start</a>${FOLDERS.map(([f, l]) => `<a href="#/envelopes/${f}" class="${f === folder ? 'on' : ''}">${l}<span>${counts[f]}</span></a>`).join('')}</div>
+      <div class="panel"><div class="inline" style="margin-bottom:12px"><div class="search" style="flex:1"><input type="text" id="env-search" placeholder="Search subject, name or email" value="${esc(st.search)}" aria-label="Search envelopes"></div></div>${body}</div></div>`;
+  }
+  function pEnvelope(id) {
+    const e = ENVS.find((x) => x.id === id);
+    if (!e) return `<h1>Envelope not found</h1><p><a href="#/envelopes/sent">Back to envelopes</a></p>`;
+    const canAct = e.status === 'waiting';
+    const bounced = e.recipients.filter((r) => r.status === 'bounced');
+    return `<p><a href="#/envelopes/${e.folder}">‹ ${esc(FOLDERS.find((f) => f[0] === e.folder)[1])}</a></p>
+      <div class="inline" style="align-items:flex-start"><div style="flex:1"><h1>${esc(e.subject)}</h1><p class="sub"><span class="chip ${ENV_STATUS[e.status][0]}">${ENV_STATUS[e.status][1]}</span> · Envelope ID ${e.id} · ${e.folder === 'inbox' ? 'Received ' + esc(e.sent) + ' from ' + esc(e.from) : 'Sent ' + esc(e.sent) + ' by Jonah Abernathy-Yu'}${e.expires !== '—' ? ' · Expires ' + esc(e.expires) : ''}</p></div>
+        <div class="inline" style="position:relative">${e.folder === 'inbox' ? '<button type="button" class="btn pri" id="env-sign">Review and sign</button>' : ''}<button type="button" class="btn" id="env-download">Download</button><button type="button" class="btn" id="env-more" aria-haspopup="menu" aria-expanded="${st.menuOpen}">More ▾</button>
+        ${st.menuOpen ? `<div class="menu" role="menu"><button type="button" role="menuitem" data-menu="move">Move to folder…</button><button type="button" role="menuitem" data-menu="history">Download certificate</button>${canAct ? '<button type="button" role="menuitem" data-menu="void">Void envelope</button>' : ''}</div>` : ''}</div></div>
+      ${bounced.length ? `<div class="alert bad" role="alert"><span>⚠</span><div><b>Delivery failed for ${esc(bounced.map((r) => r.name).join(', '))}.</b> Correct the email address to resend the envelope.</div></div>` : ''}
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:start"><div>
+        <div class="panel"><h2>Recipients</h2><table><thead><tr><th>#</th><th>Recipient</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
+        ${e.recipients.map((r, i) => `<tr><td>${r.n}</td><td><b>${esc(r.name)}</b><div class="muted">${esc(r.email)}</div></td><td>${esc(roleName(r.role))}</td><td><span class="chip ${STATUS[r.status][0]}">${STATUS[r.status][1]}</span></td>
+          <td style="white-space:nowrap">${canAct && r.role !== 'cc' && r.status !== 'signed' && r.email !== ME.email ? `<button type="button" class="btn sm" data-resend="${i}">Resend</button> <button type="button" class="btn sm" data-correct="${i}">Correct</button>` : ''}</td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="panel audit"><h2>History</h2><ul>${e.audit.slice().reverse().map(([w, what]) => `<li><span class="w">${esc(w)}</span><span>${esc(what)}</span></li>`).join('')}</ul></div>
+      </div><div>
+        <div class="panel"><h2>Documents</h2><div class="inline"><span style="font-size:26px">📄</span><div><b>${esc(e.doc)}</b><div class="muted">${e.pages} pages${e.template ? ' · from template ' + esc(tplName(e.template)) : ''}</div></div></div></div>
+        <div class="panel"><h2>Details</h2><dl class="rv" style="grid-template-columns:110px 1fr"><dt>Sender</dt><dd>${esc(e.from || 'Jonah Abernathy-Yu')}</dd><dt>Reminders</dt><dd>Every 7 days</dd><dt>Expires</dt><dd>${esc(e.expires)}</dd><dt>Signing order</dt><dd>${e.recipients.filter((r) => r.role === 'sign').length > 1 ? 'Any order' : '—'}</dd></dl></div>
+      </div></div>`;
+  }
+  function pTemplates() {
+    return `<h1>Templates</h1><p class="sub">Reusable documents with fields already placed.</p><div class="panel"><table><thead><tr><th>Template</th><th>Pages</th><th>Last used</th><th></th></tr></thead><tbody>
+      ${TEMPLATES.map(([id, n, d, p, u]) => `<tr><td><b>${esc(n)}</b><div class="muted">${esc(d)}</div></td><td>${p}</td><td class="muted">${esc(u)}</td><td style="white-space:nowrap"><a class="btn sm" href="#/new/t/${id}">Use</a> <button type="button" class="btn sm" data-tpl-edit="${id}">Edit</button></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function pSettings() {
+    const s = st.settings;
+    const sw = (id, on, l) => `<div class="inline" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)"><span>${l}</span><label class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${esc(l)}"><span class="tr"></span></label></div>`;
+    return `<h1>Settings</h1><p class="sub">Your profile and notifications.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+      <div class="panel"><h2>Profile</h2><div class="field"><label for="s-name">Full name</label><input type="text" id="s-name" value="${esc(s.name)}"></div><div class="field"><label for="s-title">Job title</label><input type="text" id="s-title" value="${esc(s.title)}"></div><div class="field"><label for="s-company">Company</label><input type="text" id="s-company" value="${esc(s.company)}"></div></div>
+      <div class="panel"><h2>Email me when</h2>${sw('s-viewed', s.notifyViewed, 'A recipient views an envelope')}${sw('s-signed', s.notifySigned, 'A recipient signs')}${sw('s-daily', s.notifyDaily, 'Daily summary of pending envelopes')}<div style="margin-top:14px"><button type="button" class="btn pri" id="s-save">Save settings</button></div></div></div>`;
+  }
+  function pUpgrade() {
+    return `<h1>Upgrade to Business</h1><p class="sub">Your trial ends on 27 September 2026.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="panel"><h2>Free</h2><p><b>$0</b> / month</p><ul><li>3 envelopes a month</li><li>Basic fields</li><li>1 template</li></ul><p class="muted">You'll move to Free automatically when the trial ends.</p></div>
+      <div class="panel" style="border-color:var(--coral)"><h2>Business</h2><p><b>$30</b> per user / month, billed annually</p><ul><li>Unlimited envelopes</li><li>Signing order, reminders and bulk send</li><li>ID verification and branding</li><li>Unlimited templates</li></ul><p class="muted">Charged to Visa ending 3321.</p><button type="button" class="btn pri" id="up-go">Start subscription</button></div></div>`;
+  }
+  const INFO = { reports: ['Reports', 'Envelope volume and turnaround reports are available on Business.'], help: ['Help centre', 'Guides for sending, signing and templates.'], legal: ['Legal', 'Kestrel Sign complies with eIDAS and the ESIGN Act.'] };
+
+  // ---------------------------------------------------------------- new envelope wizard
+  const STEPS = ['Documents', 'Recipients', 'Message', 'Options', 'Review'];
+  function newWz(template, draft) {
+    const w = { step: 0, template: template || '', order: false, rows: [{ name: '', email: '', role: 'sign', order: 1 }], subject: '', subjectTouched: false, message: 'Hi, please review and sign this document. Thanks, Jonah', reminders: false, every: '2', expiry: '120', decline: true, errs: [], draftId: null };
+    if (draft) Object.assign(w, JSON.parse(JSON.stringify({ template: draft.template, order: draft.order, rows: draft.rows, subject: draft.subject, subjectTouched: true, message: draft.message, reminders: draft.reminders, every: draft.every, expiry: draft.expiry, decline: draft.decline })), { draftId: draft.id });
+    return w;
+  }
+  function pNew(r) {
+    const key = r.slice(1).join('/');
+    if (!st.wz || st.wz.key !== key) {
+      const draft = r[1] === 'd' ? DRAFTS.find((d) => d.id === r[2]) : null;
+      st.wz = newWz(r[1] === 't' ? r[2] : '', draft);
+      st.wz.key = key;
+    }
+    const w = st.wz;
+    let h = `<h1>${w.draftId ? 'Edit draft' : 'New envelope'}</h1><p class="sub">${w.draftId ? w.draftId + ' · ' : ''}Step ${w.step + 1} of 5</p>
+      <div class="stepper">${STEPS.map((s, i) => `<div class="${i === w.step ? 'on' : i < w.step ? 'done' : ''}">${i < w.step ? '✓ ' : i + 1 + '. '}${s}</div>`).join('')}</div>
+      ${w.errs.length ? `<div class="errs" role="alert"><b>Fix the following:</b><ul>${w.errs.map((e) => `<li>${esc(e)}</li>`).join('')}</ul></div>` : ''}<div class="panel">`;
+    if (w.step === 0) {
+      h += `<h2>Choose a template</h2><div class="tpl" role="radiogroup" aria-label="Template">${TEMPLATES.map(([id, n, d, p]) => `<label><input type="radio" name="wz-tpl" value="${id}" ${w.template === id ? 'checked' : ''}><b>${esc(n)}</b><div class="muted" style="margin-top:4px">${esc(d)}</div><div class="muted">${p} pages</div></label>`).join('')}</div>
+        <div class="drop" aria-disabled="true">⤒ Drop files here or <span style="text-decoration:underline">browse</span><div class="muted">Uploading your own files isn't available during the trial. Use a template instead.</div></div>`;
+    } else if (w.step === 1) {
+      h += `<div class="inline" style="justify-content:space-between"><h2 style="margin:0">Add recipients</h2><label class="inline" style="font-weight:700"><input type="checkbox" id="wz-order" ${w.order ? 'checked' : ''}> Set signing order</label></div>
+        <p class="muted">${w.order ? 'Recipients receive the envelope in order: 1 first, then 2, and so on. Give recipients the same number to send at the same time.' : 'Everyone receives the envelope at the same time.'}</p>
+        <div id="wz-rows">${w.rows.map((rw, i) => `<div class="rcp ${w.order ? '' : 'noorder'}" data-row="${i}">
+          ${w.order ? `<div><label for="rc-order-${i}">Order</label><input type="number" min="1" max="20" id="rc-order-${i}" data-f="order" value="${esc(rw.order)}" aria-label="Recipient ${i + 1} order"></div>` : ''}
+          <div><label for="rc-name-${i}">Name</label><input type="text" id="rc-name-${i}" data-f="name" value="${esc(rw.name)}" aria-label="Recipient ${i + 1} name" autocomplete="off"></div>
+          <div><label for="rc-email-${i}">Email</label><input type="email" id="rc-email-${i}" data-f="email" value="${esc(rw.email)}" aria-label="Recipient ${i + 1} email" autocomplete="off"></div>
+          <div><label id="rc-role-l-${i}">Role</label><div class="lb"><button type="button" id="rc-role-${i}" data-role-btn="${i}" aria-haspopup="listbox" aria-expanded="${st.lbOpen === i}" aria-labelledby="rc-role-l-${i} rc-role-${i}">${esc(roleName(rw.role))}<span aria-hidden="true">▾</span></button>
+            <ul role="listbox" aria-label="Role for recipient ${i + 1}" ${st.lbOpen === i ? '' : 'hidden'}>${ROLES.map(([v, l, d]) => `<li role="option" tabindex="-1" data-role="${v}" data-row="${i}" aria-selected="${rw.role === v}">${l}<small>${d}</small></li>`).join('')}</ul></div></div>
+          <div><button type="button" class="btn sm" data-remove="${i}" aria-label="Remove recipient ${i + 1}" ${w.rows.length === 1 ? 'disabled' : ''}>✕</button></div></div>`).join('')}</div>
+        <div class="inline" style="margin-top:12px"><button type="button" class="btn" id="wz-add">＋ Add recipient</button><button type="button" class="btn link" id="wz-addme">Add me</button></div>`;
+    } else if (w.step === 2) {
+      if (!w.subjectTouched) w.subject = 'Please sign: ' + tplName(w.template);
+      h += `<h2>Message to recipients</h2><div class="field"><label for="wz-subject">Email subject</label><input type="text" id="wz-subject" maxlength="100" value="${esc(w.subject)}"></div>
+        <div class="field"><label for="wz-message">Email message</label><textarea id="wz-message" rows="5">${esc(w.message)}</textarea></div><p class="muted">Recipients see this in the email with the signing link.</p>`;
+    } else if (w.step === 3) {
+      h += `<h2>Options</h2>
+        <div class="field"><label class="switch"><input type="checkbox" id="wz-rem" ${w.reminders ? 'checked' : ''} role="switch" aria-checked="${w.reminders}"><span class="tr"></span>Send automatic reminders</label></div>
+        <div class="field" id="wz-rem-box" ${w.reminders ? '' : 'hidden'} style="margin-left:50px"><label for="wz-every">Remind every</label><select id="wz-every" style="width:160px">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<option value="${d}" ${String(d) === String(w.every) ? 'selected' : ''}>${d} day${d > 1 ? 's' : ''}</option>`).join('')}</select><div class="muted">Until the recipient signs or the envelope expires.</div></div>
+        <div class="field"><label for="wz-expiry">Expire after</label><div class="inline"><input type="number" id="wz-expiry" min="1" max="365" value="${esc(w.expiry)}" style="width:110px"><span>days</span></div><div class="muted">Unsigned envelopes are voided automatically when they expire.</div></div>
+        <div class="field"><label class="inline" style="font-weight:700"><input type="checkbox" id="wz-decline" ${w.decline ? 'checked' : ''}> Allow recipients to decline</label></div>
+        <div class="field"><label class="inline" style="font-weight:700;color:var(--muted)"><input type="checkbox" disabled> Require ID verification <span class="chip grey">Business</span></label></div>`;
+    } else {
+      const pay = payload(w);
+      h += `<h2>Review and send</h2><dl class="rv"><dt>Document</dt><dd>${esc(tplName(w.template))}</dd><dt>Signers</dt><dd>${esc(pay.signers || '—')}</dd><dt>Receive a copy</dt><dd>${esc(pay.cc || '—')}</dd>${pay.approvers ? `<dt>Approvers</dt><dd>${esc(pay.approvers)}</dd>` : ''}<dt>Signing order</dt><dd>${w.order ? 'Yes — in the order shown' : 'No — everyone at once'}</dd><dt>Subject</dt><dd>${esc(pay.subject)}</dd><dt>Message</dt><dd>${esc(pay.message || '—')}</dd><dt>Reminders</dt><dd>${pay.reminders === 'off' ? 'Off' : `Every ${pay.reminders} day${pay.reminders === '1' ? '' : 's'}`}</dd><dt>Expires after</dt><dd>${esc(pay.expiry_days)} days</dd><dt>Recipients can decline</dt><dd>${pay.allow_decline === 'yes' ? 'Yes' : 'No'}</dd></dl>`;
+    }
+    h += `</div><div class="wzfoot"><div>${w.step > 0 ? '<button type="button" class="btn" id="wz-back">Back</button>' : '<a class="btn" href="#/envelopes/sent">Cancel</a>'}</div><div class="inline">${w.step === 4 ? '<button type="button" class="btn" id="wz-draft">Save as draft</button><button type="button" class="btn pri" id="wz-send">Send</button>' : '<button type="button" class="btn" id="wz-draft">Save as draft</button><button type="button" class="btn navy" id="wz-next">Next</button>'}</div></div>`;
+    return h;
+  }
+  function readStep() {
+    const w = st.wz; if (!w) return;
+    if (w.step === 0) { const c = document.querySelector('input[name=wz-tpl]:checked'); if (c) w.template = c.value; }
+    if (w.step === 1) qa('#wz-rows .rcp').forEach((el) => { const i = +el.dataset.row; const rw = w.rows[i]; qa('[data-f]', el).forEach((inp) => { rw[inp.dataset.f] = inp.dataset.f === 'order' ? inp.value : inp.value; }); });
+    if (w.step === 2) { const s = q('#wz-subject'); if (s) { if (s.value !== w.subject) w.subjectTouched = true; w.subject = s.value; } const m = q('#wz-message'); if (m) w.message = m.value; }
+    if (w.step === 3) { w.reminders = q('#wz-rem').checked; w.every = q('#wz-every').value; w.expiry = q('#wz-expiry').value.trim(); w.decline = q('#wz-decline').checked; }
+  }
+  const activeRows = (w) => w.rows.map((r, i) => ({ ...r, i })).filter((r) => norm(r.name) || r.email.trim());
+  function validate(w, step) {
+    const e = [];
+    if (step === 0 && !w.template) e.push('Choose a template.');
+    if (step === 1) {
+      const rows = activeRows(w);
+      const emails = new Set();
+      rows.forEach((r) => {
+        const n = r.i + 1;
+        if (!norm(r.name)) e.push(`Recipient ${n}: enter a name.`);
+        const em = r.email.trim().toLowerCase();
+        if (!EMAIL.test(em)) e.push(`Recipient ${n}: enter a valid email address.`);
+        else if (emails.has(em)) e.push(`Recipient ${n}: ${em} is already a recipient.`);
+        emails.add(em);
+        if (w.order && !/^\d{1,2}$/.test(String(r.order).trim())) e.push(`Recipient ${n}: enter an order number from 1 to 20.`);
+      });
+      if (!rows.some((r) => r.role === 'sign' || r.role === 'inperson')) e.push('Add at least one recipient who needs to sign.');
+    }
+    if (step === 2 && !norm(w.subject)) e.push('Enter an email subject.');
+    if (step === 3) { if (!/^\d{1,3}$/.test(w.expiry) || +w.expiry < 1 || +w.expiry > 365) e.push('Enter an expiry between 1 and 365 days.'); }
+    return e;
+  }
+  function payload(w) {
+    const rows = activeRows(w).map((r) => ({ ...r, name: norm(r.name), email: r.email.trim().toLowerCase(), ord: Number(String(r.order).trim()) || 0 }));
+    const signers = rows.filter((r) => r.role === 'sign' || r.role === 'inperson').sort((a, b) => (w.order ? a.ord - b.ord : 0) || a.i - b.i);
+    const distinct = [...new Set(signers.map((r) => r.ord))].sort((a, b) => a - b);
+    const fmtP = (r) => `${r.name} <${r.email}>`;
+    const byName = (a, b) => a.name.localeCompare(b.name);
+    return {
+      template: w.template, template_name: tplName(w.template),
+      signers: signers.map((r) => `${w.order ? distinct.indexOf(r.ord) + 1 : '*'}:${fmtP(r)}`).join('; '),
+      cc: rows.filter((r) => r.role === 'cc').sort(byName).map(fmtP).join('; '),
+      approvers: rows.filter((r) => r.role === 'approve').sort(byName).map(fmtP).join('; '),
+      in_person: rows.filter((r) => r.role === 'inperson').map((r) => r.name).join('; '),
+      signing_order: w.order ? 'yes' : 'no', subject: norm(w.subject), message: norm(w.message),
+      reminders: w.reminders ? String(w.every) : 'off', expiry_days: String(Number(w.expiry)), allow_decline: w.decline ? 'yes' : 'no', recipient_count: String(rows.length),
+    };
+  }
+
+  function render() {
+    const r = route();
+    qa('#mainnav a').forEach((a) => a.classList.toggle('on', a.dataset.r === r[0] || (r[0] === 'envelope' && a.dataset.r === 'envelopes')));
+    if (r[0] !== 'envelope') { clearTimeout(st.promoTimer); st.menuOpen = false; }
+    let h;
+    if (r[0] === 'home') h = pHome();
+    else if (r[0] === 'envelopes') h = pEnvelopes(FOLDERS.some((f) => f[0] === r[1]) ? r[1] : 'inbox');
+    else if (r[0] === 'envelope') h = pEnvelope(r[1]);
+    else if (r[0] === 'templates') h = pTemplates();
+    else if (r[0] === 'new') h = pNew(r);
+    else if (r[0] === 'settings') h = pSettings();
+    else if (r[0] === 'upgrade') h = pUpgrade();
+    else if (r[0] === 'sent') h = `<div class="panel" style="max-width:640px"><div class="alert ok"><span>✓</span><div><b>Envelope sent.</b> ${esc(st.lastSent ? st.lastSent.subject : '')}</div></div><p>Envelope ID <b>${esc(r[1])}</b>. We'll email you when recipients view and sign it.</p><a class="btn" href="#/envelopes/sent">Go to Sent</a> <a class="btn" href="#/new">Send another</a></div>`;
+    else if (INFO[r[0]]) h = `<h1>${esc(INFO[r[0]][0])}</h1><div class="panel">${esc(INFO[r[0]][1])}</div>`;
+    else h = `<h1>Page not found</h1><p><a href="#/home">Go home</a></p>`;
+    q('#main').innerHTML = h;
+  }
+  function onRoute() {
+    const r = route();
+    if (r[0] !== 'new') st.wz = null;
+    st.lbOpen = null;
+    render();
+    window.scrollTo(0, 0);
+    if (r[0] === 'envelope' && !st.promoShown && ENVS.some((e) => e.id === r[1])) {
+      clearTimeout(st.promoTimer);
+      st.promoTimer = setTimeout(() => { if (route()[0] === 'envelope' && !st.promoShown) showPromo(); }, 700);
+    }
+  }
+  window.addEventListener('hashchange', onRoute);
+
+  function showPromo() {
+    st.promoShown = true;
+    q('#promo-root').innerHTML = `<div class="overlay top"><div class="dialog promo" role="dialog" aria-modal="true" aria-labelledby="promo-h">
+      <button type="button" class="x" data-promo-close aria-label="Close" style="color:#fff">✕</button>
+      <div class="hero"><h2 id="promo-h">Your Kestrel Business trial ends in 3 days</h2><div>Keep signing order, reminders, templates and bulk send.</div></div>
+      <div class="bodyp"><ul><li>Unlimited envelopes and templates</li><li>ID verification for high-value agreements</li><li>Your logo on every signing page</li></ul><p class="muted">After 27 September you'll move to the Free plan: 3 envelopes a month.</p>
+      <div class="acts"><button type="button" class="btn" data-promo-close>Remind me later</button><button type="button" class="btn pri" id="promo-upgrade">Upgrade to Business</button></div></div></div></div>`;
+  }
+  q('#promo-root').addEventListener('click', (e) => {
+    if (e.target.closest('[data-promo-close]')) { q('#promo-root').innerHTML = ''; return; }
+    if (e.target.closest('#promo-upgrade')) { q('#promo-root').innerHTML = ''; location.hash = '#/upgrade'; }
+  });
+
+  function modal(title, body, okLabel, onOk, okClass = 'pri') {
+    q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="md-h"><button type="button" class="x" data-c aria-label="Close">✕</button><h2 id="md-h">${esc(title)}</h2>${body}<div class="err" id="md-err" role="alert" style="color:var(--bad);font-size:13px"></div><div class="acts"><button type="button" class="btn" data-c>Cancel</button><button type="button" class="btn ${okClass}" data-ok>${esc(okLabel)}</button></div></div></div>`;
+    const d = q('#modal-root .dialog');
+    qa('[data-c]', d).forEach((b) => b.addEventListener('click', () => (q('#modal-root').innerHTML = '')));
+    d.querySelector('[data-ok]').addEventListener('click', async (ev) => {
+      const b = ev.currentTarget; if (b.disabled) return;
+      const errMsg = onOk.validate ? onOk.validate(d) : '';
+      if (errMsg) { d.querySelector('#md-err').textContent = errMsg; return; }
+      busy(b, 'Working…'); await sleep(700);
+      await onOk(d);
+      q('#modal-root').innerHTML = '';
+    });
+    return d;
+  }
+
+  // ---------------------------------------------------------------- events
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const tr = t.closest('tr.click[data-href]');
+    if (tr && !t.closest('a')) { location.hash = tr.dataset.href; return; }
+    const r = route();
+    const env = r[0] === 'envelope' ? ENVS.find((x) => x.id === r[1]) : null;
+    if (t.closest('#env-more')) { st.menuOpen = !st.menuOpen; render(); return; }
+    const mi = t.closest('[data-menu]');
+    if (mi && env) {
+      st.menuOpen = false; render();
+      if (mi.dataset.menu === 'history') { toast('Certificate of completion prepared (PDF).'); return; }
+      if (mi.dataset.menu === 'move') {
+        const f = async (d) => { const to = d.querySelector('#mv-f').value; await post({ event: 'envelope_move', envelope: env.id, folder: to }); toast(`Moved to ${to}.`); };
+        modal('Move to folder', `<div class="field"><label for="mv-f">Folder</label><select id="mv-f"><option>Leases 2026</option><option>Vendors</option><option>HR</option><option>Archive</option></select></div>`, 'Move', f);
+        return;
+      }
+      if (mi.dataset.menu === 'void') {
+        const f = async (d) => { await post({ event: 'envelope_void', envelope: env.id, reason: norm(d.querySelector('#vd-r').value) }); env.status = 'voided'; env.folder = 'voided'; env.recipients.forEach((x) => (x.status = 'voided')); render(); toast('Envelope voided.'); };
+        f.validate = (d) => (norm(d.querySelector('#vd-r').value) ? '' : 'Enter a reason. Recipients will see it.');
+        modal('Void this envelope?', `<p>Recipients will no longer be able to view or sign it. This can't be undone.</p><div class="field"><label for="vd-r">Reason for voiding</label><textarea id="vd-r" rows="2"></textarea></div>`, 'Void envelope', f, 'danger');
+        return;
+      }
+    }
+    if (t.closest('#env-download')) { toast('Download started: ' + (env ? env.doc : 'document.pdf')); return; }
+    if (t.closest('#env-sign')) { toast('Signing opens in a new window in the full product.'); return; }
+    const rs = t.closest('[data-resend]');
+    if (rs && env) {
+      const rcp = env.recipients[+rs.dataset.resend];
+      busy(rs, 'Sending'); await sleep(600);
+      await post({ event: 'recipient_resend', envelope: env.id, recipient: rcp.name, email: rcp.email });
+      env.audit.push(['24 Sep 2026 09:30', `Envelope resent to ${rcp.email}`]);
+      if (rcp.status === 'bounced') { env.audit.push(['24 Sep 2026 09:30', `Delivery to ${rcp.email} failed: mailbox does not exist (550 5.1.1)`]); render(); toast(`We couldn't deliver the envelope to ${rcp.email}. Check the address.`); }
+      else { rcp.status = 'resent'; render(); toast(`Envelope resent to ${rcp.name}.`); }
+      return;
+    }
+    const cr = t.closest('[data-correct]');
+    if (cr && env) {
+      const rcp = env.recipients[+cr.dataset.correct];
+      const f = async (d) => {
+        const name = norm(d.querySelector('#cr-name').value), email = d.querySelector('#cr-email').value.trim().toLowerCase();
+        await post({ event: 'recipient_correct', envelope: env.id, recipient: name, previous_email: rcp.email, email, resend: 'yes' });
+        env.audit.push(['24 Sep 2026 09:31', `Recipient corrected: ${rcp.email} → ${email}`], ['24 Sep 2026 09:31', `Envelope resent to ${email}`]);
+        rcp.name = name; rcp.email = email; rcp.status = 'resent';
+        render(); toast(`${name}'s email address was corrected and the envelope was resent.`);
+      };
+      f.validate = (d) => {
+        const name = norm(d.querySelector('#cr-name').value), email = d.querySelector('#cr-email').value.trim().toLowerCase();
+        if (!name) return 'Enter a name.';
+        if (!EMAIL.test(email)) return 'Enter a valid email address.';
+        if (email === rcp.email && name === rcp.name) return 'Change the name or email address to correct this recipient.';
+        if (env.recipients.some((x) => x !== rcp && x.email === email)) return 'Another recipient already uses this email address.';
+        return '';
+      };
+      modal(`Correct recipient ${rcp.n}`, `<div class="field"><label for="cr-name">Name</label><input type="text" id="cr-name" value="${esc(rcp.name)}"></div><div class="field"><label for="cr-email">Email</label><input type="email" id="cr-email" value="${esc(rcp.email)}"></div><div class="alert info" style="margin:0"><span>ℹ</span><div>A new signing link will be sent to the corrected address. The old link stops working.</div></div>`, 'Correct and resend', f);
+      return;
+    }
+    const te = t.closest('[data-tpl-edit]'); if (te) { toast('Template editing is available on Business.'); return; }
+    if (t.closest('#s-save')) {
+      const s = { name: norm(q('#s-name').value), title: norm(q('#s-title').value), company: norm(q('#s-company').value), notifyViewed: q('#s-viewed').checked, notifySigned: q('#s-signed').checked, notifyDaily: q('#s-daily').checked };
+      const b = t.closest('#s-save'); busy(b, 'Saving'); await sleep(600);
+      await post({ event: 'settings_update', name: s.name, title: s.title, company: s.company, notify_viewed: s.notifyViewed ? 'on' : 'off', notify_signed: s.notifySigned ? 'on' : 'off', notify_daily: s.notifyDaily ? 'on' : 'off' });
+      st.settings = s; unbusy(b); toast('Settings saved.');
+      return;
+    }
+    if (t.closest('#up-go')) {
+      const b = t.closest('#up-go'); busy(b, 'Processing'); await sleep(900);
+      await post({ event: 'plan_upgrade', plan: 'business', seats: '1' });
+      unbusy(b); toast('Welcome to Kestrel Business!');
+      return;
+    }
+    // wizard
+    const w = st.wz; if (!w) return;
+    const rb = t.closest('[data-role-btn]');
+    if (rb) { readStep(); const i = +rb.dataset.roleBtn; st.lbOpen = st.lbOpen === i ? null : i; render(); focusOption(i); return; }
+    const ro = t.closest('li[role=option][data-role]');
+    if (ro) { readStep(); w.rows[+ro.dataset.row].role = ro.dataset.role; st.lbOpen = null; render(); q(`#rc-role-${ro.dataset.row}`).focus(); return; }
+    const rm = t.closest('[data-remove]');
+    if (rm && !rm.disabled) { readStep(); w.rows.splice(+rm.dataset.remove, 1); st.lbOpen = null; render(); return; }
+    if (t.closest('#wz-add')) { readStep(); w.rows.push({ name: '', email: '', role: 'sign', order: w.rows.length + 1 }); st.lbOpen = null; render(); const n = q(`#rc-name-${w.rows.length - 1}`); if (n) n.focus(); return; }
+    if (t.closest('#wz-addme')) { readStep(); if (!w.rows.some((x) => x.email.trim().toLowerCase() === ME.email)) { const empty = w.rows.find((x) => !x.name && !x.email); if (empty) { empty.name = ME.name; empty.email = ME.email; } else w.rows.push({ name: ME.name, email: ME.email, role: 'sign', order: w.rows.length + 1 }); } render(); return; }
+    if (t.closest('#wz-back')) { readStep(); w.errs = []; w.step--; st.lbOpen = null; render(); return; }
+    if (t.closest('#wz-next')) {
+      readStep();
+      w.errs = validate(w, w.step);
+      if (!w.errs.length) w.step++;
+      st.lbOpen = null; render(); window.scrollTo(0, 0);
+      return;
+    }
+    if (t.closest('#wz-draft')) {
+      readStep();
+      if (!w.template) { w.errs = ['Choose a template before saving a draft.']; render(); return; }
+      const b = t.closest('#wz-draft'); busy(b, 'Saving'); await sleep(600);
+      const pay = payload(w);
+      if (!w.draftId) w.draftId = 'DRAFT-' + st.draftSeq++;
+      await post({ event: 'envelope_draft_save', draft_id: w.draftId, ...pay });
+      const existing = DRAFTS.find((d) => d.id === w.draftId);
+      const snap = { id: w.draftId, template: w.template, subject: pay.subject || 'Please sign: ' + tplName(w.template), message: w.message, order: w.order, rows: JSON.parse(JSON.stringify(w.rows)), reminders: w.reminders, every: w.every, expiry: w.expiry, decline: w.decline, updated: '24 Sep 2026' };
+      if (existing) Object.assign(existing, snap); else DRAFTS.unshift(snap);
+      w.errs = []; render(); toast(`Draft saved (${w.draftId}).`);
+      return;
+    }
+    if (t.closest('#wz-send')) {
+      readStep();
+      for (let s = 0; s < 4; s++) { const errs = validate(w, s); if (errs.length) { w.errs = errs; w.step = s; render(); return; } }
+      const b = t.closest('#wz-send'); busy(b, 'Sending'); await sleep(900);
+      const pay = payload(w);
+      const id = 'ENV-' + st.envSeq++;
+      await post({ event: 'envelope_send', envelope_id: id, ...pay });
+      const rows = activeRows(w);
+      ENVS.unshift({ id, folder: 'sent', subject: pay.subject, template: w.template, sent: '24 Sep 2026, 09:35', expires: `in ${pay.expiry_days} days`, status: 'waiting', doc: tplName(w.template).replace(/\W+/g, '_') + '.pdf', pages: (TEMPLATES.find((x) => x[0] === w.template) || [0, 0, 0, 1])[3], recipients: rows.map((x, i) => ({ n: i + 1, name: norm(x.name), email: x.email.trim().toLowerCase(), role: x.role, status: x.role === 'cc' ? 'waiting' : 'sent' })), audit: [['24 Sep 2026 09:35', 'Envelope sent by Jonah Abernathy-Yu']] });
+      if (w.draftId) { const i = DRAFTS.findIndex((d) => d.id === w.draftId); if (i >= 0) DRAFTS.splice(i, 1); }
+      st.lastSent = pay; st.wz = null;
+      location.hash = '#/sent/' + id;
+      return;
+    }
+  });
+  q('#main').addEventListener('change', (e) => {
+    const t = e.target, w = st.wz;
+    if (!w) return;
+    if (t.id === 'wz-order') { readStep(); w.order = t.checked; w.rows.forEach((rw, i) => { if (!rw.order) rw.order = i + 1; }); render(); }
+    if (t.name === 'wz-tpl') { w.template = t.value; if (!w.subjectTouched) w.subject = ''; }
+    if (t.id === 'wz-rem') { t.setAttribute('aria-checked', String(t.checked)); q('#wz-rem-box').hidden = !t.checked; }
+  });
+  q('#main').addEventListener('input', (e) => {
+    if (e.target.id === 'env-search') { st.search = e.target.value; clearTimeout(st.st); st.st = setTimeout(() => { render(); const s = q('#env-search'); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); } }, 250); }
+  });
+  function focusOption(i, which) {
+    if (st.lbOpen !== i) return;
+    const ul = q('#rc-role-' + i) && q('#rc-role-' + i).nextElementSibling; if (!ul) return;
+    const opts = qa('li[role=option]', ul);
+    const cur = opts.findIndex((o) => o === document.activeElement);
+    let n = opts.findIndex((o) => o.getAttribute('aria-selected') === 'true');
+    if (which === 'next') n = Math.min(opts.length - 1, (cur < 0 ? n : cur) + 1);
+    if (which === 'prev') n = Math.max(0, (cur < 0 ? n : cur) - 1);
+    if (opts[Math.max(0, n)]) opts[Math.max(0, n)].focus();
+  }
+  q('#main').addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t.matches && t.matches('[data-role-btn]') && ['ArrowDown', 'ArrowUp'].includes(e.key)) { e.preventDefault(); readStep(); st.lbOpen = +t.dataset.roleBtn; render(); focusOption(st.lbOpen); return; }
+    if (t.matches && t.matches('li[role=option][data-role]')) {
+      const i = +t.dataset.row;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); focusOption(i, e.key === 'ArrowDown' ? 'next' : 'prev'); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t.click(); }
+      else if (e.key === 'Tab') { readStep(); st.lbOpen = null; render(); }
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { if (st.lbOpen !== null) { const i = st.lbOpen; st.lbOpen = null; readStep(); render(); const b = q('#rc-role-' + i); if (b) b.focus(); } }
+  });
+  document.addEventListener('click', (e) => {
+    if (st.lbOpen !== null && !e.target.closest('.lb')) { readStep(); st.lbOpen = null; render(); }
+    if (st.menuOpen && !e.target.closest('#env-more') && !e.target.closest('.menu')) { st.menuOpen = false; render(); }
+  });
+
+  onRoute();
+})();
+</script>
+</body>
+</html>

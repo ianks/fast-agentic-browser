@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pulse &amp; Barre · Class schedule</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Helvetica Neue", Arial, sans-serif; color: #1b1b22; background: #f7f5f8; }
+  a { color: #b0306e; }
+  button, input, select { font: inherit; }
+  header { background: #1b1b22; color: #fff; }
+  header .in { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 12px 24px; }
+  .logo { font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .logo span { color: #ff5fa2; }
+  header nav a { color: #d8d4e0; text-decoration: none; margin-right: 14px; font-size: 14px; }
+  header nav a.on { color: #fff; border-bottom: 2px solid #ff5fa2; padding-bottom: 3px; }
+  header .sp { flex: 1; }
+  main { max-width: 1200px; margin: 0 auto; padding: 22px 24px 60px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .sub { color: #6c6878; margin: 0 0 14px; font-size: 14px; }
+  .bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .bar select { padding: 7px 10px; border: 1px solid #cfc9d8; border-radius: 8px; background: #fff; }
+  .btn { border: 1px solid #cfc9d8; background: #fff; border-radius: 8px; padding: 7px 14px; cursor: pointer; color: #1b1b22; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #b0306e; border-color: #b0306e; color: #fff; font-weight: 600; }
+  .btn.sm { padding: 4px 10px; font-size: 13px; }
+  .btn.wl { background: #fff4e0; border-color: #f0c77a; color: #7a4c00; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+  .day h3 { font-size: 14px; margin: 0 0 8px; padding: 6px 8px; background: #fff; border-radius: 8px; border: 1px solid #e6e1ec; }
+  .cls { background: #fff; border: 1px solid #e6e1ec; border-radius: 10px; padding: 9px 10px; margin-bottom: 8px; font-size: 13px; }
+  .cls .t { font-weight: 700; font-size: 14px; }
+  .cls .m { color: #6c6878; }
+  .cls .spots { font-size: 12px; margin: 4px 0 6px; }
+  .cls .spots.full { color: #b42318; font-weight: 600; }
+  .cls.past { opacity: .5; }
+  .cls.booked { border-color: #2e9e6a; box-shadow: inset 3px 0 0 #2e9e6a; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(27, 27, 34, .5); display: flex; align-items: center; justify-content: center; z-index: 40; }
+  .modal { background: #fff; border-radius: 12px; padding: 20px 22px; width: 460px; }
+  .opt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid #e6e1ec; border-radius: 10px; padding: 10px 12px; margin: 8px 0; cursor: pointer; }
+  .card { background: #fff; border: 1px solid #e6e1ec; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #efebf3; font-size: 14px; }
+  th { color: #6c6878; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .f { margin: 14px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .f select, .f textarea, .f input[type=text] { padding: 8px 10px; border: 1px solid #cfc9d8; border-radius: 8px; background: #fff; min-width: 260px; }
+  .radios label { display: block; padding: 4px 0; }
+  .calc { background: #f3eef8; border-radius: 10px; padding: 10px 12px; }
+  .err { color: #b42318; font-size: 14px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1b1b22; color: #fff; padding: 10px 18px; border-radius: 999px; z-index: 60; }
+  footer { text-align: center; color: #8a8696; font-size: 12px; padding: 22px; }
+</style>
+</head>
+<body>
+<header><div class="in"><span class="logo">Pulse <span>&amp;</span> Barre</span><nav aria-label="Main"><a href="#/schedule" data-nav="schedule">Schedule</a><a href="#/bookings" data-nav="bookings">My bookings</a><a href="#/membership" data-nav="membership">Membership</a><a href="#/studios" data-nav="studios">Studios</a><a href="#/pricing" data-nav="pricing">Pricing</a></nav><span class="sp"></span><span style="font-size:13px;color:#d8d4e0">Hanna Solberg · 10-class pack (6 left) · Unlimited Monthly member</span></div></header>
+<main id="view"></main>
+<footer>Pulse &amp; Barre AS · Oslo · Late cancellations (under 8 hours) use a credit · Today is Wednesday 30 September 2026</footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3300); };
+  const TODAY = '2026-09-30';
+  const STUDIOS = { gru: 'Grünerløkka', maj: 'Majorstuen' };
+  // [weekday 0=Mon, time, class, minutes, instructor, room, capacity]
+  const TEMPLATE = {
+    maj: [[0, '06:30', 'Spin 45', 45, 'Mads Eriksen', 'Studio B', 22], [0, '12:00', 'Barre Burn', 50, 'Delphine Aubry', 'Studio A', 20], [0, '17:30', 'Yoga Flow', 60, 'Aiko Tanaka', 'Studio A', 24], [0, '18:45', 'HIIT 30', 30, 'Mads Eriksen', 'Studio B', 18],
+      [1, '07:00', 'Spin 45', 45, 'Ronja Vik', 'Studio B', 22], [1, '07:00', 'Reformer Pilates', 50, 'Delphine Aubry', 'Studio C', 10], [1, '12:15', 'Barre Burn', 50, 'Delphine Aubry', 'Studio A', 20], [1, '19:00', 'Spin 45', 45, 'Ronja Vik', 'Studio B', 22],
+      [2, '06:30', 'Barre Burn', 50, 'Delphine Aubry', 'Studio A', 20], [2, '12:00', 'Spin 45', 45, 'Mads Eriksen', 'Studio B', 22], [2, '18:00', 'Yoga Flow', 60, 'Aiko Tanaka', 'Studio A', 24],
+      [3, '07:00', 'Spin 45', 45, 'Mads Eriksen', 'Studio B', 22], [3, '12:00', 'Yoga Flow', 60, 'Aiko Tanaka', 'Studio A', 24], [3, '17:15', 'Barre Burn', 50, 'Delphine Aubry', 'Studio A', 20], [3, '18:30', 'Barre Burn', 50, 'Delphine Aubry', 'Studio A', 20], [3, '19:45', 'Stretch & Restore', 45, 'Aiko Tanaka', 'Studio C', 16],
+      [4, '07:00', 'HIIT 30', 30, 'Mads Eriksen', 'Studio B', 18], [4, '17:00', 'Spin 45', 45, 'Ronja Vik', 'Studio B', 22], [5, '09:00', 'Barre Burn', 50, 'Delphine Aubry', 'Studio A', 20], [5, '10:30', 'Spin 45', 45, 'Ronja Vik', 'Studio B', 22], [6, '10:00', 'Yoga Flow', 75, 'Aiko Tanaka', 'Studio A', 24]],
+    gru: [[0, '07:00', 'Barre Burn', 50, 'Ingrid Sæther', 'Main room', 18], [0, '18:00', 'Spin 45', 45, 'Jonas Holm', 'Ride room', 20], [1, '07:00', 'Spin 45', 45, 'Jonas Holm', 'Ride room', 20], [1, '18:00', 'Yoga Flow', 60, 'Sofie Lie', 'Main room', 22],
+      [2, '07:00', 'HIIT 30', 30, 'Jonas Holm', 'Ride room', 16], [2, '17:30', 'Barre Burn', 50, 'Ingrid Sæther', 'Main room', 18], [3, '07:00', 'Spin 45', 45, 'Jonas Holm', 'Ride room', 20], [3, '18:30', 'Barre Burn', 50, 'Ingrid Sæther', 'Main room', 18],
+      [4, '12:00', 'Yoga Flow', 60, 'Sofie Lie', 'Main room', 22], [5, '10:00', 'Spin 45', 45, 'Jonas Holm', 'Ride room', 20], [6, '11:00', 'Stretch & Restore', 45, 'Sofie Lie', 'Main room', 16]],
+  };
+  const WEEKS = ['2026-09-28', '2026-10-05', '2026-10-12'];
+  const addDays = (iso, n) => new Date(new Date(iso + 'T12:00:00Z').getTime() + n * 864e5).toISOString().slice(0, 10);
+  const dlabel = (iso, opts) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', Object.assign({ weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }, opts || {}));
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const rnd = mulberry32(55);
+  const CLASSES = [];
+  for (const wk of WEEKS) for (const [sid, list] of Object.entries(TEMPLATE)) for (const [d, time, name, min, who, room, cap] of list) {
+    const date = addDays(wk, d); let booked = Math.min(cap, Math.floor(cap * (0.35 + rnd() * 0.6))); let wait = 0;
+    if (sid === 'maj' && date === '2026-10-08' && time === '18:30') { booked = cap; wait = 3; }
+    if (sid === 'maj' && date === '2026-10-06' && time === '07:00' && name === 'Spin 45') booked = cap - 4;
+    if (sid === 'gru' && date === '2026-10-08' && time === '18:30') booked = cap - 6;
+    if (booked === cap && !wait) booked = cap - 1;
+    CLASSES.push({ id: `${sid}-${date}-${time.replace(':', '')}-${name.replace(/\W+/g, '').toLowerCase()}`, sid, date, time, name, min, who, room, cap, booked, wait });
+  }
+  const endTime = (c) => { const [h, m] = c.time.split(':').map(Number); const t = h * 60 + m + c.min; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+  const st = { type: 'All', who: '', open: new Set(), favs: new Set(), studio: 'gru', week: 0, mine: [{ id: 'maj-2026-10-14-1800-yogaflow', status: 'Booked' }], waitlists: [], modal: null, busy: false, freeze: null, frozen: null };
+  st.mine.forEach((b) => { const c = CLASSES.find((x) => x.id === b.id); if (c) c.booked++; });
+  const isMine = (c) => st.mine.some((b) => b.id === c.id && b.status === 'Booked');
+
+  function schedule() {
+    const wk = WEEKS[st.week];
+    const days = Array.from({ length: 7 }, (_, i) => addDays(wk, i));
+    return `<h1>Class schedule</h1><p class="sub">Book up to 14 days ahead. Classes open for booking at 00:00.</p>
+      <div class="bar"><label for="studio" style="font-weight:600">Studio</label><select id="studio">${Object.entries(STUDIOS).map(([k, n]) => `<option value="${k}" ${st.studio === k ? 'selected' : ''}>${n}${k === 'gru' ? ' (home studio)' : ''}</option>`).join('')}</select>
+      <button class="btn" type="button" id="prev-wk" ${st.week === 0 ? 'disabled' : ''}>‹ Previous week</button><strong id="wk-label">${dlabel(days[0], { weekday: undefined })} – ${dlabel(days[6], { weekday: undefined, year: 'numeric' })}</strong><button class="btn" type="button" id="next-wk" ${st.week === WEEKS.length - 1 ? 'disabled' : ''}>Next week ›</button></div>
+      <div class="bar" role="group" aria-label="Class type">${['All', 'Spin', 'Barre', 'Yoga', 'HIIT', 'Pilates', 'Stretch'].map((k) => `<button class="btn sm ${st.type === k ? 'primary' : ''}" type="button" data-type="${k}">${k}</button>`).join('')}<label for="who" style="margin-left:10px">Instructor</label><select id="who"><option value="">All instructors</option>${[...new Set(TEMPLATE[st.studio].map((x) => x[4]))].sort().map((w) => `<option ${st.who === w ? 'selected' : ''}>${esc(w)}</option>`).join('')}</select></div>
+      <div class="week">${days.map((d) => `<div class="day"><h3>${dlabel(d)}${d === TODAY ? ' · today' : ''}</h3>${CLASSES.filter((c) => c.sid === st.studio && c.date === d && (st.type === 'All' || c.name.includes(st.type === 'Pilates' ? 'Pilates' : st.type)) && (!st.who || c.who === st.who)).sort((a, b) => a.time.localeCompare(b.time)).map((c) => {
+        const past = c.date < TODAY || (c.date === TODAY && c.time < '15:00'); const full = c.booked >= c.cap; const mine = isMine(c); const onWl = st.waitlists.includes(c.id);
+        return `<div class="cls ${past ? 'past' : ''} ${mine ? 'booked' : ''}"><div class="t">${c.time} ${esc(c.name)}</div><div class="m">${esc(c.who)} · ${c.min} min · ${esc(c.room)}</div>${st.open.has(c.id) ? `<div class="m" style="margin-top:4px">${c.name.startsWith('Spin') ? 'Rhythm-based indoor cycling. Bring a towel and water.' : c.name.startsWith('Barre') ? 'Ballet-inspired strength work at the barre.' : 'All levels welcome. Mats provided.'}</div>` : ''}<div class="spots ${full ? 'full' : ''}">${full ? `Full · ${c.wait + (onWl ? 1 : 0)} on waitlist` : `${c.cap - c.booked} of ${c.cap} spots left`}</div>
+          ${past ? '<span class="sub">Ended</span>' : mine ? '<span style="color:#2e9e6a;font-weight:600;font-size:13px">✓ Booked</span>' : onWl ? '<span style="color:#7a4c00;font-size:13px">On waitlist</span>' : full ? `<button class="btn sm wl" type="button" data-wl="${c.id}" aria-label="Join waitlist: ${esc(c.name)} ${c.time} ${dlabel(c.date)} with ${esc(c.who)}">Join waitlist</button>` : `<button class="btn sm primary" type="button" data-book="${c.id}" aria-label="Book ${esc(c.name)} ${c.time} ${dlabel(c.date)} with ${esc(c.who)}">Book</button>`} <button class="btn sm" type="button" data-info="${c.id}" aria-expanded="${st.open.has(c.id)}" aria-label="Details: ${esc(c.name)} ${c.time} ${dlabel(c.date)}">ⓘ</button> <button class="btn sm" type="button" data-fav="${c.id}" aria-pressed="${st.favs.has(c.id)}" aria-label="Favourite ${esc(c.name)} ${c.time} ${dlabel(c.date)}">${st.favs.has(c.id) ? '♥' : '♡'}</button></div>`;
+      }).join('') || '<p class="sub">No classes</p>'}</div>`).join('')}</div>`;
+  }
+  function bookings() {
+    const rows = st.mine.map((b) => ({ b, c: CLASSES.find((x) => x.id === b.id) })).filter((x) => x.c);
+    return `<h1>My bookings</h1><div class="card"><table><thead><tr><th>Class</th><th>When</th><th>Studio</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(({ b, c }) => `<tr><td>${esc(c.name)} with ${esc(c.who)}</td><td>${dlabel(c.date)} ${c.time}–${endTime(c)}</td><td>${STUDIOS[c.sid]}</td><td>${b.status}</td><td>${b.status === 'Booked' ? `<button class="btn sm" type="button" data-cancel="${c.id}">Cancel booking</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="5" class="sub">No upcoming bookings.</td></tr>'}</tbody></table></div>${st.waitlists.length ? `<div class="card"><strong>Waitlists</strong><ul>${st.waitlists.map((id) => { const c = CLASSES.find((x) => x.id === id); return `<li>${esc(c.name)} · ${dlabel(c.date)} ${c.time}</li>`; }).join('')}</ul></div>` : ''}`;
+  }
+  const MONDAYS = ['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26', '2026-11-02'];
+  function membership() {
+    if (st.frozen) return `<h1>Membership</h1><div class="card"><p><strong>Unlimited Monthly</strong> · frozen from ${dlabel(st.frozen.start, { year: 'numeric' })}; billing resumes ${dlabel(st.frozen.resume, { year: 'numeric' })}.</p></div>`;
+    return `<h1>Membership</h1><div class="card"><p><strong>Unlimited Monthly</strong> · NOK 1,190 per month · renews on the 3rd · member since March 2024</p><p><a class="btn" href="#/membership/freeze">Freeze membership</a> <button class="btn" type="button" id="upgrade">Switch to annual</button> <button class="btn" type="button" id="cancel-mem">Cancel membership</button></p></div><div class="card"><strong>Class packs</strong><p>10-class pack · 6 credits left · expires 31 December 2026</p></div>`;
+  }
+  function freezePage() {
+    const f = st.freeze || (st.freeze = { reason: '', start: '', weeks: '', other: '', err: '' });
+    const resume = f.start && f.weeks ? addDays(f.start, 7 * +f.weeks) : '';
+    return `<p class="sub"><a href="#/membership">Membership</a> › Freeze</p><h1>Freeze your membership</h1><p class="sub">Freezes run in whole weeks, Monday to Sunday. Bookings during the freeze are cancelled and credits returned.</p><div class="card">
+      <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:600">Reason</legend><div class="radios">${[['travel', 'Travel'], ['injury', 'Injury or illness'], ['other', 'Something else']].map(([k, l]) => `<label><input type="radio" name="reason" value="${k}" ${f.reason === k ? 'checked' : ''}> ${l}</label>`).join('')}</div></fieldset>
+      ${f.reason === 'injury' ? '<div class="calc">Injury freezes are free with a doctor’s note. <button class="btn sm" type="button" id="note-upload">Upload note</button></div>' : ''}${f.reason === 'other' ? `<div class="f"><label for="fr-other">Tell us more</label><input type="text" id="fr-other" value="${esc(f.other)}"></div>` : ''}
+      <div class="f"><label for="fr-start">Freeze starts (Monday)</label><select id="fr-start"><option value="">Choose a start date…</option>${MONDAYS.map((m) => `<option value="${m}" ${f.start === m ? 'selected' : ''}>${dlabel(m, { weekday: 'long', year: 'numeric', month: 'long' })}</option>`).join('')}</select></div>
+      <div class="f"><label for="fr-weeks">Length</label><select id="fr-weeks"><option value="">Choose…</option>${Array.from({ length: 8 }, (_, i) => `<option value="${i + 1}" ${f.weeks === String(i + 1) ? 'selected' : ''}>${i + 1} week${i ? 's' : ''}</option>`).join('')}</select></div>
+      <div class="calc" id="fr-calc">${resume ? `Last frozen day: <strong>${dlabel(addDays(resume, -1), { weekday: 'long', year: 'numeric', month: 'long' })}</strong> · membership resumes <strong>${dlabel(resume, { weekday: 'long', year: 'numeric', month: 'long' })}</strong>` : 'Pick a start date and length to see when your membership resumes.'}</div>
+      <p>Freeze fee: <strong>NOK ${f.reason === 'injury' ? 0 : 99}</strong>${f.reason === 'injury' ? ' (waived)' : ''}</p>
+      <p class="err" role="alert">${esc(f.err)}</p><a class="btn" href="#/membership">Cancel</a> <button class="btn primary" type="button" id="fr-save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Confirm freeze'}</button></div>`;
+  }
+  function route() {
+    const p = (location.hash || '#/schedule').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] === 'bookings') v.innerHTML = bookings();
+    else if (p[0] === 'membership' && p[1] === 'freeze') v.innerHTML = freezePage();
+    else if (p[0] === 'membership') v.innerHTML = membership();
+    else if (p[0] === 'studios') v.innerHTML = `<h1>Studios</h1><div class="card"><p><strong>Grünerløkka</strong> · Thorvald Meyers gate 58</p><p><strong>Majorstuen</strong> · Bogstadveien 27</p></div>`;
+    else if (p[0] === 'pricing') v.innerHTML = `<h1>Pricing</h1><div class="card"><p>Drop-in NOK 250 · 10-class pack NOK 2,100 · Unlimited Monthly NOK 1,190</p></div>`;
+    else { document.querySelector('[data-nav=schedule]').classList.add('on'); v.innerHTML = schedule(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  function bookModal(c) {
+    st.modal = { c, pay: 'membership' };
+    const draw = () => { $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="bk-title"><h2 id="bk-title" style="margin-top:0">Book ${esc(c.name)}</h2><p>${dlabel(c.date, { weekday: 'long', month: 'long' })} · ${c.time}–${endTime(c)}<br>${STUDIOS[c.sid]} · ${esc(c.room)} · with ${esc(c.who)}</p>
+      ${[['membership', 'Unlimited Monthly membership', 'Included'], ['credit', '1 credit from your 10-class pack', '6 left'], ['dropin', 'Drop-in', 'NOK 250']].map(([k, l, s]) => `<label class="opt"><input type="radio" name="pay" value="${k}" ${st.modal.pay === k ? 'checked' : ''}><span><strong>${l}</strong><br><span class="sub">${s}</span></span></label>`).join('')}
+      <p style="text-align:right"><button class="btn" type="button" id="bk-cancel">Cancel</button> <button class="btn primary" type="button" id="bk-go" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Booking…' : 'Confirm booking'}</button></p></div></div>`; };
+    draw(); st.modal.draw = draw;
+  }
+  const view = $('#view');
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'studio') { st.studio = t.value; st.who = ''; rerender(); }
+    if (t.id === 'who') { st.who = t.value; rerender(); }
+    const f = st.freeze; if (!f) return;
+    if (t.name === 'reason') { f.reason = t.value; f.err = ''; rerender(); }
+    if (t.id === 'fr-start') { f.start = t.value; rerender(); }
+    if (t.id === 'fr-weeks') { f.weeks = t.value; rerender(); }
+  });
+  view.addEventListener('input', (e) => { if (e.target.id === 'fr-other' && st.freeze) st.freeze.other = e.target.value; });
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    if (t.closest('#next-wk')) { st.week++; rerender(); return; }
+    const ty = t.closest('[data-type]'); if (ty) { st.type = ty.dataset.type; rerender(); return; }
+    const inf = t.closest('[data-info]'); if (inf) { st.open.has(inf.dataset.info) ? st.open.delete(inf.dataset.info) : st.open.add(inf.dataset.info); rerender(); return; }
+    const fv = t.closest('[data-fav]'); if (fv) { const on = !st.favs.has(fv.dataset.fav); await later(250); await rec({ event: on ? 'class_favorite' : 'class_unfavorite', class_id: fv.dataset.fav }); on ? st.favs.add(fv.dataset.fav) : st.favs.delete(fv.dataset.fav); rerender(); return; }
+    if (t.closest('#prev-wk')) { st.week--; rerender(); return; }
+    const bk = t.closest('[data-book]'); if (bk) { bookModal(CLASSES.find((c) => c.id === bk.dataset.book)); return; }
+    const wl = t.closest('[data-wl]'); if (wl) { const c = CLASSES.find((x) => x.id === wl.dataset.wl); await later(400); await rec({ event: 'waitlist_join', class: c.name, instructor: c.who, studio: STUDIOS[c.sid], date: c.date, time: c.time }); st.waitlists.push(c.id); rerender(); toast(`You're on the waitlist (position ${c.wait + 1}).`); return; }
+    const cn = t.closest('[data-cancel]'); if (cn) { const c = CLASSES.find((x) => x.id === cn.dataset.cancel); await later(400); await rec({ event: 'class_cancel', class: c.name, date: c.date, time: c.time }); st.mine.find((b) => b.id === c.id).status = 'Cancelled'; c.booked--; rerender(); return; }
+    if (t.closest('#upgrade') || t.closest('#note-upload')) { toast('Please visit the front desk for this.'); return; }
+    if (t.closest('#cancel-mem')) { await later(400); await rec({ event: 'membership_cancel_request' }); toast('Cancellation request sent'); return; }
+    if (t.closest('#fr-save')) {
+      const f = st.freeze; f.err = '';
+      if (!f.reason) f.err = 'Choose a reason.'; else if (!f.start) f.err = 'Choose when the freeze starts.'; else if (!f.weeks) f.err = 'Choose how long to freeze.';
+      if (f.err) { rerender(); return; }
+      st.busy = true; rerender(); await later(800);
+      const resume = addDays(f.start, 7 * +f.weeks);
+      await rec({ event: 'membership_freeze', reason: f.reason, start: f.start, weeks: f.weeks, last_day: addDays(resume, -1), resume, fee: f.reason === 'injury' ? '0' : '99' });
+      st.frozen = { start: f.start, resume }; st.freeze = null; st.busy = false; location.hash = '#/membership'; toast('Membership frozen'); return;
+    }
+  });
+  const mr = $('#modal-root');
+  mr.addEventListener('change', (e) => { if (e.target.name === 'pay' && st.modal) st.modal.pay = e.target.value; });
+  mr.addEventListener('click', async (e) => {
+    const t = e.target; const m = st.modal; if (!m) return;
+    if (t.closest('#bk-cancel')) { st.modal = null; mr.innerHTML = ''; return; }
+    if (t.closest('#bk-go')) {
+      st.busy = true; m.draw(); await later(700);
+      const c = m.c;
+      await rec({ event: 'class_book', class: c.name, instructor: c.who, studio: STUDIOS[c.sid], date: c.date, time: c.time, payment: m.pay });
+      c.booked++; st.mine.push({ id: c.id, status: 'Booked' }); st.busy = false; st.modal = null; mr.innerHTML = ''; rerender(); toast(`Booked: ${c.name}, ${dlabel(c.date)} ${c.time}`);
+    }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

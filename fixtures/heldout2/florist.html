@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fernhill Flowers · Fresh flowers, delivered</title>
+<script src="../common.js"></script>
+<style>
+  :root { --sage: #6b8f71; --sage-d: #4d6b53; --ink: #2f3b33; --blush: #f4d9d4; --blush-d: #e7b9b1; --cream: #fbf8f4; --line: #e6dfd6; --muted: #7a7169; --rust: #b5654a; --err: #b42318; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Avenir Next", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: var(--cream); }
+  h1, h2, h3, .logo, .serif { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; font-weight: 500; }
+  a { color: var(--sage-d); }
+  .strip { background: var(--sage-d); color: #f1f5ef; text-align: center; font-size: 13px; padding: 7px 12px; letter-spacing: .2px; }
+  header.site { display: flex; align-items: center; gap: 26px; padding: 16px 40px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .logo { font-size: 26px; color: var(--ink); text-decoration: none; letter-spacing: .3px; white-space: nowrap; }
+  .logo em { color: var(--rust); font-style: italic; }
+  nav.cats { display: flex; gap: 20px; }
+  nav.cats a { color: var(--ink); text-decoration: none; font-size: 14.5px; }
+  nav.cats a.on, nav.cats a:hover { color: var(--rust); }
+  form.search { margin-left: auto; display: flex; }
+  form.search input { border: 1px solid var(--line); border-radius: 20px 0 0 20px; padding: 7px 14px; width: 220px; font: inherit; background: var(--cream); }
+  form.search button { border: 1px solid var(--line); border-left: 0; border-radius: 0 20px 20px 0; background: var(--cream); padding: 0 12px; cursor: pointer; }
+  header.site .acct, header.site .bag { color: var(--ink); text-decoration: none; font-size: 14px; white-space: nowrap; }
+  header.site .bag { background: var(--blush); padding: 6px 14px; border-radius: 18px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 26px 40px 60px; min-height: 60vh; }
+  .crumbs { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .crumbs a { color: var(--muted); }
+  .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 30px; align-items: center; background: var(--blush); border-radius: 18px; padding: 34px 40px; margin-bottom: 30px; }
+  .hero h1 { font-size: 38px; margin: 0 0 10px; line-height: 1.15; }
+  .hero p { margin: 0 0 18px; color: #5c4d47; }
+  .btn { display: inline-block; font: inherit; padding: 10px 22px; border-radius: 24px; border: 1px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; text-decoration: none; }
+  .btn.pri { background: var(--ink); color: #fff; }
+  .btn.sage { background: var(--sage-d); border-color: var(--sage-d); color: #fff; }
+  .btn.small { padding: 5px 14px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .linkbtn { background: none; border: 0; padding: 0; color: var(--sage-d); text-decoration: underline; cursor: pointer; font: inherit; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .pcard { text-decoration: none; color: var(--ink); display: block; }
+  .pcard .img, .pimg { border-radius: 14px; aspect-ratio: 4 / 5; display: flex; align-items: flex-end; justify-content: flex-start; padding: 10px; font-size: 40px; position: relative; overflow: hidden; }
+  .pcard .img .tag { position: absolute; top: 10px; left: 10px; font-size: 11px; background: #fff; border-radius: 10px; padding: 2px 9px; color: var(--ink); }
+  .pcard b { display: block; margin-top: 8px; font-weight: 600; }
+  .pcard span { color: var(--muted); font-size: 13.5px; }
+  .section-h { display: flex; align-items: baseline; justify-content: space-between; margin: 34px 0 14px; }
+  .section-h h2 { margin: 0; font-size: 26px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { border: 1px solid var(--line); border-radius: 20px; padding: 6px 16px; background: #fff; color: var(--ink); text-decoration: none; font-size: 14px; }
+  .quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .quote { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; font-size: 14px; }
+  .quote .stars { color: var(--rust); letter-spacing: 2px; }
+  .product { display: grid; grid-template-columns: 1fr 1.05fr; gap: 42px; }
+  .product h1 { font-size: 34px; margin: 0; }
+  .price-big { font-size: 22px; margin: 6px 0 12px; }
+  .rating { color: var(--muted); font-size: 13.5px; }
+  fieldset { border: 0; padding: 0; margin: 20px 0 0; }
+  legend { font-weight: 600; margin-bottom: 8px; font-size: 14.5px; }
+  .sizes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .sizecard { border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; background: #fff; display: block; }
+  .sizecard input { margin: 0 6px 0 0; accent-color: var(--sage-d); }
+  .sizecard small { display: block; color: var(--muted); font-size: 12px; }
+  .sizecard:has(input:checked) { border-color: var(--sage-d); background: #f2f6f1; }
+  .addon { display: flex; gap: 10px; align-items: center; padding: 6px 0; cursor: pointer; }
+  .addon input { accent-color: var(--sage-d); width: 17px; height: 17px; }
+  .cal { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; width: 100%; max-width: 420px; }
+  .cal .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .cal .head button { border: 1px solid var(--line); background: #fff; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
+  .cal .head button:disabled { opacity: .35; cursor: default; }
+  .cal table { width: 100%; border-collapse: collapse; }
+  .cal th { font-size: 11.5px; color: var(--muted); font-weight: 500; padding: 4px 0; }
+  .cal td { text-align: center; padding: 2px; height: 46px; vertical-align: top; }
+  .day { width: 100%; height: 42px; border: 1px solid transparent; border-radius: 10px; background: #f6f3ee; cursor: pointer; font: inherit; font-size: 14px; line-height: 1.05; padding: 3px 0; }
+  .day:hover:not(:disabled) { border-color: var(--sage); }
+  .day[aria-pressed=true] { background: var(--sage-d); color: #fff; }
+  .day:disabled { background: none; color: #c3bbb2; cursor: default; }
+  .day .so { display: block; font-size: 9.5px; color: var(--rust); letter-spacing: .2px; }
+  .soldnote { background: #fbeee9; border: 1px solid #f0cfc4; border-radius: 10px; padding: 8px 12px; font-size: 13.5px; margin-top: 10px; max-width: 420px; }
+  .picked { margin-top: 8px; font-size: 14px; }
+  .err { color: var(--err); font-size: 13.5px; margin-top: 6px; }
+  .errbox { border: 2px solid var(--err); border-radius: 10px; padding: 10px 14px; background: #fff5f4; margin-bottom: 16px; }
+  .errbox ul { margin: 4px 0 0; padding-left: 18px; }
+  details { border-top: 1px solid var(--line); padding: 10px 0; }
+  details summary { cursor: pointer; font-weight: 600; }
+  .basket-row { display: grid; grid-template-columns: 90px 1fr auto; gap: 16px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+  .basket-row .thumb { width: 90px; height: 100px; border-radius: 10px; font-size: 30px; display: flex; align-items: flex-end; padding: 6px; }
+  .two { display: grid; grid-template-columns: 1.35fr .9fr; gap: 34px; align-items: start; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; margin-bottom: 18px; }
+  .panel h2 { font-size: 21px; margin: 0 0 12px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
+  .field .hint { font-size: 12.5px; color: var(--muted); }
+  input[type=text], input[type=email], input[type=tel], select, textarea { font: inherit; padding: 8px 11px; border: 1px solid #cdc5bb; border-radius: 8px; width: 100%; background: #fff; }
+  textarea { min-height: 90px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #b9cfb9; border-color: var(--sage-d); }
+  .slots label { display: flex; gap: 10px; align-items: center; border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; margin-bottom: 8px; cursor: pointer; }
+  .slots label:has(input:checked) { border-color: var(--sage-d); background: #f2f6f1; }
+  .slots .fee { margin-left: auto; font-weight: 600; }
+  .check { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; cursor: pointer; font-size: 14px; }
+  .check input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--sage-d); }
+  .summary .line { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+  .summary .line.total { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 10px; font-weight: 700; font-size: 17px; }
+  .counter { font-size: 12px; color: var(--muted); text-align: right; }
+  .muted { color: var(--muted); font-size: 13.5px; }
+  table.plain { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.plain td, table.plain th { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  footer.site { background: var(--ink); color: #d8dfd5; padding: 34px 40px 26px; font-size: 13.5px; }
+  footer.site .cols { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 30px; max-width: 1120px; margin: 0 auto; }
+  footer.site a { color: #d8dfd5; display: block; margin: 4px 0; text-decoration: none; }
+  footer.site h4 { margin: 0 0 8px; color: #fff; font-weight: 600; }
+  footer.site .nl { display: flex; gap: 6px; margin-top: 8px; }
+  footer.site .nl input { width: 200px; border-radius: 20px; border: 0; padding: 7px 12px; font: inherit; }
+  footer.site .nl button { border-radius: 20px; border: 0; background: var(--blush); padding: 7px 14px; cursor: pointer; font: inherit; }
+  footer.site .legal { max-width: 1120px; margin: 22px auto 0; color: #9fab9c; font-size: 12px; border-top: 1px solid #45524a; padding-top: 12px; }
+  .overlay { position: fixed; inset: 0; background: rgba(40,33,28,.45); display: flex; align-items: center; justify-content: center; z-index: 30; }
+  .dialog { background: #fff; border-radius: 16px; padding: 22px 24px; width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+  .dialog h3 { margin: 0 0 8px; font-size: 21px; }
+  .dialog .acts { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+  .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 22px; z-index: 40; font-size: 14px; }
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.6); border-top-color: transparent; border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .confirm { text-align: center; padding: 40px 20px; }
+  .confirm .big { font-size: 46px; }
+</style>
+</head>
+<body>
+<div class="strip">Today is Thursday 24 September — order by 2pm for next-day delivery · Standard delivery is free on every order</div>
+<header class="site">
+  <a class="logo" href="#/">Fernhill <em>Flowers</em></a>
+  <nav class="cats" aria-label="Shop">
+    <a href="#/shop/bouquets" data-cat="bouquets">Bouquets</a>
+    <a href="#/shop/seasonal" data-cat="seasonal">Seasonal</a>
+    <a href="#/shop/plants" data-cat="plants">Plants</a>
+    <a href="#/shop/gifts" data-cat="gifts">Gifts</a>
+    <a href="#/occasions" data-cat="occasions">Occasions</a>
+    <a href="#/subscriptions" data-cat="subscriptions">Flower Club</a>
+  </nav>
+  <form class="search" role="search" id="search-form"><input type="search" id="q" aria-label="Search flowers and gifts" placeholder="Search flowers &amp; gifts"><button type="submit" aria-label="Search">⌕</button></form>
+  <a href="#/account" class="acct">Hi, Sam</a>
+  <a href="#/basket" class="bag" id="bag-link">Basket (0)</a>
+</header>
+<main id="main"></main>
+<footer class="site">
+  <div class="cols">
+    <div>
+      <div class="logo" style="color:#fff;font-size:22px">Fernhill <em>Flowers</em></div>
+      <p>Seasonal British flowers, arranged by hand in our Frome studio and delivered across the South West.</p>
+      <form class="nl" id="nl-form"><input type="email" id="nl-email" aria-label="Email address for our newsletter" placeholder="Your email"><button type="submit">Sign up</button></form>
+      <div style="font-size:12px;margin-top:6px;color:#9fab9c">Get 10% off your first order. Unsubscribe any time.</div>
+    </div>
+    <div><h4>Shop</h4><a href="#/shop/bouquets">Bouquets</a><a href="#/shop/seasonal">Seasonal</a><a href="#/shop/plants">Plants</a><a href="#/shop/gifts">Gifts</a><a href="#/subscriptions">Flower Club</a></div>
+    <div><h4>Help</h4><a href="#/delivery">Delivery information</a><a href="#/help">Help &amp; FAQs</a><a href="#/care">Flower care</a><a href="#/account">My account</a></div>
+    <div><h4>Fernhill</h4><a href="#/about">Our story</a><a href="#/about">Growers we work with</a><a href="#/help">Contact us</a><div style="margin-top:8px">Unit 4, Saxonvale Yard, Frome BA11 1AB<br>01373 900 214</div></div>
+  </div>
+  <div class="legal">© 2026 Fernhill Flowers Ltd · Registered in England &amp; Wales no. 11873402 · <a href="#/help" style="display:inline">Terms</a> · <a href="#/help" style="display:inline">Privacy</a></div>
+</footer>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+(() => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+  const post = (o) => rec(o).catch(() => {});
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3200); };
+  const money = (p) => '£' + (p / 100).toFixed(2);
+
+  const ME = { name: 'Sam Achebe-Moore', email: 'sam.achebe-moore@lindenpost.co.uk', phone: '07700 900624' };
+  const SIZE_LABEL = { standard: 'Standard', large: 'Large', deluxe: 'Deluxe', one: 'One size' };
+  const SIZE_VALUE = { standard: 'standard', large: 'large', deluxe: 'deluxe', one: 'one-size' };
+  const P = [
+    { slug: 'juniper', cat: 'bouquets', name: 'The Juniper', sizes: { standard: 3800, large: 4800, deluxe: 6200 }, stems: { standard: 14, large: 20, deluxe: 28 }, tag: 'Autumn favourite', emoji: '💐', col: ['#6d1f2f', '#b5654a', '#8a9a7b'], rating: 4.8, reviews: 212,
+      blurb: 'Deep burgundy scabious, rosehips, copper beech and silver-dollar eucalyptus, finished with dried bunny tails. Hand-tied in our Frome studio.' },
+    { slug: 'peony-cloud', cat: 'bouquets', name: 'Peony Cloud', sizes: { standard: 4500, large: 5800, deluxe: 7500 }, stems: { standard: 12, large: 18, deluxe: 25 }, tag: 'Last of the season', emoji: '🌸', col: ['#f2c6cf', '#fbe7ea', '#c9d6c4'], rating: 4.9, reviews: 348, soldOut: ['2026-10-02'],
+      blurb: 'Blush Sarah Bernhardt peonies with spray roses, waxflower and soft ruscus. Imported Dutch peonies while British stems are out of season.' },
+    { slug: 'peony-blush', cat: 'bouquets', name: 'Peony Blush Roses', sizes: { standard: 4200, large: 5400, deluxe: 7000 }, stems: { standard: 14, large: 20, deluxe: 27 }, tag: '', emoji: '🌹', col: ['#e8a6b1', '#f6d4d8', '#9fb39a'], rating: 4.7, reviews: 129,
+      blurb: 'Peony-style David Austin roses in soft blush, with pistachio hydrangea and trailing jasmine.' },
+    { slug: 'hedgerow-posy', cat: 'bouquets', name: 'Hedgerow Posy', sizes: { standard: 3200, large: 4000, deluxe: 5200 }, stems: { standard: 12, large: 17, deluxe: 24 }, tag: '', emoji: '🌾', col: ['#c9a25a', '#e5d3a1', '#7f8f5d'], rating: 4.6, reviews: 97,
+      blurb: 'Wild-feeling posy of blackberry foliage, oregano, grasses and cream spray roses.' },
+    { slug: 'wild-meadow', cat: 'bouquets', name: 'Wild Meadow', sizes: { standard: 3600, large: 4600, deluxe: 6000 }, stems: { standard: 15, large: 21, deluxe: 30 }, tag: 'Bestseller', emoji: '🌼', col: ['#f3d36b', '#a8c8e8', '#86a36d'], rating: 4.8, reviews: 402,
+      blurb: 'Cornflowers, chamomile, sweet peas and phlox — a jug of summer, as long as it lasts.' },
+    { slug: 'amber-dusk', cat: 'bouquets', name: 'Amber Dusk', sizes: { standard: 4000, large: 5200, deluxe: 6600 }, stems: { standard: 14, large: 19, deluxe: 26 }, tag: 'New', emoji: '🍂', col: ['#d9822b', '#f0b36a', '#6b4b3e'], rating: 4.7, reviews: 41,
+      blurb: 'Burnt-orange dahlias, amber chrysanthemums and bronze physocarpus.' },
+    { slug: 'ivory-eucalyptus', cat: 'bouquets', name: 'Ivory & Eucalyptus', sizes: { standard: 4400, large: 5600, deluxe: 7200 }, stems: { standard: 13, large: 19, deluxe: 26 }, tag: 'Sympathy', emoji: '🤍', col: ['#f4f1ea', '#dfe6dc', '#9fb3a2'], rating: 4.9, reviews: 188,
+      blurb: 'Ivory lisianthus, white roses and dusty eucalyptus in a calm, quiet arrangement.' },
+    { slug: 'sunday-market', cat: 'bouquets', name: 'Sunday Market', sizes: { standard: 3000, large: 3800, deluxe: 5000 }, stems: { standard: 12, large: 16, deluxe: 22 }, tag: 'Florist’s choice', emoji: '🧺', col: ['#e27d60', '#e8a87c', '#85c1a8'], rating: 4.6, reviews: 256,
+      blurb: 'Whatever looked best at market this week, wrapped in brown paper. No two the same.' },
+    { slug: 'autumn-wreath', cat: 'seasonal', name: 'Autumn Door Wreath', sizes: { standard: 4500, large: 6000 }, stems: { standard: 0, large: 0 }, tag: 'Seasonal', emoji: '🎃', col: ['#8a5a2b', '#c98f4e', '#5b6b3a'], rating: 4.8, reviews: 63,
+      blurb: 'Dried hydrangea, wheat, bunny tails and copper beech on a willow base. Lasts all season.' },
+    { slug: 'dried-harvest', cat: 'seasonal', name: 'Dried Harvest Bunch', sizes: { standard: 2900, large: 3900, deluxe: 4900 }, stems: { standard: 0, large: 0, deluxe: 0 }, tag: '', emoji: '🌾', col: ['#d8b98a', '#efe1c7', '#a88b64'], rating: 4.5, reviews: 77,
+      blurb: 'Preserved and dried stems that last for months: phalaris, lunaria, oats and statice.' },
+    { slug: 'pumpkin-posy', cat: 'seasonal', name: 'Pumpkin Spice Posy', sizes: { standard: 3400, large: 4400, deluxe: 5800 }, stems: { standard: 12, large: 17, deluxe: 23 }, tag: 'Limited', emoji: '🧡', col: ['#e07b39', '#f6c28b', '#7c8b58'], rating: 4.6, reviews: 22,
+      blurb: 'Orange roses, spray chrysanthemums and hypericum berries with cinnamon-scented foliage.' },
+    { slug: 'monstera', cat: 'plants', name: 'Monstera in Terracotta', sizes: { one: 3400 }, tag: '', emoji: '🪴', col: ['#3f6b4a', '#6f9a6a', '#c46b4a'], rating: 4.7, reviews: 140, blurb: 'A 60 cm Monstera deliciosa in a hand-thrown terracotta pot.' },
+    { slug: 'olive-tree', cat: 'plants', name: 'Olive Tree (80 cm)', sizes: { one: 5500 }, tag: '', emoji: '🌳', col: ['#8a9a6b', '#c3cbb0', '#6b5a45'], rating: 4.6, reviews: 58, blurb: 'Hardy Olea europaea for a sunny spot, in a zinc planter.' },
+    { slug: 'calathea', cat: 'plants', name: 'Calathea Orbifolia', sizes: { one: 2800 }, tag: '', emoji: '🌿', col: ['#6f8f6a', '#b8cdb0', '#e9e2d0'], rating: 4.4, reviews: 36, blurb: 'Striped round leaves that fold up at night. Loves a steamy bathroom.' },
+    { slug: 'kentia', cat: 'plants', name: 'Kentia Palm', sizes: { one: 4800 }, tag: '', emoji: '🌴', col: ['#4f7a52', '#9cc09a', '#d9d3c1'], rating: 4.8, reviews: 49, blurb: 'Elegant, forgiving palm that copes with low light.' },
+    { slug: 'beeswax-candle', cat: 'gifts', name: 'Beeswax Pillar Candle', sizes: { one: 1600 }, tag: '', emoji: '🕯️', col: ['#f0c75e', '#f7e2a8', '#e9dfc9'], rating: 4.9, reviews: 84, blurb: 'Hand-poured Somerset beeswax, about 40 hours of burn time.' },
+    { slug: 'chocolate-box', cat: 'gifts', name: 'Fernhill Chocolate Selection', sizes: { one: 1450 }, tag: '', emoji: '🍫', col: ['#6b4a3a', '#a57b62', '#e9d8c6'], rating: 4.7, reviews: 91, blurb: 'Twelve salted caramels and pralines from our friends at Mendip Cacao.' },
+    { slug: 'bud-vase', cat: 'gifts', name: 'Speckled Bud Vase', sizes: { one: 2200 }, tag: '', emoji: '🏺', col: ['#e9e1d6', '#cfc3b3', '#9d8f7e'], rating: 4.8, reviews: 29, blurb: 'Stoneware bud vase with an oatmeal speckle glaze, 14 cm.' },
+  ];
+  const BY = Object.fromEntries(P.map((p) => [p.slug, p]));
+  const CATS = { bouquets: 'Bouquets', seasonal: 'Seasonal', plants: 'Plants', gifts: 'Gifts' };
+  const ADDON = { vase: 1200, choc: 850 };
+  const SLOTS = [
+    { v: 'anytime', label: 'Any time, 8am–6pm', fee: 0 },
+    { v: 'morning', label: 'Morning, 8am–12pm', fee: 450 },
+    { v: 'evening', label: 'Evening, 5pm–9pm', fee: 695 },
+  ];
+  const RECIPIENTS = [
+    { id: 'r1', name: 'Ada Achebe', a1: '22 Gloucester Road', a2: '', town: 'Bristol', pc: 'BS7 8AE', note: 'Mum' },
+    { id: 'r2', name: 'Priya Moore', a1: 'Flat 2', a2: '9 Walcot Street', town: 'Bath', pc: 'BA1 5BG', note: '' },
+  ];
+  const WD = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const dinfo = (iso) => { const d = new Date(iso + 'T12:00:00Z'); return { dow: d.getUTCDay(), day: d.getUTCDate(), mon: d.getUTCMonth(), yr: d.getUTCFullYear() }; };
+  const longDate = (iso) => { const i = dinfo(iso); return `${WD[i.dow]} ${i.day} ${MON[i.mon]} ${i.yr}`; };
+  const shortDate = (iso) => { const i = dinfo(iso); return `${WD[i.dow].slice(0, 3)} ${i.day} ${MON[i.mon].slice(0, 3)}`; };
+  const EARLIEST = '2026-09-25', LATEST = '2026-10-31';
+  function dayState(p, iso) {
+    if (iso < EARLIEST || iso > LATEST) return 'na';
+    if (dinfo(iso).dow === 0) return 'sunday';
+    if ((p.soldOut || []).includes(iso)) return 'soldout';
+    return 'ok';
+  }
+  const BLOOMS = [[38, 30, 0, 9], [55, 26, 1, 8], [66, 38, 0, 7], [30, 44, 1, 7], [47, 42, 1, 9], [60, 52, 0, 8], [40, 55, 0, 6], [52, 64, 1, 6]];
+  const imgStyle = (p) => `background: ${BLOOMS.map(([x, y, c, r]) => `radial-gradient(circle at ${x}% ${y}%, ${p.col[c]} 0 ${r}%, transparent ${r + 0.6}%)`).join(', ')}, radial-gradient(ellipse at 50% 85%, ${p.col[2]} 0 22%, transparent 23%), linear-gradient(160deg, ${p.col[2]}40, ${p.col[2]}90)`;
+  const fromPrice = (p) => Math.min(...Object.values(p.sizes));
+
+  const st = { basket: [], pp: null, orders: 0, checkout: null, marketingPref: true };
+
+  function route() { return location.hash.replace(/^#\/?/, ''); }
+  function setBag() { q('#bag-link').textContent = `Basket (${st.basket.length})`; }
+  function card(p) {
+    return `<a class="pcard" href="#/p/${p.slug}"><div class="img" style="${imgStyle(p)}">${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}<span aria-hidden="true">${p.emoji}</span></div><b>${esc(p.name)}</b><span>from ${money(fromPrice(p))}</span></a>`;
+  }
+
+  function home() {
+    const feat = ['juniper', 'peony-cloud', 'wild-meadow', 'amber-dusk', 'ivory-eucalyptus', 'hedgerow-posy', 'autumn-wreath', 'sunday-market'].map((s) => BY[s]);
+    return `<section class="hero"><div><h1>Autumn is here.<br>Meet the new Juniper.</h1><p>Rosehips, scabious and copper beech — our most-loved autumn bouquet is back, hand-tied in Frome and delivered free.</p><a class="btn pri" href="#/p/juniper">Shop The Juniper</a> <a class="btn" href="#/shop/bouquets">All bouquets</a></div>
+      <div class="pimg" style="${imgStyle(BY.juniper)};aspect-ratio:5/3"><span aria-hidden="true">💐</span></div></section>
+      <div class="section-h"><h2>This week’s favourites</h2><a href="#/shop/bouquets">See all bouquets →</a></div>
+      <div class="grid">${feat.map(card).join('')}</div>
+      <div class="section-h"><h2>Shop by occasion</h2><a href="#/occasions">All occasions →</a></div>
+      <div class="chips">${['Birthday', 'Thank you', 'Anniversary', 'New baby', 'Get well', 'Sympathy', 'Just because', 'Congratulations'].map((o) => `<a class="chip" href="#/occasions">${o}</a>`).join('')}</div>
+      <div class="section-h"><h2>How delivery works</h2><a href="#/delivery">Delivery information →</a></div>
+      <div class="quotes"><div class="quote"><b>Choose a day</b><p>Pick any delivery day up to five weeks ahead. Order by 2pm for next-day delivery (no Sunday deliveries).</p></div><div class="quote"><b>Pick a time slot</b><p>Standard delivery is free, 8am–6pm. Morning and evening slots are available at checkout for a small fee.</p></div><div class="quote"><b>We’ll text them</b><p>Recipients get a tracking text on the day, and you’ll get a photo of the bouquet before it leaves the studio.</p></div></div>
+      <div class="section-h"><h2>What our customers say</h2><span class="muted">4.8 out of 5 from 11,420 reviews</span></div>
+      <div class="quotes">${[['Harriet, Bath', 'The Juniper was even more beautiful than the photos and lasted nearly two weeks.'], ['Tomasz, Bristol', 'Ordered at 1pm, delivered the next morning with a lovely handwritten card.'], ['Ngaio, Frome', 'Proper seasonal flowers — no carnations in sight. The only florist I use now.']].map(([n, t]) => `<div class="quote"><div class="stars">★★★★★</div><p>“${esc(t)}”</p><span class="muted">${esc(n)}</span></div>`).join('')}</div>`;
+  }
+  function category(cat, list, title) {
+    const items = list || P.filter((p) => p.cat === cat);
+    return `<div class="crumbs"><a href="#/">Home</a> › ${esc(title || CATS[cat])}</div><div class="section-h" style="margin-top:0"><h1 style="margin:0;font-size:32px">${esc(title || CATS[cat])}</h1><span class="muted">${items.length} ${items.length === 1 ? 'product' : 'products'}</span></div>
+      ${items.length ? `<div class="grid">${items.map(card).join('')}</div>` : '<p>No products match your search.</p>'}`;
+  }
+
+  function productPage(slug) {
+    const p = BY[slug];
+    if (!p) return notFound();
+    if (!st.pp || st.pp.slug !== slug) st.pp = { slug, size: Object.keys(p.sizes)[0], vase: false, choc: false, date: '', month: '2026-09', err: '' };
+    const pp = st.pp;
+    const flowers = p.cat === 'bouquets' || p.cat === 'seasonal';
+    const sizeCards = Object.entries(p.sizes).map(([k, v]) => `<label class="sizecard"><input type="radio" name="size" value="${k}" ${pp.size === k ? 'checked' : ''}><b>${SIZE_LABEL[k]}</b> <span>${money(v)}</span>${p.stems && p.stems[k] ? `<small>about ${p.stems[k]} stems</small>` : ''}</label>`).join('');
+    return `<div class="crumbs"><a href="#/">Home</a> › <a href="#/shop/${p.cat}">${CATS[p.cat]}</a> › ${esc(p.name)}</div>
+      <div class="product">
+        <div><div class="pimg" style="${imgStyle(p)}"><span aria-hidden="true" style="font-size:64px">${p.emoji}</span></div>
+          <details open><summary>What’s inside</summary><p>${esc(p.blurb)}</p></details>
+          <details><summary>Flower care</summary><p>Trim the stems at an angle, use the flower food sachet and change the water every two days. Keep away from fruit bowls and radiators.</p></details>
+          <details><summary>Delivery</summary><p>Free standard delivery 8am–6pm. Choose a morning or evening slot at checkout. No Sunday deliveries.</p></details>
+        </div>
+        <div>
+          <h1>${esc(p.name)}</h1>
+          <div class="rating">★ ${p.rating} · ${p.reviews} reviews</div>
+          <div class="price-big" id="pp-price">${money(ppPrice(p))}</div>
+          <p>${esc(p.blurb)}</p>
+          <fieldset><legend>Choose a size</legend><div class="sizes">${sizeCards}</div></fieldset>
+          ${flowers ? `<fieldset><legend>Add a little extra</legend>
+            <label class="addon"><input type="checkbox" id="addon-vase" ${pp.vase ? 'checked' : ''}> Add a glass vase (+£12)</label>
+            <label class="addon"><input type="checkbox" id="addon-choc" ${pp.choc ? 'checked' : ''}> Add Fernhill chocolates (+£8.50)</label></fieldset>` : ''}
+          <fieldset><legend>Choose a delivery date</legend><div id="cal-wrap">${calendar(p)}</div></fieldset>
+          <div class="err" id="pp-err" role="alert" ${pp.err ? '' : 'hidden'}>${esc(pp.err)}</div>
+          <div style="margin-top:18px;display:flex;gap:10px;align-items:center"><button class="btn pri" type="button" id="add-basket">Add to basket</button><span class="muted">Free standard delivery</span></div>
+        </div>
+      </div>
+      <div class="section-h"><h2>Reviews</h2><span class="muted">★ ${p.rating} average</span></div>
+      <div class="quotes">${[['Clare', 'Arrived beautifully wrapped and the colours were spot on.'], ['Dev', 'Great size for the price, lasted well over a week.'], ['Morwenna', 'The card was handwritten, which was a lovely touch.']].map(([n, t]) => `<div class="quote"><div class="stars">★★★★★</div><p>“${esc(t)}”</p><span class="muted">${n}, verified buyer</span></div>`).join('')}</div>`;
+  }
+  function ppPrice(p) { const pp = st.pp; return p.sizes[pp.size] + (pp.vase ? ADDON.vase : 0) + (pp.choc ? ADDON.choc : 0); }
+  function calendar(p) {
+    const pp = st.pp;
+    const [y, m] = pp.month.split('-').map(Number);
+    const first = `${pp.month}-01`;
+    const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const startDow = (dinfo(first).dow + 6) % 7; // Monday-first
+    let cells = []; for (let i = 0; i < startDow; i++) cells.push('<td></td>');
+    for (let d = 1; d <= dim; d++) {
+      const iso = `${pp.month}-${String(d).padStart(2, '0')}`;
+      const s = dayState(p, iso);
+      const lab = longDate(iso) + (s === 'soldout' ? ', sold out' : s === 'sunday' ? ', no Sunday delivery' : s === 'na' ? ', unavailable' : '');
+      cells.push(`<td><button type="button" class="day" data-iso="${iso}" aria-label="${lab}" aria-pressed="${pp.date === iso}" ${s === 'ok' ? '' : 'disabled'}>${d}${s === 'soldout' ? '<span class="so">Sold out</span>' : ''}</button></td>`);
+    }
+    while (cells.length % 7) cells.push('<td></td>');
+    let rows = ''; for (let i = 0; i < cells.length; i += 7) rows += `<tr>${cells.slice(i, i + 7).join('')}</tr>`;
+    const soldHere = (p.soldOut || []).filter((d) => d.startsWith(pp.month));
+    return `<div class="cal"><div class="head"><button type="button" id="cal-prev" aria-label="Previous month" ${pp.month === '2026-09' ? 'disabled' : ''}>‹</button><b class="serif">${MON[m - 1]} ${y}</b><button type="button" id="cal-next" aria-label="Next month" ${pp.month === '2026-10' ? 'disabled' : ''}>›</button></div>
+      <table role="grid"><thead><tr>${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => `<th>${d}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+      ${soldHere.map((d) => `<div class="soldnote">${esc(p.name)} is sold out for ${longDate(d)} (all sizes). <button type="button" class="linkbtn" data-notify="${d}">Notify me if it’s restocked</button></div>`).join('')}
+      <div class="picked" id="pp-picked">${pp.date ? `Delivery on <b>${longDate(pp.date)}</b>` : '<span class="muted">No delivery date chosen yet</span>'}</div>`;
+  }
+
+  function basketPage() {
+    if (!st.basket.length) return `<h1>Your basket</h1><p>Your basket is empty.</p><a class="btn pri" href="#/shop/bouquets">Browse bouquets</a>`;
+    const sub = st.basket.reduce((a, it) => a + it.price, 0);
+    return `<h1>Your basket</h1><div class="two"><div>${st.basket.map((it, i) => {
+      const p = BY[it.slug];
+      return `<div class="basket-row"><div class="thumb" style="${imgStyle(p)}">${p.emoji}</div><div><b>${esc(p.name)}</b> — ${SIZE_LABEL[it.size]}<div class="muted">Delivery: ${longDate(it.date)}</div>${it.vase ? '<div class="muted">+ Glass vase</div>' : ''}${it.choc ? '<div class="muted">+ Fernhill chocolates</div>' : ''}</div><div style="text-align:right"><div><b>${money(it.price)}</b></div><button type="button" class="linkbtn" data-remove="${i}">Remove</button></div></div>`;
+    }).join('')}<p class="muted">Delivery slot, card message and recipient details are added at checkout.</p></div>
+      <div class="panel summary"><h2>Order summary</h2><div class="line"><span>Items (${st.basket.length})</span><span>${money(sub)}</span></div><div class="line"><span>Standard delivery</span><span>Free</span></div><div class="line total"><span>Subtotal</span><span>${money(sub)}</span></div>
+      <button class="btn pri" type="button" id="go-checkout" style="width:100%;margin-top:14px">Checkout securely</button><p class="muted" style="text-align:center">You won’t be charged until you place your order.</p></div></div>
+      <div class="section-h"><h2>You might also like</h2></div><div class="grid">${['beeswax-candle', 'bud-vase', 'chocolate-box', 'dried-harvest'].map((s) => card(BY[s])).join('')}</div>`;
+  }
+
+  function checkoutPage() {
+    if (!st.basket.length) return `<h1>Checkout</h1><p>Your basket is empty. <a href="#/shop/bouquets">Browse bouquets</a></p>`;
+    const c = st.checkout || (st.checkout = { rc: '', name: '', a1: '', a2: '', town: '', pc: '', slot: 'anytime', msg: '', noCard: false, donate: false, marketing: true, pay: 'mc-2210', errors: [] });
+    return `<div class="crumbs"><a href="#/basket">Basket</a> › Checkout</div><h1>Checkout</h1>
+      <div class="errbox" id="co-errors" role="alert" ${c.errors.length ? '' : 'hidden'}><b>There’s a problem</b><ul>${c.errors.map((e) => `<li>${esc(e)}</li>`).join('')}</ul></div>
+      <div class="two"><div>
+        <section class="panel"><h2>Who are they for?</h2>
+          <div class="field"><label for="rc-saved">Choose a saved recipient</label><select id="rc-saved"><option value="">— New recipient —</option>${RECIPIENTS.map((r) => `<option value="${r.id}" ${c.rc === r.id ? 'selected' : ''}>${esc(r.name)}${r.note ? ' (' + esc(r.note) + ')' : ''}, ${esc(r.town)}</option>`).join('')}</select></div>
+          <div class="field"><label for="rc-name">Recipient’s full name</label><input type="text" id="rc-name" autocomplete="off" value="${esc(c.name)}"></div>
+          <div class="field"><label for="rc-a1">Address line 1</label><input type="text" id="rc-a1" autocomplete="off" value="${esc(c.a1)}"></div>
+          <div class="field"><label for="rc-a2">Address line 2 (optional)</label><input type="text" id="rc-a2" autocomplete="off" value="${esc(c.a2)}"></div>
+          <div class="field" style="display:grid;grid-template-columns:1fr 160px;gap:12px"><div><label for="rc-town">Town or city</label><input type="text" id="rc-town" autocomplete="off" value="${esc(c.town)}"></div><div><label for="rc-pc">Postcode</label><input type="text" id="rc-pc" autocomplete="off" value="${esc(c.pc)}"></div></div>
+        </section>
+        <section class="panel"><h2>Delivery time</h2><p class="muted" style="margin-top:-6px">Delivering on ${[...new Set(st.basket.map((it) => longDate(it.date)))].join(' and ')}. Standard delivery is free.</p>
+          <div class="slots" role="radiogroup" aria-label="Delivery slot">${SLOTS.map((s) => `<label><input type="radio" name="slot" value="${s.v}" ${c.slot === s.v ? 'checked' : ''}> ${s.label}<span class="fee">${s.fee ? '+' + money(s.fee) : 'Free'}</span></label>`).join('')}</div>
+        </section>
+        <section class="panel"><h2>Card message</h2>
+          <div class="field"><label for="card-msg">Card message</label><textarea id="card-msg" maxlength="200" ${c.noCard ? 'disabled' : ''}>${esc(c.msg)}</textarea><div class="counter" id="msg-count">${c.msg.length}/200</div><div class="hint">We handwrite every card. Emoji can’t be printed.</div></div>
+          <label class="check"><input type="checkbox" id="no-card" ${c.noCard ? 'checked' : ''}> No card message</label>
+        </section>
+        <section class="panel"><h2>Your details</h2>
+          <div class="field"><label for="me-name">Your name</label><input type="text" id="me-name" value="${esc(ME.name)}"></div>
+          <div class="field"><label for="me-email">Email</label><input type="email" id="me-email" value="${esc(ME.email)}"></div>
+          <div class="field"><label for="me-phone">Phone (for delivery updates)</label><input type="tel" id="me-phone" value="${esc(ME.phone)}"></div>
+          <label class="check"><input type="checkbox" id="donate" ${c.donate ? 'checked' : ''}> Add £1 to support Hospice at Home, our charity partner this autumn</label>
+          <label class="check"><input type="checkbox" id="marketing" ${c.marketing ? 'checked' : ''}> Send me Fernhill offers and news by email</label>
+        </section>
+        <section class="panel"><h2>Payment</h2>
+          <label class="check"><input type="radio" name="pay" value="mc-2210" ${c.pay === 'mc-2210' ? 'checked' : ''}> Mastercard ending 2210 · expires 08/28</label>
+          <label class="check"><input type="radio" name="pay" value="paypal" ${c.pay === 'paypal' ? 'checked' : ''}> PayPal</label>
+          <p class="muted">To use a different card, add it in <a href="#/account">My account</a>.</p>
+        </section>
+      </div>
+      <aside><div class="panel summary" id="co-summary"></div></aside></div>`;
+  }
+  function coTotals() {
+    const c = st.checkout;
+    const items = st.basket.reduce((a, it) => a + it.price, 0);
+    const slot = SLOTS.find((s) => s.v === c.slot);
+    const total = items + slot.fee + (c.donate ? 100 : 0);
+    return { items, slot, total };
+  }
+  function renderSummary() {
+    const box = q('#co-summary'); if (!box) return;
+    const c = st.checkout, t = coTotals();
+    box.innerHTML = `<h2>Order summary</h2>${st.basket.map((it) => `<div class="line"><span>${esc(BY[it.slug].name)} (${SIZE_LABEL[it.size]})${it.vase ? ' + vase' : ''}${it.choc ? ' + chocolates' : ''}</span><span>${money(it.price)}</span></div>`).join('')}
+      <div class="line"><span>Delivery: ${esc(t.slot.label)}</span><span>${t.slot.fee ? money(t.slot.fee) : 'Free'}</span></div>
+      ${c.donate ? `<div class="line"><span>Hospice at Home donation</span><span>£1.00</span></div>` : ''}
+      <div class="line"><span>Promo code</span><span><input type="text" id="promo" aria-label="Promo code" placeholder="Code" style="width:110px;padding:4px 8px"> <button type="button" class="btn small" id="promo-apply">Apply</button></span></div>
+      <div class="muted" id="promo-msg"></div>
+      <div class="line total"><span>Total</span><span id="co-total">${money(t.total)}</span></div>
+      <button class="btn sage" type="button" id="place-order" style="width:100%;margin-top:14px">Place order</button>
+      <p class="muted" style="text-align:center">By placing your order you agree to our terms.</p>`;
+  }
+  function readCheckout() {
+    const c = st.checkout; if (!c || !q('#rc-name')) return;
+    c.name = q('#rc-name').value; c.a1 = q('#rc-a1').value; c.a2 = q('#rc-a2').value; c.town = q('#rc-town').value; c.pc = q('#rc-pc').value;
+    c.slot = (q('input[name=slot]:checked') || {}).value || 'anytime';
+    c.msg = q('#card-msg').value; c.noCard = q('#no-card').checked; c.donate = q('#donate').checked; c.marketing = q('#marketing').checked;
+    c.pay = (q('input[name=pay]:checked') || {}).value || 'mc-2210';
+  }
+  const fmtPostcode = (s) => { const x = String(s).toUpperCase().replace(/\s+/g, ''); return x.length > 3 ? x.slice(0, -3) + ' ' + x.slice(-3) : x; };
+  async function placeOrder() {
+    readCheckout();
+    const c = st.checkout;
+    const errors = [];
+    const name = norm(c.name), a1 = norm(c.a1), a2 = norm(c.a2), town = norm(c.town), pc = fmtPostcode(c.pc);
+    if (!name) errors.push('Enter the recipient’s full name');
+    if (!a1) errors.push('Enter the first line of the address');
+    if (!town) errors.push('Enter the town or city');
+    if (!/^[A-Z]{1,2}\d[A-Z\d]? \d[A-Z]{2}$/.test(pc)) errors.push('Enter a real UK postcode, like BA11 1AB');
+    const msg = norm(c.msg);
+    if (!c.noCard && !msg) errors.push('Write a card message, or tick “No card message”');
+    c.errors = errors;
+    if (errors.length) { render(); window.scrollTo(0, 0); return; }
+    const b = q('#place-order'); b.disabled = true; b.innerHTML = '<span class="spin"></span>Placing order…';
+    await sleep(900);
+    const t = coTotals();
+    const its = st.basket;
+    await post({
+      event: 'flower_order', product: its.map((i) => i.slug).join(','), size: its.map((i) => SIZE_VALUE[i.size]).join(','),
+      delivery_date: its.map((i) => i.date).join(','), slot: c.slot, vase: its.map((i) => (i.vase ? 'yes' : 'no')).join(','), chocolates: its.map((i) => (i.choc ? 'yes' : 'no')).join(','),
+      recipient: name, address1: a1, address2: a2, town, postcode: pc, message: c.noCard ? '' : msg, no_card: c.noCard ? 'yes' : 'no',
+      donation: c.donate ? 'yes' : 'no', marketing: c.marketing ? 'yes' : 'no', payment: c.pay === 'paypal' ? 'paypal' : 'mastercard-2210', total: (t.total / 100).toFixed(2),
+    });
+    const ref = 'FF-' + (10482 + st.orders++);
+    st.lastOrder = { ref, name, date: its[0].date, total: t.total, items: its.map((i) => BY[i.slug].name + ' (' + SIZE_LABEL[i.size] + ')').join(', '), slot: t.slot.label };
+    st.basket = []; st.checkout = null; setBag();
+    location.hash = '#/order/' + ref;
+  }
+  function orderPage(ref) {
+    const o = st.lastOrder;
+    if (!o || o.ref !== ref) return `<h1>Order ${esc(ref)}</h1><p>We couldn’t find that order. <a href="#/account">See your orders</a></p>`;
+    return `<div class="confirm"><div class="big">🌿</div><h1>Thank you, Sam — your order is confirmed</h1><p>Order <b>${esc(o.ref)}</b>: ${esc(o.items)} for ${esc(o.name)}, delivering ${longDate(o.date)} (${esc(o.slot)}).</p><p>Total paid: <b>${money(o.total)}</b>. We’ve emailed your receipt to ${esc(ME.email)}.</p><a class="btn" href="#/">Back to the shop</a></div>`;
+  }
+
+  function accountPage() {
+    return `<h1>My account</h1><div class="two"><div>
+      <section class="panel"><h2>Recent orders</h2><table class="plain"><thead><tr><th>Order</th><th>Items</th><th>Delivered</th><th>Total</th><th></th></tr></thead><tbody>
+        <tr><td>FF-10311</td><td>The Juniper (Standard) to Ada Achebe</td><td>Wed 3 Jun 2026</td><td>£38.00</td><td><a href="#/p/juniper">Buy again</a></td></tr>
+        <tr><td>FF-10164</td><td>Wild Meadow (Large) to Priya Moore</td><td>Sat 14 Mar 2026</td><td>£50.50</td><td><a href="#/p/wild-meadow">Buy again</a></td></tr>
+        <tr><td>FF-09987</td><td>Ivory &amp; Eucalyptus (Standard) to Joan Hale</td><td>Tue 6 Jan 2026</td><td>£44.00</td><td><a href="#/p/ivory-eucalyptus">Buy again</a></td></tr>
+      </tbody></table></section>
+      <section class="panel"><h2>Saved recipients</h2>${RECIPIENTS.map((r) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span><b>${esc(r.name)}</b> · ${esc([r.a1, r.a2, r.town, r.pc].filter(Boolean).join(', '))}</span><button type="button" class="linkbtn" data-del-rc="${r.id}">Delete</button></div>`).join('')}</section>
+    </div><div>
+      <section class="panel"><h2>Your details</h2><p>${esc(ME.name)}<br>${esc(ME.email)}<br>${esc(ME.phone)}</p><p class="muted">Saved card: Mastercard ending 2210</p></section>
+      <section class="panel"><h2>Email preferences</h2><label class="check"><input type="checkbox" id="pref-mk" ${st.marketingPref ? 'checked' : ''}> Offers and news from Fernhill</label><button class="btn small" type="button" id="pref-save">Save preferences</button></section>
+    </div></div>`;
+  }
+  function staticPage(r) {
+    const pages = {
+      occasions: ['Occasions', `<div class="grid">${[['Birthday', 'wild-meadow'], ['Thank you', 'sunday-market'], ['Anniversary', 'peony-blush'], ['New baby', 'peony-cloud'], ['Get well', 'hedgerow-posy'], ['Sympathy', 'ivory-eucalyptus'], ['Just because', 'amber-dusk'], ['Congratulations', 'juniper']].map(([o, s]) => `<a class="pcard" href="#/p/${s}"><div class="img" style="${imgStyle(BY[s])};aspect-ratio:4/3"><span class="tag">${o}</span>${BY[s].emoji}</div><b>${o}</b><span>Our pick: ${esc(BY[s].name)}</span></a>`).join('')}</div>`],
+      subscriptions: ['Fernhill Flower Club', `<p>Seasonal bouquets delivered every week, fortnight or month. Pause or cancel any time.</p><div class="quotes">${[['Weekly', '£30'], ['Fortnightly', '£32'], ['Monthly', '£35']].map(([f, p]) => `<div class="quote"><b>${f}</b><p>${p} per delivery · free delivery</p><button class="btn small" type="button" data-sub="${f.toLowerCase()}">Start ${f.toLowerCase()} club</button></div>`).join('')}</div>`],
+      delivery: ['Delivery information', `<p>Standard delivery is free, 8am–6pm, Monday to Saturday. Morning (8am–12pm, +£4.50) and evening (5pm–9pm, +£6.95) slots can be chosen at checkout. Order by 2pm for next-day delivery. We don’t deliver on Sundays or bank holidays.</p>`],
+      help: ['Help &amp; FAQs', `<details><summary>Can I change my delivery date?</summary><p>Yes, up to 2pm the day before delivery, from My account.</p></details><details><summary>What if nobody is home?</summary><p>Our drivers leave flowers in a safe place or with a neighbour, and text a photo.</p></details><details><summary>Do you deliver on Sundays?</summary><p>Not at the moment.</p></details><p>Call us on 01373 900 214, Monday to Saturday 8am–6pm.</p>`],
+      care: ['Flower care', `<p>Trim stems at an angle, change the water every two days and keep bouquets away from direct sunlight, radiators and fruit.</p>`],
+      about: ['Our story', `<p>Fernhill started in 2014 on a quarter-acre plot outside Frome. Today we work with twenty-two British growers and deliver across the South West.</p>`],
+    };
+    const pg = pages[r];
+    return pg ? `<div class="crumbs"><a href="#/">Home</a> › ${pg[0]}</div><h1>${pg[0]}</h1>${pg[1]}` : notFound();
+  }
+  function notFound() { return `<h1>Page not found</h1><p>Sorry, we couldn’t find that page. <a href="#/">Back to the shop</a></p>`; }
+
+  function render() {
+    const r = route();
+    const parts = r.split('/');
+    qa('nav.cats a').forEach((a) => a.classList.toggle('on', parts[0] === 'shop' ? a.dataset.cat === parts[1] : a.dataset.cat === parts[0]));
+    let h;
+    if (r === '' || r === '/') h = home();
+    else if (parts[0] === 'shop' && CATS[parts[1]]) h = category(parts[1]);
+    else if (parts[0] === 'p') h = productPage(parts[1]);
+    else if (r === 'basket') h = basketPage();
+    else if (r === 'checkout') h = checkoutPage();
+    else if (parts[0] === 'order') h = orderPage(parts[1]);
+    else if (r === 'account') h = accountPage();
+    else if (parts[0] === 'search') { const term = decodeURIComponent(parts.slice(1).join('/')).toLowerCase(); h = category(null, P.filter((p) => (p.name + ' ' + p.blurb).toLowerCase().includes(term)), `Search results for “${term}”`); }
+    else h = staticPage(parts[0]);
+    q('#main').innerHTML = h;
+    if (r === 'checkout') renderSummary();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', render);
+  q('#search-form').addEventListener('submit', (e) => { e.preventDefault(); const v = q('#q').value.trim(); if (v) location.hash = '#/search/' + encodeURIComponent(v); });
+  q('#nl-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const em = q('#nl-email').value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { toast('Enter a valid email address.'); return; }
+    await sleep(400); await post({ event: 'newsletter_subscribe', email: em }); q('#nl-email').value = ''; toast('Thanks — check your inbox for 10% off.');
+  });
+
+  q('#main').addEventListener('change', (e) => {
+    const t = e.target;
+    if (st.pp && q('#add-basket')) {
+      const p = BY[st.pp.slug];
+      if (t.name === 'size') st.pp.size = t.value;
+      if (t.id === 'addon-vase') st.pp.vase = t.checked;
+      if (t.id === 'addon-choc') st.pp.choc = t.checked;
+      q('#pp-price').textContent = money(ppPrice(p));
+    }
+    if (q('#place-order') || t.closest('.two')) {
+      if (t.id === 'rc-saved') {
+        const r = RECIPIENTS.find((x) => x.id === t.value);
+        readCheckout(); st.checkout.rc = t.value;
+        if (r) Object.assign(st.checkout, { name: r.name, a1: r.a1, a2: r.a2, town: r.town, pc: r.pc });
+        render(); return;
+      }
+      if (st.checkout) {
+        readCheckout();
+        if (t.id === 'no-card') q('#card-msg').disabled = t.checked;
+        renderSummary();
+      }
+    }
+  });
+  q('#main').addEventListener('input', (e) => {
+    if (e.target.id === 'card-msg') q('#msg-count').textContent = `${e.target.value.length}/200`;
+  });
+  q('#main').addEventListener('click', async (e) => {
+    const t = e.target;
+    const day = t.closest('.day');
+    if (day && !day.disabled) { st.pp.date = day.dataset.iso; st.pp.err = ''; q('#cal-wrap').innerHTML = calendar(BY[st.pp.slug]); q('#pp-err').hidden = true; return; }
+    if (t.closest('#cal-prev')) { st.pp.month = '2026-09'; q('#cal-wrap').innerHTML = calendar(BY[st.pp.slug]); return; }
+    if (t.closest('#cal-next')) { st.pp.month = '2026-10'; q('#cal-wrap').innerHTML = calendar(BY[st.pp.slug]); return; }
+    const notify = t.closest('[data-notify]');
+    if (notify) { openNotify(BY[st.pp.slug], notify.dataset.notify); return; }
+    if (t.closest('#add-basket')) {
+      const pp = st.pp, p = BY[pp.slug];
+      if (!pp.date) { pp.err = 'Choose a delivery date'; const el = q('#pp-err'); el.textContent = pp.err; el.hidden = false; return; }
+      st.basket.push({ slug: p.slug, size: pp.size, date: pp.date, vase: pp.vase, choc: pp.choc, price: ppPrice(p) });
+      setBag(); st.pp = null; toast(`${p.name} added to your basket`);
+      location.hash = '#/basket'; return;
+    }
+    const rm = t.closest('[data-remove]');
+    if (rm) { st.basket.splice(+rm.dataset.remove, 1); setBag(); render(); toast('Removed from your basket'); return; }
+    if (t.closest('#go-checkout')) { location.hash = '#/checkout'; return; }
+    if (t.closest('#promo-apply')) { const v = q('#promo').value.trim(); q('#promo-msg').textContent = v ? `“${v.toUpperCase()}” has expired or isn’t valid for these items.` : 'Enter a promo code.'; return; }
+    if (t.closest('#place-order')) { placeOrder(); return; }
+    if (t.closest('#pref-save')) { const v = q('#pref-mk').checked; await sleep(400); await post({ event: 'marketing_pref_update', marketing: v ? 'yes' : 'no' }); st.marketingPref = v; toast('Preferences saved'); return; }
+    const del = t.closest('[data-del-rc]');
+    if (del) { const r = RECIPIENTS.find((x) => x.id === del.dataset.delRc); confirmBox(`Delete ${r.name} from your saved recipients?`, 'Delete', async () => { await post({ event: 'recipient_delete', recipient: r.name }); RECIPIENTS.splice(RECIPIENTS.indexOf(r), 1); render(); toast('Recipient deleted'); }); return; }
+    const sub = t.closest('[data-sub]');
+    if (sub) { confirmBox(`Start a ${sub.dataset.sub} Flower Club subscription? Your first delivery will be charged to Mastercard ending 2210.`, 'Start subscription', async () => { await post({ event: 'subscription_start', frequency: sub.dataset.sub }); toast('Welcome to the Flower Club!'); }); return; }
+  });
+
+  function modal(html) { q('#modal-root').innerHTML = `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true">${html}</div></div>`; return q('#modal-root .dialog'); }
+  function closeModal() { q('#modal-root').innerHTML = ''; }
+  function confirmBox(msg, ok, fn) {
+    const d = modal(`<h3>Are you sure?</h3><p>${esc(msg)}</p><div class="acts"><button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" data-ok>${esc(ok)}</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { d.querySelector('[data-ok]').disabled = true; await sleep(500); closeModal(); await fn(); };
+  }
+  function openNotify(p, date) {
+    const d = modal(`<h3>Get a restock alert</h3><p>We’ll email you if ${esc(p.name)} becomes available again for ${longDate(date)}. This doesn’t reserve a bouquet.</p><div class="field"><label for="notify-email">Email</label><input type="email" id="notify-email" value="${esc(ME.email)}"></div><div class="acts"><button class="btn" type="button" data-c>Cancel</button><button class="btn pri" type="button" data-ok>Notify me</button></div>`);
+    d.querySelector('[data-c]').onclick = closeModal;
+    d.querySelector('[data-ok]').onclick = async () => { const em = d.querySelector('#notify-email').value.trim().toLowerCase(); await sleep(500); await post({ event: 'stock_alert_subscribe', product: p.slug, date, email: em }); closeModal(); toast('We’ll let you know.'); };
+  }
+
+  setBag();
+  render();
+})();
+</script>
+</body>
+</html>

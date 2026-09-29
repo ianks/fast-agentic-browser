@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Driftwood Deck — a tide-pool strategy game · Kindlefund</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Avenir Next", Avenir, "Segoe UI", sans-serif; color: #172026; background: #fff; }
+  a { color: #0b6b53; }
+  button, input, select { font: inherit; }
+  header { display: flex; align-items: center; gap: 20px; padding: 12px 28px; border-bottom: 1px solid #e6ebe9; }
+  .logo { font-weight: 800; font-size: 20px; color: #0b6b53; text-decoration: none; letter-spacing: -.01em; }
+  header nav a { color: #172026; text-decoration: none; margin-right: 16px; font-size: 14px; }
+  header .sp { flex: 1; }
+  header input { border: 1px solid #d5dedb; border-radius: 999px; padding: 7px 14px; width: 240px; }
+  .me { position: relative; }
+  .me > button { border: 0; background: #e3f3ee; color: #0b6b53; width: 34px; height: 34px; border-radius: 50%; font-weight: 700; cursor: pointer; }
+  .me .dd { position: absolute; right: 0; top: 42px; background: #fff; border: 1px solid #e6ebe9; border-radius: 8px; box-shadow: 0 10px 24px rgba(0,0,0,.08); width: 200px; padding: 6px; z-index: 10; }
+  .me .dd a { display: block; padding: 7px 10px; color: #172026; text-decoration: none; border-radius: 6px; font-size: 14px; }
+  .me .dd a:hover { background: #f3f7f6; }
+  main { max-width: 1140px; margin: 0 auto; padding: 22px 28px 60px; }
+  .btn { display: inline-block; border: 1px solid #cfd9d6; background: #fff; border-radius: 6px; padding: 9px 16px; cursor: pointer; color: #172026; text-decoration: none; }
+  .btn.primary { background: #0b6b53; border-color: #0b6b53; color: #fff; font-weight: 600; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .muted { color: #5f6f6a; }
+  .camp { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+  .cover { height: 320px; border-radius: 10px; background: linear-gradient(160deg, #0f4c5c 0%, #3a8d8a 45%, #e2c290 100%); position: relative; }
+  .cover span { position: absolute; left: 20px; bottom: 16px; color: #fff; font-size: 30px; font-weight: 800; text-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  .stats b { display: block; font-size: 28px; color: #0b6b53; }
+  .bar { height: 8px; background: #e6ebe9; border-radius: 4px; margin: 10px 0 16px; }
+  .bar i { display: block; height: 8px; border-radius: 4px; background: #0b6b53; width: 100%; }
+  .tabs { display: flex; gap: 22px; border-bottom: 1px solid #e6ebe9; margin: 26px 0 16px; }
+  .tabs a { padding: 10px 0; color: #5f6f6a; text-decoration: none; border-bottom: 3px solid transparent; }
+  .tabs a.on { color: #172026; border-bottom-color: #0b6b53; font-weight: 600; }
+  .reward { border: 1px solid #e0e7e5; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .reward h4 { margin: 0; }
+  .acc > button { width: 100%; text-align: left; background: #f7faf9; border: 1px solid #e6ebe9; border-radius: 8px; padding: 12px 14px; margin-top: 8px; cursor: pointer; font-weight: 600; }
+  .acc .body { padding: 10px 14px; }
+  .flow { display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; }
+  .steps { display: flex; gap: 6px; margin-bottom: 18px; }
+  .steps span { flex: 1; text-align: center; font-size: 13px; padding: 6px; border-bottom: 3px solid #e6ebe9; color: #7a8a85; }
+  .steps span.on { border-bottom-color: #0b6b53; color: #172026; font-weight: 600; }
+  .steps span.done { border-bottom-color: #9fd2c3; }
+  .rcard { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; border: 1.5px solid #dbe4e1; border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+  .rcard.sel { border-color: #0b6b53; background: #f2faf7; }
+  .rcard.soldout { opacity: .55; cursor: not-allowed; }
+  .rcard .price { font-weight: 700; font-size: 18px; }
+  .addon { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: center; border: 1px solid #e0e7e5; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+  .addon .badge { font-size: 11px; background: #fff3d6; color: #7a5200; border-radius: 9px; padding: 1px 8px; margin-left: 6px; }
+  .addon.incl { opacity: .6; }
+  .side { border: 1px solid #e0e7e5; border-radius: 10px; padding: 16px; position: sticky; top: 16px; }
+  .side ul { list-style: none; padding: 0; margin: 8px 0; }
+  .side li { display: flex; justify-content: space-between; padding: 3px 0; font-size: 14px; }
+  .side .tot { border-top: 1px solid #e6ebe9; margin-top: 8px; padding-top: 8px; font-weight: 700; }
+  .field { margin: 14px 0; }
+  .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .field select { padding: 8px 10px; border: 1px solid #cfd9d6; border-radius: 6px; min-width: 260px; }
+  .pills { display: flex; gap: 8px; }
+  .pills label { border: 1px solid #cfd9d6; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .pills label.sel { background: #0b6b53; color: #fff; border-color: #0b6b53; }
+  .pills input { position: absolute; opacity: 0; pointer-events: none; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #edf1f0; font-size: 14px; }
+  th { color: #5f6f6a; font-weight: 600; font-size: 13px; }
+  td.num, th.num { text-align: right; }
+  .status { font-size: 12px; border-radius: 9px; padding: 2px 8px; background: #eef2f1; }
+  .status.live { background: #e0f5ec; color: #0b6b53; font-weight: 600; }
+  .status.bad { background: #fde8e8; color: #9b1c1c; }
+  .segs { display: inline-flex; border: 1px solid #cfd9d6; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .segs button { border: 0; background: #fff; padding: 7px 14px; cursor: pointer; border-right: 1px solid #cfd9d6; }
+  .segs button:last-child { border-right: 0; }
+  .segs button[aria-pressed=true] { background: #172026; color: #fff; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; }
+  .pager button[aria-current=page] { background: #172026; color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .pcard { border: 1px solid #e0e7e5; border-radius: 10px; overflow: hidden; }
+  .pcard .img { height: 120px; }
+  .pcard .b { padding: 12px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(10,20,18,.45); display: flex; align-items: center; justify-content: center; z-index: 40; }
+  .modal { background: #fff; border-radius: 10px; padding: 20px 22px; width: 440px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #172026; color: #fff; padding: 10px 18px; border-radius: 8px; z-index: 50; }
+  footer { background: #0f2622; color: #b9ccc6; padding: 30px 28px; font-size: 13px; }
+  footer .cols { max-width: 1140px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  footer a { color: #b9ccc6; display: block; text-decoration: none; margin: 3px 0; }
+  .err { color: #9b1c1c; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#/">kindlefund</a>
+  <nav aria-label="Main"><a href="#/">Discover</a><a href="#/">Start a project</a><a href="#/">Creator hub</a></nav>
+  <span class="sp"></span>
+  <input type="search" placeholder="Search projects" aria-label="Search projects" id="search">
+  <div class="me"><button type="button" id="me-btn" aria-label="Your account" aria-expanded="false">EH</button>
+    <div class="dd" id="me-dd" hidden><a href="#/account/backed">Backed projects</a><a href="#/account/saved">Saved projects</a><a href="#/account/profile">Profile</a><a href="#/account/settings">Settings</a><a href="#/">Log out</a></div></div>
+</header>
+<main id="view"></main>
+<footer><div class="cols"><div><strong style="color:#fff">kindlefund</strong><br>Bringing creative projects to life since 2014.</div><div><a href="#/">About</a><a href="#/">Our rules</a><a href="#/">Trust &amp; safety</a></div><div><a href="#/">Help center</a><a href="#/">Creator handbook</a><a href="#/">Fees</a></div><div><a href="#/">Terms</a><a href="#/">Privacy</a><a href="#/">Cookie policy</a></div></div></footer>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toFixed(2);
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const REWARDS = [
+    { id: 'none', name: 'Pledge without a reward', price: 0, desc: 'Back it because you believe in it. No reward, no shipping.', backers: 96 },
+    { id: 'deckhand', name: 'Deckhand', price: 29, desc: 'Driftwood Deck base game.', backers: 1204, includes: [] },
+    { id: 'navigator', name: 'Navigator', price: 49, desc: 'Base game + Kelp Forest expansion.', backers: 2311, includes: ['kelp'] },
+    { id: 'captain', name: 'Captain', price: 89, desc: 'Deluxe edition: base game, Kelp Forest and Reef Raiders expansions, metal coins and playmat.', backers: 812, includes: ['kelp', 'reef', 'coins', 'mat'] },
+    { id: 'retail', name: 'Harbourmaster (retailer)', price: 240, desc: 'Six copies of the base game for your store.', backers: 40, soldout: true },
+  ];
+  const ADDONS = [
+    { id: 'coins', name: 'Metal coin upgrade', price: 15, pre: true, note: 'Most backers add this' },
+    { id: 'mat', name: 'Neoprene playmat', price: 22, pre: true, note: 'Popular' },
+    { id: 'reef', name: 'Reef Raiders expansion', price: 19 },
+    { id: 'kelp', name: 'Kelp Forest expansion', price: 19 },
+    { id: 'sleeves', name: 'Card sleeves pack', price: 8 },
+    { id: 'insert', name: 'Insert organiser', price: 12 },
+  ];
+  const SHIP = [['GB', 'United Kingdom', 9], ['DE', 'Germany', 8], ['FR', 'France', 8], ['NL', 'Netherlands', 8], ['NO', 'Norway', 14], ['SE', 'Sweden', 11], ['DK', 'Denmark', 10], ['ES', 'Spain', 9], ['US', 'United States', 16], ['CA', 'Canada', 18]];
+  const BACKED = [
+    ['Mosswood: A Cozy Card Game', 'Fernlight Studio', 'Tabletop Games', 'Live', '12 days left', 34.00, 'Early Bird', '2026-09-18'],
+    ['Orbit Odyssey', 'Two Moons Interactive', 'Video Games', 'Live', '9 days left', 15.00, 'Digital copy', '2026-09-15'],
+    ['Lantern Keepers RPG Starter Box', 'Gloamcraft', 'Tabletop Games', 'Live', '21 days left', 58.75, 'Keeper box + PDF', '2026-09-11'],
+    ['Tiny Planets Terrarium', 'Verdant Works', 'Design', 'Live', '4 days left', 64.00, 'Single planet', '2026-09-06'],
+    ['Pixel Tides', 'Brackwater Games', 'Video Games', 'Live', '17 days left', 25.00, 'Switch key', '2026-09-02'],
+    ['Hexcrawl Terrain Tiles', 'Tessellate Tabletop', 'Tabletop Games', 'Live', '6 days left', 72.00, 'Explorer set', '2026-08-29'],
+    ['Brass Compass Playing Cards', 'Meridian Cardworks', 'Playing Cards', 'Live', '3 days left', 18.00, 'One deck', '2026-08-25'],
+    ['Ironbark Dice Tower', 'Oakhewn', 'Tabletop Games', 'Funded', 'Ended 20 Aug 2026', 45.00, 'Walnut tower', '2026-08-01'],
+    ['Tidebound: Legacy Campaign', 'Northsea Boardgames', 'Tabletop Games', 'Live', '28 days left', 50.00, 'Standard edition', '2026-07-30'],
+    ['Starfall Arcade Cabinet', 'Retrofab', 'Gaming Hardware', 'Live', '2 days left', 120.00, 'Bartop kit', '2026-07-22'],
+    ['Neon Drift', 'Afterglow Games', 'Video Games', 'Funded', 'Ended 2 Aug 2026', 20.00, 'Steam key', '2026-07-10'],
+    ['Quiet Harbour Jigsaw Series', 'Slowpiece', 'Puzzles', 'Live', '14 days left', 29.00, 'Two puzzles', '2026-07-05'],
+    ['Glacier Run', 'Coldfront Games', 'Tabletop Games', 'Unsuccessful', 'Ended 30 Jun 2026', 30.00, 'Base game', '2026-06-12'],
+    ['Clockwork Critters', 'Cogsworth & Daughters', 'Tabletop Games', 'Funded', 'Ended 5 Jun 2026', 39.00, 'Critter crate', '2026-05-20'],
+    ['Sunken Temple Miniatures', 'Deepcast Minis', 'Tabletop Games', 'Live', '33 days left', 95.00, 'Temple guardian set', '2026-05-02'],
+    ['Solarpunk Zine #4', 'Greenline Press', 'Publishing', 'Funded', 'Ended 18 Apr 2026', 12.00, 'Print zine', '2026-04-01'],
+    ['Harbour Lights Deckbuilder', 'Beacon Tabletop', 'Tabletop Games', 'Funded', 'Ended 1 Mar 2026', 42.00, 'Deluxe', '2026-02-11'],
+    ['Minimal Wallet', 'Fold & Co', 'Design', 'Canceled', 'Canceled by creator', 55.00, 'Two wallets', '2026-01-19'],
+    ['Fenland Folk Tales', 'Mardle Books', 'Publishing', 'Live', '40 days left', 22.00, 'Hardback', '2025-12-30'],
+    ['Wyrmwood Card Vault', 'Hoard & Hinge', 'Tabletop Games', 'Funded', 'Ended 12 Dec 2025', 36.00, 'Vault', '2025-11-28'],
+  ].map(([name, creator, cat, status, when, amount, reward, date]) => ({ name, creator, cat, status, when, amount, reward, date }));
+
+  const st = { tab: 'campaign', step: 1, reward: null, addons: new Set(ADDONS.filter((a) => a.pre).map((a) => a.id)), country: 'GB', tip: 5, fund: true, busy: false, err: '', done: null, bfilter: 'all', bpage: 1, faqOpen: -1 };
+  const reward = () => REWARDS.find((r) => r.id === st.reward);
+  const incl = (id) => !!(reward() && (reward().includes || []).includes(id));
+  const chosenAddons = () => ADDONS.filter((a) => st.addons.has(a.id) && !incl(a.id));
+  const shipCost = () => (st.reward && st.reward !== 'none' ? SHIP.find((s) => s[0] === st.country)[2] : 0);
+  const total = () => (reward() ? reward().price : 0) + chosenAddons().reduce((a, x) => a + x.price, 0) + shipCost() + st.tip + (st.fund ? 1 : 0);
+
+  function campaign() {
+    const T = [['campaign', 'Campaign'], ['rewards', 'Rewards'], ['faq', 'FAQ'], ['updates', 'Updates 4'], ['comments', 'Comments 212']];
+    let body = '';
+    if (st.tab === 'campaign') body = `<h2>A game about the eight hours between tides</h2><p>Driftwood Deck is a 1–4 player strategy game about tide pools. Every round the sea retreats a little further and you race to shelter your creatures before it floods back.</p><p>Designed by Imogen Okafor and illustrated by Tomás Arriaga, it has been playtested at 40 conventions across Europe.</p><h3>Stretch goals</h3><ul><li>€60,000 — Linen-finish cards ✓</li><li>€120,000 — Upgraded meeples ✓</li><li>€200,000 — Solo tide deck</li></ul>`;
+    else if (st.tab === 'rewards') body = REWARDS.map((r) => `<div class="reward"><h4>${esc(r.name)} · ${r.price ? '€' + r.price : 'any amount'}</h4><p class="muted" style="margin:4px 0">${esc(r.desc)}</p><small class="muted">${r.backers.toLocaleString('en-GB')} backers${r.soldout ? ' · all gone' : ''}</small></div>`).join('');
+    else if (st.tab === 'faq') body = [['When will it ship?', 'We expect to ship Deckhand, Navigator and Captain rewards in March 2027.'], ['Is VAT included?', 'Yes for EU and UK backers. Norway and Switzerland may pay import VAT on delivery.'], ['Can I change my reward later?', 'Yes, until the campaign ends, from Backed projects › Manage pledge.']].map(([q, a], i) => `<div class="acc"><button type="button" data-faq="${i}" aria-expanded="${st.faqOpen === i}">${esc(q)}</button><div class="body" ${st.faqOpen === i ? '' : 'hidden'}>${esc(a)}</div></div>`).join('');
+    else if (st.tab === 'updates') body = `<p><strong>Update #4 · Factory samples are in!</strong><br><span class="muted">14 September 2026</span></p><p><strong>Update #3 · Solo mode reveal</strong><br><span class="muted">2 September 2026</span></p>`;
+    else body = `<div class="field"><label for="cmt">Leave a comment</label><textarea id="cmt" rows="3" style="width:100%"></textarea></div><button class="btn" type="button" id="cmt-post">Post comment</button><p class="muted">Ruth K.: Can't wait for the Reef Raiders art!</p><p class="muted">Jonah P.: Does the playmat fit the Captain box?</p>`;
+    return `<div class="camp"><div><div class="cover"><span>Driftwood Deck</span></div></div><div><p class="muted" style="margin:0">Saltmarsh Games · Bristol, UK · Tabletop Games</p><h1 style="margin:4px 0 8px">Driftwood Deck — a tide-pool strategy game</h1><p>Race the returning tide in a cosy, cut-throat game of rock pools and hermit crabs.</p><div class="bar"><i></i></div>
+      <div class="stats" style="display:flex;gap:28px"><div><b>€184,220</b>pledged of €40,000</div><div><b>4,463</b>backers</div><div><b>18</b>days to go</div></div>
+      <p style="margin-top:18px"><a class="btn primary" href="#/pledge">Back this project</a> <button class="btn" type="button" id="save-proj">♡ Remind me</button></p><p class="muted" style="font-size:13px">All or nothing. This project will only be funded if it reaches its goal by Tue 13 October 2026.</p></div></div>
+      <nav class="tabs" aria-label="Campaign sections">${T.map(([k, l]) => `<a href="#/campaign/${k}" class="${st.tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav><div style="max-width:760px">${body}</div>`;
+  }
+  function stepsBar() { return `<div class="steps">${['Reward', 'Add-ons', 'Shipping & support', 'Review'].map((l, i) => `<span class="${st.step === i + 1 ? 'on' : st.step > i + 1 ? 'done' : ''}">${i + 1}. ${l}</span>`).join('')}</div>`; }
+  function sidebar() {
+    const r = reward();
+    return `<aside class="side" aria-label="Pledge summary"><strong>Your pledge</strong><ul>${r ? `<li><span>${esc(r.name)}</span><span>${eur(r.price)}</span></li>` : '<li class="muted">No reward selected</li>'}
+      ${st.step >= 2 ? chosenAddons().map((a) => `<li><span>${esc(a.name)}</span><span>${eur(a.price)}</span></li>`).join('') : ''}
+      ${st.step >= 3 && r && r.id !== 'none' ? `<li><span>Shipping to ${esc(SHIP.find((s) => s[0] === st.country)[1])}</span><span>${eur(shipCost())}</span></li>` : ''}
+      ${st.step >= 3 && st.tip ? `<li><span>Tip for Saltmarsh Games</span><span>${eur(st.tip)}</span></li>` : ''}
+      ${st.step >= 3 && st.fund ? `<li><span>Community Fund</span><span>${eur(1)}</span></li>` : ''}
+      <li class="tot"><span>Total</span><span>${eur(total())}</span></li></ul><p class="muted" style="font-size:12px">You'll only be charged if the project is funded by 13 October 2026.</p></aside>`;
+  }
+  function pledge() {
+    if (st.done) return `<div style="max-width:620px"><h1>You're a backer!</h1><p>Your pledge of <strong>${eur(st.done.total)}</strong> to Driftwood Deck is confirmed (${esc(st.done.id)}).</p><p><a class="btn" href="#/account/backed">View backed projects</a> <a class="btn" href="#/campaign/campaign">Back to the campaign</a></p></div>`;
+    let body = '';
+    if (st.step === 1) {
+      body = `<h1>Choose your reward</h1><div role="radiogroup" aria-label="Reward">${REWARDS.map((r) => `<label class="rcard ${st.reward === r.id ? 'sel' : ''} ${r.soldout ? 'soldout' : ''}"><input type="radio" name="reward" value="${r.id}" ${st.reward === r.id ? 'checked' : ''} ${r.soldout ? 'disabled' : ''}><div><strong>${esc(r.name)}</strong><div class="muted" style="font-size:14px">${esc(r.desc)}</div><small class="muted">${r.backers.toLocaleString('en-GB')} backers · ${r.id === 'none' ? 'no shipping' : 'estimated delivery March 2027'}${r.soldout ? ' · <strong>All gone</strong>' : ''}</small></div><div class="price">${r.price ? '€' + r.price : 'Any'}</div></label>`).join('')}</div>
+        <p class="err" role="alert">${esc(st.err)}</p><button class="btn primary" type="button" id="next">Continue</button>`;
+    } else if (st.step === 2) {
+      body = `<h1>Add-ons</h1><p class="muted">Extras ship with your reward. ${reward().id === 'none' ? 'Add-ons need a reward.' : ''}</p>${ADDONS.map((a) => { const inc = incl(a.id); return `<label class="addon ${inc ? 'incl' : ''}"><input type="checkbox" data-addon="${a.id}" ${inc || st.addons.has(a.id) ? 'checked' : ''} ${inc || reward().id === 'none' ? 'disabled' : ''}><div><strong>${esc(a.name)}</strong>${a.note && !inc ? `<span class="badge">${esc(a.note)}</span>` : ''}<div class="muted" style="font-size:13px">${inc ? 'Included in your reward' : 'Ships with your reward'}</div></div><div>${inc ? '—' : '+€' + a.price}</div></label>`; }).join('')}
+        <p><button class="btn" type="button" id="back">Back</button> <button class="btn primary" type="button" id="next">Continue</button></p>`;
+    } else if (st.step === 3) {
+      body = `<h1>Shipping &amp; support</h1>${reward().id !== 'none' ? `<div class="field"><label for="country">Ship to</label><select id="country">${SHIP.map(([c, n, f]) => `<option value="${c}" ${st.country === c ? 'selected' : ''}>${esc(n)} — €${f}</option>`).join('')}</select><div class="muted" style="font-size:13px">Estimated from your location. Shipping is charged when the pledge manager opens.</div></div>` : ''}
+        <div class="field"><span style="font-weight:600;display:block;margin-bottom:6px">Add a tip for Saltmarsh Games</span><div class="pills" role="radiogroup" aria-label="Tip">${[0, 2, 5, 10].map((v) => `<label class="${st.tip === v ? 'sel' : ''}"><input type="radio" name="tip" value="${v}" ${st.tip === v ? 'checked' : ''}>${v ? '€' + v : 'No tip'}</label>`).join('')}</div></div>
+        <label style="display:flex;gap:10px;align-items:flex-start;border:1px solid #e0e7e5;border-radius:10px;padding:12px 14px"><input type="checkbox" id="fund" ${st.fund ? 'checked' : ''}><span><strong>Add €1 to the Kindlefund Community Fund</strong><br><span class="muted" style="font-size:13px">Helps first-time creators with shipping costs.</span></span></label>
+        <p style="margin-top:16px"><button class="btn" type="button" id="back">Back</button> <button class="btn primary" type="button" id="next">Continue</button></p>`;
+    } else {
+      const r = reward();
+      body = `<h1>Review your pledge</h1><table><tbody><tr><th>Reward</th><td>${esc(r.name)} (${eur(r.price)})</td></tr><tr><th>Add-ons</th><td>${chosenAddons().map((a) => esc(a.name)).join(', ') || 'None'}</td></tr>${r.id !== 'none' ? `<tr><th>Shipping</th><td>${esc(SHIP.find((s) => s[0] === st.country)[1])} · ${eur(shipCost())}</td></tr>` : ''}<tr><th>Tip</th><td>${st.tip ? eur(st.tip) : 'None'}</td></tr><tr><th>Community Fund</th><td>${st.fund ? eur(1) : 'No'}</td></tr><tr><th>Payment</th><td>Visa •••• 5121 (default)</td></tr></tbody></table>
+        <p class="err" role="alert">${esc(st.err)}</p><p style="margin-top:16px"><button class="btn" type="button" id="back">Back</button> <button class="btn primary" type="button" id="confirm" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Confirming…' : 'Pledge ' + eur(total())}</button></p>`;
+    }
+    return `<p class="muted"><a href="#/campaign/campaign">Driftwood Deck</a> › Back this project</p>${stepsBar()}<div class="flow"><section>${body}</section>${sidebar()}</div>`;
+  }
+  function backed() {
+    const list = BACKED.filter((b) => st.bfilter === 'all' || (st.bfilter === 'live' ? b.status === 'Live' : b.status !== 'Live'));
+    const per = 6; const pages = Math.max(1, Math.ceil(list.length / per)); if (st.bpage > pages) st.bpage = pages;
+    const rows = list.slice((st.bpage - 1) * per, st.bpage * per);
+    return `<h1>Backed projects</h1><p class="muted">Projects you've pledged to. Amounts include shipping and tips.</p>
+      <div class="segs" role="group" aria-label="Filter by status">${[['all', 'All'], ['live', 'Live'], ['ended', 'Ended']].map(([k, l]) => `<button type="button" data-bf="${k}" aria-pressed="${st.bfilter === k}">${l}</button>`).join('')}</div>
+      <table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Reward</th><th>Backed on</th><th class="num">Pledge total</th><th></th></tr></thead><tbody>${rows.map((b) => `<tr><td><strong>${esc(b.name)}</strong><div class="muted" style="font-size:13px">by ${esc(b.creator)}</div></td><td>${esc(b.cat)}</td><td><span class="status ${b.status === 'Live' ? 'live' : b.status === 'Funded' ? '' : 'bad'}">${esc(b.status)}</span><div class="muted" style="font-size:12px">${esc(b.when)}</div></td><td>${esc(b.reward)}</td><td>${esc(b.date)}</td><td class="num">${eur(b.amount)}</td><td>${b.status === 'Live' ? `<button class="btn" type="button" data-manage="${esc(b.name)}">Manage pledge</button>` : ''}</td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-bp="${st.bpage - 1}" ${st.bpage <= 1 ? 'disabled' : ''}>‹ Prev</button>${Array.from({ length: pages }, (_, i) => `<button class="btn" type="button" data-bp="${i + 1}" ${st.bpage === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button class="btn" type="button" data-bp="${st.bpage + 1}" ${st.bpage >= pages ? 'disabled' : ''}>Next ›</button><span class="muted" style="margin-left:auto;font-size:13px">${list.length} projects</span></div>`;
+  }
+  function discover() {
+    const cards = [['Driftwood Deck — a tide-pool strategy game', 'Saltmarsh Games', '#0f4c5c,#e2c290', '#/campaign/campaign', '460% funded'], ['Lantern Keepers RPG Starter Box', 'Gloamcraft', '#3d2c5c,#d59f6b', '#/', '212% funded'], ['Tiny Planets Terrarium', 'Verdant Works', '#2d5c3a,#b8e2a0', '#/', '88% funded'], ['Hexcrawl Terrain Tiles', 'Tessellate Tabletop', '#5c3d2c,#e2b890', '#/', '140% funded'], ['Orbit Odyssey', 'Two Moons Interactive', '#1c2a5c,#90a8e2', '#/', '64% funded'], ['Quiet Harbour Jigsaw Series', 'Slowpiece', '#5c2c4f,#e290c8', '#/', '305% funded']];
+    return `<h1>Discover</h1><p class="muted">Projects we love this week.</p><div class="grid">${cards.map(([t, c, g, h, f]) => `<div class="pcard"><div class="img" style="background:linear-gradient(135deg,${g})"></div><div class="b"><a href="${h}"><strong>${esc(t)}</strong></a><div class="muted" style="font-size:13px">${esc(c)} · ${f}</div></div></div>`).join('')}</div>`;
+  }
+  function settings() { return `<h1>Settings</h1><div class="field"><label>Email</label><input type="email" value="e.haugland@posteo.no" id="set-email" style="padding:8px;width:320px"></div><div class="field"><label>Default shipping address</label><div class="muted">Eirik Haugland, Kirkeveien 64B, 0364 Oslo, Norway</div></div><button class="btn primary" type="button" id="set-save">Save settings</button>`; }
+
+  function route() {
+    const p = (location.hash || '#/campaign/campaign').slice(2).split('/');
+    $('#me-dd').hidden = true;
+    const v = $('#view');
+    if (p[0] === 'campaign') { st.tab = p[1] || 'campaign'; v.innerHTML = campaign(); }
+    else if (p[0] === 'pledge') v.innerHTML = pledge();
+    else if (p[0] === 'account' && p[1] === 'backed') v.innerHTML = backed();
+    else if (p[0] === 'account' && p[1] === 'settings') v.innerHTML = settings();
+    else if (p[0] === 'account') v.innerHTML = `<h1>${p[1] === 'saved' ? 'Saved projects' : 'Profile'}</h1><p class="muted">Nothing here yet.</p>`;
+    else v.innerHTML = discover();
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  $('#me-btn').addEventListener('click', (e) => { e.stopPropagation(); const d = $('#me-dd'); d.hidden = !d.hidden; $('#me-btn').setAttribute('aria-expanded', String(!d.hidden)); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.me')) $('#me-dd').hidden = true; });
+  const view = $('#view');
+  view.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.name === 'reward') { st.reward = t.value; st.err = ''; rerender(); }
+    if (t.dataset.addon) { t.checked ? st.addons.add(t.dataset.addon) : st.addons.delete(t.dataset.addon); rerender(); }
+    if (t.id === 'country') { st.country = t.value; rerender(); }
+    if (t.name === 'tip') { st.tip = +t.value; rerender(); }
+    if (t.id === 'fund') { st.fund = t.checked; rerender(); }
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target;
+    const fq = t.closest('[data-faq]'); if (fq) { st.faqOpen = st.faqOpen === +fq.dataset.faq ? -1 : +fq.dataset.faq; rerender(); return; }
+    if (t.closest('#next')) { if (st.step === 1 && !st.reward) { st.err = 'Choose a reward to continue.'; rerender(); return; } st.step = st.reward === 'none' && st.step === 1 ? 3 : st.step + 1; rerender(); return; }
+    if (t.closest('#back')) { st.step = st.reward === 'none' && st.step === 3 ? 1 : st.step - 1; rerender(); return; }
+    if (t.closest('#confirm')) {
+      if (st.busy) return; st.busy = true; rerender();
+      await later(900);
+      const r = reward(); const ad = chosenAddons();
+      const id = 'KF-' + (774120 + Math.floor(total()));
+      await rec({ event: 'pledge_confirm', campaign: 'driftwood-deck', reward: r.name, addons: ad.length ? ad.map((a) => a.name).sort().join('; ') : 'none', country: r.id === 'none' ? '' : st.country, shipping: shipCost().toFixed(2), tip: st.tip.toFixed(2), community_fund: st.fund ? 'yes' : 'no', total: total().toFixed(2) });
+      st.busy = false; st.done = { id, total: total() }; rerender(); toast('Pledge confirmed');
+      return;
+    }
+    const bf = t.closest('[data-bf]'); if (bf) { st.bfilter = bf.dataset.bf; st.bpage = 1; rerender(); return; }
+    const bp = t.closest('[data-bp]'); if (bp && !bp.disabled) { st.bpage = +bp.dataset.bp; rerender(); return; }
+    const mg = t.closest('[data-manage]');
+    if (mg) {
+      const name = mg.dataset.manage;
+      $('#modal-root').innerHTML = `<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true"><h3 style="margin-top:0">Manage pledge</h3><p>${esc(name)}</p><p><button class="btn" type="button" id="m-change">Change reward</button> <button class="btn" type="button" id="m-cancel">Cancel pledge</button></p><p style="text-align:right"><button class="btn" type="button" id="m-close">Close</button></p></div></div>`;
+      $('#m-close').onclick = () => ($('#modal-root').innerHTML = '');
+      $('#m-change').onclick = () => { $('#modal-root').innerHTML = ''; toast('Reward changes open in the pledge manager.'); };
+      $('#m-cancel').onclick = async () => { await later(400); await rec({ event: 'pledge_cancel', project: name }); $('#modal-root').innerHTML = ''; toast('Pledge cancelled'); };
+      return;
+    }
+    if (t.closest('#save-proj')) { await later(200); await rec({ event: 'project_remind', project: 'driftwood-deck' }); toast("We'll remind you 48 hours before it ends."); return; }
+    if (t.closest('#cmt-post')) { await later(300); await rec({ event: 'comment_post', project: 'driftwood-deck' }); toast('Comment posted'); return; }
+    if (t.closest('#set-save')) { await later(300); await rec({ event: 'settings_update' }); toast('Settings saved'); return; }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cairnlight Cloud Console</title>
+<link rel="stylesheet" href="../style.css">
+<script src="../common.js"></script>
+<style>
+  [hidden] { display: none !important; }
+  body { background: #f4f6f9; }
+  .top { display: flex; align-items: center; gap: 14px; padding: 8px 18px; background: #0f172a; color: #e2e8f0; }
+  .top .logo { font-weight: 800; color: #38bdf8; }
+  .layout { display: grid; grid-template-columns: 270px 1fr; min-height: calc(100vh - 44px); }
+  .side { background: #fff; border-right: 1px solid #e2e8f0; padding: 12px 8px; }
+  [role=tree] { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+  [role=tree] ul { list-style: none; padding-left: 16px; margin: 0; }
+  [role=treeitem] > .ti { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+  [role=treeitem][aria-selected=true] > .ti { background: #e0f2fe; font-weight: 600; }
+  .tw { width: 18px; text-align: center; color: #64748b; }
+  .main { padding: 18px 24px; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #cbd5e1; margin: 10px 0 16px; }
+  .tabs [role=tab] { border: 0; background: none; border-radius: 0; padding: 8px 14px; border-bottom: 2px solid transparent; }
+  .tabs [role=tab][aria-selected=true] { border-bottom-color: #0284c7; color: #0369a1; font-weight: 600; }
+  table { background: #fff; }
+  .kind { font-size: 11px; padding: 1px 6px; border-radius: 8px; background: #e2e8f0; }
+  .kind.Guest { background: #fef3c7; }
+  .savebar { position: sticky; bottom: 0; background: #0f172a; color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; border-radius: 8px; margin-top: 14px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+  .dot.Running { background: #16a34a; } .dot.Stopped { background: #9ca3af; } .dot.Terminated { background: #dc2626; }
+  .hint { font-size: 12px; color: #92400e; }
+  .err { color: #b91c1c; font-size: 13px; }
+  td select { width: 200px; }
+</style>
+</head>
+<body>
+<div class="top"><span class="logo">Cairnlight Cloud</span><span>Organization: Stornoway Holdings</span><span style="margin-left:auto">sunniva.holt@stornoway.io</span></div>
+<div class="layout">
+  <nav class="side" aria-label="Resources">
+    <div class="muted" style="padding:0 6px 6px">Resource hierarchy</div>
+    <ul role="tree" id="tree" aria-label="Resource hierarchy"></ul>
+  </nav>
+  <main class="main" id="main" style="max-width:none;margin:0"></main>
+</div>
+<div class="overlay" id="dlg" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+    <h3 id="dlg-h" style="margin-top:0"></h3><div id="dlg-b"></div>
+    <div class="err" id="dlg-err" role="alert" hidden></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" id="dlg-no">Cancel</button><button type="button" class="primary" id="dlg-yes"></button></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(() => {
+  const FOLDERS = [
+    { id: 'f-fin', name: 'Finance', projects: ['ledger-prod-eu', 'ledger-prod-us', 'ledger-staging'] },
+    { id: 'f-data', name: 'Data platform', projects: ['harbor-analytics', 'harbor-analytics-dev', 'lakehouse-prod'] },
+    { id: 'f-mkt', name: 'Marketing', projects: ['campaign-site', 'campaign-site-legacy'] },
+  ];
+  const U = (name, email, kind, role) => ({ name, email, kind, role });
+  const IAM = {
+    'ledger-prod-eu': [U('Olu Adebayo-Grant', 'olu.adebayo-grant@stornoway.io', 'User', 'Owner'), U('Maren Lundqvist', 'maren.lundqvist@stornoway.io', 'User', 'Editor'), U('Maren Lund', 'maren.lund@stornoway.io', 'User', 'Editor'), U('finance-analysts', 'finance-analysts@stornoway.io', 'Group', 'Viewer'), U('Idris Mbeki', 'idris@mbeki-consulting.co.za', 'Guest', 'Viewer')],
+    'ledger-prod-us': [U('Olu Adebayo-Grant', 'olu.adebayo-grant@stornoway.io', 'User', 'Owner'), U('Maren Lund', 'maren.lund@stornoway.io', 'User', 'Editor'), U('Tavita Faleolo', 'tavita.faleolo@stornoway.io', 'User', 'Editor')],
+    'ledger-staging': [U('Maren Lund', 'maren.lund@stornoway.io', 'User', 'Owner'), U('Maren Lundqvist', 'maren.lundqvist@stornoway.io', 'User', 'Editor')],
+    'harbor-analytics': [U('Sunniva Holt', 'sunniva.holt@stornoway.io', 'User', 'Owner'), U('Idris Mbeki', 'idris@mbeki-consulting.co.za', 'Guest', 'Viewer'), U('Idris Mbeki-Shaw', 'idris.mbeki-shaw@stornoway.io', 'User', 'Editor'), U('data-eng', 'data-eng@stornoway.io', 'Group', 'Editor')],
+    'harbor-analytics-dev': [U('Sunniva Holt', 'sunniva.holt@stornoway.io', 'User', 'Owner'), U('Idris Mbeki', 'idris@mbeki-consulting.co.za', 'Guest', 'Editor'), U('data-eng', 'data-eng@stornoway.io', 'Group', 'Editor')],
+    'lakehouse-prod': [U('Sunniva Holt', 'sunniva.holt@stornoway.io', 'User', 'Owner'), U('data-eng', 'data-eng@stornoway.io', 'Group', 'Viewer')],
+    'campaign-site': [U('Bettina Koller', 'bettina.koller@stornoway.io', 'User', 'Owner')],
+    'campaign-site-legacy': [U('Bettina Koller', 'bettina.koller@stornoway.io', 'User', 'Owner')],
+  };
+  const VMS = /*DATA*/{"harbor-analytics": [{"name": "ha-ingest-01", "zone": "europe-north1-a", "type": "e2-standard-4", "status": "Running"}, {"name": "ha-ingest-02", "zone": "europe-north1-b", "type": "e2-standard-4", "status": "Running"}, {"name": "ha-ingest-03", "zone": "europe-north1-c", "type": "e2-standard-4", "status": "Stopped"}, {"name": "ha-query-01", "zone": "europe-west4-a", "type": "n2-highmem-8", "status": "Running"}, {"name": "ha-query-02", "zone": "europe-north1-a", "type": "n2-highmem-8", "status": "Running"}, {"name": "ha-bastion", "zone": "europe-north2-a", "type": "e2-micro", "status": "Running"}, {"name": "ha-scheduler", "zone": "europe-north1-b", "type": "e2-small", "status": "Terminated"}], "harbor-analytics-dev": [{"name": "had-sandbox-01", "zone": "europe-north1-a", "type": "e2-medium", "status": "Running"}, {"name": "had-sandbox-02", "zone": "europe-north1-a", "type": "e2-medium", "status": "Stopped"}, {"name": "had-ci-runner", "zone": "europe-north2-b", "type": "e2-standard-8", "status": "Running"}, {"name": "had-notebook", "zone": "europe-west1-b", "type": "n1-standard-4", "status": "Running"}], "lakehouse-prod": [{"name": "lh-spark-01", "zone": "europe-north1-a", "type": "n2-standard-16", "status": "Running"}, {"name": "lh-spark-02", "zone": "europe-north1-b", "type": "n2-standard-16", "status": "Running"}, {"name": "lh-spark-03", "zone": "europe-north1-c", "type": "n2-standard-16", "status": "Running"}, {"name": "lh-spark-04", "zone": "europe-north1-a", "type": "n2-standard-16", "status": "Stopped"}, {"name": "lh-meta-01", "zone": "europe-north1-b", "type": "e2-standard-2", "status": "Running"}, {"name": "lh-gateway", "zone": "europe-west4-b", "type": "e2-standard-2", "status": "Running"}, {"name": "lh-backup", "zone": "europe-north2-a", "type": "e2-small", "status": "Running"}, {"name": "lh-spark-05", "zone": "us-east1-b", "type": "n2-standard-16", "status": "Running"}], "ledger-prod-eu": [{"name": "lpe-api-01", "zone": "europe-north1-a", "type": "e2-standard-4", "status": "Running"}, {"name": "lpe-api-02", "zone": "europe-north1-b", "type": "e2-standard-4", "status": "Running"}, {"name": "lpe-worker-01", "zone": "europe-north1-c", "type": "e2-standard-8", "status": "Running"}, {"name": "lpe-db-proxy", "zone": "europe-north1-a", "type": "e2-small", "status": "Running"}, {"name": "lpe-reports", "zone": "europe-west1-c", "type": "e2-standard-2", "status": "Stopped"}], "ledger-prod-us": [{"name": "lpu-api-01", "zone": "us-east1-b", "type": "e2-standard-4", "status": "Running"}, {"name": "lpu-api-02", "zone": "us-east1-c", "type": "e2-standard-4", "status": "Running"}, {"name": "lpu-worker-01", "zone": "us-east1-d", "type": "e2-standard-8", "status": "Running"}], "ledger-staging": [{"name": "lst-api-01", "zone": "europe-north1-a", "type": "e2-small", "status": "Running"}, {"name": "lst-worker-01", "zone": "europe-north1-b", "type": "e2-small", "status": "Stopped"}], "campaign-site": [{"name": "cs-web-01", "zone": "europe-west2-a", "type": "e2-small", "status": "Running"}, {"name": "cs-web-02", "zone": "europe-north1-a", "type": "e2-small", "status": "Running"}], "campaign-site-legacy": [{"name": "csl-web", "zone": "europe-north1-c", "type": "f1-micro", "status": "Terminated"}]}/*END*/;
+  const ROLES = ['Owner', 'Editor', 'Viewer', 'Billing viewer'];
+  const st = { open: new Set(['org']), sel: null, tab: 'overview', pending: {} };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const toast = (m) => { const t = q('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3500); };
+  let dlgFn = null;
+  const dialog = (h, body, yes, fn) => { q('#dlg-h').textContent = h; q('#dlg-b').innerHTML = body; q('#dlg-yes').textContent = yes; q('#dlg-err').hidden = true; dlgFn = fn; q('#dlg').hidden = false; };
+  q('#dlg-no').onclick = () => { q('#dlg').hidden = true; dlgFn = null; };
+  q('#dlg-yes').onclick = async () => { const f = dlgFn; if (!f) return; q('#dlg-yes').disabled = true; const keep = await f(); q('#dlg-yes').disabled = false; if (keep === 'keep') return; q('#dlg').hidden = true; dlgFn = null; };
+
+  function renderTree() {
+    const proj = (p) => `<li role="treeitem" aria-selected="${st.sel === p}" data-proj="${p}"><div class="ti"><span class="tw"></span>▣ ${p}</div></li>`;
+    const folder = (f) => `<li role="treeitem" aria-expanded="${st.open.has(f.id)}" data-folder="${f.id}"><div class="ti"><span class="tw" aria-hidden="true">${st.open.has(f.id) ? '▾' : '▸'}</span>🗀 ${f.name}</div>${st.open.has(f.id) ? `<ul role="group">${f.projects.map(proj).join('')}</ul>` : ''}</li>`;
+    q('#tree').innerHTML = `<li role="treeitem" aria-expanded="${st.open.has('org')}" data-folder="org"><div class="ti"><span class="tw" aria-hidden="true">${st.open.has('org') ? '▾' : '▸'}</span>🏢 Stornoway Holdings</div>${st.open.has('org') ? `<ul role="group">${FOLDERS.map(folder).join('')}</ul>` : ''}</li>`;
+  }
+  q('#tree').addEventListener('click', (e) => {
+    const ti = e.target.closest('.ti'); if (!ti) return; const li = ti.parentElement;
+    if (li.dataset.folder) { const id = li.dataset.folder; st.open.has(id) ? st.open.delete(id) : st.open.add(id); renderTree(); if (id !== 'org') renderFolder(id); return; }
+    if (li.dataset.proj) { if (Object.keys(st.pending).length && !confirmLeave()) return; st.sel = li.dataset.proj; st.tab = 'overview'; st.pending = {}; renderTree(); renderProject(); }
+  });
+  const confirmLeave = () => { toast('You have unsaved IAM changes. Save or discard them first.'); return false; };
+  function renderFolder(id) {
+    const f = FOLDERS.find((x) => x.id === id); if (!f) return;
+    q('#main').innerHTML = `<h1>${f.name}</h1><p class="muted">Folder · ${f.projects.length} projects</p><ul>${f.projects.map((p) => `<li>${p}</li>`).join('')}</ul><p class="muted">Select a project in the resource hierarchy to manage it.</p>`;
+  }
+  function renderProject() {
+    const p = st.sel; const folder = FOLDERS.find((f) => f.projects.includes(p));
+    q('#main').innerHTML = `<div class="muted">Stornoway Holdings › ${folder.name} ›</div><h1 style="margin:4px 0">${p}</h1>
+      <div class="tabs" role="tablist">${[['overview', 'Overview'], ['compute', 'Compute'], ['iam', 'IAM & access'], ['billing', 'Billing']].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${l}</button>`).join('')}</div><div id="panel" role="tabpanel"></div>`;
+    qa('[data-tab]').forEach((b) => (b.onclick = () => { if (st.tab === 'iam' && Object.keys(st.pending).length) return confirmLeave(); st.tab = b.dataset.tab; renderProject(); }));
+    const panel = q('#panel');
+    if (st.tab === 'overview') panel.innerHTML = `<div class="card" style="background:#fff"><strong>Project ID</strong> ${p}<br><strong>Folder</strong> ${folder.name}<br><strong>Members</strong> ${IAM[p].length}<br><strong>VM instances</strong> ${VMS[p].length}</div>`;
+    if (st.tab === 'billing') panel.innerHTML = `<div class="card" style="background:#fff">Billing account <strong>STN-0042-EU</strong>. Budget alerts are managed by the finance team.<div style="margin-top:8px"><button type="button" id="alert-btn">Create budget alert</button></div></div>`, q('#alert-btn').onclick = () => toast('Only billing admins can create budget alerts.');
+    if (st.tab === 'compute') renderCompute(p);
+    if (st.tab === 'iam') renderIam(p);
+  }
+  async function renderCompute(p) {
+    const panel = q('#panel'); panel.innerHTML = '<p class="muted" role="status">Loading VM instances…</p>';
+    const req = p + Date.now(); renderCompute.req = req;
+    await later(450);
+    if (renderCompute.req !== req || st.sel !== p || st.tab !== 'compute') return;
+    const rows = VMS[p];
+    panel.innerHTML = `<p class="muted">${rows.length} instances · zones are shown as region-letter (for example europe-north1-a is in region europe-north1)</p><table><thead><tr><th>Name</th><th>Status</th><th>Zone</th><th>Machine type</th><th></th></tr></thead><tbody>${rows.map((v) => `<tr><td>${v.name}</td><td><span class="dot ${v.status}"></span>${v.status}</td><td>${v.zone}</td><td>${v.type}</td><td><button type="button" data-ssh="${v.name}" ${v.status === 'Running' ? '' : 'disabled'}>SSH</button></td></tr>`).join('')}</tbody></table>`;
+    panel.onclick = (e) => { const b = e.target.closest('[data-ssh]'); if (b) toast('SSH sessions open in the desktop client.'); };
+  }
+  function renderIam(p) {
+    const panel = q('#panel'); const rows = IAM[p]; const pend = st.pending;
+    panel.innerHTML = `<div class="row" style="justify-content:space-between"><p class="muted" style="margin:0">People and groups with access to ${p}. Guest accounts are people outside stornoway.io.</p><button type="button" id="add-member">+ Grant access</button></div>
+      <table style="margin-top:10px"><thead><tr><th>Principal</th><th>Type</th><th>Role</th><th></th></tr></thead><tbody>${rows.map((m, i) => { const cur = pend[m.email] || m.role; return `<tr><td><strong>${esc(m.name)}</strong><br><span class="muted">${esc(m.email)}</span></td><td><span class="kind ${m.kind}">${m.kind}</span></td>
+        <td><select data-role="${esc(m.email)}" aria-label="Role for ${esc(m.name)} (${esc(m.email)})">${ROLES.map((r) => `<option value="${r}" ${cur === r ? 'selected' : ''} ${r === 'Owner' && m.kind === 'Guest' ? 'disabled' : ''}>${r}${r === 'Owner' && m.kind === 'Guest' ? ' (not available for guest accounts)' : ''}</option>`).join('')}</select>${m.kind === 'Guest' ? '<div class="hint">Owner isn\'t available: this is a guest account.</div>' : ''}</td>
+        <td><button type="button" data-remove="${esc(m.email)}" aria-label="Remove ${esc(m.name)} (${esc(m.email)})">Remove</button></td></tr>`; }).join('')}</tbody></table>
+      ${Object.keys(pend).length ? `<div class="savebar" role="region" aria-label="Unsaved changes"><span>${Object.keys(pend).length} unsaved change(s)</span><button type="button" id="discard" style="margin-left:auto">Discard</button><button type="button" class="primary" id="save">Save changes</button></div>` : ''}`;
+    panel.onchange = (e) => {
+      const s = e.target.closest('[data-role]'); if (!s) return; const m = rows.find((x) => x.email === s.dataset.role);
+      if (s.value === m.role) delete pend[m.email]; else pend[m.email] = s.value; renderIam(p);
+    };
+    panel.onclick = (e) => {
+      const rm = e.target.closest('[data-remove]');
+      if (rm) { const m = rows.find((x) => x.email === rm.dataset.remove); dialog(`Remove ${m.name}?`, `<p>${esc(m.email)} will lose all access to ${p}.</p>`, 'Remove', async () => { await later(300); await rec({ event: 'iam_remove', project: p, member: m.email }); rows.splice(rows.indexOf(m), 1); delete pend[m.email]; toast('Access removed.'); renderIam(p); }); return; }
+      if (e.target.id === 'discard') { st.pending = {}; renderIam(p); return; }
+      if (e.target.id === 'save') {
+        const ch = Object.entries(pend);
+        dialog(`Apply ${ch.length} change(s) to ${p}?`, `<ul>${ch.map(([em, r]) => { const m = rows.find((x) => x.email === em); return `<li>${esc(m.name)} (${esc(em)}): ${m.role} → ${r}</li>`; }).join('')}</ul>`, 'Apply changes', async () => {
+          await later(400);
+          for (const [em, r] of ch) { const m = rows.find((x) => x.email === em); await rec({ event: 'iam_role_change', project: p, member: em, from: m.role, to: r }); m.role = r; }
+          st.pending = {}; toast('IAM policy updated.'); renderIam(p);
+        });
+        return;
+      }
+      if (e.target.id === 'add-member') {
+        dialog(`Grant access to ${p}`, `<label for="nm-email">Email address</label><input id="nm-email" type="email"><label for="nm-role">Role</label><select id="nm-role">${ROLES.map((r) => `<option>${r}</option>`).join('')}</select>`, 'Grant access', async () => {
+          const em = q('#nm-email').value.trim().toLowerCase(); const role = q('#nm-role').value; const err = (m) => { q('#dlg-err').textContent = m; q('#dlg-err').hidden = false; };
+          if (!/^[^@\s]+@[^@\s]+\.[a-z.]{2,}$/.test(em)) { err('Enter a valid email address.'); return 'keep'; }
+          const guest = !em.endsWith('@stornoway.io');
+          if (guest && role === 'Owner') { err('Guest accounts can\'t be given the Owner role.'); return 'keep'; }
+          if (rows.some((x) => x.email === em)) { err('That principal already has access. Change their role in the table instead.'); return 'keep'; }
+          await later(300); await rec({ event: 'iam_add', project: p, member: em, role });
+          rows.push({ name: em.split('@')[0], email: em, kind: guest ? 'Guest' : 'User', role }); toast('Access granted.'); renderIam(p);
+        });
+      }
+    };
+  }
+  renderTree();
+  q('#main').innerHTML = '<h1>Welcome to Cairnlight Cloud</h1><p class="muted">Choose a folder or project from the resource hierarchy.</p>';
+})();
+</script>
+</body>
+</html>

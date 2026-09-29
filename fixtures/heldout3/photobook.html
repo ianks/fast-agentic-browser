@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Printbloom · Photo books &amp; prints</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 15px/1.5 "Nunito", "Avenir Next", -apple-system, sans-serif; color: #25222b; background: #fbfaf8; }
+  a { color: #c2410c; }
+  button, input, select { font: inherit; }
+  header { background: #fff; border-bottom: 1px solid #eee7df; }
+  header .in { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 12px 24px; }
+  .logo { font-weight: 800; font-size: 22px; color: #c2410c; text-decoration: none; }
+  header nav a { color: #25222b; text-decoration: none; margin-right: 12px; }
+  header nav a.on { font-weight: 700; color: #c2410c; }
+  header .sp { flex: 1; }
+  .acct { position: relative; }
+  .acct > button { border: 1px solid #e3dad0; background: #fff; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .acct .dd { position: absolute; right: 0; top: 40px; background: #fff; border: 1px solid #e3dad0; border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,.08); width: 190px; padding: 6px; z-index: 10; }
+  .acct .dd a { display: block; padding: 7px 10px; border-radius: 6px; color: #25222b; text-decoration: none; }
+  .acct .dd a:hover { background: #faf3ec; }
+  main { max-width: 1140px; margin: 0 auto; padding: 24px 24px 60px; }
+  h1 { font-size: 28px; margin: 0 0 6px; }
+  .sub { color: #7a7382; margin: 0 0 16px; }
+  .btn { border: 1px solid #d9cfc4; background: #fff; border-radius: 999px; padding: 8px 18px; cursor: pointer; color: #25222b; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #c2410c; border-color: #c2410c; color: #fff; font-weight: 700; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .proj { background: #fff; border: 1px solid #eee7df; border-radius: 14px; overflow: hidden; }
+  .proj .cov { height: 150px; }
+  .proj .b { padding: 12px 14px; }
+  .flow { display: grid; grid-template-columns: 1fr 300px; gap: 26px; align-items: start; }
+  .steps { display: flex; gap: 6px; margin-bottom: 18px; }
+  .steps span { flex: 1; text-align: center; font-size: 13px; border-bottom: 3px solid #eee7df; padding: 6px; color: #9a93a3; }
+  .steps span.on { border-color: #c2410c; color: #25222b; font-weight: 700; }
+  .fmts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .fmt { display: block; border: 2px solid #eee7df; border-radius: 12px; padding: 14px; cursor: pointer; background: #fff; }
+  .fmt.sel { border-color: #c2410c; background: #fff7f1; }
+  .fmt input { position: absolute; opacity: 0; pointer-events: none; }
+  .fmt .p { float: right; font-weight: 700; }
+  .fmt small { display: block; color: #7a7382; }
+  .f { margin: 14px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 700; margin-bottom: 5px; font-size: 14px; }
+  .f select { padding: 8px 10px; border: 1px solid #d9cfc4; border-radius: 8px; background: #fff; min-width: 240px; }
+  .opts label { display: block; padding: 5px 0; }
+  .chk { display: flex; gap: 10px; align-items: flex-start; border: 1px solid #eee7df; border-radius: 10px; padding: 10px 12px; background: #fff; margin: 8px 0; }
+  .ship { display: grid; gap: 8px; }
+  .ship label { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; border: 1.5px solid #eee7df; border-radius: 10px; padding: 12px; background: #fff; cursor: pointer; }
+  .ship label.sel { border-color: #c2410c; background: #fff7f1; }
+  .ship .rec { font-size: 11px; background: #ffedd5; color: #9a3412; border-radius: 9px; padding: 1px 8px; margin-left: 6px; }
+  .summary { background: #fff; border: 1px solid #eee7df; border-radius: 14px; padding: 16px; position: sticky; top: 16px; }
+  .summary ul { list-style: none; padding: 0; margin: 8px 0; font-size: 14px; }
+  .summary li { display: flex; justify-content: space-between; padding: 3px 0; }
+  .summary .tot { border-top: 1px solid #eee7df; margin-top: 6px; padding-top: 8px; font-weight: 800; }
+  .err { color: #b91c1c; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #f1ebe4; font-size: 14px; vertical-align: top; }
+  th { color: #7a7382; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #eee7df; margin: 14px 0; }
+  .tabs a { padding: 9px 14px; color: #7a7382; text-decoration: none; border-bottom: 3px solid transparent; }
+  .tabs a.on { color: #25222b; border-bottom-color: #c2410c; font-weight: 700; }
+  .pkg { border: 1px solid #eee7df; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; background: #fff; }
+  .pill { font-size: 12px; border-radius: 9px; padding: 1px 8px; background: #f1ebe4; }
+  .pill.ok { background: #dcfce7; color: #166534; }
+  .pager { display: flex; gap: 6px; align-items: center; margin-top: 12px; }
+  .pager button[aria-current=page] { background: #25222b; color: #fff; }
+  .card { background: #fff; border: 1px solid #eee7df; border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #25222b; color: #fff; padding: 10px 18px; border-radius: 999px; z-index: 60; }
+  footer { text-align: center; color: #9a93a3; font-size: 12px; padding: 24px; }
+</style>
+</head>
+<body>
+<header><div class="in"><a class="logo" href="#/projects">printbloom</a><nav aria-label="Main"><a href="#/projects" data-nav="projects">My projects</a><a href="#/shop" data-nav="shop">Photo books</a><a href="#/shop" data-nav="prints">Prints</a><a href="#/shop" data-nav="cards">Cards</a></nav><span class="sp"></span>
+  <div class="acct"><button type="button" id="acct-btn" aria-expanded="false">Account ▾</button><div class="dd" id="acct-dd" hidden><a href="#/account/orders">Orders</a><a href="#/account/addresses">Addresses</a><a href="#/account/settings">Settings</a></div></div></div></header>
+<main id="view"></main>
+<footer>Printbloom B.V. · Printed in Eindhoven · Prices include VAT</footer>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const eur = (n) => '€' + n.toFixed(2);
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const PROJECTS = [['lofoten-2026', 'Lofoten 2026', 38, 'Edited 21 Sep 2026', '#1e3a5f,#7fb3d5'], ['lofoten-2026-copy', 'Lofoten 2026 (copy)', 38, 'Edited 2 Sep 2026', '#1e3a5f,#a8c8e0'], ['wedding', 'Sanne & Joris — wedding', 112, 'Edited 14 Aug 2026', '#5f1e3a,#e8b4c8'], ['garden', 'Garden year', 61, 'Edited 30 Jun 2026', '#2f5f1e,#b8e0a0']];
+  const FORMATS = [['sc-20', 'Softcover 20×20 cm', 24.99, 0.8, 'Lightweight, flexible cover'], ['hc-20', 'Hardcover 20×20 cm', 34.99, 1.0, 'Our classic square hardcover'], ['hc-30x21', 'Hardcover 30×21 cm Landscape', 44.99, 1.0, 'Wide pages for panoramas'], ['lf-30', 'Layflat 30×30 cm', 79.99, 2.0, 'Thick pages that open completely flat']];
+  const PAPERS = [['standard', 'Standard satin', 0], ['premium-matte', 'Premium matte', 8], ['lustre', 'Photo lustre', 15]];
+  const COUNTRIES = [['NL', 'Netherlands'], ['BE', 'Belgium'], ['DE', 'Germany'], ['FR', 'France'], ['AT', 'Austria'], ['DK', 'Denmark'], ['SE', 'Sweden']];
+  const SHIPRATES = { NL: [4.95, 9.95, 14.95], BE: [5.95, 12.9, 19.0], DE: [5.95, 14.9, 24.0], FR: [6.95, 16.5, 27.0], AT: [7.95, 17.9, 29.0], DK: [8.95, 19.9, 31.0], SE: [9.95, 21.5, 34.0] };
+  const shipCost = (country, method, qty) => { const i = ['standard', 'express', 'priority'].indexOf(method); const base = SHIPRATES[country][i]; return Math.round((base + (qty - 1) * [1.0, 3.0, 5.0][i]) * 100) / 100; };
+  const ORDERS = [
+    { id: 'PB-90117', title: "Nonna's 90th — prints reorder", date: '2026-09-12', status: 'Shipped', total: 32.4, items: [['Premium prints 13×18 cm', 20, 16.4]], pkgs: [{ carrier: 'PostNL', track: '3SPRBL0051880214', items: 'Premium prints ×20', status: 'In transit' }] },
+    { id: 'PB-89960', title: 'Garden year — calendar', date: '2026-09-03', status: 'Delivered', total: 29.95, items: [['Wall calendar A3', 1, 24.95]], pkgs: [{ carrier: 'DHL', track: 'JJD000390011407731', items: 'Wall calendar A3 ×1', status: 'Delivered 8 Sep' }] },
+    { id: 'PB-89511', title: 'Summer cards', date: '2026-08-19', status: 'Delivered', total: 18.5, items: [['Folded cards ×25', 1, 13.5]], pkgs: [{ carrier: 'PostNL', track: '3SPRBL0047702553', items: 'Folded cards ×25', status: 'Delivered 23 Aug' }] },
+    { id: 'PB-89002', title: 'Sanne & Joris — wedding (proof)', date: '2026-08-02', status: 'Delivered', total: 64.99, items: [['Softcover 20×20 cm proof', 1, 24.99]], pkgs: [{ carrier: 'DHL', track: 'JJD000390010771230', items: 'Softcover 20×20 ×1', status: 'Delivered 7 Aug' }] },
+    { id: 'PB-88731', title: 'Canvas — Hamnøy', date: '2026-07-21', status: 'Delivered', total: 59.0, items: [['Canvas 60×40 cm', 1, 49.0]], pkgs: [{ carrier: 'DHL', track: 'JJD000390010655018', items: 'Canvas 60×40 ×1', status: 'Delivered 27 Jul' }] },
+    { id: 'PB-88412', title: "Nonna's 90th", date: '2026-07-03', status: 'Delivered', total: 146.35, items: [['Hardcover 20×20 cm, 48 pages', 3, 116.97], ['Premium prints 13×18 cm', 40, 22.4]], pkgs: [{ carrier: 'DHL', track: 'JJD000390010982245', items: 'Premium prints ×40', status: 'Delivered 9 Jul' }, { carrier: 'PostNL', track: '3SPRBL0045117790', items: 'Hardcover 20×20 cm ×3', status: 'Delivered 11 Jul' }] },
+    { id: 'PB-87990', title: 'Garden year — mini book', date: '2026-06-14', status: 'Delivered', total: 21.9, items: [['Softcover 15×15 cm', 1, 16.95]], pkgs: [{ carrier: 'PostNL', track: '3SPRBL0041240987', items: 'Softcover 15×15 ×1', status: 'Delivered 19 Jun' }] },
+    { id: 'PB-87544', title: 'Photo magnets', date: '2026-05-28', status: 'Delivered', total: 14.95, items: [['Photo magnets ×9', 1, 9.95]], pkgs: [{ carrier: 'PostNL', track: '3SPRBL0039955120', items: 'Photo magnets ×9', status: 'Delivered 2 Jun' }] },
+  ];
+  const st = { o: null, busy: false, opage: 1 };
+  const newOrder = (proj) => ({ proj, step: 1, fmt: '', pages: '24', paper: 'standard', cover: 'matte', gift: true, qty: '1', country: 'NL', ship: 'express', err: '', done: null });
+  const unit = (o) => { const f = FORMATS.find((x) => x[0] === o.fmt); if (!f) return 0; return f[2] + Math.max(0, +o.pages - 24) * f[3] + PAPERS.find((p) => p[0] === o.paper)[2] + (o.gift ? 12 : 0); };
+  const total = (o) => Math.round((unit(o) * +o.qty + shipCost(o.country, o.ship, +o.qty)) * 100) / 100;
+
+  function projects() { return `<h1>My projects</h1><p class="sub">Pick a project to order it as a photo book.</p><div class="projects">${PROJECTS.map(([id, n, ph, ed, g]) => `<div class="proj"><div class="cov" style="background:linear-gradient(135deg,${g})"></div><div class="b"><strong>${esc(n)}</strong><div class="sub" style="margin:2px 0 8px">${ph} photos · ${ed}</div><a class="btn" href="#/project/${id}">Open</a> <a class="btn primary" href="#/order/${id}">Order book</a></div></div>`).join('')}</div>`; }
+  function orderFlow(pid) {
+    const pj = PROJECTS.find((x) => x[0] === pid); if (!pj) return '<p>Project not found.</p>';
+    if (!st.o || st.o.proj !== pid) st.o = newOrder(pid);
+    const o = st.o;
+    if (o.done) return `<h1>Thank you! Order ${esc(o.done)} is placed.</h1><p>We'll email you when your books ship. <a href="#/account/orders">View orders</a></p>`;
+    const L = ['Format', 'Options', 'Shipping', 'Review'];
+    let body = '';
+    if (o.step === 1) body = `<h1>Choose a format</h1><div class="fmts" role="radiogroup" aria-label="Book format">${FORMATS.map(([k, n, p, pp, d]) => `<label class="fmt ${o.fmt === k ? 'sel' : ''}"><input type="radio" name="fmt" value="${k}" ${o.fmt === k ? 'checked' : ''}><strong>${n}</strong><span class="p">from ${eur(p)}</span><small>${d} · 24 pages included, +${eur(pp)} per extra page</small></label>`).join('')}</div>`;
+    else if (o.step === 2) {
+      const pages = []; for (let n = 24; n <= 120; n += 2) pages.push(n);
+      body = `<h1>Options</h1><div class="f"><label for="pages">Number of pages</label><select id="pages">${pages.map((n) => `<option ${o.pages === String(n) ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+        <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:700">Paper</legend><div class="opts">${PAPERS.map(([k, n, p]) => `<label><input type="radio" name="paper" value="${k}" ${o.paper === k ? 'checked' : ''}> ${n} ${p ? '(+' + eur(p) + ' per book)' : '(included)'}</label>`).join('')}</div></fieldset>
+        <fieldset class="f" style="border:0;padding:0"><legend class="lab" style="font-weight:700">Cover finish</legend><div class="opts"><label><input type="radio" name="cover" value="matte" ${o.cover === 'matte' ? 'checked' : ''}> Matte</label><label><input type="radio" name="cover" value="gloss" ${o.cover === 'gloss' ? 'checked' : ''}> Gloss</label></div></fieldset>
+        <label class="chk"><input type="checkbox" id="gift" ${o.gift ? 'checked' : ''}><span><strong>Add a gift box (+€12.00 per book)</strong><br><span class="sub" style="margin:0">Linen box with ribbon · most popular for gifts</span></span></label>
+        <div class="f"><label for="qty">Quantity</label><select id="qty">${Array.from({ length: 10 }, (_, i) => `<option ${o.qty === String(i + 1) ? 'selected' : ''}>${i + 1}</option>`).join('')}</select></div>`;
+    } else if (o.step === 3) {
+      body = `<h1>Shipping</h1><div class="f"><label for="country">Ship to country</label><select id="country">${COUNTRIES.map(([c, n]) => `<option value="${c}" ${o.country === c ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+        <div class="ship" role="radiogroup" aria-label="Shipping method">${[['standard', 'Standard', '5–7 business days'], ['express', 'Express', '2–3 business days'], ['priority', 'Priority', 'Next business day']].map(([k, n, d]) => `<label class="${o.ship === k ? 'sel' : ''}"><input type="radio" name="ship" value="${k}" ${o.ship === k ? 'checked' : ''}><span><strong>${n}</strong>${k === 'express' ? '<span class="rec">Recommended</span>' : ''}<br><span class="sub" style="margin:0">${d}</span></span><strong>${eur(shipCost(o.country, k, +o.qty))}</strong></label>`).join('')}</div><p class="sub" style="margin-top:8px">Shipping price covers ${o.qty} book${o.qty === '1' ? '' : 's'} to ${esc(COUNTRIES.find((c) => c[0] === o.country)[1])}.</p>`;
+    } else {
+      const f = FORMATS.find((x) => x[0] === o.fmt);
+      body = `<h1>Review your order</h1><table><tbody><tr><th>Project</th><td>${esc(pj[1])}</td></tr><tr><th>Format</th><td>${esc(f[1])}</td></tr><tr><th>Pages</th><td>${o.pages}</td></tr><tr><th>Paper</th><td>${esc(PAPERS.find((p) => p[0] === o.paper)[1])}</td></tr><tr><th>Cover</th><td>${o.cover === 'gloss' ? 'Gloss' : 'Matte'}</td></tr><tr><th>Gift box</th><td>${o.gift ? 'Yes' : 'No'}</td></tr><tr><th>Quantity</th><td>${o.qty}</td></tr><tr><th>Shipping</th><td>${o.ship[0].toUpperCase() + o.ship.slice(1)} to ${esc(COUNTRIES.find((c) => c[0] === o.country)[1])} · ${eur(shipCost(o.country, o.ship, +o.qty))}</td></tr><tr><th>Payment</th><td>iDEAL / card at the next step · saved: Mastercard •••• 2291</td></tr></tbody></table>`;
+    }
+    return `<p class="sub"><a href="#/projects">My projects</a> › ${esc(pj[1])} › Order</p><div class="steps">${L.map((l, i) => `<span class="${o.step === i + 1 ? 'on' : ''}">${i + 1}. ${l}</span>`).join('')}</div><div class="flow"><section>${body}<p class="err" role="alert">${esc(o.err)}</p><p>${o.step > 1 ? '<button class="btn" type="button" id="o-back">Back</button> ' : ''}${o.step < 4 ? '<button class="btn primary" type="button" id="o-next">Continue</button>' : `<button class="btn primary" type="button" id="o-place" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Placing order…' : 'Place order · ' + eur(total(o))}</button>`}</p></section>
+      <aside class="summary" aria-label="Order summary"><strong>${esc(pj[1])}</strong><ul><li><span>Book${o.qty !== '1' ? 's' : ''} (${o.qty} × ${eur(unit(o))})</span><span>${eur(unit(o) * +o.qty)}</span></li>${o.step >= 3 ? `<li><span>Shipping (${o.ship})</span><span>${eur(shipCost(o.country, o.ship, +o.qty))}</span></li>` : ''}<li class="tot"><span>Total</span><span>${eur(o.step >= 3 ? total(o) : unit(o) * +o.qty)}</span></li></ul></aside></div>`;
+  }
+  function ordersPage() {
+    const per = 5, pages = Math.ceil(ORDERS.length / per);
+    return `<h1>Orders</h1><p class="sub">${ORDERS.length} orders</p><div class="card"><table><thead><tr><th>Order</th><th>Placed</th><th>Status</th><th>Total</th><th></th></tr></thead><tbody>${ORDERS.slice((st.opage - 1) * per, st.opage * per).map((o) => `<tr><td><strong>${esc(o.title)}</strong><div class="sub" style="margin:0">${o.id}</div></td><td>${o.date}</td><td><span class="pill ${o.status === 'Delivered' ? 'ok' : ''}">${o.status}</span></td><td>${eur(o.total)}</td><td><a class="btn" href="#/account/orders/${o.id}/summary">View order</a></td></tr>`).join('')}</tbody></table>
+      <div class="pager" role="navigation" aria-label="Pages"><button class="btn" type="button" data-opage="${st.opage - 1}" ${st.opage === 1 ? 'disabled' : ''}>Previous</button>${Array.from({ length: pages }, (_, i) => `<button class="btn" type="button" data-opage="${i + 1}" ${st.opage === i + 1 ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('')}<button class="btn" type="button" data-opage="${st.opage + 1}" ${st.opage === pages ? 'disabled' : ''}>Next</button></div></div>`;
+  }
+  function orderDetail(id, tab) {
+    const o = ORDERS.find((x) => x.id === id); if (!o) return '<p>Order not found.</p>';
+    const T = [['summary', 'Summary'], ['items', 'Items'], ['shipments', 'Shipments'], ['invoice', 'Invoice']];
+    let inner = '';
+    if (tab === 'items') inner = `<table><thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead><tbody>${o.items.map(([n, q, p]) => `<tr><td>${esc(n)}</td><td>${q}</td><td>${eur(p)}</td></tr>`).join('')}</tbody></table>`;
+    else if (tab === 'shipments') inner = o.pkgs.map((p, i) => `<div class="pkg"><strong>Package ${i + 1} of ${o.pkgs.length}</strong> · ${esc(p.items)}<div class="sub" style="margin:4px 0">${esc(p.carrier)} · ${esc(p.status)}</div><div>Tracking number: <code>${esc(p.track)}</code></div></div>`).join('');
+    else if (tab === 'invoice') inner = `<p>Invoice INV-${o.id.slice(3)} · ${eur(o.total)} · paid by Mastercard •••• 2291</p><button class="btn" type="button" id="dl-inv">Download PDF</button>`;
+    else inner = `<p>Placed ${o.date} · <span class="pill ${o.status === 'Delivered' ? 'ok' : ''}">${o.status}</span> · ${eur(o.total)}</p><p class="sub">Shipped in ${o.pkgs.length} package${o.pkgs.length > 1 ? 's' : ''}. See the Shipments tab for tracking.</p><button class="btn" type="button" id="reorder">Reorder</button>`;
+    return `<p class="sub"><a href="#/account/orders">Orders</a> › ${o.id}</p><h1>${esc(o.title)}</h1><nav class="tabs" aria-label="Order sections">${T.map(([k, l]) => `<a href="#/account/orders/${o.id}/${k}" class="${tab === k ? 'on' : ''}">${l}</a>`).join('')}</nav><div class="card">${inner}</div>`;
+  }
+  function route() {
+    const p = (location.hash || '#/projects').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    $('#acct-dd').hidden = true;
+    const v = $('#view');
+    if (p[0] === 'order') v.innerHTML = orderFlow(p[1]);
+    else if (p[0] === 'account' && p[1] === 'orders' && p[2]) v.innerHTML = orderDetail(p[2], p[3] || 'summary');
+    else if (p[0] === 'account' && p[1] === 'orders') v.innerHTML = ordersPage();
+    else if (p[0] === 'account') v.innerHTML = `<h1>${p[1] === 'addresses' ? 'Addresses' : 'Settings'}</h1><div class="card">${p[1] === 'addresses' ? 'Lieke van Dijk · Kastanienallee 41, 10435 Berlin, Germany' : 'Language: English · Currency: EUR'}</div>`;
+    else if (p[0] === 'project') v.innerHTML = `<h1>${esc((PROJECTS.find((x) => x[0] === p[1]) || [0, 'Project'])[1])}</h1><p class="sub">The editor opens in the desktop app.</p><a class="btn primary" href="#/order/${p[1]}">Order book</a>`;
+    else if (p[0] === 'shop') v.innerHTML = `<h1>Photo books</h1><div class="card">${FORMATS.map((f) => `<p><strong>${f[1]}</strong> — from ${eur(f[2])}</p>`).join('')}</div>`;
+    else { document.querySelector('[data-nav=projects]').classList.add('on'); v.innerHTML = projects(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  $('#acct-btn').addEventListener('click', (e) => { e.stopPropagation(); const d = $('#acct-dd'); d.hidden = !d.hidden; $('#acct-btn').setAttribute('aria-expanded', String(!d.hidden)); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.acct')) $('#acct-dd').hidden = true; });
+  const view = $('#view');
+  view.addEventListener('change', (e) => {
+    const t = e.target; const o = st.o; if (!o) return;
+    if (t.name === 'fmt') o.fmt = t.value; if (t.id === 'pages') o.pages = t.value; if (t.name === 'paper') o.paper = t.value; if (t.name === 'cover') o.cover = t.value;
+    if (t.id === 'gift') o.gift = t.checked; if (t.id === 'qty') o.qty = t.value; if (t.id === 'country') o.country = t.value; if (t.name === 'ship') o.ship = t.value;
+    o.err = ''; rerender();
+  });
+  view.addEventListener('click', async (e) => {
+    const t = e.target; const o = st.o;
+    const op = t.closest('[data-opage]'); if (op && !op.disabled) { st.opage = +op.dataset.opage; rerender(); return; }
+    if (t.closest('#reorder') || t.closest('#dl-inv')) { toast(t.closest('#reorder') ? 'Reorders open in the desktop app.' : 'Invoice downloaded'); return; }
+    if (!o) return;
+    if (t.closest('#o-back')) { o.step--; o.err = ''; rerender(); return; }
+    if (t.closest('#o-next')) { if (o.step === 1 && !o.fmt) { o.err = 'Choose a format.'; rerender(); return; } o.step++; rerender(); return; }
+    if (t.closest('#o-place')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(1000);
+      const id = 'PB-' + (90200 + Math.round(total(o)));
+      await rec({ event: 'order_place', order: id, project: PROJECTS.find((x) => x[0] === o.proj)[1], project_id: o.proj, format: o.fmt, pages: o.pages, paper: o.paper, cover: o.cover, gift_box: o.gift ? 'yes' : 'no', qty: o.qty, country: o.country, shipping: o.ship, shipping_cost: shipCost(o.country, o.ship, +o.qty).toFixed(2), total: total(o).toFixed(2) });
+      ORDERS.unshift({ id, title: PROJECTS.find((x) => x[0] === o.proj)[1], date: '2026-09-24', status: 'In production', total: total(o), items: [], pkgs: [] });
+      st.busy = false; o.done = id; rerender(); toast('Order placed');
+    }
+  });
+  route();
+})();
+</script>
+</body>
+</html>

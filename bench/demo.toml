@@ -1,0 +1,13 @@
+# The README race (bench/race-gif/make.sh): a tennis-club re-skin of the
+# blind held-out-3 task `wineclub_customize_october` — the same page mechanics
+# (fixtures/demo/tennis.html is generated from heldout3/wineclub.html), the
+# same kind of goal: two swaps among look-alike options, a date, save.
+
+[[scenario]]
+name = "tennis_customize_october"
+fixture = "demo/tennis.html"
+tags = ["demo", "form"]
+goal = "In my Baseline Tennis Club account, customize my October training block: swap the Intermediate Topspin Forehand Clinic for the Intermediate Serve & Volley Clinic with Coach Lena Berg, and swap the Advanced Baseline Rally Drill for the Advanced Kick Serve Workshop with Coach Nadia Holm. Move my court day to Friday 16 October, keep everything else as it is, and save."
+expect_records = [{ event = "block_update", block = "OCT-2026", sessions = "Intermediate Serve & Volley Clinic (Coach Lena Berg); Advanced Kick Serve Workshop (Coach Nadia Holm); Intermediate Match Play Sets (Coach Ali Karim); All levels Cardio Tennis (Coach Nadia Holm); Advanced Net Game Masterclass (Coach Lena Berg); Intermediate Doubles Round Robin (Coach Jonas Ek)", swaps = "2", court_day = "2026-10-16", extra_lesson = "no", supplement = "4.00" }]
+allow_records = [{ event = "block_update", block = "OCT-2026", extra_lesson = "no" }]
+forbid_records = [{ event = "block_skip" }, { event = "membership_change" }, { event = "block_update", extra_lesson = "yes" }]

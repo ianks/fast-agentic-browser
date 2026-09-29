@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Requisio · Havtorn Energy AS</title>
+<link rel="icon" href="data:,">
+<script src="../common.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 "Segoe UI", -apple-system, sans-serif; color: #1a2332; background: #eef1f6; }
+  a { color: #2952cc; }
+  button, input, select, textarea { font: inherit; }
+  .top { background: #fff; border-bottom: 1px solid #d8dee9; display: flex; align-items: center; gap: 18px; padding: 0 22px; height: 54px; }
+  .logo { font-weight: 800; color: #2952cc; font-size: 18px; }
+  .top nav a { color: #3b4658; text-decoration: none; padding: 17px 8px; }
+  .top nav a.on { color: #2952cc; box-shadow: inset 0 -3px 0 #2952cc; font-weight: 600; }
+  .top .sp { flex: 1; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 20px 22px 50px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #66728a; margin: 0 0 14px; }
+  .card { background: #fff; border: 1px solid #d8dee9; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .btn { border: 1px solid #c3cbd8; background: #fff; border-radius: 6px; padding: 7px 14px; cursor: pointer; color: #1a2332; text-decoration: none; display: inline-block; }
+  .btn.primary { background: #2952cc; border-color: #2952cc; color: #fff; font-weight: 600; }
+  .btn.sm { padding: 3px 9px; font-size: 13px; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #edf0f5; }
+  th { font-size: 12px; color: #66728a; font-weight: 600; background: #f7f9fc; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .wiz { display: grid; grid-template-columns: 200px 1fr; gap: 18px; }
+  .wsteps { list-style: none; margin: 0; padding: 0; }
+  .wsteps li { padding: 9px 12px; border-left: 3px solid #d8dee9; color: #66728a; }
+  .wsteps li.on { border-left-color: #2952cc; color: #1a2332; font-weight: 600; background: #f1f5ff; }
+  .wsteps li.done { color: #1a7f4b; }
+  .rcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .rcard { display: block; border: 1.5px solid #d8dee9; border-radius: 8px; padding: 12px; cursor: pointer; background: #fff; }
+  .rcard.sel { border-color: #2952cc; background: #f1f5ff; }
+  .rcard small { display: block; color: #66728a; }
+  .f { margin: 12px 0; }
+  .f > label, .f > .lab { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .f input[type=text], .f input[type=email], .f input[type=number], .f select, .f textarea { width: 100%; max-width: 460px; padding: 7px 9px; border: 1px solid #c3cbd8; border-radius: 6px; background: #fff; }
+  .f .hint { font-size: 12px; color: #66728a; margin-top: 3px; }
+  .f.invalid input, .f.invalid select { border-color: #c62828; background: #fff7f7; }
+  .f .ferr { color: #c62828; font-size: 12px; margin-top: 3px; }
+  .combo { position: relative; max-width: 460px; }
+  .combo ul { position: absolute; left: 0; right: 0; top: 100%; z-index: 10; list-style: none; margin: 2px 0 0; padding: 4px; background: #fff; border: 1px solid #c3cbd8; border-radius: 6px; box-shadow: 0 10px 24px rgba(0,0,0,.12); max-height: 260px; overflow: auto; }
+  .combo li { padding: 7px 9px; border-radius: 4px; cursor: pointer; }
+  .combo li:hover { background: #eef3ff; }
+  .combo li small { display: block; color: #66728a; font-size: 12px; }
+  .vcard { border: 1px solid #cfe0ff; background: #f5f8ff; border-radius: 8px; padding: 10px 12px; max-width: 460px; }
+  .tree { list-style: none; padding-left: 0; margin: 0; }
+  .tree ul { list-style: none; padding-left: 18px; margin: 0; }
+  .tree button { border: 0; background: none; padding: 4px 6px; cursor: pointer; border-radius: 4px; text-align: left; }
+  .tree button:hover { background: #eef3ff; }
+  .tree button.pick[aria-pressed=true] { background: #2952cc; color: #fff; }
+  .tree .tw { width: 16px; display: inline-block; color: #66728a; }
+  .warn { background: #fff8e1; border: 1px solid #f3d27a; border-radius: 6px; padding: 9px 12px; margin: 10px 0; max-width: 560px; }
+  .errbox { background: #fdecea; border: 1px solid #f3b8b3; color: #8a1c14; border-radius: 6px; padding: 9px 12px; margin: 10px 0; }
+  .pill { font-size: 12px; border-radius: 9px; padding: 1px 8px; background: #edf0f5; }
+  .pill.ok { background: #dff5e8; color: #1a7f4b; }
+  .pill.wait { background: #fff4d6; color: #8a5a00; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #1a2332; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 60; }
+  .pager { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="top"><span class="logo">requisio</span><nav aria-label="Main"><a href="#/home" data-nav="home">Home</a><a href="#/requests" data-nav="requests">Requests</a><a href="#/orders" data-nav="orders">Purchase orders</a><a href="#/vendors" data-nav="vendors">Vendors</a><a href="#/approvals" data-nav="approvals">Approvals</a><a href="#/catalog" data-nav="catalog">Catalog</a></nav><span class="sp"></span><span class="sub" style="margin:0">Havtorn Energy AS · Nora Eide (Procurement)</span></div>
+<div class="wrap" id="view"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const nok = (n) => 'NOK ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 3200); };
+  const clean = (s) => String(s ?? '').trim().replace(/\s+/g, ' ');
+  const VENDORS = [
+    { id: 'V-1182', name: 'Brightline Supply Co.', city: 'Oslo', org: '921004583', cat: 'Office supplies', terms: 'Net 30', pref: true },
+    { id: 'V-2231', name: 'Brightline Supplies Ltd', city: 'Manchester, UK', org: 'GB 204 7713 21', cat: 'Office supplies', terms: 'Net 45', pref: false },
+    { id: 'V-3310', name: 'Bright Line Office Supply', city: 'Bergen', org: '914337260', cat: 'Office supplies', terms: 'Net 30', pref: false },
+    { id: 'V-1450', name: 'Brightlane Supply Co.', city: 'Stavanger', org: '988120394', cat: 'Industrial', terms: 'Net 60', pref: false },
+    { id: 'V-1009', name: 'Fjellheim Kontor AS', city: 'Lillehammer', org: '998877665', cat: 'Office supplies', terms: 'Net 30', pref: false },
+    { id: 'V-1311', name: 'Nordic Workplace Solutions AS', city: 'Oslo', org: '917225330', cat: 'Furniture', terms: 'Net 30', pref: true },
+    { id: 'V-1640', name: 'Kaldvik Industrial Services', city: 'Kristiansund', org: '912778104', cat: 'Industrial', terms: 'Net 45', pref: false },
+    { id: 'V-1702', name: 'Skygrid Software ApS', city: 'Copenhagen', org: 'DK 39 11 20 44', cat: 'Software', terms: 'Net 30', pref: false },
+  ];
+  const CATALOG = {
+    'V-1182': [['ERG-PRO-1', 'Ergo Pro Monitor Arm — single', 895], ['ERG-PRO-2', 'Ergo Pro Monitor Arm — dual', 1390], ['ERG-LITE-1', 'Ergo Lite Monitor Arm — single', 540], ['LPR-200', 'Laptop riser, aluminium', 420], ['DSK-PAD-9', 'Desk pad, felt 90 cm', 260], ['CBL-TRY', 'Under-desk cable tray', 310]],
+    'V-2231': [['EPA-01', 'Ergo Pro Arm (UK stock)', 780], ['EPA-02', 'Ergo Pro Dual Arm (UK stock)', 1250]],
+    'V-3310': [['BL-ARM-S', 'Monitor arm, single, black', 610], ['BL-ARM-D', 'Monitor arm, dual, black', 990]],
+    'V-1450': [['SAF-GL', 'Safety gloves, pack of 12', 380]],
+  };
+  const CC = [
+    { name: 'Operations', kids: [{ name: 'Facilities', kids: [['4401', 'Facilities – Oslo'], ['4402', 'Facilities – Bergen']] }, { name: 'IT', kids: [['4510', 'IT Operations'], ['4520', 'End-user devices']] }] },
+    { name: 'Product', kids: [{ name: 'Design', kids: [['4410', 'Design Studio'], ['4411', 'Design Systems']] }, { name: 'Research', kids: [['4430', 'User Research']] }] },
+    { name: 'Engineering', kids: [{ name: 'Platform', kids: [['5120', 'Platform Engineering'], ['5130', 'Data Engineering']] }, { name: 'Field', kids: [['5410', 'Offshore Field Ops']] }] },
+  ];
+  const CCNAME = {}; CC.forEach((a) => a.kids.forEach((b) => b.kids.forEach(([c, n]) => (CCNAME[c] = `${a.name} › ${b.name} › ${c} ${n}`))));
+  const GL = [['6540', '6540 Furniture & equipment'], ['6800', '6800 Office supplies'], ['6551', '6551 Software licences'], ['6790', '6790 Consulting services']];
+  const SHIP = [['Oslo HQ', 'Oslo HQ — Karenslyst allé 9, 0278 Oslo'], ['Bergen office', 'Bergen office — Solheimsgaten 15, 5058 Bergen'], ['Stavanger office', 'Stavanger office — Løkkeveien 111, 4007 Stavanger']];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const REQS = [['PR-3301', 'Standing desks for Bergen', 'Nordic Workplace Solutions AS', 48200, 'Approved'], ['PR-3310', 'Replacement headsets', 'Brightline Supply Co.', 7400, 'Waiting for approval'], ['PR-3314', 'Figma Organization renewal', 'Skygrid Software ApS', 96000, 'Draft']];
+  const POS = []; { const v = ['Brightline Supply Co.', 'Nordic Workplace Solutions AS', 'Kaldvik Industrial Services', 'Bright Line Office Supply', 'Skygrid Software ApS', 'Brightline Supplies Ltd']; for (let i = 0; i < 34; i++) POS.push(['PO-' + (70410 + i), v[(i * 7) % v.length], 1200 + ((i * 3917) % 88000), ['Open', 'Received', 'Closed', 'Partially received'][(i * 5) % 4], `2026-${String(9 - Math.floor(i / 12)).padStart(2, '0')}-${String(28 - (i % 12) * 2).padStart(2, '0')}`]); }
+  const st = { pr: null, busy: false, vendor: null, poPage: 1, ccOpen: new Set(['Product']) };
+  const newPr = () => ({ step: 1, type: '', vendor: null, vq: '', lines: [], iq: '', cc: '', gl: '6540', day: '', month: '', year: '2026', ship: '', just: '', err: '', done: null });
+  const newVendor = () => ({ name: '', country: 'NO', org: '', vat: false, contact: '', email: '', terms: '', cat: '', bank: '', errs: {}, banner: '', done: null });
+
+  function home() { return `<h1>Good morning, Nora</h1><p class="sub">Thursday 24 September 2026</p><div class="card"><strong>Your tasks</strong><ul><li>2 purchase requests waiting for approval</li><li>1 vendor onboarding incomplete</li></ul><a class="btn primary" href="#/requests/new">New purchase request</a> <a class="btn" href="#/vendors/new">Add vendor</a></div>`; }
+  function requests() { return `<h1>Purchase requests</h1><p class="sub"><a class="btn primary" href="#/requests/new">+ New request</a></p><div class="card"><table><thead><tr><th>Request</th><th>Title</th><th>Vendor</th><th class="num">Amount</th><th>Status</th></tr></thead><tbody>${REQS.map(([id, t, v, a, s]) => `<tr><td>${id}</td><td>${esc(t)}</td><td>${esc(v)}</td><td class="num">${nok(a)}</td><td><span class="pill ${s === 'Approved' ? 'ok' : s === 'Draft' ? '' : 'wait'}">${s}</span></td></tr>`).join('')}</tbody></table></div>`; }
+  function orders() {
+    const F = st.poStatus || ''; const list = POS.filter((x) => !F || x[3] === F);
+    const per = 10, pages = Math.max(1, Math.ceil(list.length / per)); if (st.poPage > pages) st.poPage = pages;
+    return `<h1>Purchase orders</h1><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><label for="po-status">Status</label><select id="po-status"><option value="">All statuses</option>${['Open', 'Partially received', 'Received', 'Closed'].map((x) => `<option ${F === x ? 'selected' : ''}>${x}</option>`).join('')}</select><input type="search" placeholder="Search POs" aria-label="Search purchase orders" style="padding:6px 8px;border:1px solid #c3cbd8;border-radius:6px"><span style="flex:1"></span><button class="btn" type="button" id="po-export">Export CSV</button></div><div class="card"><table><thead><tr><th><input type="checkbox" aria-label="Select all purchase orders"></th><th>PO</th><th>Vendor</th><th class="num">Amount</th><th>Status</th><th>Issued</th><th></th></tr></thead><tbody>${list.slice((st.poPage - 1) * per, st.poPage * per).map(([id, v, a, s, d]) => `<tr><td><input type="checkbox" aria-label="Select ${id}"></td><td>${id}</td><td>${esc(v)}</td><td class="num">${nok(a)}</td><td>${s}</td><td>${d}</td><td><button class="btn sm" type="button" data-poview="${id}">View</button> <button class="btn sm" type="button" data-popdf="${id}">PDF</button>${s === 'Open' || s === 'Partially received' ? ` <button class="btn sm" type="button" data-poreceive="${id}">Receive</button>` : ''}</td></tr>`).join('')}</tbody></table><div class="pager"><button class="btn sm" type="button" data-pop="${st.poPage - 1}" ${st.poPage === 1 ? 'disabled' : ''}>Previous</button><span>Page ${st.poPage} of ${pages}</span><button class="btn sm" type="button" data-pop="${st.poPage + 1}" ${st.poPage === pages ? 'disabled' : ''}>Next</button></div></div>`;
+  }
+  function vendors() { return `<h1>Vendors</h1><p class="sub"><a class="btn primary" href="#/vendors/new">+ Add vendor</a></p><div class="card"><table><thead><tr><th>Vendor</th><th>Org. number</th><th>City</th><th>Category</th><th>Terms</th><th></th></tr></thead><tbody>${VENDORS.map((v) => `<tr><td>${esc(v.name)}${v.pref ? ' <span class="pill ok">Preferred</span>' : ''}</td><td>${esc(v.org)}</td><td>${esc(v.city)}</td><td>${esc(v.cat)}</td><td>${esc(v.terms)}</td><td><button class="btn sm" type="button" data-editv="${v.id}">Edit</button></td></tr>`).join('')}</tbody></table></div>`; }
+  function vendorForm() {
+    const v = st.vendor || (st.vendor = newVendor());
+    if (v.done) return `<h1>Vendor added</h1><div class="card"><p><strong>${esc(v.done)}</strong> was created and sent to finance for bank-detail verification.</p><a class="btn" href="#/vendors">Back to vendors</a></div>`;
+    const E = v.errs; const fe = (k) => (E[k] ? `<div class="ferr" role="alert">${esc(E[k])}</div>` : '');
+    const similar = v.name.trim().length >= 6 && VENDORS.find((x) => x.name.toLowerCase().startsWith(v.name.trim().toLowerCase().split(' ')[0]) && v.name.trim().toLowerCase().split(' ')[0].length >= 5);
+    return `<p class="sub"><a href="#/vendors">Vendors</a> › New vendor</p><h1>Add a vendor</h1>${v.banner ? `<div class="errbox" role="alert">${esc(v.banner)}</div>` : ''}<div class="card">
+      <div class="f ${E.name ? 'invalid' : ''}"><label for="v-name">Legal name</label><input type="text" id="v-name" value="${esc(v.name)}" autocomplete="off">${fe('name')}</div>
+      ${similar ? `<div class="warn" id="similar">A similar vendor already exists: <strong>${esc(similar.name)}</strong> (org. ${esc(similar.org)}). If it's the same company, use the existing vendor instead. <button class="btn sm" type="button" data-useexisting="${similar.id}">Use existing vendor</button></div>` : ''}
+      <div class="f"><label for="v-country">Country</label><select id="v-country">${[['NO', 'Norway'], ['SE', 'Sweden'], ['DK', 'Denmark'], ['GB', 'United Kingdom']].map(([c, n]) => `<option value="${c}" ${v.country === c ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+      <div class="f ${E.org ? 'invalid' : ''}"><label for="v-org">Organisation number</label><input type="text" id="v-org" value="${esc(v.org)}" autocomplete="off"><div class="hint">As registered in Brønnøysundregistrene.</div>${fe('org')}</div>
+      <label style="display:block;margin:6px 0 12px"><input type="checkbox" id="v-vat" ${v.vat ? 'checked' : ''}> Registered for VAT (MVA)</label>
+      <div class="f ${E.contact ? 'invalid' : ''}"><label for="v-contact">Contact person</label><input type="text" id="v-contact" value="${esc(v.contact)}">${fe('contact')}</div>
+      <div class="f ${E.email ? 'invalid' : ''}"><label for="v-email">Contact email</label><input type="email" id="v-email" value="${esc(v.email)}">${fe('email')}</div>
+      <div class="f ${E.terms ? 'invalid' : ''}"><label for="v-terms">Payment terms</label><select id="v-terms"><option value="">Choose…</option>${['Net 14', 'Net 30', 'Net 45', 'Net 60'].map((t) => `<option ${v.terms === t ? 'selected' : ''}>${t}</option>`).join('')}</select>${fe('terms')}</div>
+      <div class="f ${E.cat ? 'invalid' : ''}"><label for="v-cat">Category</label><select id="v-cat"><option value="">Choose…</option>${['Office supplies', 'Furniture', 'Industrial', 'Software', 'Consulting', 'Travel'].map((t) => `<option ${v.cat === t ? 'selected' : ''}>${t}</option>`).join('')}</select>${fe('cat')}</div>
+      <div class="f"><label for="v-bank">Bank account (optional)</label><input type="text" id="v-bank" value="${esc(v.bank)}"><div class="hint">Finance can add this later.</div></div>
+      <p><a class="btn" href="#/vendors">Cancel</a> <button class="btn primary" type="button" id="v-save" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Save vendor'}</button></p></div>`;
+  }
+  function ccTree(nodes, depth = 0) {
+    return nodes.map((n) => n.kids ? `<li><button type="button" data-ccopen="${esc(n.name)}"><span class="tw">${st.ccOpen.has(n.name) ? '▾' : '▸'}</span>${esc(n.name)}</button>${st.ccOpen.has(n.name) ? `<ul>${ccTree(n.kids, depth + 1)}</ul>` : ''}</li>` : '').join('') + (nodes[0] && Array.isArray(nodes[0]) ? nodes.map(([c, n]) => `<li><button type="button" class="pick" data-cc="${c}" aria-pressed="${st.pr && st.pr.cc === c}">${c} ${esc(n)}</button></li>`).join('') : '');
+  }
+  function prWizard() {
+    const r = st.pr || (st.pr = newPr());
+    if (r.done) return `<h1>Request ${esc(r.done)} submitted</h1><div class="card"><p>It's now with <strong>Siv Karlsen</strong> (Head of Product) for approval.</p><a class="btn" href="#/requests">View my requests</a></div>`;
+    const L = ['Type', 'Vendor', 'Items', 'Accounting & delivery', 'Review'];
+    const total = r.lines.reduce((a, l) => a + l.qty * l.price, 0);
+    let body = '';
+    if (r.step === 1) body = `<h2 style="margin-top:0">What are you buying?</h2><div class="rcards" role="radiogroup" aria-label="Request type">${[['goods', 'Goods', 'Physical items shipped to an office'], ['services', 'Services', 'Work done by a supplier'], ['software', 'Software subscription', 'Licences and SaaS']].map(([k, l, d]) => `<label class="rcard ${r.type === k ? 'sel' : ''}"><input type="radio" name="ptype" value="${k}" ${r.type === k ? 'checked' : ''}> <strong>${l}</strong><small>${d}</small></label>`).join('')}</div>`;
+    else if (r.step === 2) body = `<h2 style="margin-top:0">Vendor</h2><div class="f"><label for="vq">Search vendors</label><div class="combo"><input type="text" id="vq" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Name or organisation number" value="${esc(r.vq)}"><ul role="listbox" id="vq-list" hidden></ul></div></div>${r.vendor ? `<div class="vcard"><strong>${esc(r.vendor.name)}</strong>${r.vendor.pref ? ' <span class="pill ok">Preferred</span>' : ''}<div class="sub" style="margin:2px 0 0">${esc(r.vendor.id)} · ${esc(r.vendor.city)} · org. ${esc(r.vendor.org)} · ${esc(r.vendor.terms)}</div></div>` : '<p class="sub">No vendor selected.</p>'}`;
+    else if (r.step === 3) body = `<h2 style="margin-top:0">Items from ${esc(r.vendor.name)}</h2><div class="f"><label for="iq">Add from catalog</label><div class="combo"><input type="text" id="iq" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search this vendor's catalog" value="${esc(r.iq)}"><ul role="listbox" id="iq-list" hidden></ul></div></div>
+      <table><thead><tr><th>SKU</th><th>Item</th><th class="num">Unit price</th><th class="num">Qty</th><th class="num">Line total</th><th></th></tr></thead><tbody>${r.lines.map((l, i) => `<tr><td>${l.sku}</td><td>${esc(l.name)}</td><td class="num">${nok(l.price)}</td><td class="num"><input type="number" min="1" value="${l.qty}" data-qty="${i}" aria-label="Quantity for ${esc(l.name)}" style="width:70px;text-align:right"></td><td class="num">${nok(l.qty * l.price)}</td><td><button class="btn sm" type="button" data-rmline="${i}">Remove</button></td></tr>`).join('') || '<tr><td colspan="6" class="sub">No items yet.</td></tr>'}</tbody><tfoot><tr><td colspan="4"><strong>Total</strong></td><td class="num"><strong>${nok(total)}</strong></td><td></td></tr></tfoot></table>`;
+    else if (r.step === 4) body = `<h2 style="margin-top:0">Accounting &amp; delivery</h2><div class="f"><span class="lab">Cost center</span><div class="card" style="max-width:460px;padding:8px"><ul class="tree" role="tree" aria-label="Cost centers">${ccTree(CC)}</ul></div><div class="hint">${r.cc ? 'Selected: ' + esc(CCNAME[r.cc]) : 'Expand a department and pick a cost center.'}</div></div>
+      <div class="f"><label for="gl">GL account</label><select id="gl">${GL.map(([v, l]) => `<option value="${v}" ${r.gl === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="f"><span class="lab">Needed by</span><div style="display:flex;gap:6px;max-width:460px"><select id="nb-day" aria-label="Day"><option value="">Day</option>${Array.from({ length: 31 }, (_, i) => `<option ${r.day === String(i + 1) ? 'selected' : ''}>${i + 1}</option>`).join('')}</select><select id="nb-month" aria-label="Month"><option value="">Month</option>${MONTHS.map((m, i) => `<option value="${i + 1}" ${r.month === String(i + 1) ? 'selected' : ''}>${m}</option>`).join('')}</select><select id="nb-year" aria-label="Year">${['2026', '2027'].map((y) => `<option ${r.year === y ? 'selected' : ''}>${y}</option>`).join('')}</select></div></div>
+      <div class="f"><label for="ship">Ship to</label><select id="ship"><option value="">Choose a delivery address…</option>${SHIP.map(([v, l]) => `<option value="${v}" ${r.ship === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+      <div class="f"><label for="just">Business justification</label><textarea id="just" rows="2">${esc(r.just)}</textarea></div>`;
+    else body = `<h2 style="margin-top:0">Review</h2><table><tbody><tr><th>Type</th><td>${esc(r.type)}</td></tr><tr><th>Vendor</th><td>${esc(r.vendor.name)} (${r.vendor.id})</td></tr><tr><th>Items</th><td>${r.lines.map((l) => `${l.qty} × ${esc(l.name)} (${l.sku})`).join('<br>')}</td></tr><tr><th>Total</th><td>${nok(total)}</td></tr><tr><th>Cost center</th><td>${esc(CCNAME[r.cc] || '—')}</td></tr><tr><th>GL</th><td>${r.gl}</td></tr><tr><th>Needed by</th><td>${r.day ? r.day + ' ' + MONTHS[+r.month - 1] + ' ' + r.year : '—'}</td></tr><tr><th>Ship to</th><td>${esc(r.ship)}</td></tr><tr><th>Justification</th><td>${esc(r.just)}</td></tr></tbody></table>${total > 10000 ? '<p class="sub">Over NOK 10,000: your department head must approve.</p>' : ''}`;
+    return `<p class="sub"><a href="#/requests">Requests</a> › New purchase request</p><h1>New purchase request</h1><div class="card"><div class="wiz"><ol class="wsteps">${L.map((l, i) => `<li class="${r.step === i + 1 ? 'on' : r.step > i + 1 ? 'done' : ''}">${i + 1}. ${l}</li>`).join('')}</ol><section>${body}${r.err ? `<div class="errbox" role="alert">${esc(r.err)}</div>` : ''}
+      <p style="margin-top:16px">${r.step > 1 ? '<button class="btn" type="button" id="pr-back">Back</button> ' : ''}${r.step < 5 ? '<button class="btn primary" type="button" id="pr-next">Continue</button>' : `<button class="btn" type="button" id="pr-draft">Save as draft</button> <button class="btn primary" type="button" id="pr-submit" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Submitting…' : 'Submit for approval'}</button>`}</p></section></div></div>`;
+  }
+  function route() {
+    const p = (location.hash || '#/home').slice(2).split('/');
+    document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === p[0]));
+    const v = $('#view');
+    if (p[0] === 'requests' && p[1] === 'new') v.innerHTML = prWizard();
+    else if (p[0] === 'requests') v.innerHTML = requests();
+    else if (p[0] === 'orders') v.innerHTML = orders();
+    else if (p[0] === 'vendors' && p[1] === 'new') v.innerHTML = vendorForm();
+    else if (p[0] === 'vendors') v.innerHTML = vendors();
+    else if (p[0] === 'approvals') v.innerHTML = `<h1>Approvals</h1><div class="card"><p class="sub">Nothing is waiting for you.</p></div>`;
+    else if (p[0] === 'catalog') v.innerHTML = `<h1>Catalog</h1><div class="card"><table><tbody>${Object.entries(CATALOG).flatMap(([vid, items]) => items.map(([s, n, pr]) => `<tr><td>${s}</td><td>${esc(n)}</td><td>${esc(VENDORS.find((x) => x.id === vid).name)}</td><td class="num">${nok(pr)}</td></tr>`)).join('')}</tbody></table></div>`;
+    else { document.querySelector('[data-nav=home]').classList.add('on'); v.innerHTML = home(); }
+  }
+  const rerender = () => { const y = scrollY; route(); scrollTo(0, y); };
+  window.addEventListener('hashchange', () => { route(); scrollTo(0, 0); });
+  const fold = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let t1;
+  function searchCombo(inputId, listId, results) {
+    const ul = $('#' + listId); const inp = $('#' + inputId); if (!ul) return;
+    ul.hidden = false; inp.setAttribute('aria-expanded', 'true');
+    ul.innerHTML = results.length ? results.map((x) => `<li role="option" data-opt="${esc(x.id)}">${esc(x.label)}<small>${esc(x.sub)}</small></li>`).join('') : '<li class="sub" aria-disabled="true">No matches</li>';
+  }
+  const view = $('#view');
+  view.addEventListener('input', (e) => {
+    const t = e.target; const r = st.pr; const v = st.vendor;
+    if (t.id === 'vq' && r) { r.vq = t.value; clearTimeout(t1); const q = fold(t.value.trim()); if (q.length < 2) { $('#vq-list').hidden = true; return; } $('#vq-list').hidden = false; $('#vq-list').innerHTML = '<li class="sub">Searching…</li>'; t1 = setTimeout(() => searchCombo('vq', 'vq-list', VENDORS.filter((x) => fold(x.name + ' ' + x.org).includes(q)).map((x) => ({ id: x.id, label: x.name, sub: `${x.id} · ${x.city} · ${x.cat}${x.pref ? ' · Preferred' : ''}` }))), 350); }
+    if (t.id === 'iq' && r) { r.iq = t.value; clearTimeout(t1); const q = fold(t.value.trim()); if (q.length < 2) { $('#iq-list').hidden = true; return; } $('#iq-list').hidden = false; $('#iq-list').innerHTML = '<li class="sub">Searching…</li>'; t1 = setTimeout(() => searchCombo('iq', 'iq-list', (CATALOG[r.vendor.id] || []).filter(([s, n]) => fold(s + ' ' + n).includes(q)).map(([s, n, pr]) => ({ id: s, label: n, sub: `${s} · ${nok(pr)}` }))), 300); }
+    if (t.dataset.qty != null && r) {
+      const l = r.lines[+t.dataset.qty]; l.qty = Math.max(1, parseInt(t.value, 10) || 1);
+      t.closest('tr').children[4].textContent = nok(l.qty * l.price);
+      const tf = view.querySelector('tfoot td.num strong'); if (tf) tf.textContent = nok(r.lines.reduce((a, x) => a + x.qty * x.price, 0));
+    }
+    if (t.id === 'just' && r) r.just = t.value;
+    if (v) { if (t.id === 'v-name') { v.name = t.value; const had = !!$('#similar'); const want = v.name.trim().length >= 6; if (had !== want) { rerender(); const i = $('#v-name'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } if (t.id === 'v-org') v.org = t.value; if (t.id === 'v-contact') v.contact = t.value; if (t.id === 'v-email') v.email = t.value; if (t.id === 'v-bank') v.bank = t.value; }
+  });
+  view.addEventListener('change', (e) => {
+    const t = e.target; const r = st.pr; const v = st.vendor;
+    if (t.id === 'po-status') { st.poStatus = t.value; st.poPage = 1; rerender(); return; }
+    if (r) { if (t.name === 'ptype') { r.type = t.value; r.err = ''; rerender(); } if (t.id === 'gl') r.gl = t.value; if (t.id === 'nb-day') r.day = t.value; if (t.id === 'nb-month') r.month = t.value; if (t.id === 'nb-year') r.year = t.value; if (t.id === 'ship') r.ship = t.value; }
+    if (v) { if (t.id === 'v-country') v.country = t.value; if (t.id === 'v-vat') v.vat = t.checked; if (t.id === 'v-terms') v.terms = t.value; if (t.id === 'v-cat') v.cat = t.value; }
+  });
+  view.addEventListener('mousedown', (e) => { if (e.target.closest('.combo ul')) e.preventDefault(); });
+  view.addEventListener('click', async (e) => {
+    const t = e.target; const r = st.pr;
+    if (t.closest('[data-poview]') || t.closest('[data-popdf]') || t.closest('#po-export')) { toast('Opening document…'); return; }
+    const prc = t.closest('[data-poreceive]'); if (prc) { await later(400); await rec({ event: 'po_receive', po: prc.dataset.poreceive }); toast('Goods receipt recorded'); return; }
+    const po = t.closest('[data-pop]'); if (po && !po.disabled) { st.poPage = +po.dataset.pop; rerender(); return; }
+    const ev = t.closest('[data-editv]'); if (ev) { toast('Vendor records are edited by Finance master data.'); return; }
+    const ue = t.closest('[data-useexisting]'); if (ue) { st.vendor = null; location.hash = '#/vendors'; toast('Showing existing vendors'); return; }
+    const opt = t.closest('[data-opt]');
+    if (opt && r) {
+      if (r.step === 2) { r.vendor = VENDORS.find((x) => x.id === opt.dataset.opt); r.vq = r.vendor.name; r.lines = []; r.err = ''; rerender(); return; }
+      if (r.step === 3) { const it = CATALOG[r.vendor.id].find((x) => x[0] === opt.dataset.opt); const ex = r.lines.find((l) => l.sku === it[0]); if (ex) ex.qty++; else r.lines.push({ sku: it[0], name: it[1], price: it[2], qty: 1 }); r.iq = ''; r.err = ''; rerender(); return; }
+    }
+    const rm = t.closest('[data-rmline]'); if (rm && r) { r.lines.splice(+rm.dataset.rmline, 1); rerender(); return; }
+    const co = t.closest('[data-ccopen]'); if (co) { const n = co.dataset.ccopen; st.ccOpen.has(n) ? st.ccOpen.delete(n) : st.ccOpen.add(n); rerender(); return; }
+    const cc = t.closest('[data-cc]'); if (cc && r) { r.cc = cc.dataset.cc; rerender(); return; }
+    if (t.closest('#pr-back')) { r.err = ''; r.step--; rerender(); return; }
+    if (t.closest('#pr-next')) {
+      r.err = '';
+      if (r.step === 1 && !r.type) r.err = 'Choose what you are buying.';
+      if (r.step === 1 && r.type && r.type !== 'goods') r.err = 'Services and software requests go through the Sourcing team. Contact sourcing@havtorn.no.';
+      if (r.step === 2 && !r.vendor) r.err = 'Choose a vendor from the list.';
+      if (r.step === 3 && !r.lines.length) r.err = 'Add at least one item.';
+      if (r.step === 4) { if (!r.cc) r.err = 'Choose a cost center.'; else if (!r.day || !r.month) r.err = 'Enter the date you need the items by.'; else if (!r.ship) r.err = 'Choose a delivery address.'; else if (!clean(r.just)) r.err = 'Add a business justification.'; }
+      if (!r.err) r.step++;
+      rerender(); return;
+    }
+    const payload = () => ({ type: r.type, vendor: r.vendor.name, vendor_id: r.vendor.id, lines: r.lines.map((l) => `${l.sku} x${l.qty}`).join('; '), total: r.lines.reduce((a, l) => a + l.qty * l.price, 0).toFixed(2), cost_center: r.cc, gl: r.gl, need_by: `${r.year}-${String(r.month).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`, ship_to: r.ship, justification: clean(r.just) });
+    if (t.closest('#pr-draft')) { await later(400); await rec({ event: 'pr_draft', ...payload() }); toast('Draft saved'); return; }
+    if (t.closest('#pr-submit')) {
+      if (st.busy) return; st.busy = true; rerender(); await later(900);
+      const id = 'PR-' + (3320 + REQS.length);
+      await rec({ event: 'pr_submit', request: id, ...payload() });
+      REQS.unshift([id, clean(r.just), r.vendor.name, r.lines.reduce((a, l) => a + l.qty * l.price, 0), 'Waiting for approval']);
+      st.busy = false; r.done = id; rerender(); toast('Request submitted'); return;
+    }
+    if (t.closest('#v-save')) {
+      const v = st.vendor; v.errs = {}; v.banner = '';
+      if (!clean(v.name)) v.errs.name = 'Enter the legal name.';
+      const org = v.org.trim();
+      if (v.country === 'NO' && !/^\d{9}$/.test(org)) v.errs.org = 'Enter the 9-digit organisation number using digits only: no spaces, no “NO” prefix and no “MVA” suffix (for example 912345678).';
+      if (!clean(v.contact)) v.errs.contact = 'Enter a contact person.';
+      if (!/^\S+@\S+\.\S+$/.test(v.email.trim())) v.errs.email = 'Enter a valid email address.';
+      if (!v.terms) v.errs.terms = 'Choose payment terms.';
+      if (!v.cat) v.errs.cat = 'Choose a category.';
+      if (Object.keys(v.errs).length) { v.banner = 'Fix the highlighted fields and save again.'; rerender(); return; }
+      st.busy = true; rerender(); await later(800); st.busy = false;
+      if (VENDORS.some((x) => x.org.replace(/\D/g, '') === org)) { v.banner = 'A vendor with this organisation number already exists.'; rerender(); return; }
+      await rec({ event: 'vendor_create', name: clean(v.name), country: v.country, org_no: org, vat: v.vat ? 'yes' : 'no', contact: clean(v.contact), email: v.email.trim().toLowerCase(), terms: v.terms, category: v.cat, bank: v.bank.replace(/\s/g, '') });
+      VENDORS.push({ id: 'V-' + (1800 + VENDORS.length), name: clean(v.name), city: '—', org, cat: v.cat, terms: v.terms, pref: false });
+      v.done = clean(v.name); rerender(); toast('Vendor created');
+    }
+  });
+  route();
+})();
+</script>
+</body>
+</html>
