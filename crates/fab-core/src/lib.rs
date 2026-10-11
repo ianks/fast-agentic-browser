@@ -9,6 +9,7 @@ pub mod dataset;
 pub mod decide;
 pub mod direct;
 pub mod domain;
+pub mod endpoint;
 pub mod dvm;
 pub mod jev;
 pub mod license;

@@ -184,7 +184,7 @@ impl Answers {
 }
 
 /// Why a fuzzy instruction can't run without a key, and what still works.
-pub const NO_KEY: &str = "high-level instructions need a Jev key: set OPENROUTER_API_KEY (or TYPESAFE_API_KEY) in the environment or in ~/.config/fab/env. Precise commands (click e12, type \"x\" into e5, press Escape), open, read, screenshots, tabs and logs work without one";
+pub const NO_KEY: &str = "high-level instructions need a Jev key: set OPENROUTER_API_KEY, TYPESAFE_API_KEY or SYSTEM_ONE_BASE_URL in the environment or in ~/.config/fab/env. Precise commands (click e12, type \"x\" into e5, press Escape), open, read, screenshots, tabs and logs work without one";
 
 /// Something that answers question batches: live Jev, or canned answers in tests.
 pub trait Oracle: Sync {
@@ -206,17 +206,10 @@ struct RawResponse {
 }
 
 impl Jev {
-    /// Builds a client from the environment: `TYPESAFE_API_KEY` (direct) or `OPENROUTER_API_KEY`.
+    /// Builds a client from the environment (see `endpoint` for the variables).
     pub fn from_env() -> Result<Self> {
-        let model = std::env::var("FAB_JEV_MODEL").unwrap_or_else(|_| "jev-latest".into());
-        if let Ok(key) = std::env::var("TYPESAFE_API_KEY") {
-            let url = std::env::var("TYPESAFE_BASE_URL")
-                .map(|b| format!("{}/v1/systemone", b.trim_end_matches('/')))
-                .unwrap_or_else(|_| TYPESAFE_URL.into());
-            return Self::new(url, key, model);
-        }
-        let key = std::env::var("OPENROUTER_API_KEY").context("set TYPESAFE_API_KEY or OPENROUTER_API_KEY")?;
-        Self::new(OPENROUTER_URL.into(), key, model)
+        let e = crate::endpoint::jev().context("set SYSTEM_ONE_BASE_URL, TYPESAFE_API_KEY or OPENROUTER_API_KEY")?;
+        Self::new(e.url, e.key, crate::endpoint::jev_model())
     }
 
     pub fn new(url: String, key: String, model: String) -> Result<Self> {
@@ -247,8 +240,9 @@ impl Jev {
         Self::new(String::new(), String::new(), "none".into()).expect("http client")
     }
 
+    /// Whether an endpoint is configured (a local server may need no key).
     pub fn has_key(&self) -> bool {
-        !self.key.is_empty()
+        !self.url.is_empty()
     }
 
     pub async fn warm(&self) -> Result<Duration> {
@@ -258,7 +252,7 @@ impl Jev {
     }
 
     pub async fn ask(&self, state: &Value, questions: &Questions) -> Result<Answers> {
-        if self.key.is_empty() {
+        if self.url.is_empty() {
             anyhow::bail!(NO_KEY);
         }
         let body = json!({"model": self.model, "state": state, "questions": questions.0});
@@ -303,10 +297,9 @@ impl Jev {
         let mut attempt = 0;
         loop {
             attempt += 1;
-            let resp = self
-                .http
-                .post(&self.url)
-                .bearer_auth(&self.key)
+            let req = self.http.post(&self.url);
+            let req = if self.key.is_empty() { req } else { req.bearer_auth(&self.key) };
+            let resp = req
                 .header("content-type", "application/json")
                 .body(body.clone())
                 .send()

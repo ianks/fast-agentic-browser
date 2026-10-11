@@ -3,7 +3,8 @@
 # terminal wired to it. If the Glide window manager is installed (macOS), the
 # two tile on a Glide-activated space (Alt+Z); otherwise just the terminal
 # opens. `scripts/demo shell` is the terminal half.
-# Needs OPENROUTER_API_KEY, from the environment or ~/.config/fab/env.
+# Needs an endpoint (OPENROUTER_API_KEY, or see the README), from the
+# environment or ~/.config/fab/env.
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 FAB="$REPO/target/release/fab"
@@ -11,11 +12,13 @@ SESSION="${FAB_SESSION:-demo}"
 
 # The key: the environment, else the file fab reads it from.
 ENV_FILE="${FAB_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/fab}/env"
-if [ -z "${OPENROUTER_API_KEY:-}" ] && [ -f "$ENV_FILE" ]; then
+if [ -f "$ENV_FILE" ]; then
   set -a; . "$ENV_FILE"; set +a
 fi
-: "${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY, or put it in $ENV_FILE}"
-export OPENROUTER_API_KEY
+if [ -z "${OPENROUTER_API_KEY:-}${OPENAI_BASE_URL:-}${SYSTEM_ONE_BASE_URL:-}${TYPESAFE_API_KEY:-}" ]; then
+  echo "set OPENROUTER_API_KEY (or another endpoint, see the README), or put it in $ENV_FILE" >&2
+  exit 1
+fi
 
 if [ "${1:-}" = shell ]; then
   export FAB_SESSION="$SESSION" PATH="$REPO/target/release:$PATH"

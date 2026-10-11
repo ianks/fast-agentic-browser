@@ -12,7 +12,7 @@ cargo test --workspace --locked --all-features
 `fab-bench scrape gen` generates the fixture sites and their gold records, and
 `fab-bench scrape run` runs the cases through the `fab` CLI and scores them.
 The run calls an LLM, so it needs `OPENROUTER_API_KEY` (in the environment or
-in `~/.config/fab/env`):
+in `~/.config/fab/env`), or another endpoint (see the README's endpoint table):
 
 ```bash
 cargo run --release --features bench --bin fab-bench -- scrape gen

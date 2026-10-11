@@ -107,14 +107,14 @@ pub fn normalize_url(u: &str) -> String {
     format!("{}://{u}", if local { "http" } else { "https" })
 }
 
-/// The default LLM: `FAB_MODEL`, else a fast cheap one when an OpenRouter
-/// key is set, else none (the engine alone).
+/// The default LLM: `FAB_MODEL`, else a fast cheap one when the LLM endpoint
+/// is OpenRouter, else none (the engine alone; other endpoints name a model).
 pub fn default_model(flag: Option<&str>) -> Option<String> {
     let m = flag.map(str::to_string).or_else(|| std::env::var("FAB_MODEL").ok()).filter(|m| !m.is_empty());
     match m.as_deref() {
         Some("none") => None,
         Some(_) => m,
-        None => std::env::var("OPENROUTER_API_KEY").ok().filter(|k| !k.is_empty()).map(|_| "inception/mercury-2.5".to_string()),
+        None => fab_core::endpoint::llm().filter(|e| e.openrouter).map(|_| "inception/mercury-2.5".to_string()),
     }
 }
 

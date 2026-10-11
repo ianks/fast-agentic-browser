@@ -598,9 +598,8 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
     let mut check = |name: &str, ok: bool, detail: String| w.item(json!({"check": name, "ok": ok, "detail": detail}));
     check("version", true, env!("CARGO_PKG_VERSION").into());
     let cfg = fab_cli::config_env().map(|p| p.display().to_string()).unwrap_or_else(|| "~/.config/fab/env".into());
-    let key = ["TYPESAFE_API_KEY", "OPENROUTER_API_KEY"].into_iter().find(|v| std::env::var(v).is_ok_and(|x| !x.is_empty()));
-    match key {
-        Some(var) => match Jev::from_env() {
+    match fab_core::endpoint::jev() {
+        Some(ep) => match Jev::from_env() {
             Ok(j) => {
                 let mut ts = vec![];
                 let mut failed = None;
@@ -615,16 +614,23 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
                 }
                 match (failed, ts.first()) {
                     (Some(e), _) => check("jev", false, e),
-                    (None, Some(cold)) => check("jev", true, format!("{} via {var} · cold {cold} ms · warm {:?} ms", j.model, &ts[1..])),
+                    (None, Some(cold)) => check("jev", true, format!("{} at {} via {} · cold {cold} ms · warm {:?} ms", j.model, fab_core::endpoint::host(&ep.url), ep.source, &ts[1..])),
                     (None, None) => check("jev", false, "no answer".into()),
                 }
             }
             Err(e) => check("jev", false, format!("{e:#}")),
         },
-        None => check("jev", false, format!("no key: high-level instructions need OPENROUTER_API_KEY (environment or {cfg}); precise commands work without one")),
+        None => check("jev", false, format!("no endpoint: high-level instructions need OPENROUTER_API_KEY, TYPESAFE_API_KEY or SYSTEM_ONE_BASE_URL (environment or {cfg}); precise commands work without one")),
     }
     let model = api::default_model(cli.model.as_deref());
-    check("task", model.is_some(), model.unwrap_or_else(|| "engine only (set OPENROUTER_API_KEY or FAB_MODEL for an LLM coprocessor)".into()));
+    let llm = fab_core::endpoint::llm();
+    let detail = match (&model, &llm) {
+        (Some(m), Some(ep)) => format!("{m} at {} via {}", fab_core::endpoint::host(&ep.url), ep.source),
+        (Some(m), None) => format!("{m} (no LLM endpoint: set OPENAI_BASE_URL, OPENROUTER_API_KEY or OPENAI_API_KEY)"),
+        (None, Some(ep)) => format!("engine only ({} set; name a model with FAB_MODEL)", ep.source),
+        (None, None) => "engine only (set OPENROUTER_API_KEY, or OPENAI_BASE_URL + FAB_MODEL, for an LLM coprocessor)".into(),
+    };
+    check("task", model.is_some() && llm.is_some(), detail);
     let rep = discover::report(&k.browser);
     match &rep.system_default {
         Some((raw, Some(name))) => check("default", true, format!("{name} ({raw})")),

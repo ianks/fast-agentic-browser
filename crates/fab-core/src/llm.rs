@@ -1,11 +1,9 @@
-//! OpenRouter chat-completions client for the benchmark's agent loop.
+//! OpenAI-compatible chat-completions client (OpenRouter by default; see
+//! `endpoint` for the env vars that point it elsewhere).
 
 use anyhow::{Context, Result, bail};
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
-
-
-const URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 
 /// Whether a reply is worth sending again. A refusal that is not a rate
 /// limit or a server fault (a malformed request, a bad key, no credits) is
@@ -19,7 +17,10 @@ fn retryable(status: u16, has_message: bool) -> bool {
 #[derive(Clone)]
 pub struct Llm {
     http: reqwest::Client,
+    url: String,
+    /// Empty for a keyless (local) server.
     key: String,
+    openrouter: bool,
     pub model: String,
     /// Recent call latency (EWMA, ms), shared by clones: sets when a slow
     /// call gets a hedge.
@@ -35,7 +36,7 @@ pub struct ChatUsage {
 
 impl Llm {
     pub fn from_env(model: &str) -> Result<Self> {
-        let key = std::env::var("OPENROUTER_API_KEY").context("OPENROUTER_API_KEY not set")?;
+        let e = crate::endpoint::llm().context("no LLM endpoint: set OPENAI_BASE_URL, OPENROUTER_API_KEY or OPENAI_API_KEY")?;
         let http = reqwest::Client::builder()
             .tcp_nodelay(true)
             .pool_idle_timeout(Duration::from_secs(300))
@@ -45,12 +46,19 @@ impl Llm {
             // hung upstream, and a retry is faster than waiting it out.
             .timeout(Duration::from_secs(45))
             .build()?;
-        Ok(Self { http, key, model: model.to_string(), ewma_ms: std::sync::Arc::new(std::sync::Mutex::new(2000.0)) })
+        Ok(Self {
+            http,
+            url: e.url,
+            key: e.key,
+            openrouter: e.openrouter,
+            model: model.to_string(),
+            ewma_ms: std::sync::Arc::new(std::sync::Mutex::new(2000.0)),
+        })
     }
 
     /// One request: status and body.
     async fn once(&self, body: &Value) -> Result<(reqwest::StatusCode, Value), reqwest::Error> {
-        let r = self.http.post(URL).bearer_auth(&self.key).json(body).send().await?;
+        let r = self.auth(self.http.post(&self.url)).json(body).send().await?;
         let status = r.status();
         Ok((status, r.json().await?))
     }
@@ -83,9 +91,15 @@ impl Llm {
         r
     }
 
+    fn auth(&self, r: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        if self.key.is_empty() { r } else { r.bearer_auth(&self.key) }
+    }
+
     /// Opens the pooled connection (TLS + HTTP/2) ahead of the first real call.
     pub async fn warm(&self) {
-        let _ = self.http.get("https://openrouter.ai/api/v1/key").bearer_auth(&self.key).send().await;
+        let base = self.url.trim_end_matches("/chat/completions");
+        let probe = if self.openrouter { format!("{base}/key") } else { format!("{base}/models") };
+        let _ = self.auth(self.http.get(probe)).send().await;
     }
 
     /// Sends a chat-completions request (model is filled in) and returns the first
@@ -94,7 +108,11 @@ impl Llm {
     pub async fn chat(&self, mut body: Value) -> Result<(Value, ChatUsage, Duration)> {
         const ATTEMPTS: u32 = 5;
         body["model"] = self.model.clone().into();
-        body["usage"] = json!({"include": true});
+        if self.openrouter {
+            // OpenRouter's usage accounting (cost); strict OpenAI-style servers
+            // reject the unknown field.
+            body["usage"] = json!({"include": true});
+        }
         let t0 = Instant::now();
         let mut attempt = 0;
         let backoff = |attempt: u32| Duration::from_millis((400u64 << attempt.min(4)).min(5000));
