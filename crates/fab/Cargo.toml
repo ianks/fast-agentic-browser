@@ -1,6 +1,6 @@
 [package]
 name = "fast-agentic-browser"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Fast agentic browser: a CLI that lets AI agents browse, fill forms, sign in and scrape the web in plain English, streaming JSON"
@@ -43,7 +43,7 @@ toml = "1.1.6"
 tower-http = { version = "0.7.1", features = ["fs"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-fab-core = { version = "0.2.0", path = "../fab-core" }
+fab-core = { version = "0.2.1", path = "../fab-core" }
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 fs2 = "0.4.3"
 
