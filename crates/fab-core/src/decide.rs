@@ -233,11 +233,13 @@ pub fn build(snap: &Snapshot, instr: &str, history: &[String], k: &Knobs) -> (Va
     for e in &clickables {
         opts.push((e.id(), k.opt_desc.then(|| e.desc(k.ctx))));
     }
-    q.choice(
+    // Nothing to click and no field to submit: "none" is the only answer,
+    // and a choice needs two options. An unasked click reads as no click.
+    if opts.len() >= 2 { q.choice(
         "click",
         "Which element in `elements` should be clicked next to carry out `instruction`? Only the fields listed in `auto_filled` get filled in automatically before this click; every other element (dropdowns, pickers, tabs, buttons, links) has to be clicked to be used. Pick the first click the instruction still needs.",
         opts,
-    );
+    ); }
     q.gate(
         "done",
         "Has `instruction` already been fully carried out? Judge from `actions_taken` and the current page.",
@@ -393,5 +395,19 @@ mod tests {
         assert_eq!(confirm_token(&f("Confirm", Some("To confirm, type \u{201C}acme/api\u{201D} below"))).as_deref(), Some("acme/api"));
         assert_eq!(confirm_token(&f("Type the repository name to confirm", None)), None);
         assert_eq!(confirm_token(&f("Type your message", None)), None);
+    }
+
+    /// A page with nothing to click or fill asks no click question (a choice
+    /// needs two options; one "none" used to trip the assertion).
+    #[test]
+    fn a_page_with_nothing_to_click_asks_no_click() {
+        let snap: Snapshot = serde_json::from_value(serde_json::json!({
+            "docId": "d", "version": 1, "url": "https://a.test/", "title": "Done", "els": [],
+            "texts": [{"i": 0, "x": "All set."}]
+        }))
+        .unwrap();
+        let (_, q, _) = build(&snap, "what does the page say?", &[], &Knobs::default());
+        assert!(!q.0.contains_key("click"));
+        assert!(q.0.contains_key("done"));
     }
 }
