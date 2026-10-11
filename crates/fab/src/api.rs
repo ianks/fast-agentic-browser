@@ -145,8 +145,14 @@ pub async fn call(sess: &mut Session, ctx: &mut Ctx, name: &str, args: &Value, l
         }
     };
     sess.live = None;
+    // What leaves the call never holds a typed secret: the answer, the
+    // returned value and the error, whatever page text they quote.
     if redact::active() {
         r.text = redact::text(&r.text);
+        redact::value(&mut r.value);
+        if let Some(f) = &mut r.error {
+            f.message = redact::text(&f.message);
+        }
     }
     r
 }
@@ -506,8 +512,10 @@ pub async fn run_script(sess: &mut Session, ctx: &mut Ctx, prog: &fab_core::scri
                 break;
             }
             Event::Finished(Outcome::Ended) => break,
-            Event::Record(record) => {
+            Event::Record(mut record) => {
                 let url = match sc.source_url() { Some(u) => Some(u.to_string()), None => current_url(sess).await };
+                // A record is journaled and returned: scrubbed first (I09).
+                redact::value(&mut record);
                 let data = record.as_object().cloned().unwrap_or_default();
                 // Declared records leave in the declared shape, or not at all.
                 let data = match &ctx.shape.records {

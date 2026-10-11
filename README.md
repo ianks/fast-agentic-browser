@@ -141,6 +141,33 @@ FAB_POOL_MAX = 2
 a window you can watch, with its own profile. `--headless` hides the window,
 `--browser firefox` picks one, and `--connect auto` works in your running Chrome.
 
+## Running fab in a container (sidecar)
+
+When the agent must never see the secrets, split fab in two. They share
+`FAB_HOME` (and run as the same user):
+
+- **The sidecar** runs `fab serve`. It holds the keys, the password manager
+  (`OP_SERVICE_ACCOUNT_TOKEN`) and the browser settings, and starts each
+  session on request, in the foreground, forever.
+- **The agent's container** has only the `fab` binary and `FAB_REMOTE=1`.
+  `fab -s NAME do …` reaches the session through `$FAB_HOME/run`, asking
+  `fab serve` to start it if needed. It never starts a browser itself, reads
+  no config, and can't run `fab secrets`. With `fab serve` down, every call
+  fails at once with `session_unavailable`. `fab tasks` and `fab doctor` work
+  (doctor reports the sidecar's checks).
+
+| Variable (sidecar) | |
+|---|---|
+| `FAB_BACKEND=camofox`, `CAMOFOX_URL` | Drive a [camofox-browser](https://github.com/jo-inc/camofox-browser) server instead of a local browser. Nothing is downloaded or launched. |
+| `CAMOFOX_USER_ID` | Join that user's persistent context (its logins and cookies). fab then closes only the tabs it opened, never the user's session. |
+| `CAMOFOX_SESSION_KEY` | fab's tab group (default `fab`). |
+| `CAMOFOX_API_KEY` | Sent as `Authorization: Bearer` on every request. |
+| `OP_SERVICE_ACCOUNT_TOKEN` | 1Password as a service account. It reads from `FAB_OP_VAULT`, else the only vault the token can see. |
+| `FAB_SECRETS_PROMPT=never` | No approval dialogs: saved logins for the page's site still fill, while cards and identities need `fab secrets allow`. |
+
+On camofox fab opens at most 2 tabs at once (`FAB_POOL_MAX`), and a tab the
+server closed for inactivity is replaced by a fresh one.
+
 ## Development
 
 `fab-bench` runs the suites, races and the decision dataset

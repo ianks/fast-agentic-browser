@@ -1,0 +1,11 @@
+# Test fixtures, not secrets: fake Stripe keys for the secrets e2e store
+# (bench/secrets), an RFC 4231 HMAC test vector, and a demo login on a
+# benchmark fixture page.
+8849f9814caf2bcbb84936a9f344f61870a6b491:fixtures/heldout3/journal.html:generic-api-key:158
+b9cf64b7da45cf41d551632bfbfbe6b37c4fd016:bench/secrets/e2e.sh:stripe-access-token:81
+b9cf64b7da45cf41d551632bfbfbe6b37c4fd016:bench/secrets/fab-secret-fixture:stripe-access-token:17
+be9605916e9878e1ba9812d75d4e7f90031950c2:bench/secrets/e2e.sh:stripe-access-token:78
+be9605916e9878e1ba9812d75d4e7f90031950c2:bench/secrets/fab-secret-fixture:stripe-access-token:17
+be9605916e9878e1ba9812d75d4e7f90031950c2:crates/fab-core/src/secrets/verifier.rs:generic-api-key:189
+be9605916e9878e1ba9812d75d4e7f90031950c2:fixtures/heldout3/journal.html:generic-api-key:158
+e0d6f541dd8a969ab5392069b2af294671275f34:crates/fab-core/src/secrets/verifier.rs:generic-api-key:188

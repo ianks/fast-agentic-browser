@@ -47,7 +47,7 @@ stdout is JSON Lines, one event per line; `-v` adds progress on stderr.
 ```
 
 - `record.data` is the object you declared. `seq` numbers records from 0; `url` is the page each came from.
-- The answer is `end.value`. On failure `end.error.code` says why: `invalid_args`, `invalid_program`, `navigation_failed`, `step_failed`, `schema_mismatch`, `secret_unavailable`, …
+- The answer is `end.value`. On failure `end.error.code` says why: `invalid_args`, `invalid_program`, `navigation_failed`, `step_failed`, `schema_mismatch`, `secret_unavailable`, `session_unavailable` (the browser side, `fab serve`, is down: report it rather than retrying), …
 - Exit status: 0 done, 1 failed, 2 rejected before anything ran, 3 paused because an action may have happened: `fab tasks show TASK`, then `fab tasks resolve …` and `fab tasks resume TASK`. Never just rerun a paused step.
 - `jq -c 'select(.t=="record").data'` keeps just the records. `--request-id ID` makes a retry safe: the same id returns the same records and answer instead of doing the work again.
 

@@ -13,6 +13,10 @@ pub const MASK: &str = "••••";
 /// scrubbed from text, where they would erase unrelated digits.
 const MIN_LEN: usize = 4;
 
+/// A cut-off value (`abcdefghijkl…`, as page listings shorten long text) is
+/// scrubbed when at least this much of it shows.
+const MIN_PREFIX: usize = 16;
+
 static FORMS: RwLock<Vec<Zeroizing<String>>> = RwLock::new(Vec::new());
 
 /// Registers a concealed value (and its encoded forms) for scrubbing.
@@ -21,6 +25,8 @@ pub fn add(value: &str) {
         return;
     }
     let mut forms = vec![value.to_string()];
+    // Page listings collapse whitespace runs to one space.
+    forms.push(value.split_whitespace().collect::<Vec<_>>().join(" "));
     let json = serde_json::to_string(value).unwrap_or_default();
     forms.push(json[1..json.len() - 1].to_string());
     forms.push(percent(value));
@@ -63,6 +69,18 @@ pub fn text(s: &str) -> String {
     for f in forms.iter() {
         if out.contains(f.as_str()) {
             out = out.replace(f.as_str(), MASK);
+        }
+    }
+    // A long value shown cut off: its prefix, then an ellipsis.
+    if out.contains('…') {
+        for f in forms.iter() {
+            let ends: Vec<usize> = f.char_indices().map(|(i, _)| i).skip(MIN_PREFIX).collect();
+            for &end in ends.iter().rev() {
+                let cut = format!("{}…", &f[..end]);
+                if out.contains(&cut) {
+                    out = out.replace(&cut, MASK);
+                }
+            }
         }
     }
     out
@@ -110,5 +128,17 @@ mod tests {
         assert_eq!(v["a"][0], "x ••••");
         add("12");
         assert_eq!(text("12 items"), "12 items");
+    }
+
+    #[test]
+    fn scrubs_collapsed_and_cut_off_forms() {
+        let token = "tok_live_9f8e7d6c5b4a39281706f5e4d3c2b1a0ffeeddccbbaa99887766554433221100aabbccddeeff00112233";
+        add(token);
+        // A listing cuts long values to 79 characters and an ellipsis.
+        let shown: String = token.chars().take(79).collect();
+        assert_eq!(text(&format!("value: {shown}…")), "value: ••••");
+        assert_eq!(text("tok_live_9f8…"), "tok_live_9f8…", "too little of it shows to be sure");
+        add("two  spaced\n words here");
+        assert_eq!(text("typed two spaced words here"), "typed ••••");
     }
 }
