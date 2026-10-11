@@ -96,9 +96,31 @@ pointed elsewhere with the env vars other tools already read:
 | LLM (OpenAI-compatible) | `OPENAI_BASE_URL` (+ `OPENAI_API_KEY`, optional for local servers), else `OPENROUTER_API_KEY`, else `OPENAI_API_KEY`. Model: `FAB_MODEL` (required off OpenRouter). |
 | Jev (System One API) | `SYSTEM_ONE_BASE_URL` (+ `SYSTEM_ONE_API_KEY`, optional), else `TYPESAFE_API_KEY` (+ `TYPESAFE_BASE_URL`), else `OPENROUTER_API_KEY`. Model: `FAB_JEV_MODEL` or `SYSTEM_ONE_MODEL`. `SYSTEMONE_*` spellings work too. |
 
-For example, a local Ollama and a local System One server:
-`OPENAI_BASE_URL=http://localhost:11434/v1 FAB_MODEL=qwen3 SYSTEM_ONE_BASE_URL=http://localhost:8093`.
-`fab doctor` shows which endpoint each model resolved to.
+**Config file.** The same settings can live in `~/.config/fab/config.toml`
+(or `$XDG_CONFIG_HOME/fab`, or `$FAB_CONFIG`). Flags win over environment
+variables, which win over the file. Each key is another spelling of a
+variable, and unknown keys are an error:
+
+```toml
+[llm]                 # OPENAI_BASE_URL, OPENAI_API_KEY, FAB_MODEL
+base_url = "http://localhost:11434/v1"
+model = "qwen3"
+
+[jev]                 # SYSTEM_ONE_BASE_URL, SYSTEM_ONE_API_KEY, FAB_JEV_MODEL
+base_url = "http://localhost:8093"
+
+[browser]             # FAB_HEADLESS, FAB_PROFILE, FAB_ISOLATED, FAB_CONNECT, FAB_IDLE
+headless = true
+
+[env]                 # any other variable, verbatim
+FAB_POOL_MAX = 2
+
+[secrets]             # stores, save_to, op_account, op_vault, prompt
+```
+
+`fab doctor` shows the config file and which endpoint each model resolved to.
+`~/.config/fab/env` (dotenv) is still read, between the environment and
+`config.toml`.
 
 **Agents** drive fab through the CLI:
 - **The CLI skill:** `fab --skill` prints it, `fab --skill --install` adds it to

@@ -207,7 +207,10 @@ enum ScrapeCmd {
 
 #[tokio::main]
 async fn main() -> ExitCode {
-    fab_cli::load_env();
+    if let Err(e) = fab_cli::load_env() {
+        eprintln!("error: config: {e:#}");
+        return ExitCode::FAILURE;
+    }
     tracing_subscriber::fmt().with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "warn".into())).with_writer(std::io::stderr).init();
     match run(Cli::parse()).await {
         Ok(()) => ExitCode::SUCCESS,

@@ -277,7 +277,7 @@ impl Cli {
 
 #[tokio::main]
 async fn main() -> ExitCode {
-    fab_cli::load_env();
+    let config = fab_cli::load_env();
     tracing_subscriber::fmt().with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "warn".into())).with_writer(std::io::stderr).init();
     let cli = match Cli::try_parse() {
         Ok(cli) => cli,
@@ -290,6 +290,9 @@ async fn main() -> ExitCode {
         }
     };
     let cmd = cli.command_name();
+    if let Err(e) = config {
+        return events::abort(cmd, Failure::new(ErrorCode::InvalidArgs, format!("config: {e:#}")));
+    }
     // A panic still ends the stream (after the default report on stderr).
     let report = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
@@ -597,7 +600,9 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
     use fab_core::backend::discover;
     let mut check = |name: &str, ok: bool, detail: String| w.item(json!({"check": name, "ok": ok, "detail": detail}));
     check("version", true, env!("CARGO_PKG_VERSION").into());
-    let cfg = fab_cli::config_env().map(|p| p.display().to_string()).unwrap_or_else(|| "~/.config/fab/env".into());
+    let cfg = fab_cli::config_file().display().to_string();
+    let found = fab_cli::config_file().is_file();
+    check("config", true, if found { cfg.clone() } else { format!("{cfg} (none; optional)") });
     match fab_core::endpoint::jev() {
         Some(ep) => match Jev::from_env() {
             Ok(j) => {
