@@ -233,7 +233,7 @@ impl Vault {
         let mut helpers = helpers;
         for w in want {
             match w.as_str() {
-                "1password" | "op" if store::on_path("op") => stores.push(Store::OnePassword(op::Op { account: cfg.op_account.clone(), vault: cfg.op_vault.clone() })),
+                "1password" | "op" if store::on_path("op") => stores.push(Store::OnePassword(op::Op::new(cfg.op_account.clone(), cfg.op_vault.clone()))),
                 "bitwarden" | "bw" if store::on_path("bw") => stores.push(Store::Bitwarden(bw::Bw)),
                 "keychain" if cfg!(target_os = "macos") => stores.push(Store::Keychain(keychain::Keychain)),
                 name => {
@@ -1517,6 +1517,32 @@ exit 1
 
     /// Reconciliation reads the store fresh, not a full item cached before.
     #[cfg(unix)]
+    /// With approval prompts off (a headless pod), a login saved for the
+    /// page's site still fills, and a card is refused with the allow hint.
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn prompt_never_fills_site_logins_and_refuses_cards() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = std::env::temp_dir().join(format!("fab-secret-never-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("fab-secret-never");
+        std::fs::write(
+            &path,
+            format!(
+                "#!/bin/sh\ncase \"$1\" in\n  list) printf 'id=gh\\ntitle=Login\\nkind=login\\nurl={ORIGIN}\\nusername=ada\\nfield=password\\n\\nid=visa\\ntitle=Visa\\nkind=card\\nfield=card number\\n' ;;\n  get) echo 'value=s3cret-value' ;;\n  *) exit 1 ;;\nesac\n"
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let store = Store::Helper(helper::Helper { name: "never".into(), path });
+        let vault = Vault::new(vec![store], SecretsConfig { prompt: Some("never".into()), ..Default::default() }, None);
+        let login = vault.substitute_for_input("{{password}}", &Target::at(ORIGIN)).await.unwrap();
+        assert_eq!(login.value.as_str(), "s3cret-value");
+        let err = vault.substitute_for_input("{{card number}}", &Target::at(ORIGIN)).await.err().expect("a card filled without approval");
+        assert!(format!("{err:#}").contains("fab secrets allow"), "{err:#}");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     #[tokio::test]
     async fn reconciliation_ignores_cached_items() {
         let store = FakeStore::new("cached", true, 3);

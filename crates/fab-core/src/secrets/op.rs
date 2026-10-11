@@ -13,21 +13,81 @@ const WAIT: Duration = Duration::from_secs(90);
 
 pub struct Op {
     pub account: Option<String>,
-    /// Where new logins go (default: the account's default vault).
+    /// Where new logins go (default: the account's default vault). A
+    /// service account also reads only from it.
     pub vault: Option<String>,
+    /// Signed in with `OP_SERVICE_ACCOUNT_TOKEN`: no accounts to list, no
+    /// `--account`, and every item call names its vault.
+    pub service: bool,
+    /// The program (`op`; a stub in tests).
+    pub bin: String,
+    /// A service account's vault when none is configured: its only one.
+    found: tokio::sync::OnceCell<String>,
 }
 
 impl Op {
+    /// `[secrets]` op_account/op_vault, overridden by `FAB_OP_ACCOUNT` /
+    /// `FAB_OP_VAULT`; a service account when `OP_SERVICE_ACCOUNT_TOKEN` is set.
+    pub fn new(account: Option<String>, vault: Option<String>) -> Self {
+        let env = |n: &str| std::env::var(n).ok().filter(|v| !v.is_empty());
+        Self {
+            account: env("FAB_OP_ACCOUNT").or(account),
+            vault: env("FAB_OP_VAULT").or(vault),
+            service: env("OP_SERVICE_ACCOUNT_TOKEN").is_some(),
+            bin: "op".into(),
+            found: Default::default(),
+        }
+    }
+
     fn args<'a>(&'a self, base: &[&'a str]) -> Vec<&'a str> {
         let mut a = base.to_vec();
-        if let Some(acc) = &self.account {
+        if let (Some(acc), false) = (&self.account, self.service) {
             a.extend(["--account", acc.as_str()]);
         }
         a
     }
 
+    /// `item` call args: a service account's vault named on every one.
+    async fn item_args<'a>(&'a self, base: &[&'a str]) -> Result<Vec<&'a str>> {
+        let mut a = self.args(base);
+        if self.service {
+            a.extend(["--vault", self.read_vault().await?]);
+        }
+        Ok(a)
+    }
+
+    /// The vault a service account reads: the configured one, else the
+    /// only vault it can see (service account tokens are usually minted
+    /// for one vault).
+    async fn read_vault(&self) -> Result<&str> {
+        if let Some(v) = &self.vault {
+            return Ok(v);
+        }
+        self.found
+            .get_or_try_init(|| async {
+                let out = run(&self.bin, &["vault", "list", "--format", "json"], None, &[], Duration::from_secs(20)).await?;
+                let vaults: Vec<Value> = serde_json::from_slice(&out).context("unexpected `op vault list` output")?;
+                match vaults.as_slice() {
+                    [v] => v["name"].as_str().or(v["id"].as_str()).map(str::to_string).context("a vault without a name"),
+                    [] => anyhow::bail!("the service account can see no vault"),
+                    _ => anyhow::bail!("the service account can see {} vaults: set FAB_OP_VAULT to the one fab should use", vaults.len()),
+                }
+            })
+            .await
+            .map(String::as_str)
+    }
+
     pub async fn status(&self) -> Status {
-        match run("op", &self.args(&["account", "list", "--format", "json"]), None, &[], Duration::from_secs(10)).await {
+        if self.service {
+            return match run(&self.bin, &["whoami", "--format", "json"], None, &[], Duration::from_secs(10)).await {
+                Ok(_) => match self.read_vault().await {
+                    Ok(v) => Status { ready: true, note: format!("service account · vault {v}") },
+                    Err(e) => Status { ready: false, note: format!("service account: {e:#}") },
+                },
+                Err(e) => Status { ready: false, note: format!("service account (OP_SERVICE_ACCOUNT_TOKEN): {e:#}") },
+            };
+        }
+        match run(&self.bin, &self.args(&["account", "list", "--format", "json"]), None, &[], Duration::from_secs(10)).await {
             Ok(out) => {
                 let n = serde_json::from_slice::<Vec<Value>>(&out).map(|v| v.len()).unwrap_or(0);
                 if n == 0 {
@@ -41,19 +101,19 @@ impl Op {
     }
 
     pub async fn list(&self) -> Result<Vec<Item>> {
-        let out = run("op", &self.args(&["item", "list", "--format", "json"]), None, &[], WAIT).await?;
+        let out = run(&self.bin, &self.item_args(&["item", "list", "--format", "json"]).await?, None, &[], WAIT).await?;
         let items: Vec<Value> = serde_json::from_slice(&out).context("unexpected `op item list` output")?;
         Ok(items.iter().filter_map(meta).collect())
     }
 
     pub async fn full(&self, it: &Item) -> Result<Full> {
-        let out = run("op", &self.args(&["item", "get", &it.id, "--format", "json"]), None, &[], WAIT).await?;
+        let out = run(&self.bin, &self.item_args(&["item", "get", &it.id, "--format", "json"]).await?, None, &[], WAIT).await?;
         let v: Value = serde_json::from_slice(&out).context("unexpected `op item get` output")?;
         Ok(parse_full(&v))
     }
 
     pub async fn otp(&self, it: &Item) -> Result<Zeroizing<String>> {
-        let out = run("op", &self.args(&["item", "get", &it.id, "--otp"]), None, &[], WAIT).await?;
+        let out = run(&self.bin, &self.item_args(&["item", "get", &it.id, "--otp"]).await?, None, &[], WAIT).await?;
         Ok(Zeroizing::new(String::from_utf8_lossy(&out).trim().to_string()))
     }
 
@@ -70,11 +130,13 @@ impl Op {
         });
         let body = Zeroizing::new(serde_json::to_vec(&tmpl)?);
         let mut base = vec!["item", "create", "--format", "json"];
-        if let Some(v) = &self.vault {
+        if self.service {
+            base.extend(["--vault", self.read_vault().await?]);
+        } else if let Some(v) = &self.vault {
             base.extend(["--vault", v.as_str()]);
         }
         base.push("-");
-        let out = run("op", &self.args(&base), Some(&body), &[], WAIT).await?;
+        let out = run(&self.bin, &self.args(&base), Some(&body), &[], WAIT).await?;
         let v: Value = serde_json::from_slice(&out).unwrap_or_default();
         let vault = v["vault"]["name"].as_str().map(|n| format!(" in {n}")).unwrap_or_default();
         Ok(format!("1Password \"{title}\"{vault}"))
@@ -160,6 +222,76 @@ pub(crate) fn parse_full(v: &Value) -> Full {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    /// An `op` that logs its argv and answers `vault list` with `vaults`.
+    #[cfg(unix)]
+    fn stub(dir: &std::path::Path, vaults: &str) -> (String, std::path::PathBuf) {
+        use std::os::unix::fs::PermissionsExt;
+        let log = dir.join("argv.log");
+        let bin = dir.join("op");
+        std::fs::write(
+            &bin,
+            format!(
+                "#!/bin/sh\necho \"$*\" >> '{}'\ncase \"$1 $2\" in\n  'vault list') echo '{vaults}' ;;\n  'item list') echo '[]' ;;\n  *) echo '{{}}' ;;\nesac\n",
+                log.display()
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&bin, std::fs::Permissions::from_mode(0o755)).unwrap();
+        (bin.display().to_string(), log)
+    }
+
+    #[cfg(unix)]
+    fn op(bin: String, account: Option<&str>, vault: Option<&str>, service: bool) -> Op {
+        Op { account: account.map(Into::into), vault: vault.map(Into::into), service, bin, found: Default::default() }
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn a_service_account_reads_its_only_vault() {
+        let dir = std::env::temp_dir().join(format!("fab-op-{}-{}", std::process::id(), line!()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let (bin, log) = stub(&dir, r#"[{"id":"v1","name":"Agents"}]"#);
+        let o = op(bin, Some("my.1password.com"), None, true);
+        let st = o.status().await;
+        assert!(st.ready, "{}", st.note);
+        assert_eq!(st.note, "service account · vault Agents");
+        o.list().await.unwrap();
+        let it = Item { id: "i1".into(), ..meta(&json!({"id": "i1", "title": "t", "category": "LOGIN"})).unwrap() };
+        o.full(&it).await.unwrap();
+        let argv = std::fs::read_to_string(&log).unwrap();
+        assert_eq!(
+            argv.lines().collect::<Vec<_>>(),
+            ["whoami --format json", "vault list --format json", "item list --format json --vault Agents", "item get i1 --format json --vault Agents"],
+            "account list is never run, --account never passed, and the vault is listed once"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn a_service_account_with_many_vaults_needs_one_named() {
+        let dir = std::env::temp_dir().join(format!("fab-op-{}-{}", std::process::id(), line!()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let (bin, log) = stub(&dir, r#"[{"name":"A"},{"name":"B"}]"#);
+        let st = op(bin.clone(), None, None, true).status().await;
+        assert!(!st.ready && st.note.contains("FAB_OP_VAULT"), "{}", st.note);
+        let named = op(bin, None, Some("B"), true);
+        named.list().await.unwrap();
+        assert!(std::fs::read_to_string(&log).unwrap().ends_with("item list --format json --vault B\n"));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn a_signed_in_user_reads_every_vault() {
+        let dir = std::env::temp_dir().join(format!("fab-op-{}-{}", std::process::id(), line!()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let (bin, log) = stub(&dir, "[]");
+        op(bin, Some("me"), Some("Saved"), false).list().await.unwrap();
+        assert_eq!(std::fs::read_to_string(&log).unwrap(), "item list --format json --account me\n");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn list_and_fields() {

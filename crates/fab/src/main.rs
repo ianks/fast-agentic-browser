@@ -692,7 +692,7 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
     check(
         "secrets",
         !stores.is_empty(),
-        if stores.is_empty() { "no password manager found (fab secrets)".to_string() } else { stores.iter().map(|(n, ready, _)| format!("{n}{}", if *ready { "" } else { " (not ready)" })).collect::<Vec<_>>().join(", ") },
+        if stores.is_empty() { "no password manager found (fab secrets)".to_string() } else { stores.iter().map(|(n, ready, note)| format!("{n}{} · {note}", if *ready { "" } else { " (not ready)" })).collect::<Vec<_>>().join("; ") },
     );
     if k.backend != "camofox" {
         let health = format!("{}/health", k.camofox_url);
