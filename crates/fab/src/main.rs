@@ -636,43 +636,57 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
         (None, None) => "engine only (set OPENROUTER_API_KEY, or OPENAI_BASE_URL + FAB_MODEL, for an LLM coprocessor)".into(),
     };
     check("task", model.is_some() && llm.is_some(), detail);
-    let rep = discover::report(&k.browser);
-    match &rep.system_default {
-        Some((raw, Some(name))) => check("default", true, format!("{name} ({raw})")),
-        Some((raw, None)) => check("default", false, format!("{raw} (unknown to fab)")),
-        None => check("default", false, "(none found)".into()),
-    }
-    for n in &rep.notes {
-        check("note", true, n.clone());
-    }
-    match &rep.chosen {
-        Some(f) => {
-            let t = Instant::now();
-            let mut kk = k.clone();
-            kk.headful = false;
-            kk.profile.clear();
-            kk.connect.clear();
-            match fab_core::backend::Browser::launch(&kk).await {
-                Ok(b) => {
-                    check("browser", true, format!("{} ({}) {} · launches in {} ms · {}", f.name, f.source, f.path.display(), t.elapsed().as_millis(), b.describe()));
-                    b.close().await;
-                }
-                Err(e) => check("browser", false, format!("{} ({}) {}: {e:#}", f.name, f.source, f.path.display())),
-            }
+    if k.backend == "camofox" {
+        // A camofox session never discovers, downloads or launches a browser.
+        let conn = fab_core::backend::camofox::Conn::new(k)?;
+        match conn.check().await {
+            Ok(d) => check("backend", true, format!("camofox at {} · {d}", k.camofox_url)),
+            Err(e) => check("backend", false, format!("camofox at {}: {e:#}", k.camofox_url)),
         }
-        None => check("browser", false, format!("none: {}", rep.error.unwrap_or_default())),
+        check(
+            "camofox_user",
+            conn.joined(),
+            if conn.joined() { format!("{} (joined: fab closes only its own tabs) · session key {}", conn.user(), k.camofox_session) } else { format!("a fresh user per session (set CAMOFOX_USER_ID to share a context) · session key {}", k.camofox_session) },
+        );
+    } else {
+        let rep = discover::report(&k.browser);
+        match &rep.system_default {
+            Some((raw, Some(name))) => check("default", true, format!("{name} ({raw})")),
+            Some((raw, None)) => check("default", false, format!("{raw} (unknown to fab)")),
+            None => check("default", false, "(none found)".into()),
+        }
+        for n in &rep.notes {
+            check("note", true, n.clone());
+        }
+        match &rep.chosen {
+            Some(f) => {
+                let t = Instant::now();
+                let mut kk = k.clone();
+                kk.headful = false;
+                kk.profile.clear();
+                kk.connect.clear();
+                match fab_core::backend::Browser::launch(&kk).await {
+                    Ok(b) => {
+                        check("browser", true, format!("{} ({}) {} · launches in {} ms · {}", f.name, f.source, f.path.display(), t.elapsed().as_millis(), b.describe()));
+                        b.close().await;
+                    }
+                    Err(e) => check("browser", false, format!("{} ({}) {}: {e:#}", f.name, f.source, f.path.display())),
+                }
+            }
+            None => check("browser", false, format!("none: {}", rep.error.unwrap_or_default())),
+        }
+        let others: Vec<String> = rep
+            .installed
+            .iter()
+            .map(|f| match discover::spec(&f.id).and_then(|s| s.unsupported) {
+                Some(_) => format!("{} (not drivable)", f.name),
+                None => f.name.clone(),
+            })
+            .collect();
+        check("installed", !others.is_empty(), if others.is_empty() { "(none)".into() } else { others.join(", ") });
+        let dbg: Vec<String> = discover::debuggable().iter().map(|(s, port, _)| format!("{} on port {port}", s.name)).collect();
+        check("attach", !dbg.is_empty(), if dbg.is_empty() { "no running browser with remote debugging (Chrome 144+: chrome://inspect/#remote-debugging, then --connect auto)".into() } else { dbg.join(", ") });
     }
-    let others: Vec<String> = rep
-        .installed
-        .iter()
-        .map(|f| match discover::spec(&f.id).and_then(|s| s.unsupported) {
-            Some(_) => format!("{} (not drivable)", f.name),
-            None => f.name.clone(),
-        })
-        .collect();
-    check("installed", !others.is_empty(), if others.is_empty() { "(none)".into() } else { others.join(", ") });
-    let dbg: Vec<String> = discover::debuggable().iter().map(|(s, port, _)| format!("{} on port {port}", s.name)).collect();
-    check("attach", !dbg.is_empty(), if dbg.is_empty() { "no running browser with remote debugging (Chrome 144+: chrome://inspect/#remote-debugging, then --connect auto)".into() } else { dbg.join(", ") });
     check("home", true, format!("{} (profiles, sessions, screenshots, site shapes)", fab_core::paths::home().display()));
     let stores = fab_core::secrets::vault().status().await;
     check(
@@ -680,10 +694,12 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
         !stores.is_empty(),
         if stores.is_empty() { "no password manager found (fab secrets)".to_string() } else { stores.iter().map(|(n, ready, _)| format!("{n}{}", if *ready { "" } else { " (not ready)" })).collect::<Vec<_>>().join(", ") },
     );
-    let health = format!("{}/health", k.camofox_url);
-    match reqwest::get(&health).await {
-        Ok(r) if r.status().is_success() => check("camofox", true, k.camofox_url.clone()),
-        _ => check("camofox", false, "not running (optional: npx @askjo/camofox-browser, then --set backend=camofox)".into()),
+    if k.backend != "camofox" {
+        let health = format!("{}/health", k.camofox_url);
+        match reqwest::get(&health).await {
+            Ok(r) if r.status().is_success() => check("camofox", true, k.camofox_url.clone()),
+            _ => check("camofox", false, "not running (optional: npx @askjo/camofox-browser, then FAB_BACKEND=camofox)".into()),
+        }
     }
     check("skill", true, "fab --skill --install (teaches Claude Code the CLI; codex, agents or a directory after --install)".into());
     Ok(w.end(End::ok(Value::Null)))

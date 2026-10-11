@@ -597,12 +597,16 @@ impl Manager for Tabs {
 pub type Browser = Pool<Tabs>;
 
 /// A pool around a started session: at most one page when the backend has
-/// only one.
+/// only one, and two on camofox unless `FAB_POOL_MAX` says otherwise (its
+/// per-user tab cap is shared with the user's other clients).
 pub fn around(home: fab_core::Session, mut cfg: Config) -> Arc<Browser> {
     let pages = home.pages();
     if !pages.multi() {
         cfg.max = 1;
         cfg.min = 1;
+    } else if home.browser.name() == "camofox" && std::env::var_os("FAB_POOL_MAX").is_none() {
+        cfg.max = cfg.max.min(2);
+        cfg.min = cfg.min.min(cfg.max);
     }
     Pool::new(Tabs { pages }, cfg, home)
 }

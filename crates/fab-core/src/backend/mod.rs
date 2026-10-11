@@ -126,7 +126,7 @@ impl Browser {
                 c.notes = notes;
                 Browser::from_driver(c)
             }
-            "camofox" => Browser::from_driver(camofox::Camofox::open(&k.camofox_url).await?),
+            "camofox" => Browser::from_driver(camofox::Camofox::open(k).await?),
             other => bail!("unknown backend {other}"),
         })
     }

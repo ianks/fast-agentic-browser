@@ -15,8 +15,15 @@ pub enum ExecMode {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Knobs {
+    /// "cdp" (a local Chromium/Firefox) or "camofox" (`FAB_BACKEND`).
     pub backend: String,
     pub camofox_url: String,
+    /// camofox `userId` to join (`CAMOFOX_USER_ID`): its persistent context,
+    /// logins and cookies are shared with that user's other clients, so fab
+    /// only ever closes its own tabs. "" = a fresh user per session.
+    pub camofox_user: String,
+    /// camofox `sessionKey` for fab's tab group (`CAMOFOX_SESSION_KEY`).
+    pub camofox_session: String,
     /// Browser to launch: a name (chrome, edge, brave, chromium, …) or an
     /// executable path; "" = discover (`FAB_BROWSER`, `CHROME_PATH`,
     /// `BROWSER`, the OS default browser, then what is installed).
@@ -109,11 +116,18 @@ pub struct Knobs {
     pub shape_tau: f64,
 }
 
+/// An env var, or `default` when unset or empty.
+fn env_or(name: &str, default: &str) -> String {
+    std::env::var(name).ok().filter(|v| !v.is_empty()).unwrap_or_else(|| default.into())
+}
+
 impl Default for Knobs {
     fn default() -> Self {
         Self {
-            backend: "cdp".into(),
-            camofox_url: std::env::var("CAMOFOX_URL").unwrap_or_else(|_| "http://127.0.0.1:9377".into()),
+            backend: env_or("FAB_BACKEND", "cdp"),
+            camofox_url: env_or("CAMOFOX_URL", "http://127.0.0.1:9377"),
+            camofox_user: env_or("CAMOFOX_USER_ID", ""),
+            camofox_session: env_or("CAMOFOX_SESSION_KEY", "fab"),
             browser: String::new(),
             connect: String::new(),
             profile: String::new(),
@@ -174,6 +188,8 @@ impl Knobs {
         match key {
             "backend" => self.backend = v.into(),
             "camofox_url" => self.camofox_url = v.into(),
+            "camofox_user" => self.camofox_user = v.into(),
+            "camofox_session" => self.camofox_session = v.into(),
             "browser" => self.browser = v.into(),
             "connect" => self.connect = v.into(),
             "profile" => self.profile = v.into(),

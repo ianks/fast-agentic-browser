@@ -68,6 +68,13 @@ impl BrowserHost for CdpHost {
     }
     fn shutdown(&self) -> DriverFuture<'_, ()> { Box::pin(async { self.0.shutdown().await }) }
 }
+struct CamofoxHost(std::sync::Arc<camofox::Conn>);
+impl BrowserHost for CamofoxHost {
+    fn page(&self) -> DriverFuture<'_, Result<super::Browser>> {
+        Box::pin(async { Ok(super::Browser::from_driver(camofox::Camofox::page(&self.0).await?)) })
+    }
+    fn shutdown(&self) -> DriverFuture<'_, ()> { Box::pin(async { self.0.shutdown().await }) }
+}
 struct BidiHost { shared: bidi::Shared, product: String }
 impl BrowserHost for BidiHost {
     fn page(&self) -> DriverFuture<'_, Result<super::Browser>> {
@@ -135,7 +142,8 @@ impl PageDriver for camofox::Camofox {
     fn pointer(&mut self) -> Option<Pointer<'_>> { Some(Pointer::Targeted(self)) }
     fn text(&mut self) -> Option<Text<'_>> { Some(Text::Targeted(self)) }
     fn enter_key(&mut self) -> Option<&mut dyn EnterKey> { Some(self) }
-    fn renewable(&mut self) -> Option<&mut dyn Renewable> { None }
+    fn renewable(&mut self) -> Option<&mut dyn Renewable> { Some(self) }
+    fn host(&self) -> Handle { Handle::new(CamofoxHost(self.conn())) }
     fn page_id(&self) -> String { self.tab.clone() }
     fn eval<'a>(&'a mut self, expression: &'a str) -> DriverFuture<'a, Result<Value>> { Box::pin(async move { camofox::Camofox::eval(self, expression).await }) }
     fn goto<'a>(&'a mut self, url: &'a str) -> DriverFuture<'a, Result<()>> { Box::pin(async move { camofox::Camofox::goto(self, url).await }) }
@@ -173,6 +181,9 @@ impl TargetPointer for camofox::Camofox {
 }
 impl TargetedText for camofox::Camofox {
     fn type_selector<'a>(&'a mut self, selector: &'a str, text: &'a str) -> DriverFuture<'a, Result<InputReceipt, InputError>> { Box::pin(async move { acknowledged(camofox::Camofox::type_selector(self, selector, text).await) }) }
+}
+impl Renewable for camofox::Camofox {
+    fn renew(&mut self) -> DriverFuture<'_, Result<()>> { Box::pin(async move { camofox::Camofox::renew(self).await }) }
 }
 impl EnterKey for camofox::Camofox {
     fn press_enter(&mut self) -> DriverFuture<'_, Result<InputReceipt, InputError>> { Box::pin(async move { acknowledged(self.press("Enter").await) }) }
