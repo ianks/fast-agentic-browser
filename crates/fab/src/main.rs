@@ -86,7 +86,7 @@ struct Cli {
     /// Work in your running Chrome instead of launching one: auto, a port, http://host:port or ws://…
     #[arg(long, global = true, env = "FAB_CONNECT", help_heading = "Browser (used when a session starts)")]
     connect: Option<String>,
-    /// LLM fab consults for reading and computing (OpenRouter model id; "none": the engine alone).
+    /// LLM fab consults for reading and computing (a model id at the LLM endpoint; "none": the engine alone).
     #[arg(long, global = true, env = "FAB_MODEL", help_heading = "Browser (used when a session starts)")]
     model: Option<String>,
     /// Close a session after this many idle seconds (0: never).
