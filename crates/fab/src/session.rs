@@ -52,8 +52,34 @@ pub fn check_name(name: &str) -> Result<()> {
     if !ok {
         bail!("session names are letters, digits, '-', '_' and '.' (at most 40)");
     }
+    if name == "serve" {
+        bail!("\"serve\" is fab serve's own socket: pick another session name");
+    }
     Ok(())
 }
+
+/// `FAB_REMOTE=1`: this process is a client of a `fab serve` that owns the
+/// browsers and the secrets (another container sharing fab's run
+/// directory). It never starts a session daemon of its own.
+pub fn remote() -> bool {
+    matches!(std::env::var("FAB_REMOTE").as_deref(), Ok("1" | "true" | "yes" | "on"))
+}
+
+/// `fab serve`'s control socket.
+pub fn serve_socket() -> PathBuf {
+    fab_core::paths::run_dir().join("serve.sock")
+}
+
+/// No session could be reached or started for a remote client: `fab serve`
+/// is down, or could not start it (code `session_unavailable`).
+#[derive(Debug)]
+pub struct Unavailable(pub String);
+impl std::fmt::Display for Unavailable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+impl std::error::Error for Unavailable {}
 
 fn run_dir() -> Result<PathBuf> {
     let dir = fab_core::paths::run_dir();
@@ -104,8 +130,46 @@ pub async fn request(name: &str, start: Option<&Start>, req: &Value, mut on_stre
 
 async fn connect_or_start(name: &str, start: &Start) -> Result<UnixStream> {
     let path = socket(name);
+    if remote() {
+        return match UnixStream::connect(&path).await {
+            Ok(s) => Ok(s),
+            Err(_) => via_serve(name, start).await,
+        };
+    }
+    Ok(start_local(name, start).await?.0)
+}
+
+/// Asks `fab serve` to start session `name`, then connects to it.
+async fn via_serve(name: &str, start: &Start) -> Result<UnixStream> {
+    let path = socket(name);
+    let run = fab_core::paths::run_dir();
+    if !path.starts_with(&run) {
+        return Err(Unavailable(format!("fab's run directory {} is too long a path to share a socket with fab serve: use a shorter FAB_HOME", run.display())).into());
+    }
+    let ctl = serve_socket();
+    let down = || Unavailable(format!("fab serve is not running (FAB_REMOTE=1 and nothing answers on {})", ctl.display()));
+    let stream = UnixStream::connect(&ctl).await.map_err(|_| down())?;
+    let (rd, mut wr) = stream.into_split();
+    let req = json!({"op": "start", "session": name, "set": start.set, "model": start.model, "idle": start.idle});
+    wr.write_all(format!("{req}\n").as_bytes()).await.map_err(|_| down())?;
+    let line = tokio::time::timeout(Duration::from_secs(30), BufReader::new(rd).lines().next_line()).await;
+    let reply: Value = match line {
+        Ok(Ok(Some(l))) => serde_json::from_str(&l).unwrap_or(Value::Null),
+        Ok(_) => return Err(down().into()),
+        Err(_) => return Err(Unavailable(format!("fab serve did not start session \"{name}\" within 30 s")).into()),
+    };
+    if reply["ok"] != true {
+        return Err(Unavailable(format!("fab serve could not start session \"{name}\": {}", reply["error"].as_str().unwrap_or("no reason given"))).into());
+    }
+    UnixStream::connect(&path).await.map_err(|e| Unavailable(format!("fab serve started session \"{name}\", but its socket does not answer here ({e}): is {} shared with fab serve?", run.display())).into())
+}
+
+/// Connects to session `name`, starting its daemon here when none answers.
+/// The child is returned when this call started it.
+async fn start_local(name: &str, start: &Start) -> Result<(UnixStream, Option<std::process::Child>)> {
+    let path = socket(name);
     match UnixStream::connect(&path).await {
-        Ok(s) => return Ok(s),
+        Ok(s) => return Ok((s, None)),
         // Left behind by a session that died: start over.
         Err(e) if e.kind() == std::io::ErrorKind::ConnectionRefused => {
             let _ = std::fs::remove_file(&path);
@@ -116,13 +180,13 @@ async fn connect_or_start(name: &str, start: &Start) -> Result<UnixStream> {
     let t0 = Instant::now();
     loop {
         if let Ok(s) = UnixStream::connect(&path).await {
-            return Ok(s);
+            return Ok((s, Some(child)));
         }
         // The daemon exited: say why instead of waiting out the timeout.
         if let Ok(Some(_)) = child.try_wait() {
             // Another command may have started the session first.
             if let Ok(s) = UnixStream::connect(&path).await {
-                return Ok(s);
+                return Ok((s, None));
             }
             let log = std::fs::read_to_string(log_file(name)).unwrap_or_default();
             let tail: Vec<&str> = log.lines().rev().take(3).collect();
@@ -161,7 +225,7 @@ fn spawn(name: &str, start: &Start) -> Result<std::process::Child> {
 pub async fn list() -> Vec<(String, Value)> {
     let dir = socket("x").parent().map(PathBuf::from).unwrap_or_else(fab_core::paths::run_dir);
     let Ok(rd) = std::fs::read_dir(dir) else { return vec![] };
-    let mut names: Vec<String> = rd.filter_map(|e| e.ok()?.file_name().to_str()?.strip_suffix(".sock").map(str::to_string)).collect();
+    let mut names: Vec<String> = rd.filter_map(|e| e.ok()?.file_name().to_str()?.strip_suffix(".sock").map(str::to_string)).filter(|n| n != "serve").collect();
     names.sort();
     let mut out = vec![];
     for n in names {
@@ -175,6 +239,117 @@ pub async fn list() -> Vec<(String, Value)> {
         }
     }
     out
+}
+
+/// Start options a remote client may not choose: which browser backend, and
+/// its address and credentials, are the server's alone.
+fn served(set: &[String]) -> Vec<String> {
+    set.iter()
+        .filter(|kv| {
+            let k = kv.split_once('=').map_or(kv.as_str(), |(k, _)| k).trim();
+            !(matches!(k, "backend" | "connect" | "browser") || k.starts_with("camofox"))
+        })
+        .cloned()
+        .collect()
+}
+
+/// `fab serve`: starts session daemons for remote clients (`FAB_REMOTE=1`)
+/// on request, each with this process's environment (backend, keys,
+/// password manager). Never exits on its own; sessions still close when idle.
+pub async fn supervise() -> Result<()> {
+    run_dir()?;
+    let ctl = serve_socket();
+    if UnixStream::connect(&ctl).await.is_ok() {
+        bail!("fab serve is already running ({})", ctl.display());
+    }
+    let _ = std::fs::remove_file(&ctl);
+    let listener = UnixListener::bind(&ctl).with_context(|| format!("could not listen on {}", ctl.display()))?;
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&ctl, std::fs::Permissions::from_mode(0o600))?;
+    }
+    eprintln!("[{}] fab serve: listening on {} (pid {})", now(), ctl.display(), std::process::id());
+    let starting: Arc<tokio::sync::Mutex<std::collections::HashMap<String, Arc<tokio::sync::Mutex<()>>>>> = Default::default();
+    use tokio::signal::unix::{SignalKind, signal};
+    let (mut term, mut int, mut hup) = (signal(SignalKind::terminate())?, signal(SignalKind::interrupt())?, signal(SignalKind::hangup())?);
+    loop {
+        tokio::select! {
+            r = listener.accept() => {
+                if let Ok((stream, _)) = r {
+                    let starting = starting.clone();
+                    tokio::spawn(async move {
+                        if let Err(e) = control(stream, starting).await {
+                            eprintln!("[{}] fab serve: request failed: {e:#}", now());
+                        }
+                    });
+                }
+            }
+            _ = term.recv() => break,
+            _ = int.recv() => break,
+            _ = hup.recv() => {}
+        }
+    }
+    let _ = std::fs::remove_file(&ctl);
+    for (name, _) in list().await {
+        let _ = request(&name, None, &json!({"op": "close"}), |_| {}).await;
+    }
+    eprintln!("[{}] fab serve: stopped", now());
+    Ok(())
+}
+
+/// One control request: `start` a session, or run `doctor` here.
+async fn control(stream: UnixStream, starting: Arc<tokio::sync::Mutex<std::collections::HashMap<String, Arc<tokio::sync::Mutex<()>>>>>) -> Result<()> {
+    let (rd, mut wr) = stream.into_split();
+    let Some(line) = BufReader::new(rd).lines().next_line().await? else { return Ok(()) };
+    let req: Value = serde_json::from_str(&line)?;
+    match req["op"].as_str() {
+        Some("start") => {
+            let name = req["session"].as_str().unwrap_or_default().to_string();
+            let start = Start {
+                set: served(&req["set"].as_array().into_iter().flatten().filter_map(|v| v.as_str().map(str::to_string)).collect::<Vec<_>>()),
+                model: req["model"].as_str().map(str::to_string),
+                idle: req["idle"].as_u64().unwrap_or(3600),
+            };
+            let reply = match check_name(&name) {
+                Err(e) => json!({"ok": false, "error": format!("{e:#}")}),
+                Ok(()) => {
+                    // One start per session at a time; the rest find it running.
+                    let lock = starting.lock().await.entry(name.clone()).or_default().clone();
+                    let _one = lock.lock().await;
+                    match start_local(&name, &start).await {
+                        Ok((_, child)) => {
+                            if let Some(mut c) = child {
+                                eprintln!("[{}] fab serve: started session {name}", now());
+                                std::thread::spawn(move || c.wait());
+                            }
+                            json!({"ok": true})
+                        }
+                        Err(e) => json!({"ok": false, "error": format!("{e:#}")}),
+                    }
+                }
+            };
+            wr.write_all(format!("{reply}\n").as_bytes()).await?;
+        }
+        // The server's own checks (backend, password manager), for a
+        // remote client's `fab doctor`: its event lines, as they come.
+        Some("doctor") => {
+            let mut child = tokio::process::Command::new(std::env::current_exe()?)
+                .arg("doctor")
+                .env_remove("FAB_REMOTE")
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::null())
+                .kill_on_drop(true)
+                .spawn()?;
+            let mut out = BufReader::new(child.stdout.take().context("doctor's output")?).lines();
+            while let Some(l) = out.next_line().await? {
+                wr.write_all(format!("{l}\n").as_bytes()).await?;
+            }
+            let _ = child.wait().await;
+        }
+        _ => wr.write_all(format!("{}\n", json!({"ok": true, "pid": std::process::id()})).as_bytes()).await?,
+    }
+    Ok(())
 }
 
 struct Shared {
@@ -518,4 +693,21 @@ async fn call(sh: &Arc<Shared>, req: &Value, wr: Arc<tokio::sync::Mutex<OwnedWri
     }
     r.text = text;
     finish(&r)
+}
+
+#[cfg(test)]
+mod serve_tests {
+    use super::*;
+
+    #[test]
+    fn a_remote_client_cannot_choose_the_backend_or_its_credentials() {
+        let set: Vec<String> = ["engine=dvm", "profile=a", "backend=cdp", "camofox_url=http://evil", "camofox_user=x", "connect=9222", "browser=chrome", " backend = cdp"].map(String::from).to_vec();
+        assert_eq!(served(&set), ["engine=dvm", "profile=a"]);
+    }
+
+    #[test]
+    fn serve_is_not_a_session_name() {
+        assert!(check_name("serve").is_err());
+        assert!(check_name("server").is_ok());
+    }
 }

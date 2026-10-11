@@ -33,6 +33,9 @@ pub enum ErrorCode {
     Cancelled,
     /// The runner stopped (session closed, process restarted); resume explicitly.
     Interrupted,
+    /// A remote client (`FAB_REMOTE=1`) reached no session: `fab serve` is
+    /// down or could not start it. Nothing ran.
+    SessionUnavailable,
     Internal,
 }
 
@@ -167,7 +170,7 @@ pub fn schemas() -> Value {
         "format": {"const": "uri"}, "enum": {"type": "array", "minItems": 1}, "description": {"type": "string"}, "title": {"type": "string"}},
         "required": ["type"], "additionalProperties": false});
     let failure = serde_json::json!({"type": ["object", "null"], "properties": {
-        "code": {"enum": ["invalid_program", "invalid_args", "navigation_failed", "step_failed", "budget_exhausted", "secret_unavailable", "schema_mismatch", "paused", "cancelled", "interrupted", "internal"]},
+        "code": {"enum": ["invalid_program", "invalid_args", "navigation_failed", "step_failed", "budget_exhausted", "secret_unavailable", "schema_mismatch", "paused", "cancelled", "interrupted", "session_unavailable", "internal"]},
         "message": {"type": "string"}, "line": {"type": "integer"}, "uncertain": {"type": "boolean"}}, "required": ["code", "message", "uncertain"]});
     serde_json::json!({
         "request": {"$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object", "additionalProperties": false, "required": ["do"], "properties": {
@@ -310,7 +313,7 @@ mod tests {
     #[test]
     fn printed_schema_lists_every_error_code() {
         let codes = schemas()["event"]["oneOf"][3]["properties"]["error"]["properties"]["code"]["enum"].clone();
-        let all = [ErrorCode::InvalidProgram, ErrorCode::InvalidArgs, ErrorCode::NavigationFailed, ErrorCode::StepFailed, ErrorCode::BudgetExhausted, ErrorCode::SecretUnavailable, ErrorCode::SchemaMismatch, ErrorCode::Paused, ErrorCode::Cancelled, ErrorCode::Interrupted, ErrorCode::Internal];
+        let all = [ErrorCode::InvalidProgram, ErrorCode::InvalidArgs, ErrorCode::NavigationFailed, ErrorCode::StepFailed, ErrorCode::BudgetExhausted, ErrorCode::SecretUnavailable, ErrorCode::SchemaMismatch, ErrorCode::Paused, ErrorCode::Cancelled, ErrorCode::Interrupted, ErrorCode::SessionUnavailable, ErrorCode::Internal];
         assert_eq!(codes, serde_json::to_value(all).unwrap());
     }
 

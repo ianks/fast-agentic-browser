@@ -72,7 +72,7 @@ struct Cli {
     #[arg(short, long, global = true)]
     verbose: bool,
     /// Run the browser without a window.
-    #[arg(long, global = true, env = "FAB_HEADLESS", help_heading = "Browser (used when a session starts)")]
+    #[arg(long, global = true, env = "FAB_HEADLESS", value_parser = clap::builder::BoolishValueParser::new(), help_heading = "Browser (used when a session starts)")]
     headless: bool,
     /// Browser to launch: chrome, firefox, edge, brave, … or a path. Default: your default browser.
     #[arg(long, global = true, help_heading = "Browser (used when a session starts)")]
@@ -81,7 +81,7 @@ struct Cli {
     #[arg(long, global = true, env = "FAB_PROFILE", help_heading = "Browser (used when a session starts)")]
     profile: Option<String>,
     /// Use a throwaway profile.
-    #[arg(long, global = true, env = "FAB_ISOLATED", help_heading = "Browser (used when a session starts)")]
+    #[arg(long, global = true, env = "FAB_ISOLATED", value_parser = clap::builder::BoolishValueParser::new(), help_heading = "Browser (used when a session starts)")]
     isolated: bool,
     /// Work in your running Chrome instead of launching one: auto, a port, http://host:port or ws://…
     #[arg(long, global = true, env = "FAB_CONNECT", help_heading = "Browser (used when a session starts)")]
@@ -200,6 +200,8 @@ enum Cmd {
     Doctor,
     /// Download Chrome for Testing (for machines without a browser).
     Install,
+    /// Run the browser side for remote clients (FAB_REMOTE=1) sharing FAB_HOME: start their sessions here, in the foreground.
+    Serve,
     /// The session daemon (started by `fab do`).
     #[command(name = "__serve", hide = true)]
     ServeSession,
@@ -251,6 +253,7 @@ impl Cli {
             Some(Cmd::Secrets { .. }) => "secrets",
             Some(Cmd::Doctor) => "doctor",
             Some(Cmd::Install) => "install",
+            Some(Cmd::Serve) => "serve",
             Some(Cmd::ServeSession) => "serve",
         }
     }
@@ -325,6 +328,12 @@ async fn run(cli: Cli) -> Result<ExitCode> {
     }
     let Some(cmd) = &cli.cmd else { return Err(invalid("say what to do: fab do \"…\" (fab --help)")) };
     let w = Writer::new(cli.command_name());
+    // A remote client holds no secrets and starts no browser: those are
+    // fab serve's, in another container.
+    #[cfg(unix)]
+    if session::remote() && matches!(cmd, Cmd::Secrets { .. } | Cmd::Install | Cmd::Serve) {
+        return Err(invalid("not available with FAB_REMOTE=1: run it where fab serve runs"));
+    }
     match cmd {
         Cmd::Do { step, url, program, print } => {
             let args = do_args(step, url.as_deref(), *program)?;
@@ -382,6 +391,10 @@ async fn run(cli: Cli) -> Result<ExitCode> {
         Cmd::Secrets { cmd } => secrets(w, cmd.clone().unwrap_or(SecretsCmd::Status)).await,
         Cmd::Doctor => doctor(&cli, w, &k).await,
         Cmd::Install => install(w).await,
+        #[cfg(unix)]
+        Cmd::Serve => session::supervise().await.map(ok),
+        #[cfg(not(unix))]
+        Cmd::Serve => bail!("fab serve needs a Unix system"),
         Cmd::ServeSession => serve_session(&cli, k).await.map(ok),
     }
 }
@@ -454,7 +467,10 @@ async fn session_call(cli: &Cli, mut w: Writer, name: &str, mut args: Value) -> 
         }
     })
     .await
-    .map_err(|e| Failure::new(ErrorCode::Interrupted, format!("{e:#}")))?;
+    .map_err(|e| {
+        let code = if e.is::<session::Unavailable>() { ErrorCode::SessionUnavailable } else { ErrorCode::Interrupted };
+        Failure::new(code, format!("{e:#}"))
+    })?;
     if verbose {
         if let Some(report) = v["report"].as_str().filter(|r| !r.is_empty()) { eprintln!("{}", report.trim_end()); }
     }
@@ -600,6 +616,16 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
     use fab_core::backend::discover;
     let mut check = |name: &str, ok: bool, detail: String| w.item(json!({"check": name, "ok": ok, "detail": detail}));
     check("version", true, env!("CARGO_PKG_VERSION").into());
+    #[cfg(unix)]
+    if session::remote() {
+        return remote_doctor(w).await;
+    }
+    #[cfg(unix)]
+    {
+        let ctl = session::serve_socket();
+        let up = tokio::net::UnixStream::connect(&ctl).await.is_ok();
+        check("serve", true, if up { format!("running ({})", ctl.display()) } else { "not running (only needed for remote clients: fab serve)".into() });
+    }
     let cfg = fab_cli::config_file().display().to_string();
     let found = fab_cli::config_file().is_file();
     check("config", true, if found { cfg.clone() } else { format!("{cfg} (none; optional)") });
@@ -702,6 +728,29 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
         }
     }
     check("skill", true, "fab --skill --install (teaches Claude Code the CLI; codex, agents or a directory after --install)".into());
+    Ok(w.end(End::ok(Value::Null)))
+}
+
+/// A remote client's checks are the server's: fab serve runs `fab doctor`
+/// where the browser and the secrets are, and its items are relayed.
+#[cfg(unix)]
+async fn remote_doctor(mut w: Writer) -> Result<ExitCode> {
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+    let ctl = session::serve_socket();
+    let Ok(stream) = tokio::net::UnixStream::connect(&ctl).await else {
+        w.item(json!({"check": "serve", "ok": false, "detail": format!("FAB_REMOTE=1, but fab serve is not running (nothing answers on {})", ctl.display())}));
+        return Ok(w.end(End::ok(Value::Null)));
+    };
+    w.item(json!({"check": "serve", "ok": true, "detail": format!("remote client of fab serve ({}); the checks below ran there", ctl.display())}));
+    let (rd, mut wr) = stream.into_split();
+    wr.write_all(b"{\"op\":\"doctor\"}\n").await?;
+    let mut lines = tokio::io::BufReader::new(rd).lines();
+    while let Some(l) = lines.next_line().await? {
+        let v: Value = serde_json::from_str(&l).unwrap_or(Value::Null);
+        if v["t"] == "item" && !matches!(v["data"]["check"].as_str(), Some("version" | "serve")) {
+            w.item(v["data"].clone());
+        }
+    }
     Ok(w.end(End::ok(Value::Null)))
 }
 

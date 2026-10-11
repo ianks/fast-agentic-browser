@@ -16,7 +16,7 @@ struct Cli {
     #[arg(short, long, global = true)]
     verbose: bool,
     /// Run browsers without a window.
-    #[arg(long, global = true, env = "FAB_HEADLESS")]
+    #[arg(long, global = true, env = "FAB_HEADLESS", value_parser = clap::builder::BoolishValueParser::new())]
     headless: bool,
     /// Knob overrides, e.g. --set backend=camofox --set exec=trusted.
     #[arg(long = "set", global = true)]

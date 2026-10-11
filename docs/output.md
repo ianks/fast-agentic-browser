@@ -86,6 +86,7 @@ Schemas of the request and of every event.
 | --- | --- | --- |
 | `invalid_program`, `invalid_args` | rejected before any browser effect | 2 |
 | `navigation_failed`, `step_failed`, `budget_exhausted`, `secret_unavailable`, `schema_mismatch`, `cancelled`, `internal` | failed after starting | 1 |
+| `session_unavailable` | `FAB_REMOTE=1` and `fab serve` is down or could not start the session; nothing ran | 1 |
 | `paused`, `interrupted` | may have acted: resolve with `fab tasks resolve`, then `fab tasks resume` | 3 |
 
 `uncertain` is true when browser effects may have happened before the failure.

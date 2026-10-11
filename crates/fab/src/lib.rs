@@ -48,6 +48,10 @@ pub fn config_file() -> PathBuf {
 /// only fills variables the ones above left unset. A `config.toml` that
 /// does not parse is an error, not silently skipped.
 pub fn load_env() -> anyhow::Result<()> {
+    // A remote client reads no config: keys and settings are fab serve's.
+    if matches!(std::env::var("FAB_REMOTE").as_deref(), Ok("1" | "true" | "yes" | "on")) {
+        return Ok(());
+    }
     if let Some(p) = config_env() {
         let _ = dotenvy::from_path(p);
     }
