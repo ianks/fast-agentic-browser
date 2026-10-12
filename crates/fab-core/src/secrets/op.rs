@@ -91,7 +91,7 @@ impl Op {
             Ok(out) => {
                 let n = serde_json::from_slice::<Vec<Value>>(&out).map(|v| v.len()).unwrap_or(0);
                 if n == 0 {
-                    Status { ready: false, note: "no account: run `op signin` or turn on the 1Password app's CLI integration".into() }
+                    Status { ready: false, note: "no account: set OP_SERVICE_ACCOUNT_TOKEN (servers, containers), or run `op signin` or turn on the 1Password app's CLI integration".into() }
                 } else {
                     Status { ready: true, note: format!("{n} account{} (1Password may ask you to approve fab)", if n == 1 { "" } else { "s" }) }
                 }
