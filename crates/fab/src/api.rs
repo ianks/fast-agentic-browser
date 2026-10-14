@@ -174,8 +174,101 @@ async fn call_tool(sess: &mut Session, ctx: &mut Ctx, name: &str, args: &Value, 
         },
         // One step as written, without compiling (bench and tests).
         "step" => do_step(sess, ctx, args, live).await,
-        other => Reply::fail(ErrorCode::InvalidArgs, format!("unknown tool {other}: fab's tools are `do` and `run`")),
+        "screenshot" => screenshot(sess, ctx, args).await,
+        other => Reply::fail(ErrorCode::InvalidArgs, format!("unknown tool {other}: fab's tools are `do`, `run` and `screenshot`")),
     }
+}
+
+/// Screenshots kept per session: older ones are removed as new ones land.
+const SCREENSHOTS_KEPT: usize = 50;
+
+/// A PNG of the page, written under `$FAB_HOME/screenshots/<session>/`
+/// (the home a remote client shares with `fab serve`). With `ask`, a
+/// vision model answers a question about it.
+async fn screenshot(sess: &mut Session, ctx: &mut Ctx, args: &Value) -> Reply {
+    if let Some(u) = args["url"].as_str().filter(|u| !u.trim().is_empty())
+        && let Err(x) = open(sess, ctx, u).await
+    {
+        return Reply::fail(ErrorCode::NavigationFailed, format!("error: {x:#}"));
+    }
+    let selector = args["selector"].as_str().filter(|s| !s.trim().is_empty());
+    let shot = match sess.browser.screenshot(args["full_page"].as_bool() == Some(true), selector).await {
+        Ok(s) => s,
+        Err(e) => return Reply::fail(ErrorCode::StepFailed, format!("screenshot: {e:#}")),
+    };
+    let session = args["session"].as_str().filter(|s| !s.is_empty()).unwrap_or("default");
+    let path = match save_screenshot(session, &shot.png) {
+        Ok(p) => p,
+        Err(e) => return Reply::fail(ErrorCode::Internal, format!("screenshot: {e:#}")),
+    };
+    let url = current_url(sess).await;
+    let mut value = json!({"path": path, "width": shot.width, "height": shot.height});
+    let mut text = format!("{} ({}×{}{})", path.display(), shot.width, shot.height, if shot.masked > 0 { format!(", {} secret field{} masked", shot.masked, if shot.masked == 1 { "" } else { "s" }) } else { String::new() });
+    let (mut turns, mut cost) = (0, 0.0);
+    if let Some(q) = args["ask"].as_str().filter(|q| !q.trim().is_empty()) {
+        match look(&shot.png, q).await {
+            Ok((answer, model, usage)) => {
+                text.push_str(&format!("\n{model}: {answer}"));
+                value["answer"] = json!(answer);
+                turns = 1;
+                cost = usage.cost;
+            }
+            Err(e) => return Reply { url, value, ..Reply::fail(ErrorCode::StepFailed, format!("{text}\nvision: {e:#}")) },
+        }
+    }
+    Reply { text, ok: true, turns, cost, value, error: None, url, records: 0 }
+}
+
+fn save_screenshot(session: &str, png: &[u8]) -> anyhow::Result<std::path::PathBuf> {
+    let dir = fab_core::paths::home().join("screenshots").join(session);
+    std::fs::create_dir_all(&dir)?;
+    // Sortable and unique: the time to the millisecond, then a counter.
+    let stamp = crate::events::now().replace(':', "-");
+    let mut path = dir.join(format!("{stamp}.png"));
+    let mut n = 1;
+    while path.exists() {
+        n += 1;
+        path = dir.join(format!("{stamp}-{n}.png"));
+    }
+    std::fs::write(&path, png)?;
+    let mut old: Vec<_> = std::fs::read_dir(&dir)?.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.extension().is_some_and(|x| x == "png")).collect();
+    old.sort();
+    for p in old.iter().take(old.len().saturating_sub(SCREENSHOTS_KEPT)) {
+        let _ = std::fs::remove_file(p);
+    }
+    Ok(std::fs::canonicalize(&path).unwrap_or(path))
+}
+
+/// The vision model: `FAB_VISION_MODEL`, else a default on OpenRouter.
+pub fn vision_model() -> Option<String> {
+    match std::env::var("FAB_VISION_MODEL").ok().filter(|m| !m.is_empty()) {
+        Some(m) => Some(m),
+        None => fab_core::endpoint::llm().filter(|e| e.openrouter).map(|_| DEFAULT_VISION_MODEL.to_string()),
+    }
+}
+
+/// Picked from the live OpenRouter catalog (October 2026) by a pilot of six
+/// cheap image models on fab screenshots (reading a bar chart, small print
+/// on a full Hacker News page, a Wikipedia infobox): 12/12 right, 1.7 s
+/// median, $0.0002 a question; the next best got 10/12 at 8x the cost.
+const DEFAULT_VISION_MODEL: &str = "anthropic/claude-haiku-5.5";
+
+/// A vision model's answer to `question` about a PNG.
+async fn look(png: &[u8], question: &str) -> anyhow::Result<(String, String, fab_core::llm::ChatUsage)> {
+    use base64::Engine;
+    let model = vision_model().ok_or_else(|| anyhow::anyhow!("no vision model: set FAB_VISION_MODEL (a model at the LLM endpoint that reads images)"))?;
+    let llm = fab_core::llm::Llm::from_env(&model)?;
+    let image = format!("data:image/png;base64,{}", base64::engine::general_purpose::STANDARD.encode(png));
+    let body = json!({
+        "messages": [
+            {"role": "system", "content": "You answer questions about a screenshot of a web page. Answer briefly and exactly, from what the image shows; say so when it doesn't show the answer."},
+            {"role": "user", "content": [{"type": "text", "text": question}, {"type": "image_url", "image_url": {"url": image}}]},
+        ],
+        "temperature": 0,
+    });
+    let (msg, usage, _) = llm.chat(body).await?;
+    let answer = msg["content"].as_str().unwrap_or_default().trim().to_string();
+    Ok((answer, model, usage))
 }
 
 /// "open acme.dev and log in" → ("https://acme.dev", "log in"). Only a step

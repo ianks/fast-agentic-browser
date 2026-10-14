@@ -59,6 +59,9 @@ pub fn load_env() -> anyhow::Result<()> {
     match std::fs::read_to_string(&path) {
         Ok(text) => {
             let cfg: ConfigFile = toml::from_str(&text).map_err(|e| anyhow::anyhow!("{}: {e}", path.display()))?;
+            if cfg.jev.vision_model.is_some() {
+                anyhow::bail!("{}: vision_model goes in [llm], not [jev]", path.display());
+            }
             for (k, v) in cfg.vars() {
                 if std::env::var_os(&k).is_none() {
                     // SAFETY: startup, before fab spawns any thread of its own
@@ -102,6 +105,8 @@ struct EndpointConfig {
     base_url: Option<String>,
     api_key: Option<String>,
     model: Option<String>,
+    /// `[llm]` only: the model that reads screenshots.
+    vision_model: Option<String>,
 }
 
 #[derive(Debug, Default, serde::Deserialize)]
@@ -121,6 +126,7 @@ impl ConfigFile {
             ("OPENAI_BASE_URL", l.base_url.clone()),
             ("OPENAI_API_KEY", l.api_key.clone()),
             ("FAB_MODEL", l.model.clone()),
+            ("FAB_VISION_MODEL", l.vision_model.clone()),
             ("SYSTEM_ONE_BASE_URL", j.base_url.clone()),
             ("SYSTEM_ONE_API_KEY", j.api_key.clone()),
             ("FAB_JEV_MODEL", j.model.clone()),
@@ -155,6 +161,7 @@ mod config_tests {
             [llm]
             base_url = "http://localhost:11434/v1"
             model = "qwen3"
+            vision_model = "qwen2.5-vl"
             [jev]
             base_url = "http://localhost:8093"
             [browser]
@@ -172,6 +179,7 @@ mod config_tests {
         let get = |k: &str| v.iter().find(|(n, _)| n == k).map(|(_, x)| x.as_str());
         assert_eq!(get("OPENAI_BASE_URL"), Some("http://localhost:11434/v1"));
         assert_eq!(get("FAB_MODEL"), Some("qwen3"));
+        assert_eq!(get("FAB_VISION_MODEL"), Some("qwen2.5-vl"));
         assert_eq!(get("SYSTEM_ONE_BASE_URL"), Some("http://localhost:8093"));
         assert_eq!(get("FAB_HEADLESS"), Some("true"));
         assert_eq!(get("FAB_IDLE"), Some("600"));

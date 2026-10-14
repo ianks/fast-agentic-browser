@@ -83,6 +83,20 @@ grep -q "stored $SITE new@acme.test 20 chars" "$TMP/stored" && echo "ok    the s
 "$FAB" secrets allow "{{Stripe test secret key}}" --url "$SITE" >>"$OUT" 2>&1
 check 0 "Key •••• will receive events" do 'set the Stripe secret key to {{Stripe test secret key}} and the webhook URL to "https://acme.test/hooks", then save' --url "$SITE/vault-settings.html"
 
+# 4a. Screenshots: the page above shows the key as text, so it isn't captured;
+#     a field holding it is captured with no text in it, drawn exactly as the
+#     empty field beside it (and that comparison does see typed text).
+check 1 "doesn't capture it" screenshot
+SH=(-s secrets-shot)
+check 0 "!sk_test" "${SH[@]}" do 'type {{Stripe test secret key}} into the Stripe secret key field; do not submit' --url "$SITE/vault-shot.html"
+check 0 "1 secret field masked" "${SH[@]}" screenshot --selector "#key" -o "$TMP/key.png"
+check 0 "note.png" "${SH[@]}" screenshot --selector "#note" -o "$TMP/note.png"
+cmp -s "$TMP/key.png" "$TMP/note.png" && echo "ok    the field holding the key shows no text in a screenshot" || { echo "FAIL: the key field's screenshot differs from an empty field's"; fails=$((fails + 1)); }
+check 0 "" "${SH[@]}" do 'type "hello there" into the Note field' 
+check 0 "note2.png" "${SH[@]}" screenshot --selector "#note" -o "$TMP/note2.png"
+cmp -s "$TMP/note.png" "$TMP/note2.png" && { echo "FAIL: typed text doesn't show in a screenshot (the check above proves nothing)"; fails=$((fails + 1)); } || echo "ok    typed text does show in a screenshot"
+"$FAB" "${SH[@]}" close >/dev/null 2>&1
+
 # 5. Another site gets nothing: no saved login is typed on localhost.
 check 0 "!Signed in to" do "log in" --url "http://localhost:$PORT/vault-login.html"
 

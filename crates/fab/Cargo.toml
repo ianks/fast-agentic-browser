@@ -46,6 +46,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 fab-core = { version = "0.2.1", path = "../fab-core" }
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 fs2 = "0.4.3"
+base64 = "0.22.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.189"

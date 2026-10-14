@@ -161,6 +161,28 @@ impl Camofox {
         Ok(())
     }
 
+    /// A PNG of the tab. camofox takes the viewport or the whole page; a
+    /// box is cut from the whole page here.
+    pub async fn screenshot(&self, shot: &super::driver::Shot) -> Result<Vec<u8>> {
+        let c = &self.conn;
+        let full = shot.full_page || shot.clip.is_some();
+        let url = reqwest::Url::parse_with_params(&format!("{}/tabs/{}/screenshot", c.base, self.tab), [("userId", c.user.as_str()), ("fullPage", if full { "true" } else { "false" })])?;
+        let r = c.auth(c.http.get(url)).send().await?;
+        let status = r.status();
+        if !status.is_success() {
+            let v: Value = r.json().await.unwrap_or(Value::Null);
+            if status == reqwest::StatusCode::NOT_FOUND && v["error"].as_str().is_some_and(|e| e.to_lowercase().contains("tab not found")) {
+                return Err(super::driver::PageLost(self.tab.clone()).into());
+            }
+            bail!("camofox screenshot {status}: {}", v.get("error").unwrap_or(&v));
+        }
+        let png = r.bytes().await?.to_vec();
+        match shot.clip {
+            Some(clip) => super::crop(&png, clip, shot.dpr),
+            None => Ok(png),
+        }
+    }
+
     /// A fresh blank tab in place of this one (reaped, crashed or hung).
     pub async fn renew(&mut self) -> Result<()> {
         let old = std::mem::replace(&mut self.tab, self.conn.open_tab().await?);

@@ -814,6 +814,35 @@ impl Cdp {
         self.live().await?.press_enter().await
     }
 
+    /// A PNG of the tab: the viewport, the whole page, or a box of it.
+    pub async fn screenshot(&self, shot: &super::driver::Shot) -> Result<Vec<u8>> {
+        let clip = match shot.clip {
+            Some(r) => Some(r),
+            None if shot.full_page => {
+                let m = self.call("Page.getLayoutMetrics", json!({})).await?;
+                let size = &m["cssContentSize"];
+                let (w, h) = (size["width"].as_f64().unwrap_or(0.0), size["height"].as_f64().unwrap_or(0.0));
+                Some(super::driver::Rect { x: 0.0, y: 0.0, width: w, height: h.min(super::MAX_SHOT_HEIGHT) })
+            }
+            None => None,
+        };
+        let mut p = json!({"format": "png"});
+        if let Some(r) = clip {
+            p["clip"] = json!({"x": r.x, "y": r.y, "width": r.width, "height": r.height, "scale": 1});
+            p["captureBeyondViewport"] = true.into();
+        }
+        // A tab in the background of a visible window paints nothing to
+        // capture: bring it forward and try again.
+        let v = match tokio::time::timeout(Duration::from_secs(10), self.call("Page.captureScreenshot", p.clone())).await {
+            Ok(v) => v?,
+            Err(_) => {
+                self.call("Page.bringToFront", json!({})).await?;
+                self.call("Page.captureScreenshot", p).await?
+            }
+        };
+        super::png_data(&v["data"])
+    }
+
     /// Switches to a tab the current one just opened (a target=_blank link,
     /// window.open), as a person would. Returns whether it switched.
     pub async fn follow_popup(&self) -> Result<bool> {

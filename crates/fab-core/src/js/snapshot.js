@@ -992,6 +992,47 @@
     return true;
   };
 
+  // Screenshots. Fields holding a typed secret (and password fields) show
+  // no text while one is taken; their inline style comes back afterwards.
+  // Returns where `selector` is (document coordinates), the device pixel
+  // ratio, and the text left in view, which fab checks for secrets the page
+  // shows as text; or `{error}`, with nothing masked.
+  U.shotMask = (selector) => {
+    U.shotRestore();
+    let rect = null;
+    if (selector) {
+      const t = document.querySelector(selector);
+      if (!t) return { error: "no element matches " + selector };
+      const r = t.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return { error: selector + " has no size (hidden?)" };
+      rect = { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: r.height };
+    }
+    const masked = [];
+    const shown = [];
+    const docs = [document];
+    for (const f of document.querySelectorAll("iframe")) {
+      try { if (f.contentDocument) docs.push(f.contentDocument); } catch (_) {}
+    }
+    for (const d of docs) {
+      if (d.body) shown.push(d.body.innerText || "");
+      for (const e of d.querySelectorAll("input,textarea,[contenteditable]")) {
+        if (secretEls.has(e) || (e.type || "").toLowerCase() === "password") {
+          masked.push([e, e.getAttribute("style")]);
+          for (const p of ["color", "-webkit-text-fill-color", "caret-color", "text-shadow"]) e.style.setProperty(p, p === "text-shadow" ? "none" : "transparent", "important");
+        } else if (e.value) shown.push(e.value);
+      }
+    }
+    U.shotMasked = masked;
+    return { rect, dpr: devicePixelRatio || 1, masked: masked.length, text: shown.join("\n") };
+  };
+  U.shotRestore = () => {
+    for (const [e, style] of U.shotMasked || []) {
+      if (style === null) e.removeAttribute("style"); else e.setAttribute("style", style);
+    }
+    U.shotMasked = [];
+    return true;
+  };
+
   U.select = (i, label) => {
     const e = el(i);
     const want = label.trim().toLowerCase();

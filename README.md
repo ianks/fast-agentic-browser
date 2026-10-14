@@ -35,6 +35,8 @@ fab do "pay with {{card number}}, expiry {{expiry}}, CVC {{CVC}}, but don't plac
 fab do 'sign up as "qa+1@acme.dev" with {{new password}}' --url localhost:3000/signup
 fab do '{"do": "every job on all pages", "url": "jobs.example.com",
          "records": {"properties": {"title": {"type": "string"}, "salary": {"type": ["number", "null"]}}}}'
+fab screenshot --full-page                                     # a PNG of the page: end.value.path
+fab screenshot --ask "what's the Q3 value in the revenue chart?"
 fab close
 ```
 
@@ -93,7 +95,7 @@ pointed elsewhere with the env vars other tools already read:
 
 | Model | Variables (first match wins) |
 |---|---|
-| LLM (OpenAI-compatible) | `OPENAI_BASE_URL` (+ `OPENAI_API_KEY`, optional for local servers), else `OPENROUTER_API_KEY`, else `OPENAI_API_KEY`. Model: `FAB_MODEL` (required off OpenRouter). |
+| LLM (OpenAI-compatible) | `OPENAI_BASE_URL` (+ `OPENAI_API_KEY`, optional for local servers), else `OPENROUTER_API_KEY`, else `OPENAI_API_KEY`. Model: `FAB_MODEL` (required off OpenRouter). Screenshot questions: `FAB_VISION_MODEL`. |
 | Jev (System One API) | `SYSTEM_ONE_BASE_URL` (+ `SYSTEM_ONE_API_KEY`, optional), else `TYPESAFE_API_KEY` (+ `TYPESAFE_BASE_URL`), else `OPENROUTER_API_KEY`. Model: `FAB_JEV_MODEL` or `SYSTEM_ONE_MODEL`. `SYSTEMONE_*` spellings work too. |
 
 **Config file.** The same settings can live in `~/.config/fab/config.toml`
@@ -102,7 +104,7 @@ variables, which win over the file. Each key is another spelling of a
 variable, and unknown keys are an error:
 
 ```toml
-[llm]                 # OPENAI_BASE_URL, OPENAI_API_KEY, FAB_MODEL
+[llm]                 # OPENAI_BASE_URL, OPENAI_API_KEY, FAB_MODEL, FAB_VISION_MODEL (vision_model)
 base_url = "http://localhost:11434/v1"
 model = "qwen3"
 
@@ -164,6 +166,11 @@ When the agent must never see the secrets, split fab in two. They share
 | `CAMOFOX_API_KEY` | Sent as `Authorization: Bearer` on every request. |
 | `OP_SERVICE_ACCOUNT_TOKEN` | 1Password as a service account. It reads from `FAB_OP_VAULT`, else the only vault the token can see. |
 | `FAB_SECRETS_PROMPT=never` | No approval dialogs: saved logins for the page's site still fill, while cards and identities need `fab secrets allow`. |
+
+`fab screenshot` writes to `$FAB_HOME/screenshots/<session>/` (the 50
+newest are kept), so the agent opens the path it gets back; `-o FILE` copies
+it on the agent's side. `--ask` runs on the sidecar, with its LLM key
+(`FAB_VISION_MODEL`, default `anthropic/claude-haiku-5.5` on OpenRouter).
 
 On camofox fab opens at most 2 tabs at once (`FAB_POOL_MAX`), and a tab the
 server closed for inactivity is replaced by a fresh one.

@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>API keys</title>
+<!-- Two fields drawn alike at whole-pixel positions, for fab's screenshot
+     masking check (bench/secrets/e2e.sh). -->
+<style>
+  body { margin: 0; font: 16px/20px monospace; background: #fff; color: #000; }
+  h1 { position: absolute; left: 20px; top: 0; margin: 20px 0; font-size: 24px; line-height: 30px; }
+  label { position: absolute; left: 20px; }
+  input { position: absolute; left: 20px; box-sizing: border-box; width: 320px; height: 32px; margin: 0; padding: 4px 8px;
+          border: 1px solid #888; border-radius: 0; outline: none; background: #fff; color: #000; font: 16px monospace; }
+  #key-label { top: 80px; } #key { top: 104px; }
+  #note-label { top: 160px; } #note { top: 184px; }
+</style></head>
+<body><main>
+<h1>API keys</h1>
+<label id="key-label" for="key">Stripe secret key</label><input id="key" name="key" autocomplete="off">
+<label id="note-label" for="note">Note</label><input id="note" name="note" autocomplete="off">
+</main></body></html>

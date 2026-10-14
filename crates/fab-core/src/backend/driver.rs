@@ -56,6 +56,25 @@ impl InputError {
 #[error("page {0} was lost; recovery must explicitly renew or reacquire it")]
 pub struct PageLost(pub String);
 
+/// A screenshot request, in CSS pixels of the document.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Shot {
+    /// The whole page, not only what's in view.
+    pub full_page: bool,
+    /// Only this box (an element's), in document coordinates.
+    pub clip: Option<Rect>,
+    /// `window.devicePixelRatio`: image pixels per CSS pixel.
+    pub dpr: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, serde::Deserialize)]
+pub struct Rect {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
 pub trait BrowserHost: Send + Sync {
     fn page(&self) -> DriverFuture<'_, Result<super::Browser>>;
     fn shutdown(&self) -> DriverFuture<'_, ()>;
@@ -99,6 +118,8 @@ pub trait PageDriver: Send {
     fn close(&mut self) -> DriverFuture<'_, ()>;
     fn follow_popup(&mut self) -> DriverFuture<'_, Result<bool>> { Box::pin(async { Ok(false) }) }
     fn wait_ready(&mut self) -> DriverFuture<'_, Result<()>> { Box::pin(async { Ok(()) }) }
+    /// A PNG of the page.
+    fn screenshot<'a>(&'a mut self, _shot: &'a Shot) -> DriverFuture<'a, Result<Vec<u8>>> { Box::pin(async { anyhow::bail!("this browser can't take screenshots") }) }
 }
 
 fn acknowledged(result: Result<()>) -> Result<InputReceipt, InputError> {
@@ -119,6 +140,7 @@ impl PageDriver for cdp::Cdp {
     fn goto<'a>(&'a mut self, url: &'a str) -> DriverFuture<'a, Result<()>> { Box::pin(async move { cdp::Cdp::goto(self, url).await }) }
     fn close(&mut self) -> DriverFuture<'_, ()> { Box::pin(async move { self.shutdown().await }) }
     fn follow_popup(&mut self) -> DriverFuture<'_, Result<bool>> { Box::pin(async move { cdp::Cdp::follow_popup(self).await }) }
+    fn screenshot<'a>(&'a mut self, shot: &'a Shot) -> DriverFuture<'a, Result<Vec<u8>>> { Box::pin(async move { cdp::Cdp::screenshot(self, shot).await }) }
 }
 impl PageDriver for bidi::Bidi {
     fn name(&self) -> &'static str { "bidi" }
@@ -134,6 +156,7 @@ impl PageDriver for bidi::Bidi {
     fn goto<'a>(&'a mut self, url: &'a str) -> DriverFuture<'a, Result<()>> { Box::pin(async move { bidi::Bidi::goto(self, url).await }) }
     fn close(&mut self) -> DriverFuture<'_, ()> { Box::pin(async move { self.shutdown().await }) }
     fn follow_popup(&mut self) -> DriverFuture<'_, Result<bool>> { Box::pin(async move { bidi::Bidi::follow_popup(self).await }) }
+    fn screenshot<'a>(&'a mut self, shot: &'a Shot) -> DriverFuture<'a, Result<Vec<u8>>> { Box::pin(async move { bidi::Bidi::screenshot(self, shot).await }) }
 }
 impl PageDriver for camofox::Camofox {
     fn preloads_bridge(&self) -> bool { false }
@@ -149,6 +172,7 @@ impl PageDriver for camofox::Camofox {
     fn goto<'a>(&'a mut self, url: &'a str) -> DriverFuture<'a, Result<()>> { Box::pin(async move { camofox::Camofox::goto(self, url).await }) }
     fn close(&mut self) -> DriverFuture<'_, ()> { Box::pin(async move { camofox::Camofox::close(self).await }) }
     fn wait_ready(&mut self) -> DriverFuture<'_, Result<()>> { Box::pin(async move { camofox::Camofox::wait_ready(self).await }) }
+    fn screenshot<'a>(&'a mut self, shot: &'a Shot) -> DriverFuture<'a, Result<Vec<u8>>> { Box::pin(async move { camofox::Camofox::screenshot(self, shot).await }) }
 }
 fn describe(about: &str, product: &str) -> String { if product.is_empty() { about.into() } else { format!("{about} · {product}") } }
 

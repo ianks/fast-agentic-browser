@@ -571,6 +571,21 @@ async fn call(sh: &Arc<Shared>, req: &Value, wr: Arc<tokio::sync::Mutex<OwnedWri
         return failed(Failure::new(ErrorCode::Interrupted, "the session is closing"));
     }
     let tool_name = req["tool"].as_str().unwrap_or_default();
+    // A screenshot changes nothing on the page: no durable task, only the
+    // client's page for a moment.
+    if tool_name == "screenshot" {
+        let pool = match pages(sh).await {
+            Ok(p) => p,
+            Err(e) => return failed(Failure::new(ErrorCode::Internal, e)),
+        };
+        let mut args = req["args"].clone();
+        if !args.is_object() {
+            return failed(Failure::new(ErrorCode::InvalidArgs, "arguments must be an object"));
+        }
+        args["session"] = json!(sh.name);
+        let done = crate::pool::call(&pool, &sh.ctx, req["client"].as_str().unwrap_or_default(), "screenshot", &args, None, sh.lease_limit).await;
+        return finish(&done.reply);
+    }
     let resume = if tool_name == "tasks" {
         let command = serde_json::from_value::<crate::task_commands::TaskCommand>(req["args"].clone());
         let outcome = match command {

@@ -22,6 +22,16 @@ pub struct Point {
     pub y: f64,
 }
 
+/// A screenshot: the PNG, its size in image pixels, and how many fields
+/// were masked in it.
+#[derive(Debug)]
+pub struct Shot {
+    pub png: Vec<u8>,
+    pub width: u32,
+    pub height: u32,
+    pub masked: usize,
+}
+
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct SettleInfo {
     pub ms: f64,
@@ -254,6 +264,31 @@ impl Browser {
         }
         Ok(())
     }
+    /// A PNG of the page (`full_page`: all of it; `selector`: one element).
+    /// Fields holding a typed secret show no text while it is taken, and a
+    /// page showing a typed secret as text is not captured at all.
+    pub async fn screenshot(&self, full_page: bool, selector: Option<&str>) -> Result<Shot> {
+        let mut driver = self.runtime.lock().await;
+        let d = &mut **driver;
+        let arg = selector.map(js_str).unwrap_or_else(|| "null".into());
+        let prep = evaluate(d, &format!("__ub.shotMask({arg})")).await?;
+        if let Some(e) = prep["error"].as_str() {
+            bail!("{e}");
+        }
+        let shown = prep["text"].as_str().unwrap_or_default();
+        if crate::secrets::redact::active() && crate::secrets::redact::text(shown) != shown {
+            let _ = evaluate(d, "__ub.shotRestore()").await;
+            bail!("the page shows a password-manager value as text; fab doesn't capture it");
+        }
+        let shot = driver::Shot { full_page, clip: serde_json::from_value(prep["rect"].clone()).ok(), dpr: prep["dpr"].as_f64().unwrap_or(1.0) };
+        let png = d.screenshot(&shot).await;
+        // Restored whatever the capture did; a lost page has nothing to restore.
+        let _ = evaluate(d, "__ub.shotRestore()").await;
+        let png = png?;
+        let (width, height) = png_size(&png).ok_or_else(|| anyhow::anyhow!("the browser returned no PNG"))?;
+        Ok(Shot { png, width, height, masked: prep["masked"].as_u64().unwrap_or(0) as usize })
+    }
+
     async fn follow_popup(&self) -> bool { self.runtime.lock().await.follow_popup().await.unwrap_or(false) }
 
     /// Waits for the page to go quiet after an action. If the action started a
@@ -355,6 +390,57 @@ async fn fill_native(driver: &mut dyn PageDriver, i: usize, text: &str) -> Resul
         None => return Err(InputError::NotSent(anyhow::anyhow!("native text input is unavailable")).into()),
     }
     Ok(())
+}
+
+/// The tallest page fab captures (CSS pixels): Chrome's texture limit.
+pub const MAX_SHOT_HEIGHT: f64 = 16384.0;
+
+/// The bytes of a base64 PNG a protocol returned.
+fn png_data(v: &Value) -> Result<Vec<u8>> {
+    use base64::Engine;
+    let Some(b64) = v.as_str() else { bail!("the browser returned no image") };
+    Ok(base64::engine::general_purpose::STANDARD.decode(b64)?)
+}
+
+/// A PNG's width and height, from its header.
+pub fn png_size(png: &[u8]) -> Option<(u32, u32)> {
+    if png.len() < 24 || &png[..8] != b"\x89PNG\r\n\x1a\n" {
+        return None;
+    }
+    let n = |i: usize| u32::from_be_bytes([png[i], png[i + 1], png[i + 2], png[i + 3]]);
+    Some((n(16), n(20)))
+}
+
+/// `clip` (CSS pixels, document coordinates) cut from a whole-page PNG
+/// taken at `dpr` image pixels per CSS pixel.
+fn crop(png: &[u8], clip: driver::Rect, dpr: f64) -> Result<Vec<u8>> {
+    let mut dec = png::Decoder::new(std::io::Cursor::new(png));
+    dec.set_transformations(png::Transformations::normalize_to_color8());
+    let mut reader = dec.read_info()?;
+    let mut buf = vec![0; reader.output_buffer_size().ok_or_else(|| anyhow::anyhow!("image too large"))?];
+    let info = reader.next_frame(&mut buf)?;
+    let bpp = info.color_type.samples();
+    let scale = if dpr > 0.0 { dpr } else { 1.0 };
+    let px = |v: f64, max: u32| ((v * scale).round().max(0.0) as u32).min(max);
+    let (x0, y0) = (px(clip.x, info.width), px(clip.y, info.height));
+    let (x1, y1) = (px(clip.x + clip.width, info.width), px(clip.y + clip.height, info.height));
+    if x1 <= x0 || y1 <= y0 {
+        bail!("the element is outside the page");
+    }
+    let (w, h) = (x1 - x0, y1 - y0);
+    let mut out = Vec::with_capacity((w * h) as usize * bpp);
+    for y in y0..y1 {
+        let row = y as usize * info.line_size;
+        out.extend_from_slice(&buf[row + x0 as usize * bpp..row + x1 as usize * bpp]);
+    }
+    let mut png_out = vec![];
+    {
+        let mut enc = png::Encoder::new(&mut png_out, w, h);
+        enc.set_color(info.color_type);
+        enc.set_depth(png::BitDepth::Eight);
+        enc.write_header()?.write_image_data(&out)?;
+    }
+    Ok(png_out)
 }
 
 #[cfg(test)]
@@ -501,6 +587,89 @@ mod tests {
         browser.renew().await.unwrap();
         assert!(browser.healthy(Duration::from_millis(100)).await);
         assert_eq!(*events.lock().unwrap(), ["renew", "eval:1"]);
+    }
+
+    fn png_of(w: u32, h: u32, px: impl Fn(u32, u32) -> [u8; 3] + Copy) -> Vec<u8> {
+        let mut out = vec![];
+        let mut enc = png::Encoder::new(&mut out, w, h);
+        enc.set_color(png::ColorType::Rgb);
+        enc.set_depth(png::BitDepth::Eight);
+        let data: Vec<u8> = (0..h).flat_map(|y| (0..w).flat_map(move |x| px(x, y))).collect();
+        enc.write_header().unwrap().write_image_data(&data).unwrap();
+        out
+    }
+
+    fn pixels(png: &[u8]) -> (u32, u32, Vec<u8>) {
+        let mut r = png::Decoder::new(std::io::Cursor::new(png)).read_info().unwrap();
+        let mut buf = vec![0; r.output_buffer_size().unwrap()];
+        let info = r.next_frame(&mut buf).unwrap();
+        buf.truncate(info.buffer_size());
+        (info.width, info.height, buf)
+    }
+
+    #[test]
+    fn crop_cuts_the_box_at_the_device_pixel_ratio() {
+        let page = png_of(8, 8, |x, y| [x as u8, y as u8, 0]);
+        assert_eq!(png_size(&page), Some((8, 8)));
+        // CSS (1,1) 2x2 at 2 image pixels per CSS pixel: image (2,2) 4x4.
+        let cut = crop(&page, driver::Rect { x: 1.0, y: 1.0, width: 2.0, height: 2.0 }, 2.0).unwrap();
+        let (w, h, px) = pixels(&cut);
+        assert_eq!((w, h), (4, 4));
+        assert_eq!(&px[..3], &[2, 2, 0]);
+        assert_eq!(&px[px.len() - 3..], &[5, 5, 0]);
+        // A box past the edge is clipped to the page; one wholly outside is an error.
+        let cut = crop(&page, driver::Rect { x: 6.0, y: 6.0, width: 10.0, height: 10.0 }, 1.0).unwrap();
+        assert_eq!(png_size(&cut), Some((2, 2)));
+        assert!(crop(&page, driver::Rect { x: 20.0, y: 0.0, width: 2.0, height: 2.0 }, 1.0).is_err());
+    }
+
+    /// A page for screenshots: what `shotMask` reports, and whether the capture fails.
+    struct ShotPage { events: Arc<StdMutex<Vec<String>>>, shown: String, fail: bool }
+    impl PageDriver for ShotPage {
+        fn name(&self) -> &'static str { "shot" }
+        fn describe(&self) -> String { "shot page".into() }
+        fn page_id(&self) -> String { "shot".into() }
+        fn eval<'a>(&'a mut self, expression: &'a str) -> DriverFuture<'a, Result<Value>> {
+            Box::pin(async move {
+                self.events.lock().unwrap().push(expression.split('(').next().unwrap_or_default().to_string());
+                Ok(if expression.starts_with("__ub.shotMask(") {
+                    serde_json::json!({"rect": {"x": 1.0, "y": 2.0, "width": 3.0, "height": 4.0}, "dpr": 2.0, "masked": 1, "text": self.shown})
+                } else { Value::Bool(true) })
+            })
+        }
+        fn goto<'a>(&'a mut self, _url: &'a str) -> DriverFuture<'a, Result<()>> { Box::pin(async { Ok(()) }) }
+        fn close(&mut self) -> DriverFuture<'_, ()> { Box::pin(async {}) }
+        fn screenshot<'a>(&'a mut self, shot: &'a driver::Shot) -> DriverFuture<'a, Result<Vec<u8>>> {
+            Box::pin(async move {
+                self.events.lock().unwrap().push(format!("capture {:?} dpr {}", shot.clip.map(|r| (r.x, r.y, r.width, r.height)), shot.dpr));
+                if self.fail { anyhow::bail!("tab gone") }
+                Ok(png_of(6, 8, |_, _| [255, 255, 255]))
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn screenshots_mask_capture_then_restore() {
+        let events = Arc::new(StdMutex::new(Vec::new()));
+        let page = Browser::from_driver(ShotPage { events: events.clone(), shown: "Welcome".into(), fail: false });
+        let shot = page.screenshot(false, Some("#key")).await.unwrap();
+        assert_eq!((shot.width, shot.height, shot.masked), (6, 8, 1));
+        assert_eq!(*events.lock().unwrap(), ["__ub.shotMask", "capture Some((1.0, 2.0, 3.0, 4.0)) dpr 2", "__ub.shotRestore"]);
+        // A failed capture still restores the page.
+        events.lock().unwrap().clear();
+        let page = Browser::from_driver(ShotPage { events: events.clone(), shown: String::new(), fail: true });
+        assert!(page.screenshot(true, None).await.is_err());
+        assert_eq!(events.lock().unwrap().last().map(String::as_str), Some("__ub.shotRestore"));
+    }
+
+    #[tokio::test]
+    async fn a_page_showing_a_typed_secret_is_not_captured() {
+        crate::secrets::redact::add("shot-test-Zq9xLm2Pv7");
+        let events = Arc::new(StdMutex::new(Vec::new()));
+        let page = Browser::from_driver(ShotPage { events: events.clone(), shown: "Saved. Key shot-test-Zq9xLm2Pv7 is live".into(), fail: false });
+        let e = page.screenshot(false, None).await.unwrap_err();
+        assert!(format!("{e:#}").contains("doesn't capture"), "{e:#}");
+        assert_eq!(*events.lock().unwrap(), ["__ub.shotMask", "__ub.shotRestore"], "nothing captured");
     }
 
     #[test]

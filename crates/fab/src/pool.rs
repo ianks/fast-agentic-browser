@@ -628,7 +628,7 @@ pub struct Done {
 
 /// Runs one tool call on a page leased for `client`, within `limit`.
 pub async fn call(pool: &Arc<Browser>, ctx: &crate::api::Ctx, client: &str, tool: &str, args: &Value, live: Option<Arc<dyn Fn(String) + Send + Sync>>, limit: Duration) -> Done {
-    if let Err(failure) = crate::task_runtime::validate(tool, args) {
+    if let Err(failure) = crate::task_runtime::validate(tool, args).or_else(|f| if tool == "screenshot" { Ok(()) } else { Err(f) }) {
         return Done { disposition: Disposition::Completed, reply: crate::api::Reply::failure(failure), home: None, acted: false };
     }
     let mut lease = match pool.lease(client).await {
@@ -640,7 +640,7 @@ pub async fn call(pool: &Arc<Browser>, ctx: &crate::api::Ctx, client: &str, tool
     // the request opens a page itself.
     if let Some(u) = lease.fork.clone() {
         let opens = args["url"].as_str().is_some_and(|u| !u.trim().is_empty()) || args["step"].as_str().and_then(crate::api::leading_url).is_some();
-        if !opens && ctx.program_journal.is_none() && matches!(tool, "do" | "run" | "step") {
+        if !opens && ctx.program_journal.is_none() && matches!(tool, "do" | "run" | "step" | "screenshot") {
             let _ = lease.goto(&u).await;
         }
     }

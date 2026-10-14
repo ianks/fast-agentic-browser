@@ -52,7 +52,8 @@ end
 - `ts` is RFC 3339 UTC with milliseconds. Replayed records keep their original
   `ts`; an `end` carries the time its stream ended.
 - `end.value` is the program's `return` value (an array for several) or the
-  step's answer; `do --print` puts the program text there.
+  step's answer; `do --print` puts the program text there; `screenshot` puts
+  `{"path", "width", "height"}` there (plus `answer` with `--ask`).
 - `end.records` is how many records the task has committed in all.
 
 ## Declaring the output

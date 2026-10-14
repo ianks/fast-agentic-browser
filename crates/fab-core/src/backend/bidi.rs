@@ -511,6 +511,19 @@ impl Bidi {
         }
     }
 
+    /// A PNG of the tab: the viewport, the whole page, or a box of it.
+    pub async fn screenshot(&self, shot: &super::driver::Shot) -> Result<Vec<u8>> {
+        let ctx = self.live().await?;
+        let origin = if shot.full_page || shot.clip.is_some() { "document" } else { "viewport" };
+        let mut p = json!({"context": ctx, "origin": origin, "format": {"type": "image/png"}});
+        let clip = shot.clip.or_else(|| shot.full_page.then_some(super::driver::Rect { x: 0.0, y: 0.0, width: f64::MAX, height: super::MAX_SHOT_HEIGHT }));
+        if let Some(r) = clip {
+            p["clip"] = json!({"type": "box", "x": r.x, "y": r.y, "width": r.width.min(1e7), "height": r.height});
+        }
+        let v = self.sh.conn.call("browsingContext.captureScreenshot", p).await?;
+        super::png_data(&v["data"])
+    }
+
     pub async fn goto(&self, url: &str) -> Result<()> {
         let ctx = self.live().await?;
         self.sh.conn

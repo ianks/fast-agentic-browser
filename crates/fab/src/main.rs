@@ -184,6 +184,25 @@ enum Cmd {
         #[arg(long)]
         returns: Option<String>,
     },
+    /// Take a screenshot of the session's page: a PNG under $FAB_HOME/screenshots/<session>/ (end.value.path).
+    /// Fields holding a password-manager value show no text in it.
+    Screenshot {
+        /// Open this first.
+        #[arg(long)]
+        url: Option<String>,
+        /// The whole page, not only what's in view.
+        #[arg(long)]
+        full_page: bool,
+        /// Only the first element matching this CSS selector.
+        #[arg(long)]
+        selector: Option<String>,
+        /// Also copy it here.
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        /// Ask a vision model (FAB_VISION_MODEL) about it: the answer is end.value.answer.
+        #[arg(long)]
+        ask: Option<String>,
+    },
     /// Running sessions.
     Sessions,
     /// Close the session and its browser (--all: every session).
@@ -248,6 +267,7 @@ impl Cli {
             Some(Cmd::Tasks { .. }) => "tasks",
             Some(Cmd::Do { .. }) => "do",
             Some(Cmd::Run { .. }) => "run",
+            Some(Cmd::Screenshot { .. }) => "screenshot",
             Some(Cmd::Sessions) => "sessions",
             Some(Cmd::Close { .. }) => "close",
             Some(Cmd::Secrets { .. }) => "secrets",
@@ -327,7 +347,7 @@ async fn run(cli: Cli) -> Result<ExitCode> {
         return Ok(ExitCode::SUCCESS);
     }
     let Some(cmd) = &cli.cmd else { return Err(invalid("say what to do: fab do \"…\" (fab --help)")) };
-    let w = Writer::new(cli.command_name());
+    let mut w = Writer::new(cli.command_name());
     // A remote client holds no secrets and starts no browser: those are
     // fab serve's, in another container.
     #[cfg(unix)]
@@ -385,6 +405,16 @@ async fn run(cli: Cli) -> Result<ExitCode> {
             let task = command.task_id().cloned();
             let result = fab_cli::task_runtime::control(&cli.session, command).await?;
             tasks_outcome(w, task, result)
+        }
+        Cmd::Screenshot { url, full_page, selector, output, ask } => {
+            let args = json!({"url": url, "full_page": full_page, "selector": selector, "ask": ask});
+            let mut end = session_end(&cli, &mut w, "screenshot", args).await?;
+            // The image is in FAB_HOME, which a remote client shares with fab serve.
+            if let (true, Some(to), Some(from)) = (end.ok, output, end.value["path"].as_str().map(PathBuf::from)) {
+                std::fs::copy(&from, to).map_err(|e| anyhow::anyhow!("{}: {e}", to.display()))?;
+                end.value["path"] = json!(std::fs::canonicalize(to).unwrap_or_else(|_| to.clone()));
+            }
+            Ok(w.end(end))
         }
         Cmd::Sessions => sessions(w).await,
         Cmd::Close { all } => close(&cli, w, *all).await,
@@ -445,8 +475,14 @@ fn skill(install: Option<&str>) -> Result<ExitCode> {
     Ok(Writer::new("skill").end(End::ok(json!({"installed": path}))))
 }
 
+async fn session_call(cli: &Cli, mut w: Writer, name: &str, args: Value) -> Result<ExitCode> {
+    let end = session_end(cli, &mut w, name, args).await?;
+    Ok(w.end(end))
+}
+
+/// Runs a call in the session; its events are relayed, its `end` returned.
 #[cfg(unix)]
-async fn session_call(cli: &Cli, mut w: Writer, name: &str, mut args: Value) -> Result<ExitCode> {
+async fn session_end(cli: &Cli, w: &mut Writer, name: &str, mut args: Value) -> Result<End> {
     session::check_name(&cli.session).map_err(|e| invalid(format!("{e:#}")))?;
     if let Some(id) = &cli.request_id { args["request_id"] = json!(id); }
     let start = session::Start { set: cli.start_set(&cli.session), model: api::default_model(cli.model.as_deref()), idle: cli.idle };
@@ -477,12 +513,11 @@ async fn session_call(cli: &Cli, mut w: Writer, name: &str, mut args: Value) -> 
     for item in v["items"].as_array().into_iter().flatten() {
         w.item(item.clone());
     }
-    let end: End = serde_json::from_value(v["end"].clone()).context("the session's reply has no end")?;
-    Ok(w.end(end))
+    serde_json::from_value(v["end"].clone()).context("the session's reply has no end")
 }
 
 #[cfg(not(unix))]
-async fn session_call(_: &Cli, _: Writer, _: &str, _: Value) -> Result<ExitCode> {
+async fn session_end(_: &Cli, _: &mut Writer, _: &str, _: Value) -> Result<End> {
     bail!("CLI sessions need a Unix system for now")
 }
 
@@ -662,6 +697,14 @@ async fn doctor(cli: &Cli, mut w: Writer, k: &Knobs) -> Result<ExitCode> {
         (None, None) => "engine only (set OPENROUTER_API_KEY, or OPENAI_BASE_URL + FAB_MODEL, for an LLM coprocessor)".into(),
     };
     check("task", model.is_some() && llm.is_some(), detail);
+    check(
+        "vision",
+        true,
+        match (api::vision_model(), &llm) {
+            (Some(m), Some(ep)) => format!("{m} at {} (fab screenshot --ask)", fab_core::endpoint::host(&ep.url)),
+            _ => "none (optional: FAB_VISION_MODEL for fab screenshot --ask)".into(),
+        },
+    );
     if k.backend == "camofox" {
         // A camofox session never discovers, downloads or launches a browser.
         let conn = fab_core::backend::camofox::Conn::new(k)?;
