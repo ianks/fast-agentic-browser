@@ -1341,3 +1341,34 @@ Posting a Show HN comment with fab found that `do 'type "…long message…" int
 - **Curly quotes became straight ones** before values were read, so a `"` inside a “…” value ended it early. A curly pair that holds straight quotes is now left as is.
 
 Rehearsed on a local copy of HN's comment form, 4 runs each: the type-only step submits nothing (0 LLM calls), and type-then-click submits the 1,470-character message byte for byte. Held-out-3 (agent mode, `--jobs 6`, same settings for both): 32/40 before, 33/40 after (discordant 3 vs 4, McNemar p=1.0). Scrape suite 20/20, 1746/1746.
+
+## 2026-10-14 · Default LLM: claude-haiku-5.5; `do` can look at the page
+
+`inception/mercury-2.5` (the default on OpenRouter) started being refused
+upstream on reading steps ("Upstream error from Inception: I'm not able to
+share my instructions…", a 502), which failed the secrets e2e read-back
+checks. Held-out-3, agent mode, this build, both planners in one run (4 jobs):
+
+| planner | pass | p50 | $/task |
+|---|---|---|---|
+| **anthropic/claude-haiku-5.5** | **37/40** | **12.8 s** | $0.0100 |
+| inception/mercury-2.5 | 32/40 | 21.3 s | $0.0020 |
+
+Haiku passed 5 tasks mercury failed (journal_submit_ems_draft,
+timesheet_billable_hours_ana, wineclub_favourite_top_rated,
+league_busiest_referee, fitness_book_skip_full_class) and failed none that
+mercury passed. Mercury's p50 is above its 2026-09-24 gate (16.6 s): slow
+calls and OpenRouter transport errors during this run. Haiku is now the
+default (`FAB_MODEL` still overrides); 5× the cost per task, still under
+control's $0.0133.
+
+The planner gets a `look` tool when a vision model is configured: a
+screenshot (secret fields masked) and a question for `FAB_VISION_MODEL`
+(default the same haiku). No held-out-3 task called it. On a bar chart with
+no printed values, `do "what is the Q3 revenue in the chart?"` and a program
+`read` both answered from the image (Q2 60, Q3 70, Q4 50, right). `finish`
+now asks for the bare value when the goal asks for one: typed `returns`
+(an enum of quarters, a plan name) came back as sentences with markdown
+before ("**Free**, at $0 per month…"), as the value after. Secrets e2e: PASS
+on Chrome and Firefox, including a `do` that asks `look` to read a field
+holding a Stripe key (it saw an empty field).

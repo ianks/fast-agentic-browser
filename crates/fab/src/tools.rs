@@ -76,12 +76,41 @@ pub fn definitions() -> Vec<Value> {
             "description": "Answer a question from the current page's text. Returns the verbatim text block that answers it.",
             "inputSchema": {"type": "object", "properties": {"question": {"type": "string"}}, "required": ["question"]}
         }),
+        look_definition(),
         json!({
             "name": "observe",
             "description": "List the interactive elements most relevant to a query (or all, if empty).",
             "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}}
         }),
     ]
+}
+
+/// Seeing the page: a vision model answers from a screenshot.
+pub fn look_definition() -> Value {
+    json!({
+        "name": "look",
+        "description": "Answer a question from a screenshot of the current page, for what its text can't tell: charts and graphs, images, colors, icons, layout, whether something looks right. Fields holding passwords and saved secrets are blank in it.",
+        "inputSchema": {"type": "object", "properties": {
+            "question": {"type": "string"},
+            "full_page": {"type": "boolean", "description": "the whole page, not just what's on screen"}
+        }, "required": ["question"]}
+    })
+}
+
+/// The tools on offer: `look` only when a vision model is configured.
+pub fn offered(defs: Vec<Value>) -> Vec<Value> {
+    let vision = crate::api::vision_model().is_some();
+    defs.into_iter().filter(|t| vision || t["name"] != "look").collect()
+}
+
+/// A screenshot of the page and a vision model's answer about it.
+async fn look(sess: &mut Session, question: &str, full_page: bool) -> anyhow::Result<(String, Timings)> {
+    let t = std::time::Instant::now();
+    let shot = sess.browser.screenshot(full_page, None).await?;
+    let (answer, _model, usage) = crate::api::look(&shot.png, question).await?;
+    let ms = t.elapsed().as_secs_f64() * 1e3;
+    let tm = Timings { total_ms: ms, llm_calls: 1, llm_ms: ms, llm_cost: usage.cost, ..Default::default() };
+    Ok((fab_core::secrets::redact::text(&answer), tm))
 }
 
 fn fmt_act(out: &mut String, r: &ActResult) {
@@ -226,6 +255,10 @@ async fn run_tool(sess: &mut Session, name: &str, args: &Value) -> (String, bool
         }
         "read" => match sess.read(&s("query"), 8000).await {
             Ok(t) => (t, true, None),
+            Err(e) => (format!("error: {e:#}"), false, None),
+        },
+        "look" => match look(sess, &s("question"), args["full_page"].as_bool() == Some(true)).await {
+            Ok((answer, tm)) => (answer, true, Some(tm)),
             Err(e) => (format!("error: {e:#}"), false, None),
         },
         "observe" => match sess.observe(&s("query")).await {

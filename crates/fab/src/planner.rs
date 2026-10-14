@@ -79,7 +79,7 @@ pub enum Toolset<'a> {
     Cdt(&'a McpClient),
 }
 
-const FINISH_DESC: &str = "Call when the goal is complete, or when it cannot be completed. `answer` holds the requested information, a short confirmation, or why the task is impossible.";
+const FINISH_DESC: &str = "Call when the goal is complete, or when it cannot be completed. `answer` holds the requested information, a short confirmation, or why the task is impossible. When the goal asks for just the value, `answer` is the value alone: no sentence, no markdown.";
 
 pub const SYSTEM_EXPERIMENT: &str = "You are a browser agent. You control a web browser through a very fast tool and must complete the user's goal.
 - `act` takes a plain-English instruction. Precise commands run instantly: `click e<id>`, `type \"<text>\" into e<id>`, `select \"<option>\" from e<id>`, `check e<id>`, `press enter`, or several joined with commas. Element ids (e12) come from the page listing. You can also give a high-level instruction (\"log in as \\\"<username>\\\" with password \\\"<password>\\\"\", \"add the <product> in size <size> to the cart\") and it works out the clicks. Always put literal text to type in double quotes.
@@ -100,6 +100,9 @@ pub const SYSTEM_GOAL: &str = "You are a browser agent. A fast browser engine ca
 - If `do` reports done_unverified, the actions were carried out but the page shows no confirmation: don't repeat them; finish.
 - If `do` reports steps_done, every step you gave worked; `unmet` lists the parts of the goal still open. Do only those next, never the finished steps again.
 - Call `finish` with the answer written from the returned results and evidence. Never claim success you did not observe.";
+
+/// Added when a vision model is configured (the `look` tool is offered).
+pub const LOOK_HINT: &str = "\n- `look` answers a question from a screenshot of the page. Use it only for what the page's text can't tell: values in charts and graphs, images, colors, icons, layout.";
 
 pub const SYSTEM_CONTROL: &str = "You are a browser agent. You control a web browser through Chrome DevTools tools and must complete the user's goal.
 - Use take_snapshot to see the page; elements have uids you pass to click/fill/fill_form etc.
@@ -130,13 +133,13 @@ impl Toolset<'_> {
 
     fn defs(&self) -> Vec<Value> {
         match self {
-            Toolset::Usebrowser(_) => tools::definitions().into_iter().filter(|t| t["name"] != "goto").collect(),
+            Toolset::Usebrowser(_) => tools::offered(tools::definitions().into_iter().filter(|t| t["name"] != "goto").collect()),
             // The VM carries the goal: `do` (whose steps may be precise
             // commands for corrections) plus the data tools; no fine-grained
             // act/run/observe, so the planner delegates instead of driving.
-            Toolset::Goal(_) => std::iter::once(tools::do_definition())
-                .chain(tools::definitions().into_iter().filter(|t| matches!(t["name"].as_str(), Some("collect" | "read" | "extract"))))
-                .collect(),
+            Toolset::Goal(_) => tools::offered(std::iter::once(tools::do_definition())
+                .chain(tools::definitions().into_iter().filter(|t| matches!(t["name"].as_str(), Some("collect" | "read" | "extract" | "look"))))
+                .collect()),
             Toolset::Cdt(c) => c.tools.clone(),
         }
     }
@@ -309,11 +312,16 @@ pub async fn drive_with(
         .collect();
     let batch_hint = std::env::var("FAB_BATCH_HINT").as_deref() == Ok("1");
     let experiment_prompt = if batch_hint { format!("{SYSTEM_EXPERIMENT}\n{BATCH_HINT}") } else { SYSTEM_EXPERIMENT.to_string() };
-    let system: &str = match ts {
-        Toolset::Usebrowser(_) => &experiment_prompt,
-        Toolset::Goal(_) => SYSTEM_GOAL,
-        Toolset::Cdt(_) => SYSTEM_CONTROL,
+    let goal_prompt = SYSTEM_GOAL.to_string();
+    let mut system = match ts {
+        Toolset::Usebrowser(_) => experiment_prompt,
+        Toolset::Goal(_) => goal_prompt,
+        Toolset::Cdt(_) => SYSTEM_CONTROL.to_string(),
     };
+    if defs.iter().any(|t| t["name"] == "look") {
+        system.push_str(LOOK_HINT);
+    }
+    let system = system.as_str();
     // A resumed loop continues the conversation its checkpoint holds: the
     // goal, the page and every confirmed call are already in it, so the
     // model continues the work instead of repeating it.

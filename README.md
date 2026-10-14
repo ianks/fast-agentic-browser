@@ -36,7 +36,7 @@ fab do 'sign up as "qa+1@acme.dev" with {{new password}}' --url localhost:3000/s
 fab do '{"do": "every job on all pages", "url": "jobs.example.com",
          "records": {"properties": {"title": {"type": "string"}, "salary": {"type": ["number", "null"]}}}}'
 fab screenshot --full-page                                     # a PNG of the page: end.value.path
-fab screenshot --ask "what's the Q3 value in the revenue chart?"
+fab do "what's the Q3 value in the revenue chart?"            # fab looks at the page when text can't tell
 fab close
 ```
 
@@ -95,7 +95,7 @@ pointed elsewhere with the env vars other tools already read:
 
 | Model | Variables (first match wins) |
 |---|---|
-| LLM (OpenAI-compatible) | `OPENAI_BASE_URL` (+ `OPENAI_API_KEY`, optional for local servers), else `OPENROUTER_API_KEY`, else `OPENAI_API_KEY`. Model: `FAB_MODEL` (required off OpenRouter). Screenshot questions: `FAB_VISION_MODEL`. |
+| LLM (OpenAI-compatible) | `OPENAI_BASE_URL` (+ `OPENAI_API_KEY`, optional for local servers), else `OPENROUTER_API_KEY`, else `OPENAI_API_KEY`. Model: `FAB_MODEL` (required off OpenRouter). Default on OpenRouter: `anthropic/claude-haiku-5.5`. Questions about how the page looks (in `fab do` and `fab screenshot --ask`): `FAB_VISION_MODEL`, same default. |
 | Jev (System One API) | `SYSTEM_ONE_BASE_URL` (+ `SYSTEM_ONE_API_KEY`, optional), else `TYPESAFE_API_KEY` (+ `TYPESAFE_BASE_URL`), else `OPENROUTER_API_KEY`. Model: `FAB_JEV_MODEL` or `SYSTEM_ONE_MODEL`. `SYSTEMONE_*` spellings work too. |
 
 **Config file.** The same settings can live in `~/.config/fab/config.toml`
@@ -169,8 +169,9 @@ When the agent must never see the secrets, split fab in two. They share
 
 `fab screenshot` writes to `$FAB_HOME/screenshots/<session>/` (the 50
 newest are kept), so the agent opens the path it gets back; `-o FILE` copies
-it on the agent's side. `--ask` runs on the sidecar, with its LLM key
-(`FAB_VISION_MODEL`, default `anthropic/claude-haiku-5.5` on OpenRouter).
+it on the agent's side. `--ask`, and `fab do` looking at the page, run on
+the sidecar with its LLM key (`FAB_VISION_MODEL`, default
+`anthropic/claude-haiku-5.5` on OpenRouter).
 
 On camofox fab opens at most 2 tabs at once (`FAB_POOL_MAX`), and a tab the
 server closed for inactivity is replaced by a fresh one.

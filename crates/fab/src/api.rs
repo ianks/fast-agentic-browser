@@ -107,16 +107,22 @@ pub fn normalize_url(u: &str) -> String {
     format!("{}://{u}", if local { "http" } else { "https" })
 }
 
-/// The default LLM: `FAB_MODEL`, else a fast cheap one when the LLM endpoint
+/// The default LLM: `FAB_MODEL`, else [`DEFAULT_MODEL`] when the LLM endpoint
 /// is OpenRouter, else none (the engine alone; other endpoints name a model).
 pub fn default_model(flag: Option<&str>) -> Option<String> {
     let m = flag.map(str::to_string).or_else(|| std::env::var("FAB_MODEL").ok()).filter(|m| !m.is_empty());
     match m.as_deref() {
         Some("none") => None,
         Some(_) => m,
-        None => fab_core::endpoint::llm().filter(|e| e.openrouter).map(|_| "inception/mercury-2.5".to_string()),
+        None => fab_core::endpoint::llm().filter(|e| e.openrouter).map(|_| DEFAULT_MODEL.to_string()),
     }
 }
+
+/// The default on OpenRouter, for steps and for screenshot questions alike.
+/// inception/mercury-2.5 (the earlier default) now gets refused upstream on
+/// some reading steps ("I'm not able to share my instructions"); haiku runs
+/// them, and reads images too (see [`DEFAULT_VISION_MODEL`]).
+pub const DEFAULT_MODEL: &str = "anthropic/claude-haiku-5.5";
 
 /// Runs one call. `live` receives decisions and progress as they happen.
 pub async fn call(sess: &mut Session, ctx: &mut Ctx, name: &str, args: &Value, live: Option<Arc<dyn Fn(String) + Send + Sync>>) -> Reply {
@@ -251,10 +257,10 @@ pub fn vision_model() -> Option<String> {
 /// cheap image models on fab screenshots (reading a bar chart, small print
 /// on a full Hacker News page, a Wikipedia infobox): 12/12 right, 1.7 s
 /// median, $0.0002 a question; the next best got 10/12 at 8x the cost.
-const DEFAULT_VISION_MODEL: &str = "anthropic/claude-haiku-5.5";
+const DEFAULT_VISION_MODEL: &str = DEFAULT_MODEL;
 
 /// A vision model's answer to `question` about a PNG.
-async fn look(png: &[u8], question: &str) -> anyhow::Result<(String, String, fab_core::llm::ChatUsage)> {
+pub async fn look(png: &[u8], question: &str) -> anyhow::Result<(String, String, fab_core::llm::ChatUsage)> {
     use base64::Engine;
     let model = vision_model().ok_or_else(|| anyhow::anyhow!("no vision model: set FAB_VISION_MODEL (a model at the LLM endpoint that reads images)"))?;
     let llm = fab_core::llm::Llm::from_env(&model)?;
